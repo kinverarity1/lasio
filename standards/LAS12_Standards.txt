@@ -1,0 +1,658 @@
+
+
+September 1st, 1990
+
+LAS 1.2
+
+A FLOPPY DISK
+ 
+STANDARD FOR LOG DATA
+
+
+
+BY
+
+Canadian Well Logging Society Floppy Disk Committee
+Suite 229,  640 - 5 Avenue, S.W.
+Calgary, Alberta
+T2P 3G4
+
+ABSTRACT
+
+The Canadian Well Logging Society's Floppy Disk Committee has designed a
+standard  format for log data on floppy disks. It is known as the LAS
+format (Log ASCII Standard). LAS consists of files written in ASCII
+containing minimal header information and is intended for optical curves
+only.  Details of the LAS format are described in this paper.
+
+The purpose of the LAS format is to supply basic digital log data
+to users of personal computers in a format that is quick and easy to use.
+
+INTRODUCTION
+
+Log analysts who use personal computers have, in the past, been entering
+log data into their machines mainly through a hand digitizing procedure
+because most personal computers are unable to handle data from magnetic tapes.
+The industry was beginning to address this inefficiency by making log data
+available on floppy disks in a variety of formats.  It was at this point
+that the Canadian Well Logging Society set up the Floppy Disk Committee to
+design a standard for log data on floppy disks that would meet the needs of
+personal computer users.
+
+Various standards for digital well log data already exist.  The LIS format
+(Log Information Standard) is one of the more popular standards. A more
+complete standard is presently being prepared by the American Petroleum
+Institute which is known as the DLIS format (Digital Log Interchange
+Standard).  Both of these standards are very useful but because of their
+completeness, and resulting complexity, they do not address the needs of most
+personal computer users.
+
+Users of personal computers have serious space limitations and are normally
+only interested in the optically presented curves. They also want to get this
+data into their machines quickly and easily. The LAS format addresses these
+needs and can be compared to a "Reader's Digest" version of the LIS or DLIS
+formats.  If more detailed log information is required, then the LIS or DLIS
+format should be used.  The LAS format is intended to complement the LIS or
+DLIS formats as each has its own specific purpose.
+
+
+
+
+GENERAL DESCRIPTION
+
+The LAS format was designed to be easily understood by the user and at the
+same time contain enough flags to assist the programmer. The LAS format must
+always be written in ASCII. If it is written using a compression routine, in
+binary, or in any other form, an executable program must exist on the floppy
+disk that will convert the file back to LAS format.
+
+The LAS format consists of files. For example, a repeat section would make
+up one file and the main pass another. Each of the file names end in ".LAS"
+so that they can be easily recognized. An individual floppy disk must not
+contain partial files that continue onto a second floppy disk.  Large files
+that do not fit on one floppy must be split into two or more files.
+
+Each file consists of numerous sections. These sections are not order
+specific except that the last section must always be the data section. The
+first section is usually the "VERSION" section containing the version number
+of the LAS format and identifies whether the data is in wrap mode.  The "WELL
+INFORMATION" section contains information on the well name, location, and the
+start and stop depths of the data in this file.  The "CURVE INFORMATION"
+section contains the curve mnemonics, units used, and the definitions of these
+mnemonics, in the order that they appear in the data section.  The "PARAMETER"
+section contains informat on parameters or constants (such as mud
+resistivities) and is optional.  The "OTHER" section is also optional and
+contains any other information or comments.  The last section is always the
+"ASCII LOG DATA" section.  Depth values should appear in the first column
+and each column of data must be separated by a space.
+
+More detailed LAS format specifications can be found in the Appendix.
+
+
+REFORMAT AND CERTIFY PROGRAMS
+
+To assist users of LAS formatted data, a program was written to modify
+LAS files into forms that may be more compatible to the user's needs. The
+program is called REFORMAT and can perform the following tasks:
+
+     1) Extract a specific depth interval
+
+     2) Extract specific curves
+
+     3) Reverse depth direction
+
+     4) Change sampling interval
+
+     5) Convert wrap mode to unwrap mode
+
+     6) Scan for non-standard characters which may be causing
+	difficulties for some programs.
+
+The CERTIFY program was designed to verify that files meet the LAS standard.
+If the LAS standards are not met, it will identify the errors.  In case of
+disagreement between this program and the printed LAS standard document, the
+document will be deemed to be correct.  The CERTIFY program also includes
+documentation on the LAS standard.
+
+The REFORMAT  and CERTIFY programs were written by Robin Winsor of Gulf
+Canada Resources Ltd. in ANSI standard "C" and compiled with a Microsoft C 5.1
+compiler.  These programs are not part of the LAS standard.
+
+The author of these programs does not reserve any rights and does not
+warrant the program for any specific purpose.  An LAS information package is
+available for $10.00 through the C.W.L.S.  The package includes an executable
+form of the REFORMAT and CERTIFY programs, source code for REFORMAT, and two
+test LAS files on a 3.5 inch 720K DOS compatible floppy disk.
+
+The address is as follows:
+
+		    Canadian Well Logging Society
+		      229, 640 - 5 Avenue, S.W.
+			Calgary,  Alberta
+			 CANADA  T2P 3G4
+
+CONCLUSIONS
+
+The latest release of the LAS format is version 1.2 which was released in
+August of 1989.  The CWLS Floppy Disk Committee will monitor the LAS format
+to address problems and make modifications to the standard as required.
+Feedback concerning the user's likes or dislikes would be greatly appreciated
+and should be sent to the CWLS to the attention of the Floppy Disk Committee.
+
+It is hoped that by creating the LAS format, more widespread use will be made
+of digital log data.
+
+
+APPENDIX
+
+LAS FORMAT SPECIFICATIONS FOR VERSION 1.2
+
+
+PART 1	GENERAL DESCRIPTION
+
+
+The LAS Format is designed to store log data on floppy disks. This standard
+is intended to simplify the exchange of digital log data between users. The
+general specifications of this format are as follows:
+
+1)  The floppy disk size, type, or density is not specified because
+    conversion between them is straightforward.
+
+2)  It is the intent of this standard to store optically presented log
+    curves although other curves may also be stored. Raw count rates, wave
+    form data etc. are more efficiently stored on magnetic tape using LIS
+    or DLIS format.
+
+3)  Floppy disks in the LAS format must be MS/DOS or PC/DOS compatible
+
+4)  The file will be written in ASCII.  If the file is written using a
+    compression method, in binary, or in any other form, an executable
+    program  must  exist on the floppy to convert it back to LAS format.
+
+5)  An individual floppy disk must not contain partial files that continue
+    onto a second floppy. Large files that do not fit onto one floppy must be
+    split into two or more separate files.  This may be achieved by splitting
+    the curves or segmenting the depths.
+
+6)  All files in LAS format must end in ".LAS" so that they may be easily
+    recognized.
+
+7)  The LAS format is a minimum standard. It is expected that most users and
+    suppliers will exceed this minimum standard.
+
+
+PART 2  MAJOR COMPONENTS OF AN LAS FILE
+
+Each LAS file contains numerous sections and each section begins with a
+tilde (~) mark. The last section in an LAS file must always be the log data
+section.
+
+The sections that make up an LAS file are as follows:
+
+	~V	- contains version and wrap mode information
+	~W	- contains well identification
+	~C	- contains curve information
+	~P	- contains parameters or constants
+	~O	- contains other information such as comments
+	~A	- contains ASCII log data
+
+These sections are described in more detail in part four of this appendix.
+
+
+PART 3	FLAGS
+
+Flags are used to assist computers in identifying specific lines in a file.
+The following flags are used in the LAS format:
+
+a)      "~" (tilde): The ASCII equivalent of this flag is decimal 126
+	or hexadecimal 7E. This flag when used will be the first non-space
+	and non-quotation character on a line. It is used to mark the
+	beginning of a section in a file. The first letter directly after the
+	tilde identifies the section. (See part two.)  All upper case letters
+	in the space following a tilde mark are reserved for use by the
+	committee.  The remainder of the line will be treated as comments.
+
+b)      "#" (pound): The ASCII equivalent of this flag is decimal 35 or
+	 hexadecimal 23. This flag when used will be the first non-space and
+	 non-quotation character on a line. The Pound sign is used to indicate
+	 that the line is a comment line. Comment lines can appear anywhere
+	 above the data section.
+
+c)      "." and ":" : In sections other than the data section, dots and
+	colons are used to delimit information within the line.  They are
+	usually aligned for ease of reading. Information to the right of the
+	colon is a detailed definition of the mnemonic that is located to the
+	left of the colon.  The dot is used to separate two mnemonics.  Spaces
+	may occur to the right or left of a dot or colon.
+
+
+PART 4 	DETAILS
+
+The actual format for each of the sections discussed in this part of the
+paper is best understood by looking at the examples in the boxed areas. The
+exact spacing is not critical because computer programs will use the dots,
+colons and spaces to decipher each line.
+
+I)	~V (Version Information)
+
+-This section is mandatory and usually appears at the very beginning of the
+ file.
+
+-It identifies which version of the LAS format is being used and whether
+ wrap mode is used.
+
+-This section must contain the following lines:
+
+"VERS.  1.2: CWLS LOG ASCII STANDARD - VERSION 1.2"
+	Refers to which version of LAS was used.
+
+"WRAP.	YES: Multiple lines per depth step"
+OR 
+"WRAP.	NO:  One line per depth step"
+	Refers to whether a wrap around mode was used in the data section.
+	If no wrap mode is used the line will have a maximum length of 256
+	characters (including the carriage return and line feed). If wrap
+	mode is used the depth value will be on its own line and all lines
+	of data will be no longer than 80 characters (including carriage
+	return and line feed).
+
+	-Additional lines in the version section are optional.
+
+The following is an example of a Version Information Section.
+-----------------------------------------------------------------------------
+~Version Information Section
+VERS.             1.2:   CWLS log ASCII Standard -VERSION 1.2
+WRAP.               NO:   One line per depth step
+-----------------------------------------------------------------------------
+
+
+(II)	~W (Well Information)
+
+    -This section is mandatory.
+
+    -It identifies the well, its location and indicates the start and stop
+     depths of the file.
+
+    -This section must contain the following lines with the mnemonics as
+     indicated:
+
+"STRT.M			nnn.nn:"
+	Refers to the first depth in the file. The "nnn.nn" refers to the
+	depth value. The number of decimals used is not restricted. The ".M"
+	refers to meters and can be replaced when other units are used. The
+	start depth can be either greater or less than the stop depth.
+
+"STOP.M			nnn.nn:"
+	Refers to the last depth in the file. The "nnn.nn" refers to the
+	depth value. The number of decimals used is not restricted. The ".M"
+	refers to meters and can be replaced when other units are used.
+
+"STEP.M			nnn.nn:"
+	Refers to the depth increment used. A minus sign must precede the
+	step value if the start depth is greater than the stop depth (ie,
+	from TD to casing has a minus step value). A step value of zero
+	indicates a variable step.
+
+"NULL.			-nnn.nn:"
+	Refers to null values.  Two common ones in use are -9999 and -999.25.
+
+"COMP.			COMPANY : "
+	Refers to company name.
+
+"WELL.			WELL:"
+	Refers to the well name.
+
+"FLD.			FIELD:"
+	Refers to the field name.
+
+"LOC.			LOCATION:"
+	Refers to the well location.
+
+"PROV.			PROVINCE:"
+	Refers to the province. For areas outside Canada this line may be
+	replaced by:
+"CNTY. 			COUNTY:"
+"STAT.			STATE:"
+"CTRY. 			COUNTRY:"
+
+"SRVC.			SERVICE COMPANY:"
+	Refers to logging company.
+
+"DATE.				 DATE:"
+	Refers to date logged.
+
+"UWI .        	                     UNIQUE WELL ID:"
+	Refers to unique well identifier. (See References.)  For areas
+	outside of Canada this may be replaced by:
+
+"API .			API NUMBER:"
+
+       -Additional lines in the well information section are optional. There
+       is no limit set on the number of additional lines.
+
+The following is an example of a Well Information Section.
+-----------------------------------------------------------------------------
+~Well Information Section
+#MNEM.UNIT	Data Type	Information  
+#---------	-------------	------------------------------
+STRT.M           635.0000:
+STOP.M           400.0000:
+STEP.M            -0.1250:
+NULL.             -999.25:
+COMP.             COMPANY:      ANY OIL COMPANY INC.
+WELL.                WELL:      ANY ET AL A9-16-49-20
+FLD .               FIELD:      EDAM
+LOC .            LOCATION:      A9-16-49-20W3M
+PROV.            PROVINCE:      SASKATCHEWAN
+SRVC.     SERVICE COMPANY:      ANY LOGGING COMPANY INC.
+DATE.            LOG DATE:      13-DEC-86
+UWI .      UNIQUE WELL ID:      100091604920W300
+-----------------------------------------------------------------------------
+
+(III) ~C (Curve Information)
+
+  -This section is mandatory.
+  -It describes the curve and its units in the order they appear in the
+   data section of the file.
+
+  -The mnemonics used are not restricted but must be defined on the line in
+   which they appear.
+
+  -API codes are optional. (See References.)
+
+  -The curves described in this section must be present in the data set.
+
+  -The first curve described should normally be depth.
+
+The following is an example of a Curve Information Section with API codes.
+-----------------------------------------------------------------------------
+~Curve Information Section
+#MNEM.UNIT	API CODE	Curve Description	
+#---------    -------------   -------------------------------
+DEPTH.M                      :    1       DEPTH
+RHOB .K/M3        7 350 02 00:    2       BULK DENSITY
+NPHI .VOL/VOL     7 890 00 00:    3       NEUTRON POROSITY - SANDSTONE
+MSFL .OHMM        7 220 01 00:    4       Rxo RESISTIVITY
+SFLA .OHMM        7 222 01 00:    5       SHALLOW RESISTIVITY
+ILM  .OHMM        7 120 44 00:    6       MEDIUM RESISTIVITY
+ILD  .OHMM        7 120 46 00:    7       DEEP RESISTIVITY
+SP   .MV          7 010 01 00:    8       SPONTANEOUS POTENTIAL
+GR   .GAPI        7 310 01 00:    9       GAMMA RAY
+CALI .MM          7 280 01 00:    10      CALIPER
+DRHO .K/M3        7 356 01 00:    11      DENSITY CORRECTION
+-----------------------------------------------------------------------------
+
+
+(IV)	~P (Parameter Information)
+
+  -This section is optional. It defines the values of various parameters
+   relating to this well.
+
+  -The mnemonics used are not restricted but must be defined on the line on
+   which they appear.
+
+  -There is no limit on the number of lines that can be used.
+
+The following is an example of a Parameter Information Section.
+-----------------------------------------------------------------------------
+~Parameter Information Section
+#MNEM.UNIT      Value        Description
+#---------   -------------   ------------------------------
+ BHT. DEGC         24.0000:  Bottom Hole Temperature
+ BS  .MM          222.0000:  Bit Size
+ FD  .K/M3        999.9999:  Fluid Density
+ MDEN.K/M3       2650.0000:  Logging Matrix Density
+ MATR.              1.0000:  Neutron Matrix (1=Sand)
+ FNUM.              1.0000:  Tortuosity  Constant Archie's (a)
+ FEXP.              2.0000:  Cementation Exponent Archie's (m)
+ DFD .K/M3       1200.0000:  Mud Weight
+ DFV .S            50.0000:  Mud Viscosity
+ DFL .C3            8.0000:  Mud Fluid Loss
+ DFPH.             10.0000:  Mud pH
+ RMFS.OHMM          2.8200:  Mud Filtrate Resistivity
+ EKB .M           566.9700:  Elevation Kelly Bushing
+ EGL .M           563.6799:  Elevation Ground Level
+-----------------------------------------------------------------------------
+
+(V)	~O (Other Information)
+
+  -This section is  optional. Its intended use is as a remarks or comments
+   section.
+
+(VI)	~A (ASCII LOG DATA)
+
+  -The data section will always be the last section in a file.
+
+  -Depths should always appear in the first column
+
+  -Each column of data must be separated by at least one space.
+
+  -A line of less than 256 characters (including a carriage return and line
+   feed) will normally not be wrapped. Wrap mode will be used if the data is
+   longer than 256 characters.
+
+  -In wrap mode, depth will be on its own line.
+
+  -In wrap mode a line of data will be no longer than 80 characters. This
+   includes a carriage return and line feed.
+
+  -If wrap mode is used, the decimal points must be aligned for ease of
+   reading.
+
+  -Exponents are not permitted. The curve section can be used to overcome
+   this limitation by changing the units.
+
+
+References
+
+   UWI codes : "Formation Water Resistivities of Canada", CWLS, 1987.
+
+   API codes : "Recommended Standard Format for Recording Digital Well Log
+   Data on Magnetic Tape",
+   API - Bul. D-9, 3rd edition, 1981.
+
+
+
+
+
+EXAMPLE #1 - ILLUSTRATING THE LOG ASCII STANDARD IN UNWRAPPED MODE
+
+-----------------------------------------------------------------------------
+~VERSION INFORMATION
+ VERS.                 1.2:   CWLS LOG ASCII STANDARD -VERSION 1.2
+ WRAP.                  NO:   ONE LINE PER DEPTH STEP
+~WELL INFORMATION BLOCK
+#MNEM.UNIT       DATA TYPE    INFORMATION
+#---------    -------------   ------------------------------
+ STRT.M        1670.000000:
+ STOP.M        1660.000000:
+ STEP.M            -0.1250:
+ NULL.           -999.2500:
+ COMP.             COMPANY:   ANY OIL COMPANY LTD.
+ WELL.                WELL:   ANY ET AL OIL WELL #12
+ FLD .               FIELD:   EDAM
+ LOC .            LOCATION:   A9-16-49-20W3M
+ PROV.            PROVINCE:   SASKATCHEWAN
+ SRVC.     SERVICE COMPANY:   ANY LOGGING COMPANY LTD.
+ DATE.            LOG DATE:   25-DEC-1988
+ UWI .      UNIQUE WELL ID:   100091604920W300
+~CURVE INFORMATION
+#MNEM.UNIT      API CODE      CURVE DESCRIPTION
+#---------    -------------   ------------------------------
+ DEPT.M                      :  1  DEPTH
+ DT  .US/M                   :  2  SONIC TRANSIT TIME
+ RHOB.K/M3                   :  3  BULK DENSITY
+ NPHI.V/V                    :  4   NEUTRON POROSITY
+ SFLU.OHMM                   :  5  RXO RESISTIVITY
+ SFLA.OHMM                   :  6  SHALLOW RESISTIVITY
+ ILM .OHMM                   :  7  MEDIUM RESISTIVITY
+ ILD .OHMM                   :  8  DEEP RESISTIVITY
+~PARAMETER INFORMATION
+#MNEM.UNIT        VALUE       DESCRIPTION
+#---------    -------------   ------------------------------
+ BHT .DEGC         35.5000:   BOTTOM HOLE TEMPERATURE
+ BS  .MM          200.0000:   BIT SIZE
+ FD  .K/M3       1000.0000:   FLUID DENSITY
+ MATR.              0.0000:   NEUTRON MATRIX(0=LIME,1=SAND,2=DOLO)
+ MDEN.           2710.0000:   LOGGING MATRIX DENSITY
+ RMF .OHMM          0.2160:   MUD FILTRATE RESISTIVITY
+ DFD .K/M3       1525.0000:   DRILL FLUID DENSITY
+~Other
+     Note: The logging tools became stuck at 625 meters causing the data
+	   between 625 meters and 615 meters to be invalid.
+~A  DEPTH     DT       RHOB     NPHI     SFLU     SFLA      ILM      ILD
+1670.000   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
+1669.875   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
+1669.750   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
+
+
+
+
+EXAMPLE #2 - ILLUSTRATING THE MINIMUM REQUIREMENTS
+	     OF THE LOG ASCII STANDARD IN UNWRAPPED MODE.
+
+----------------------------------------------------------------------------
+~V
+VERS.                  1.2:   CWLS log ASCII Standard -VERSION 1.2
+WRAP.                   NO:     One line per depth step
+~W
+STRT.M            635.0000:
+STOP.M            400.0000:
+STEP.M             -0.1250:
+NULL.              -999.25:
+COMP.              COMPANY:   ANY OIL COMPANY INC.
+WELL.                 WELL:   ANY ET AL A9-16-49-20
+FLD .                FIELD:   EDAM
+LOC .             LOCATION:   A9-16-49-20W3M
+PROV.             PROVINCE:   SASKATCHEWAN
+SRVC.      SERVICE COMPANY:   ANY LOGGING COMPANY INC.
+DATE.             LOG DATE:   13-DEC-86
+UWI .       UNIQUE WELL ID:   100091604920W300
+~C
+DEPT.M                    :   DEPTH
+RHOB.K/M3                 :   BULK DENSITY
+NPHI.VOL/VOL              :   NEUTRON POROSITY - SANDSTONE
+MSFL.OHMM                 :   Rxo RESISTIVITY
+SFLA.OHMM                 :   SHALLOW RESISTIVITY
+ILM .OHMM                 :   MEDIUM RESISTIVITY
+ILD .OHMM                 :   DEEP RESISTIVITY
+SP  .MV                   :   SPONTANEOUS POTENTIAL
+~A
+ 635.0000     2256.0000   0.4033  22.0781 22.0781 20.3438 3.6660 123.4
+ 634.8750     2256.0000   0.4033  22.0781 22.0781 20.3438 3.6660 123.4
+
+
+
+EXAMPLE #3 - ILLUSTRATING THE WRAPPED VERSION
+	     OF THE LOG ASCII STANDARD
+
+----------------------------------------------------------------------------
+
+~Version Information
+ VERS.                1.20:   CWLS log ASCII Standard -VERSION 1.20
+ WRAP.                 YES:   Multiple lines per depth step
+~Well Information
+#MNEM.UNIT       Data Type    Information
+#---------    -------------   ------------------------------
+ STRT.M            910.000:
+ STOP.M            901.000:
+ STEP.M            -0.1250:
+ NULL.           -999.2500:   Null value
+ COMP.             COMPANY:   ANY OIL COMPANY INC.
+ WELL.                WELL:   ANY ET AL XX-XX-XX-XX
+ FLD .               FIELD:   WILDCAT
+ LOC .            LOCATION:   XX-XX-XX-XXW3M
+ PROV.            PROVINCE:   SASKATCHEWAN
+ SRVC.     SERVICE COMPANY:   ANY LOGGING COMPANY INC.
+ SON .     SERVICE ORDER #:   142085
+ DATE.            LOG DATE:   13-DEC-86
+ UWI .      UNIQUE WELL ID:
+~Curve Information
+#MNEM.UNIT      API CODE      Curve Description
+#---------    -------------   ------------------------------
+ DEPT.M                       :    Depth
+ DT  .US/M                    :  1 Sonic Travel Time
+ RHOB.K/M                     :  2 Density-Bulk Density
+ NPHI.V/V                     :  3 Porosity -Neutron
+ RX0 .OHMM                    :  4 Resistivity -Rxo
+ RESS.OHMM                    :  5 Resistivity -Shallow
+ RESM.OHMM                    :  6 Resistivity -Medium
+ RESD.OHMM                    :  7 Resistivity -Deep
+ SP  .MV                      :  8 Spon. Potential
+ GR  .GAPI                    :  9 Gamma Ray
+ CALI.MM                      : 10 Caliper
+ DRHO.K/M3                    : 11 Delta-Rho
+ EATT.DBM                     : 12 EPT Attenuation
+ TPL .NS/M                    : 13 TP -EPT
+ PEF .                        : 14 PhotoElectric Factor
+ FFI .V/V                     : 15 Porosity -NML FFI
+ DCAL.MM                      : 16 Caliper-Differential
+ RHGF.K/M3                    : 17 Density-Formation
+ RHGA.K/M3                    : 18 Density-Apparent
+ SPBL.MV                      : 19 Baselined SP
+ GRC .GAPI                    : 20 Gamma Ray BHC
+ PHIA.V/V                     : 21 Porosity -Apparent
+ PHID.V/V                     : 22 Porosity -Density
+ PHIE.V/V                     : 23 Porosity -Effective
+ PHIN.V/V                     : 24 Porosity -Neut BHC
+ PHIC.V/V                     : 25 Porosity -Total HCC
+ R0  .OHMM                    : 26 Ro
+ RWA .OHMM                    : 27 Rfa
+ SW   .                       : 28 Sw -Effective
+ MSI .                        : 29 Sh Idx -Min
+ BVW .                        : 30 BVW
+ FGAS.                        : 31 Flag -Gas Index
+ PIDX.                        : 32 Prod Idx
+ FBH .                        : 33 Flag -Bad Hole
+ FHCC.                        : 34 Flag -HC Correction
+ LSWB.                        : 35 Flag -Limit SWB
+~A Log data section
+910.000000
+  -999.2500  2692.7075     0.3140    19.4086    19.4086    13.1709    12.2681
+    -1.5010    96.5306   204.7177    30.5822  -999.2500  -999.2500     3.2515
+  -999.2500     4.7177  3025.0264  3025.0264    -1.5010    93.1378     0.1641
+     0.0101     0.1641     0.3140     0.1641    11.1397     0.3304     0.9529
+     0.0000     0.1564     0.0000    11.1397     0.0000     0.0000     0.0000
+909.875000
+  -999.2500  2712.6460     0.2886    23.3987    23.3987    13.6129    12.4744
+    -1.4720    90.2803   203.1093    18.7566  -999.2500  -999.2500     3.7058
+  -999.2500     3.1093  3004.6050  3004.6050    -1.4720    86.9078     0.1456
+    -0.0015     0.1456     0.2886     0.1456    14.1428     0.2646     1.0000
+     0.0000     0.1456     0.0000    14.1428     0.0000     0.0000     0.0000
+909.750000
+  -999.2500  2692.8137     0.2730    22.5909    22.5909    13.6821    12.6146
+    -1.4804    89.8492   201.9287     3.1551  -999.2500  -999.2500     4.3124
+  -999.2500     1.9287  2976.4451  2976.4451    -1.4804    86.3465     0.1435
+     0.0101     0.1435     0.2730     0.1435    14.5674     0.2598     1.0000
+     0.0000     0.1435     0.0000    14.5674     0.0000     0.0000     0.0000
+909.625000
+  -999.2500  2644.3650     0.2765    18.4831    18.4831    13.4159    12.6900
+    -1.5010    93.3999   201.5826    -6.5861  -999.2500  -999.2500     4.3822
+  -999.2500     1.5826  2955.3528  2955.3528    -1.5010    89.7142     0.1590
+     0.0384     0.1590     0.2765     0.1590    11.8600     0.3210     0.9667
+     0.0000     0.1538     0.0000    11.8600     0.0000     0.0000     0.0000
+909.500000
+  -999.2500  2586.2822     0.2996    13.9187    13.9187    12.9195    12.7016
+    -1.4916    98.1214   201.7126    -4.5574  -999.2500  -999.2500     3.5967
+  -999.2500     1.7126  2953.5940  2953.5940    -1.4916    94.2670     0.1880
+     0.0723     0.1880     0.2996     0.1880     8.4863     0.4490     0.8174
+     0.0000     0.1537     0.0000     8.4863     0.0000     0.0000     0.0000
+
+---------------------------------------------------------------------------
+
+UPDATE   AUGUST 14,  1991
+
+ The latest versions are as follows:
+
+ LAS        -version 1.2
+ REFORMAT   -version 2.0 (correcting errors in resampling and unwrap options)
+ CERTIFY    -version 1.0
+
+ Please address any problems to:
+
+Mr. Case Struyk,  Chairman
+C.W.L.S. Floppy Disk Committee
+Suite 229,  640 - 5 Avenue, S.W.
+Calgary, Alberta
+T2P 3G4
+tel: (403) 269 9366
