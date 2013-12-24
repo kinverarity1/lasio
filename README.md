@@ -4,12 +4,18 @@ las_reader
 Planned API
 -----------
 
+Get an example file:
+
 ```python
->>> import las_reader
 >>> import urllib2, StringIO
 >>> url = ('https://raw.github.com/kinverarity1/las-reader'
            '/master/standards/examples/1.2/sample_curve_api.las')
->>> filelike_obj = urllib2.urlopen(url)
+```
+
+And read it in:
+           
+```python
+>>> import las_reader           
 >>> log = las_reader.read(url)
 >>> type(log)
 las_reader.LASFile
@@ -21,9 +27,9 @@ URL, file-like object, or string).
 ```python
 >>> log.provenance
 {'path': None, 
- 'name': 'sample_curve_api',
+ 'name': 'sample_curve_api.las',
  'url': 'https://raw.github.com/kinverarity1/las-reader/master/standards/examples/1.2/sample_curve_api.las',
- 'time_opened': datetime(2013, 12, 24, 9, 32, 00)
+ 'time_opened': datetime.datetime(2013, 12, 24, 20, 10, 2, 76000)
  }
 ```
 
