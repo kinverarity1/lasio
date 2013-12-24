@@ -26,6 +26,8 @@ pip-log.txt
 .coverage
 .tox
 nosetests.xml
+.ipynb_checkpoints
+test*.ipynb
 
 # Translations
 *.mo
