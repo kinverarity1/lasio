@@ -1,7 +1,11 @@
 import codecs
 import datetime
+import is
 import re
-import os
+try:
+    import cStringIO as StringIO
+except ImportError:
+    import StringIO
 import urllib2
 
 import numpy as np
