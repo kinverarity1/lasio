@@ -162,8 +162,8 @@ def read_well_section(lines, log):
                     well[mnemonic + '.UNIT'] = unit
             else:
                 # Deal with the crazy change swapping the position of 
-                # information at version 3.0:
-                if log.version['VERS'] >= 3.:
+                # information at version 2.0:
+                if log.version['VERS'] >= 2.:
                     well[mnemonic] = data
                 else:
                     well[mnemonic] = description
