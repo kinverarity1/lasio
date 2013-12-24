@@ -1,8 +1,13 @@
 las_reader
 ==========
 
-usage
------
+This is a Python package to read in Log ASCII (LAS) files, used in geophysical 
+logging. The file format is specified by the 
+[Canadian Well Logging Society](http://cwls.org/las_info.php). The package is
+still a work in progress at the moment.
+
+(planned) API
+-------------
 
 Read in an example LAS file:
            
@@ -13,8 +18,9 @@ Read in an example LAS file:
 las_reader.LASFile
 ```
 
-You should get provenance metadata depending on what was read (a filename,
-URL, file-like object, or string).
+The LASFile object has some provenance information depending on what was read. 
+You can pass the ``read()`` function a filename, URL, file-like object, 
+or string.
 
 ```python
 >>> log.provenance
@@ -25,7 +31,7 @@ URL, file-like object, or string).
  }
 ```
 
-The version and well sections are always there:
+The version and well sections are present as dictionaries:
 
 ```python
 >>> log.version
