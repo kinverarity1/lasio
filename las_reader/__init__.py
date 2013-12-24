@@ -124,6 +124,8 @@ def read_version_section(lines):
                     version['DLM'] = ','
                 elif data == 'TAB':
                     version['DLM'] = '\t'
+            else:
+                version[mnemonic] = data
     return version
     
     
