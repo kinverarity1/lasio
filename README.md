@@ -1,22 +1,14 @@
 las_reader
 ==========
 
-Planned API
------------
+usage
+-----
 
-Get an example file:
-
-```python
->>> import urllib2, StringIO
->>> url = ('https://raw.github.com/kinverarity1/las-reader'
-           '/master/standards/examples/1.2/sample_curve_api.las')
-```
-
-And read it in:
+Read in an example LAS file:
            
 ```python
 >>> import las_reader           
->>> log = las_reader.read(url)
+>>> log = las_reader.read('https://raw.github.com/kinverarity1/las-reader/master/standards/examples/1.2/sample_curve_api.las')
 >>> type(log)
 las_reader.LASFile
 ```
@@ -38,5 +30,22 @@ The version and well sections are always there:
 ```python
 >>> log.version
 {'VERS': 1.2, 'WRAP': False, 'DLM': ' '}
+>>> log.well
+{'COMP': 'ANY OIL COMPANY LTD.',
+ 'CTRY': None,
+ 'DATE': '25-DEC-1988',
+ 'FLD': 'EDAM',
+ 'LOC': 'A9-16-49-20W3M',
+ 'NULL': -999.25,
+ 'PROV': 'SASKATCHEWAN',
+ 'SRVC': 'ANY LOGGING COMPANY LTD.',
+ 'STEP': -0.125,
+ 'STEP.UNIT': 'M',
+ 'STOP': 1660.0,
+ 'STOP.UNIT': 'M',
+ 'STRT': 1670.0,
+ 'STRT.UNIT': 'M',
+ 'UWI': '100091604920W300',
+ 'WELL': 'ANY ET AL OIL WELL #12'}
 ```
 

@@ -4,6 +4,8 @@ import re
 import os
 import urllib2
 
+import numpy as np
+
 
 url_regexp = re.compile(
         r'^(?:http|ftp)s?://' # http:// or https://
@@ -38,6 +40,7 @@ def read(file, **kwargs):
     lines = f.read().splitlines()
     f.close()
     log.version = read_version_section(lines)
+    log.well = read_well_section(lines, log=log)
     return log
     
     
@@ -85,8 +88,19 @@ def read_line(line):
     return mnemonic, unit, data, description
     
     
+def convert_number(item):
+    try:
+        return int(item)
+    except:
+        try:
+            return float(item)
+        except:
+            return np.nan
+    
+    
 def read_version_section(lines):
     version = {'VERS': None, 'WRAP': None, 'DLM': ' '}
+    in_section = False
     for line in lines:
         line = line.strip().strip('\t').strip()
         if not line or line.startswith('#'):
@@ -94,7 +108,7 @@ def read_version_section(lines):
         if line.lower().startswith('~v'):
             in_section = True
             continue
-        if line.lower().startswith('~'):
+        if line.lower().startswith('~') and in_section:
             return version
         if in_section:
             mnemonic, unit, data, description = read_line(line)
@@ -111,6 +125,55 @@ def read_version_section(lines):
                 elif data == 'TAB':
                     version['DLM'] = '\t'
     return version
+    
+    
+def read_well_section(lines, log):
+    well = {'STRT': None,
+            'STOP': None,
+            'STEP': None,
+            'NULL': None,
+            'COMP': None,
+            'WELL': None,
+            'FLD': None,
+            'LOC': None,
+            'SRVC': None,
+            'CTRY': None,
+            'DATE': None}
+    in_section = False
+    for line in lines:
+        line = line.strip().strip('\t').strip()
+        if not line or line.startswith('#'):
+            continue
+        if line.lower().startswith('~w'):
+            in_section = True
+            continue
+        if line.lower().startswith('~') and in_section:
+            return well
+        if in_section:
+            mnemonic, unit, data, description = read_line(line)
+            if mnemonic in ('STRT', 'STOP', 'STEP'):
+                value = convert_number(data)
+                if mnemonic == 'STEP' and value == 0:
+                    value = np.nan
+                well[mnemonic] = value
+                if unit:
+                    well[mnemonic + '.UNIT'] = unit
+            else:
+                # Deal with the crazy change swapping the position of 
+                # information at version 3.0:
+                if log.version['VERS'] >= 3.:
+                    well[mnemonic] = data
+                else:
+                    well[mnemonic] = description
+            # ... and now be version-agnostic:
+            value = well[mnemonic]
+            if mnemonic == 'NULL':
+                well['NULL'] = convert_number(data)
+                if well['STOP'] == well['NULL']:
+                    well['STOP'] = np.nan
+            if mnemonic in ('X', 'Y'):
+                well[mnemonic] = convert_number(value)
+    return well
     
     
     
