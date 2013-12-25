@@ -125,7 +125,7 @@ class LASFileReader(object):
     def read_section(self, section):
         d = {}
         if section.startswith('~O'):
-            d = ''
+            d = []
         in_section = False
         for line in self.lines:
             line = line.strip().strip('\t').strip()
@@ -138,7 +138,7 @@ class LASFileReader(object):
                 return d
             if in_section:
                 if section.startswith('~O'):
-                    d += line + '\n'
+                    d.append(line)
                 else:
                     name, unit, data, descr = read_line(line)
                     d[name] = dict(name=name, unit=unit, data=data, descr=descr)
