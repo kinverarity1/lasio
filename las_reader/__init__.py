@@ -1,6 +1,6 @@
 import codecs
 import datetime
-import is
+import os
 import re
 try:
     import cStringIO as StringIO
@@ -10,6 +10,9 @@ import urllib2
 
 import numpy as np
 
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
 
 url_regexp = re.compile(
         r'^(?:http|ftp)s?://' # http:// or https://
@@ -18,7 +21,6 @@ url_regexp = re.compile(
         r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
         r'(?::\d+)?' # optional port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-
 
 
 class LASFile(object):
@@ -76,7 +78,6 @@ def open_file(file, **kwargs):
             
     
 def read_line(line):
-    print line
     split_period = line.split('.')
     mnemonic = split_period[0].strip()
     rest = '.'.join(split_period[1:])
@@ -88,7 +89,6 @@ def read_line(line):
     split_colon = rest.split(':')
     description = split_colon[-1].strip()
     data = ':'.join(split_colon[:-1]).strip()
-    print [mnemonic, unit, data, description]
     return mnemonic, unit, data, description
     
     
