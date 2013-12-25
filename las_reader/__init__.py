@@ -19,31 +19,131 @@ url_regexp = re.compile(
         r'(?::\d+)?' # optional port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
+        
+class dict2(dict):
+    def __init__(self, *args, **kwargs):
+        dict.__init__(self, *args, **kwargs)
+        self.__dict__ = self
+        
+        
 
 class LASFile(object):
-    def __init__(self, provenance=None):
-        self.provenance = provenance
-        
-        
-def read(file, **kwargs):
-    '''Read LAS file.
+    '''A log from a LAS file.
     
-    Args:
-        - *file*: either a filename, URL, file-like object, or a string which
-                  is the ASCII content of a LAS file
-                  
-    Kwargs: passed to either codecs.open() or urllib2.urlopen() if relevant
-    
-    Returns: las_reader.LASFile object
+    See read() method for how to read data in.
     
     '''
-    f, provenance = open_file(file, **kwargs)
-    log = LASFile(provenance=provenance)
-    lines = f.read().splitlines()
-    f.close()
-    log.version = read_version_section(lines)
-    log.well = read_well_section(lines, log=log)
-    return log
+    sections = {'~V': {'VERS': {'data': '2.0'},
+                       'WRAP': {'data': 'NO'},
+                       'DLM': {'data': 'SPACE'}},
+                '~W': {},
+                }
+
+    def __init__(self, file=None, **kwargs):
+        if not file is None:
+            self.read(file, **kwargs)
+        
+    def read(self, file, **kwargs):
+        '''Read LAS file.
+        
+        Args:
+            - *file*: either a filename, URL, file-like object, or a string which
+                      is the ASCII content of a LAS file
+                      
+        Kwargs: passed to either codecs.open() or urllib2.urlopen() if relevant
+        
+        Returns: las_reader.LASFile object
+        
+        '''
+        f, self.provenance = open_file(file, **kwargs)
+        reader = LASFileReader(f.read().splitlines())
+        f.close()
+        
+        section_names = reader.get_section_names()
+        self.sections['~V'].update(reader.read_section('~V'))
+        if self.version < 3:
+            for section in section_names:
+                s = section[:2]
+                if not s in self.sections:
+                    self.sections[s] = {}
+                if s == '~A':
+                    continue
+                elif s == '~O':
+                    self.sections[s] = reader.read_section(s)
+                else:
+                    self.sections[s].update(reader.read_section(s))
+        else:
+            raise NotImplementedError('Cannot read LAS 3.0 files yet')
+    
+    @property
+    def version(self):
+        return float(self.sections['~V']['VERS']['data'])
+    
+    @version.setter
+    def version(self, value):
+        self.sections['~V']['VERS']['data'] = str(value)
+    
+    @property
+    def wrap(self):
+        return bool(self.sections['~V']['WRAP']['data'] == 'yes')
+        
+    @wrap.setter
+    def wrap(self, value):
+        if value:
+            value = 'YES'
+        else:
+            value = 'NO'
+        self.sections['~V']['WRAP']['data']
+        
+    _delimiter_map = {'COMMA': ',', 'TAB': '\t', 'SPACE': ' '}
+    _delimiter_map_inv = dict((v, k) for k, v in _delimiter_map.iteritems())
+        
+    @property
+    def delimiter(self):
+        return self._delimiter_map[self.sections['~V']['DLM']['data']]
+    
+    @delimiter.setter
+    def delimiter(self, value):
+        self.sections['~V']['DLM']['data'] = self._delimiter_map_inv[value]
+    
+    
+    
+class LASFileReader(object):
+    def __init__(self, lines):
+        self.lines = lines
+        
+    def get_section_names(self):
+        names = []
+        for line in self.lines:
+            line = line.strip().strip('\t').strip()
+            if not line or line.startswith('#'):
+                continue
+            if line.startswith('~'):
+                names.append(line)
+        return names
+                
+    def read_section(self, section):
+        d = {}
+        if section.startswith('~O'):
+            d = ''
+        in_section = False
+        for line in self.lines:
+            line = line.strip().strip('\t').strip()
+            if not line or line.startswith('#'):
+                continue
+            if line.startswith(section):
+                in_section = True
+                continue
+            if line.lower().startswith('~') and in_section:
+                return d
+            if in_section:
+                if section.startswith('~O'):
+                    d += line + '\n'
+                else:
+                    name, unit, data, descr = read_line(line)
+                    d[name] = dict(name=name, unit=unit, data=data, descr=descr)
+        return d
+    
     
     
 def open_file(file, **kwargs):
@@ -75,7 +175,7 @@ def open_file(file, **kwargs):
     
 def read_line(line):
     split_period = line.split('.')
-    mnemonic = split_period[0].strip()
+    name = split_period[0].strip()
     rest = '.'.join(split_period[1:])
     if not rest.startswith(' '):
         unit = rest.split()[0].strip()
@@ -83,9 +183,9 @@ def read_line(line):
     else:
         unit = None
     split_colon = rest.split(':')
-    description = split_colon[-1].strip()
+    descr = split_colon[-1].strip()
     data = ':'.join(split_colon[:-1]).strip()
-    return mnemonic, unit, data, description
+    return name, unit, data, descr
     
     
 def convert_number(item):
@@ -98,49 +198,9 @@ def convert_number(item):
             return np.nan
     
     
-def read_version_section(lines):
-    version = {'VERS': None, 'WRAP': None, 'DLM': ' '}
-    in_section = False
-    for line in lines:
-        line = line.strip().strip('\t').strip()
-        if not line or line.startswith('#'):
-            continue
-        if line.lower().startswith('~v'):
-            in_section = True
-            continue
-        if line.lower().startswith('~') and in_section:
-            return version
-        if in_section:
-            mnemonic, unit, data, description = read_line(line)
-            if mnemonic == 'VERS':
-                version['VERS'] = float(data)
-            elif mnemonic == 'WRAP':
-                if data.lower() == 'yes':
-                    version['WRAP'] = True
-                else:
-                    version['WRAP'] = False
-            elif mnemonic == 'DLM':
-                if data == 'COMMA':
-                    version['DLM'] = ','
-                elif data == 'TAB':
-                    version['DLM'] = '\t'
-            else:
-                version[mnemonic] = data
-    return version
-    
-    
 def read_well_section(lines, log):
-    well = {'STRT': None,
-            'STOP': None,
-            'STEP': None,
-            'NULL': None,
-            'COMP': None,
-            'WELL': None,
-            'FLD': None,
-            'LOC': None,
-            'SRVC': None,
-            'CTRY': None,
-            'DATE': None}
+    well = dict2(STRT=None, STOP=None, STEP=None, NULL=None, COMP=None, 
+                 WELL=None, FLD=None, LOC=None, SRVC=None, CTRY=None, DATE=None)
     in_section = False
     for line in lines:
         line = line.strip().strip('\t').strip()
@@ -159,23 +219,25 @@ def read_well_section(lines, log):
                     value = np.nan
                 well[mnemonic] = value
                 if unit:
-                    well[mnemonic + '.UNIT'] = unit
+                    well[mnemonic + '-UNIT'] = unit
             else:
                 # Deal with the crazy change swapping the position of 
                 # information at version 2.0:
-                if log.version['VERS'] >= 2.:
+                if log.version >= 2.:
                     well[mnemonic] = data
                 else:
                     well[mnemonic] = description
             # ... and now be version-agnostic:
             value = well[mnemonic]
             if mnemonic == 'NULL':
-                well['NULL'] = convert_number(data)
-                if well['STOP'] == well['NULL']:
-                    well['STOP'] = np.nan
+                well.NULL = convert_number(data)
+                if well.STOP == well.NULL:
+                    well.STOP = np.nan
             if mnemonic in ('X', 'Y'):
                 well[mnemonic] = convert_number(value)
     return well
     
+    
+
     
     
