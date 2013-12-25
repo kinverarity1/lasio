@@ -10,9 +10,6 @@ import urllib2
 
 import numpy as np
 
-from ._version import get_versions
-__version__ = get_versions()['version']
-del get_versions
 
 url_regexp = re.compile(
         r'^(?:http|ftp)s?://' # http:// or https://
@@ -28,7 +25,6 @@ class LASFile(object):
         self.provenance = provenance
         
         
-
 def read(file, **kwargs):
     '''Read LAS file.
     
