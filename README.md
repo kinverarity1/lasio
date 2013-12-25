@@ -11,3 +11,5 @@ Examples
 --------
 
 - [reading and viewing a log file (1.2)](http://nbviewer.ipython.org/github/kinverarity1/las-reader/blob/master/docs/reading%20and%20viewing%20a%20log%20file%20%281.2%29.ipynb)
+- [reading a large log file (1.2)]()
+- [reading some real-life data from a LAS 2.0 file]()

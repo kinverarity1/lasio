@@ -9,6 +9,7 @@ except ImportError:
 import urllib2
 
 import numpy as np
+import pandas
 
 
 url_regexp = re.compile(
@@ -68,10 +69,17 @@ class LASFile(object):
                     self.sections[s] = {}
                 if s == '~A':
                     continue
-                elif s == '~O':
+                elif s in ('~O', '~C'):
                     self.sections[s] = reader.read_section(s)
                 else:
                     self.sections[s].update(reader.read_section(s))
+        else:
+            raise NotImplementedError('Cannot read LAS 3.0 files yet')
+            
+        # Read data sections
+        if self.version < 3:
+            self.data, self.sections['~A'] = reader.read_data(
+                    wrap=self.wrap, curve_names=self.curves)
         else:
             raise NotImplementedError('Cannot read LAS 3.0 files yet')
     
@@ -106,6 +114,13 @@ class LASFile(object):
     def delimiter(self, value):
         self.sections['~V']['DLM']['data'] = self._delimiter_map_inv[value]
     
+    @property
+    def curves(self):
+        return [d['name'] for d in self.sections['~C']]
+        
+    @curves.setter
+    def curves(self, value):
+        raise NotImplementedError('You cannot set curves.')
     
     
 class LASFileReader(object):
@@ -124,7 +139,7 @@ class LASFileReader(object):
                 
     def read_section(self, section):
         d = {}
-        if section.startswith('~O'):
+        if section.startswith('~O') or section.startswith('~C'):
             d = []
         in_section = False
         for line in self.lines:
@@ -141,9 +156,35 @@ class LASFileReader(object):
                     d.append(line)
                 else:
                     name, unit, data, descr = read_line(line)
-                    d[name] = dict(name=name, unit=unit, data=data, descr=descr)
+                    di = dict(name=name, unit=unit, data=data, descr=descr)
+                    if section.startswith('~C'):
+                        d.append(di)
+                    else:
+                        d[name] = di
         return d
     
+    def read_data(self, wrap=False, curve_names=None):
+        if wrap:
+            return self.read_wrapped_data(curve_names)
+        for i, line in enumerate(self.lines):
+            line = line.strip().strip('\t').strip()
+            if line.lower().startswith('~a'):
+                start_data = i + 1
+                break
+        sobj = StringIO.StringIO('\n'.join(self.lines[start_data:]))
+        arr = np.loadtxt(sobj)
+        df_dict = {}
+        for i in range(arr.shape[1]):
+            if curve_names:
+                name = curve_names[i]
+            else:
+                name = str(i)
+            series = pandas.Series(arr[:, i], index=arr[:, 0], name=name)
+            df_dict[name] = series
+        return pandas.DataFrame(df_dict), arr
+            
+    def read_wrapped_data(self, curve_names=None):
+        raise NotImplementedError('Cannot read wrapped data yet.')
     
     
 def open_file(file, **kwargs):
