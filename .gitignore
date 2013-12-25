@@ -27,7 +27,7 @@ pip-log.txt
 .tox
 nosetests.xml
 .ipynb_checkpoints
-test*.ipynb
+docs/test*
 
 # Translations
 *.mo
