@@ -10,4 +10,4 @@ Still a work in progress at the moment.
 Examples
 --------
 
-- [Example of loading a LAS 1.2 file)](http://nbviewer.ipython.org/github/kinverarity1/las-reader/blob/master/docs/Intro%20%28LAS%201.2%20files%29.ipynb)
+- [reading and viewing a log file (1.2)](http://nbviewer.ipython.org/github/kinverarity1/las-reader/blob/master/docs/reading%20and%20viewing%20a%20log%20file%20%281.2%29.ipynb)
