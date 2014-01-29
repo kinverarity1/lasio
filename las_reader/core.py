@@ -38,6 +38,7 @@ class LASFile(object):
                        'WRAP': {'data': 'NO'},
                        'DLM': {'data': 'SPACE'}},
                 '~W': {},
+                '~O': {'lines': []},
                 }
 
     def __init__(self, file=None, **kwargs):
@@ -69,7 +70,7 @@ class LASFile(object):
                     self.sections[s] = {}
                 if s == '~A':
                     continue
-                elif s in ('~O', '~C'):
+                elif s in ('~C'):
                     self.sections[s] = reader.read_section(s)
                 else:
                     self.sections[s].update(reader.read_section(s))
@@ -139,7 +140,7 @@ class LASFileReader(object):
                 
     def read_section(self, section):
         d = {}
-        if section.startswith('~O') or section.startswith('~C'):
+        if section.startswith('~C'):
             d = []
         in_section = False
         for line in self.lines:
@@ -153,11 +154,22 @@ class LASFileReader(object):
                 return d
             if in_section:
                 if section.startswith('~O'):
-                    d.append(line)
-                else:
+                    
+                    # Some software puts LAS-style data lines in the ~Other
+                    # section, whereas others use it as free text. The standard
+                    # allows both, so try to parse both styles.
+                    try:
+                        name, unit, data, descr = read_line(line)
+                        di = dict(name=name, unit=unit, data=data, descr=descr)
+                        d[name] = di
+                    except:
+                        d['lines'].append(line)
+                else:                    
                     name, unit, data, descr = read_line(line)
                     di = dict(name=name, unit=unit, data=data, descr=descr)
-                    if section.startswith('~C'):
+                    
+                    # Retain order for ~Curves section.
+                    if section.startswith('~C'):                        
                         d.append(di)
                     else:
                         d[name] = di
