@@ -1,87 +1,86 @@
-LOC                    LOCATION            
-SRVC                   SERVICE COMPANY     
-ENGI                   Operator            
-STOP                   Stop depth          
-STAT                   STATE               
-WRAP                   NO                  
-STEP                   Step increment      
-DATE                   LOG DATE            
-JOBN                   Job Name            
-WITN                   Witness             
-NULL                   Null value          
-FLD                    FIELD               
-LUN                    Vehicle             
-WELL                   WELL                
-LONG                   Longitude           
-VERS                   Version             
-COMP                   COMPANY             
-COMM                   comment             
-CS                     Casing Size         
-CNTY                   COUNTY              
-TDL                    Depth Logger        
-Azimuth degrees        relative to         
-CTRY                   COUNTRY             
-STRT                   Start depth         
-UWI                    UNIQUE WELL ID      
-LATI                   Latitude            
-LMF                    Log Measured From   
-PD                     Permanent Datum     
-BS                     Bit Size            
-TDD                    Depth Driller       
-LIC                    LICENSE NUMBER      
-EDF                    Elevation of DF     
-DMF                    Drill Measured From 
-DFPH                   pH                  
-DFL                    Fluid Loss          
-DFV                    Viscosity           
-EKB                    Elevation of KB     
-RMC                    Rmc                 
-SOS                    Source of Sample    
-RMF                    Rmf                 
-EGL                    Elevation of GL     
-RM                     Rm at deg.C         
-EPD                    Datum Elevation     
-FL                     Fluid Level         
-BHT                    Bottom Hole Temp    
-DFD                    Density             
-MUDT                   Mud Type            
-PN                     Permit number       
-MFRS                   Resistivity Mud Filt
-RECB                   Recorded By         
-TOOL                   Tool Serial Number  
-MST                    Mean Surface Tempera
-TNOC                   Time Circulation Sto
-DRDP                   Driller's Depth     
-MFTP                   Temperature Mud Filt
-TRUK                   Truck Calibration Nu
-FD                     Fluid Density       
-ELCO                   Electron Cutoff     
-FILE                   File Type           
-PDEV                   Elevation Permanent 
-DTMT                   Delta T Matrix      
-CASD                   Casing Diameter     
-SER                    System Serial Number
-CASB                   Casing Bottom       
-MCRS                   Resistivity Mud Cake
-CAST                   Casing Thickness    
-ELEV                   Elevation DF        
-OSR1                   Other Services      
-MCTP                   Temperature Mud Cake
-CASX                   Casing Type         
-LOGU                   Logging Unit        
-FIID                   File Type Identifier
-LON                    Longitude           
-MTP                    Mud Temperature     
-FPH                    Fluid pH            
-MDEN                   Density Matrix      
-MRS                    Mud Resistivity     
-MAGN                   Magnetic Declination
-OSR2                   Other Services      
-OSR3                   Other Services      
-MUDS                   Mud Sample Source   
-DTFL                   Delta T Fluid       
-MATR                   Neutron Matrix      
-TGRD                   Temperature Gradient
-FTYP                   Fluid Type          
-TIME                   Time      
-LAT                    Latitude            
+LOC,LOCATION
+SRVC,SERVICE COMPANY
+ENGI,Operator
+STOP,Stop depth
+STAT,STATE
+WRAP,NO
+STEP,Step increment
+DATE,LOG DATE
+JOBN,Job Name
+WITN,Witness
+NULL,Null value
+FLD,FIELD
+LUN,Vehicle
+WELL,WELL
+LONG,Longitude
+VERS,Version
+COMP,COMPANY
+COMM,comment
+CS,Casing Size
+CNTY,COUNTY
+TDL,Depth Logger
+CTRY,COUNTRY
+STRT,Start depth
+UWI,UNIQUE WELL ID
+LATI,Latitude
+LMF,Log Measured From
+PD,Permanent Datum
+BS,Bit Size
+TDD,Depth Driller
+LIC,LICENSE NUMBER
+EDF,Elevation of DF
+DMF,Drill Measured From
+DFPH,pH
+DFL,Fluid Loss
+DFV,Viscosity
+EKB,Elevation of KB
+RMC,Rmc
+SOS,Source of Sample
+RMF,Rmf
+EGL,Elevation of GL
+RM,Rm at deg.C
+EPD,Datum Elevation
+FL,Fluid Level
+BHT,Bottom Hole Temp
+DFD,Density
+MUDT,Mud Type
+PN,Permit number
+MFRS,Resistivity Mud Filt
+RECB,Recorded By
+TOOL,Tool Serial Number
+MST,Mean Surface Tempera
+TNOC,Time Circulation Sto
+DRDP,Driller's Depth
+MFTP,Temperature Mud Filt
+TRUK,Truck Calibration Nu
+FD,Fluid Density
+ELCO,Electron Cutoff
+FILE,File Type
+PDEV,Elevation Permanent
+DTMT,Delta T Matrix
+CASD,Casing Diameter
+SER,System Serial Number
+CASB,Casing Bottom
+MCRS,Resistivity Mud Cake
+CAST,Casing Thickness
+ELEV,Elevation DF
+OSR1,Other Services
+MCTP,Temperature Mud Cake
+CASX,Casing Type
+LOGU,Logging Unit
+FIID,File Type Identifier
+LON,Longitude
+MTP,Mud Temperature
+FPH,Fluid pH
+MDEN,Density Matrix
+MRS,Mud Resistivity
+MAGN,Magnetic Declination
+OSR2,Other Services
+OSR3,Other Services
+MUDS,Mud Sample Source
+DTFL,Delta T Fluid
+MATR,Neutron Matrix
+TGRD,Temperature Gradient
+FTYP,Fluid Type
+TIME,Time
+LAT,Latitude
