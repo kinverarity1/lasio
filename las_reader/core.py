@@ -300,6 +300,10 @@ def read_well_section(lines, log):
     return well
     
     
-
-    
-    
+def metadata(d):
+    for key_name in ['name', 'data', 'descr']:
+        assert key_name in d
+    if not d['descr']:
+        return d['name'], d['data'] 
+    else:
+        return d['name'], d['descr']
