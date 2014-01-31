@@ -230,18 +230,24 @@ def open_file(file, **kwargs):
             
     
 def read_line(line):
-    split_period = line.split('.')
-    name = split_period[0].strip()
-    rest = '.'.join(split_period[1:])
-    if not rest.startswith(' '):
-        unit = rest.split()[0].strip()
-        rest = rest[len(unit):]
-    else:
-        unit = None
-    split_colon = rest.split(':')
-    descr = split_colon[-1].strip()
-    data = ':'.join(split_colon[:-1]).strip()
-    return name, unit, data, descr
+    if ':' in line and '.' in line.split(':', 1)[0]:
+        split_period = line.split('.')
+        name = split_period[0].strip()
+        rest = '.'.join(split_period[1:])
+        if not rest.startswith(' '):
+            unit = rest.split()[0].strip()
+            rest = rest[len(unit):]
+        else:
+            unit = None
+        split_colon = rest.split(':')
+        descr = split_colon[-1].strip()
+        data = ':'.join(split_colon[:-1]).strip()
+        return name, unit, data, descr
+    elif ':' in line and not '.' in line.split(':', 1)[0]:
+        split_colon = line.split(':')
+        name = split_colon[0].strip()
+        descr = ':'.join(split_colon[1:]).strip()
+        return name, None, descr, descr
     
     
 def convert_number(item):
