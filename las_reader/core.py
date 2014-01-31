@@ -164,8 +164,11 @@ class LASFileReader(object):
                         d[name] = di
                     except:
                         d['lines'].append(line)
-                else:                    
-                    name, unit, data, descr = read_line(line)
+                else:
+                    try:
+                        name, unit, data, descr = read_line(line)
+                    except:
+                        raise Exception('Failed to read in NAME.UNIT DATA:DESCR for:\n\t%s' % line)
                     di = dict(name=name, unit=unit, data=data, descr=descr)
                     
                     # Retain order for ~Curves section.
