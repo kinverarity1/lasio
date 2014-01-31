@@ -21,6 +21,7 @@ url_regexp = re.compile(
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
         
+        
 class dict2(dict):
     def __init__(self, *args, **kwargs):
         dict.__init__(self, *args, **kwargs)
@@ -28,7 +29,49 @@ class dict2(dict):
         
         
 
-class LASFile(object):
+class LASFileProperties(object):
+    @property
+    def version(self):
+        return float(self.sections['~V']['VERS']['data'])
+    
+    @version.setter
+    def version(self, value):
+        self.sections['~V']['VERS']['data'] = str(value)
+    
+    @property
+    def wrap(self):
+        return bool(self.sections['~V']['WRAP']['data'] == 'yes')
+        
+    @wrap.setter
+    def wrap(self, value):
+        if value:
+            value = 'YES'
+        else:
+            value = 'NO'
+        self.sections['~V']['WRAP']['data']
+        
+    _delimiter_map = {'COMMA': ',', 'TAB': '\t', 'SPACE': ' '}
+    _delimiter_map_inv = dict((v, k) for k, v in _delimiter_map.iteritems())
+        
+    @property
+    def delimiter(self):
+        return self._delimiter_map[self.sections['~V']['DLM']['data']]
+        
+    @delimiter.setter
+    def delimiter(self, value):
+        self.sections['~V']['DLM']['data'] = self._delimiter_map_inv[value]
+    
+    @property
+    def curves(self):
+        return [d['name'] for d in self.sections['~C']]
+        
+    @curves.setter
+    def curves(self, value):
+        raise NotImplementedError('You cannot set curves.')
+    
+    
+    
+class LASFile(LASFileProperties):
     '''A log from a LAS file.
     
     See read() method for how to read data in.
@@ -42,6 +85,11 @@ class LASFile(object):
                 }
 
     def __init__(self, file=None, **kwargs):
+        self.fail_silently = False        
+        if 'fail_silently' in kwargs:
+            self.fail_silently = kwargs['fail_silently']
+            del kwargs['fail_silently']
+            
         if not file is None:
             self.read(file, **kwargs)
         
@@ -84,44 +132,32 @@ class LASFile(object):
         else:
             raise NotImplementedError('Cannot read LAS 3.0 files yet')
     
-    @property
-    def version(self):
-        return float(self.sections['~V']['VERS']['data'])
-    
-    @version.setter
-    def version(self, value):
-        self.sections['~V']['VERS']['data'] = str(value)
-    
-    @property
-    def wrap(self):
-        return bool(self.sections['~V']['WRAP']['data'] == 'yes')
-        
-    @wrap.setter
-    def wrap(self, value):
-        if value:
-            value = 'YES'
+    def metadata(self, key, fail_silently=False):
+        if not fail_silently:
+            fail_silently = self.fail_silently
+        for section_name, data in self.sections.items():
+            if isinstance(data, dict):
+                if key in data:
+                    return metadata(data[key])
+        if fail_silently:
+            return None
         else:
-            value = 'NO'
-        self.sections['~V']['WRAP']['data']
-        
-    _delimiter_map = {'COMMA': ',', 'TAB': '\t', 'SPACE': ' '}
-    _delimiter_map_inv = dict((v, k) for k, v in _delimiter_map.iteritems())
-        
-    @property
-    def delimiter(self):
-        return self._delimiter_map[self.sections['~V']['DLM']['data']]
-    
-    @delimiter.setter
-    def delimiter(self, value):
-        self.sections['~V']['DLM']['data'] = self._delimiter_map_inv[value]
+            raise KeyError('Key %s not found' % key)
     
     @property
-    def curves(self):
-        return [d['name'] for d in self.sections['~C']]
-        
-    @curves.setter
-    def curves(self, value):
-        raise NotImplementedError('You cannot set curves.')
+    def metadata_list(self):
+        ml = []
+        for section, data in self.sections.items():
+            if isinstance(data, dict):
+                for value in data.values():
+                    ml.append(self.metadata(value))
+        return ml
+    
+    @metadata_list.setter
+    def metadata_list(self, value):
+        raise ValueError('Cannot assign metadata to LASFile object through'
+                         ' the list of metadata keys.')
+    
     
     
 class LASFileReader(object):

@@ -1,1 +1,1 @@
-from core import LASFile
+from core import LASFile, metadata
