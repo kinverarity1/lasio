@@ -77,9 +77,9 @@ class LASFile(LASFileProperties):
     See read() method for how to read data in.
     
     '''
-    sections = {'~V': {'VERS': {'data': '2.0'},
-                       'WRAP': {'data': 'NO'},
-                       'DLM': {'data': 'SPACE'}},
+    sections = {'~V': {'VERS': {'data': '2.0', 'descr': 'CWLS LOG ASCII STANDARD - VERSION 1.2', 'name': 'VERS', 'unit': None},
+                       'WRAP': {'data': 'NO', 'descr': 'One line per depth step', 'name': 'WRAP', 'unit': None},
+                       'DLM': {'data': 'SPACE', 'descr': '', 'name': 'DLM', 'unit': None}},
                 '~W': {},
                 '~O': {'lines': []},
                 }
