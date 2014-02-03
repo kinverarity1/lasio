@@ -137,8 +137,11 @@ class LASFile(LASFileProperties):
             fail_silently = self.fail_silently
         for section_name, data in self.sections.items():
             if isinstance(data, dict):
-                if key in data:
-                    return metadata(data[key])
+                try:
+                    if key in data:
+                        return metadata(data[key])
+                except:
+                    raise
         if fail_silently:
             return None
         else:
@@ -147,10 +150,14 @@ class LASFile(LASFileProperties):
     @property
     def metadata_list(self):
         ml = []
-        for section, data in self.sections.items():
+        for section_name, data in self.sections.items():
             if isinstance(data, dict):
-                for value in data.values():
-                    ml.append(self.metadata(value))
+                for key, value in data.items():
+                    if section_name == '~O' and key == 'lines':
+                        continue
+                    if key == 'Azimuth degrees':
+                        continue
+                    ml.append(self.metadata(key))
         return ml
     
     @metadata_list.setter
@@ -284,6 +291,11 @@ def read_line(line):
         name = split_colon[0].strip()
         descr = ':'.join(split_colon[1:]).strip()
         return name, None, descr, descr
+    elif '.' in line and not ':' in line:
+        split_period = line.split('.')
+        name = split_period[0]
+        descr = '.'.join(split_period[1:])
+        return name, None, descr, descr
     
     
 def convert_number(item):
@@ -340,6 +352,6 @@ def metadata(d):
     for key_name in ['name', 'data', 'descr']:
         assert key_name in d
     if not d['descr']:
-        return d['name'], d['data'] 
+        return [d['name'].strip(), d['data']]
     else:
-        return d['name'], d['descr']
+        return [d['name'].strip(), d['descr']]
