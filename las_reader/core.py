@@ -298,7 +298,7 @@ def read_line(line):
         return name, None, descr, descr
     elif '.' in line and not ':' in line:
         split_period = line.split('.')
-        name = split_period[0]
+        name = split_period[0].strip()
         descr = '.'.join(split_period[1:])
         return name, None, descr, descr
     
