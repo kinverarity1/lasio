@@ -229,8 +229,13 @@ class LASFileReader(object):
             if line.lower().startswith('~a'):
                 start_data = i + 1
                 break
-        sobj = StringIO.StringIO('\n'.join(self.lines[start_data:]))
+        s = '\n'.join(self.lines[start_data:])
+        s = re.sub(r'(\d)-(\d)', r'\1 -\2', s)
+        sobj = StringIO.StringIO(s)
         arr = np.loadtxt(sobj)
+        if not arr.shape or (arr.ndim == 1 and arr.shape[0] == 0):
+            raise Warning('No data present.')
+            return None, None
         df_dict = {}
         for i in range(arr.shape[1]):
             if curve_names:
