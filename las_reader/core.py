@@ -165,6 +165,10 @@ class LASFile(LASFileProperties):
         raise ValueError('Cannot assign metadata to LASFile object through'
                          ' the list of metadata keys.')
     
+    def traces(self):
+        for i, curve in enumerate(self.curves):
+            yield [curve, self.data[curve]]
+    
     
     
 class LASFileReader(object):
@@ -311,47 +315,7 @@ def convert_number(item):
             return float(item)
         except:
             return np.nan
-    
-    
-def read_well_section(lines, log):
-    well = dict2(STRT=None, STOP=None, STEP=None, NULL=None, COMP=None, 
-                 WELL=None, FLD=None, LOC=None, SRVC=None, CTRY=None, DATE=None)
-    in_section = False
-    for line in lines:
-        line = line.strip().strip('\t').strip()
-        if not line or line.startswith('#'):
-            continue
-        if line.lower().startswith('~w'):
-            in_section = True
-            continue
-        if line.lower().startswith('~') and in_section:
-            return well
-        if in_section:
-            mnemonic, unit, data, description = read_line(line)
-            if mnemonic in ('STRT', 'STOP', 'STEP'):
-                value = convert_number(data)
-                if mnemonic == 'STEP' and value == 0:
-                    value = np.nan
-                well[mnemonic] = value
-                if unit:
-                    well[mnemonic + '-UNIT'] = unit
-            else:
-                # Deal with the crazy change swapping the position of 
-                # information at version 2.0:
-                if log.version >= 2.:
-                    well[mnemonic] = data
-                else:
-                    well[mnemonic] = description
-            # ... and now be version-agnostic:
-            value = well[mnemonic]
-            if mnemonic == 'NULL':
-                well.NULL = convert_number(data)
-                if well.STOP == well.NULL:
-                    well.STOP = np.nan
-            if mnemonic in ('X', 'Y'):
-                well[mnemonic] = convert_number(value)
-    return well
-    
+  
     
 def metadata(d):
     for key_name in ['name', 'data', 'descr']:
