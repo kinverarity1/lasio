@@ -155,7 +155,6 @@ class LASFile(LASFileProperties):
         else:
             raise KeyError('Key %s not found' % key)
     
-    @property
     def metadata_list(self):
         ml = []
         for section_name, data in self.sections.items():
@@ -167,11 +166,6 @@ class LASFile(LASFileProperties):
                         continue
                     ml.append(self.metadata(key))
         return ml
-    
-    @metadata_list.setter
-    def metadata_list(self, value):
-        raise ValueError('Cannot assign metadata to LASFile object through'
-                         ' the list of metadata keys.')
     
     def traces(self):
         for i, curve in enumerate(self.curves):
