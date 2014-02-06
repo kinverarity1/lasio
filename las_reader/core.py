@@ -68,6 +68,14 @@ class LASFileProperties(object):
     @curves.setter
     def curves(self, value):
         raise NotImplementedError('You cannot set curves.')
+        
+    @property
+    def sample_interval(self):
+        return float(self.sections['~W']['STEP']['data'])
+        
+    @sample_interval.setter
+    def sample_interval(self, value):
+        self.sections['~W']['STEP'] = '%1.4f' % value
     
     
     
@@ -168,6 +176,9 @@ class LASFile(LASFileProperties):
     def traces(self):
         for i, curve in enumerate(self.curves):
             yield [curve, self.data[curve]]
+    
+    def sampling_interval(self, curve):
+        return self.sample_interval
     
     
     
