@@ -168,11 +168,13 @@ class LASFile(LASFileProperties):
         return ml
     
     def traces(self):
+        traces = []
         for i, curve in enumerate(self.curves):
-            yield [curve, self.data[curve]]
+            traces.append([curve, self.data[curve]])
+        return traces
     
-    def sampling_interval(self, curve):
-        return self.sample_interval
+    def sampling_intervals(self):
+        return [self.sample_interval for i in self.traces()]
     
     
     
