@@ -331,3 +331,27 @@ def metadata(d):
         return [d['name'].strip(), d['data']]
     else:
         return [d['name'].strip(), d['descr']]
+
+        
+
+class ExcelConverter(object):
+    def __init__(self, las):
+        self.las = las
+        
+    def write_excel(self, xlsfn):
+        import xlwt
+        wb = xlwt.Workbook()
+        md_sheet = wb.add_sheet('Metadata')
+        curves_sheet = wb.add_sheet('Curves')
+        
+        for i, (key, value) in enumerate(self.las.metadata_list()):
+            md_sheet.write(i, 0, key)
+            md_sheet.write(i, 1, value)
+            
+        for i, (name, data) in enumerate(self.las.curves()):
+            curves_sheet.write(0, i, name)
+            for j, value in enumerate(data):
+                curves_sheet.write(j + 1, i, value)
+        
+        wb.save(xlsfn)
+        
