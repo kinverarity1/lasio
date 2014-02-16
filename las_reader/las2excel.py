@@ -10,6 +10,7 @@ import core
 def main():
     if argparse:
         args = get_parser().parse_args(sys.argv[1:])
+        print args.__dict__.keys()
         lasfn = args.las_filename
         xlsfn = args.xls_filename
     else:
@@ -29,8 +30,8 @@ def main():
     
 def get_parser():
     parser = argparse.ArgumentParser('Convert LAS file to Excel')
-    parser.add_argument('las-filename')
-    parser.add_argument('xls-filename')
+    parser.add_argument('las_filename')
+    parser.add_argument('xls_filename')
     return parser
     
 if __name__ == '__main__':
