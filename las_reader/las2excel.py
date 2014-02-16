@@ -10,7 +10,6 @@ import core
 def main():
     if argparse:
         args = get_parser().parse_args(sys.argv[1:])
-        print args.__dict__.keys()
         lasfn = args.las_filename
         xlsfn = args.xls_filename
     else:
