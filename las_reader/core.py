@@ -9,8 +9,10 @@ except ImportError:
     import StringIO
 import urllib2
 
-import numpy as np
+import numpy
 import pandas
+import scipy
+from scipy import stats
 
 
 import logging
@@ -32,13 +34,7 @@ sections_default = {
         '~W': {},
         '~O': {'lines': []},
         }
-        
-        
-class dict2(dict):
-    def __init__(self, *args, **kwargs):
-        dict.__init__(self, *args, **kwargs)
-        self.__dict__ = self
-        
+      
 
     
 class LASFile(object):
@@ -47,15 +43,11 @@ class LASFile(object):
     See read() method for how to read data in.
     
     '''
-    def __init__(self, file=None, **kwargs):
+    def __init__(self, file=None, title='', autodetect_null=False, **kwargs):
         self.sections = dict(sections_default)
-        
-        if 'title' in kwargs:
-            self.title = title
-        else:
-            self.title = ''
-        
+        self.title = title
         self.fail_silently = False        
+        self.autodetect_null = autodetect_null
         if 'fail_silently' in kwargs:
             self.fail_silently = kwargs['fail_silently']
             del kwargs['fail_silently']
@@ -100,7 +92,8 @@ class LASFile(object):
         # Read data sections
         if self.version < 3:
             self.data, self.sections['~A'] = reader.read_data(
-                    wrap=self.wrap, curve_names=self.curve_names)
+                    wrap=self.wrap, curve_names=self.curve_names,
+                    null=self.null, autodetect_null=self.autodetect_null)
         else:
             raise NotImplementedError('Cannot read LAS 3.0 files yet')
     
@@ -125,6 +118,13 @@ class LASFile(object):
     
     def sampling_intervals(self):
         return [self.sample_interval for i in self.curves()]
+        
+    def name(self):
+        name = self.fn
+        if name:
+            return os.path.basename(name)
+        else:
+            return ''
     
     @property
     def version(self):
@@ -173,6 +173,14 @@ class LASFile(object):
     def sample_interval(self, value):
         self.sections['~W']['STEP'] = '%1.4f' % value
         
+    @property
+    def null(self):
+        return self.sections['~W']['NULL']
+            
+    @null.setter
+    def null(self, value):
+        self.sections['~W']['NULL'] = value
+
 
     
 class LASFileReader(object):
@@ -239,26 +247,31 @@ class LASFileReader(object):
         else:
             d[name] = new
     
-    def read_data(self, wrap=False, curve_names=None):
+    def read_data(self, wrap=False, curve_names=None, null=None,
+                  autodetect_null=False):
         if wrap:
             return self.read_wrapped_data(curve_names)
         s = self.read_data_string()
         try:
-            arr = np.loadtxt(StringIO.StringIO(s))
+            arr = numpy.loadtxt(StringIO.StringIO(s))
         except ValueError:
             lines = s.splitlines()
             sobj = StringIO.StringIO('\n'.join(lines[:-1]))
-            arr = np.loadtxt(sobj)
+            arr = numpy.loadtxt(sobj)
         if not arr.shape or (arr.ndim == 1 and arr.shape[0] == 0):
             logger.warning('No data present.')
             return None, None
         df_dict = {}
+        arr[arr == null] = numpy.nan
         for i in range(arr.shape[1]):
             if curve_names:
                 name = curve_names[i]
             else:
                 name = str(i)
-            series = pandas.Series(arr[:, i], index=arr[:, 0], name=name)
+            data = arr[:, i]
+            if autodetect_null and name != 'DEPT':
+                data = remove_possible_null_values(data, name)
+            series = pandas.Series(data, index=arr[:, 0], name=name)
             df_dict[name] = series
         return pandas.DataFrame(df_dict), arr
             
@@ -339,7 +352,7 @@ def convert_number(item):
         try:
             return float(item)
         except:
-            return np.nan
+            return numpy.nan
   
     
 def metadata(d, version=0):
@@ -353,6 +366,18 @@ def metadata(d, version=0):
             return [key, d['data']]
         return [key, d['descr']]
 
+
+def remove_possible_null_values(arr, key=''):
+    lower_p = numpy.percentile(arr, 10)
+    upper_p = numpy.percentile(arr, 90)
+    freqs = numpy.asarray(sorted(stats.itemfreq(arr), key=lambda r: r[1], reverse=True))
+    freqs_upper_p = numpy.percentile(freqs[:, 1], 95)
+    for value, freq in freqs:
+        if freq >= freqs_upper_p and (value <= lower_p or value >= upper_p):
+            arr[arr == value] = numpy.nan
+            logger.info('Automatically removed %s from %s for being a '
+                        'suspected NULL value.' % (value, key))
+    return arr
 
 
 class ExcelConverter(object):
