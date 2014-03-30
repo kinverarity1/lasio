@@ -10,10 +10,7 @@ It isn't intended to make every little bit of information from the LAS file avai
 this would be fairly straightforward for 1.2 and 2.0, but a bit of a headache for 3.0. The
 intention is simply to get it in a useful format for ``numpy``.
 
-Current usage (see ``master`` and ``unstable`` branches)
---------------------------------------------------------
-
-Yet to be fully implemented (see [readme-driven development](http://tom.preston-werner.com/2010/08/23/readme-driven-development.html)). 
+The below exmaple is yet to be fully implemented (see [readme-driven development](http://tom.preston-werner.com/2010/08/23/readme-driven-development.html)). 
 
 ```python
 >>> import las_reader
@@ -100,6 +97,7 @@ key:values separately in the dictionary:
  'LUN': 'T3363',
  'LATI': '39DEG12.248',
  'LONG': '124DEG41.091'}
+ ```
 
 Note that ``l.metadata`` is a single dictionary which combines the ~Version, ~Well, ~Parameters, 
 and ~Other sections, and returns the "value" attribute for each of the items in the ~Parameters section. 
@@ -110,43 +108,4 @@ inside ``l.provenance``:
 >>> pprint(l.provenance)
 {}
 ```
-
-Old API usage (see ``old_api`` branch)
---------------------------------------
-
-The object for a LAS file is surprisingly named ``LASFile``. It gives you access to the
-raw data and metadata, and also some useful shortcut methods. A slightly contrived 
-example is:
-
-```python
->>> l = las_reader.LASFile('/path/to/something.las')
->>> type(l.data)
-<pandas.DataFrame object>
->>> l.data.keys()
-['DEPT', 'GAPI', 'CALI', 'NEUT']
->>> len(l.data)
-5330
->>> l.traces()
-[('GAPI', <pandas.Series object...>),
- ('CALI', <pandas.Series object...>),
- ('NEUT', <pandas.Series object...>)]
->>> l.metadata_list()
-[('UWI', '1234-56789'),
- ('SRVC', 'Department of Mines'),
- ...]
-```
-   
-Data traces/curves are basically [numpy][1] ndarrays indexed by depth, in the form of [pandas][2]
-``Series`` and ``DataFrame`` objects. For more details see [the pandas documentation][3].
-
-[1]: http://www.numpy.org/
-[2]: http://pandas.pydata.org/ "Python Data Analysis Library"
-[3]: http://pandas.pydata.org/pandas-docs/dev/dsintro.html
-
-Examples
---------
-
-- [reading and viewing a log file (1.2)](http://nbviewer.ipython.org/github/kinverarity1/las-reader/blob/master/docs/reading%20and%20viewing%20a%20log%20file%20%281.2%29.ipynb)
-- [reading a large log file (1.2)](http://nbviewer.ipython.org/github/kinverarity1/las-reader/blob/master/docs/reading%20a%20large%20log%20file%20%281.2%29.ipynb)
-- [reading some real-life data from a LAS 2.0 file](http://nbviewer.ipython.org/github/kinverarity1/las-reader/blob/master/docs/reading%20some%20real-life%20data%20from%20a%20LAS%202.0%20file.ipynb)
 
