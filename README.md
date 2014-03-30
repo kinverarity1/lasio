@@ -1,16 +1,16 @@
-las_reader
+LAS Reader
 ==========
 
-This is a Python package to read in Log ASCII Standard (LAS) files, used in geophysical 
+``las_reader`` is a Python package to read in Log ASCII Standard (LAS) files, used in geophysical 
 logging. The file format is specified by the 
 [Canadian Well Logging Society](http://cwls.org/las_info.php). It works fine for 1.2 and
 2.0 files, but not for 3.0 yet.
 
 It isn't intended to make every little bit of information from the LAS file available --
 this would be fairly straightforward for 1.2 and 2.0, but a bit of a headache for 3.0. The
-intention is simply to get it in a useful format for ``numpy``.
+intention is simply to get it in a useful format for numpy.
 
-The below exmaple is yet to be fully implemented (see [readme-driven development](http://tom.preston-werner.com/2010/08/23/readme-driven-development.html)). 
+The below example is yet to be fully implemented (see [readme-driven development](http://tom.preston-werner.com/2010/08/23/readme-driven-development.html)). 
 
 ```python
 >>> import las_reader

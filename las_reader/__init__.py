@@ -1,1 +1,5 @@
-from core import LASFile, metadata
+import las
+
+
+def read(file, **kwargs):
+    return las.Las(file)
