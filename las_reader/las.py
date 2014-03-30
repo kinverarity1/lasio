@@ -162,7 +162,7 @@ class SectionParser(object):
 
 
     def metadata(self, **keys):
-        if self.version >= 2:
+        if self.version < 2:
             if (keys['name'] in ['STRT', 'STOP', 'STEP', 'NULL']
                 or self.section_name.startswith('~V')):
                 return keys['value']

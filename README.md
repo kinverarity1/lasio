@@ -3,14 +3,13 @@ LAS Reader
 
 ``las_reader`` is a Python package to read in Log ASCII Standard (LAS) files, used in geophysical 
 logging. The file format is specified by the 
-[Canadian Well Logging Society](http://cwls.org/las_info.php). It works fine for 1.2 and
-2.0 files, but not for 3.0 yet.
+[Canadian Well Logging Society](http://cwls.org/las_info.php). 
+
+It works fine for 1.2 and 2.0 files, but not for 3.0 yet.
 
 It isn't intended to make every little bit of information from the LAS file available --
 this would be fairly straightforward for 1.2 and 2.0, but a bit of a headache for 3.0. The
 intention is simply to get it in a useful format for numpy.
-
-The below example is yet to be fully implemented (see [readme-driven development](http://tom.preston-werner.com/2010/08/23/readme-driven-development.html)). 
 
 ```python
 >>> import las_reader
@@ -56,14 +55,14 @@ The value for each entry in the dictionary depends on the section. The
  'STOP': 1660.0,
  'STEP': -0.125,
  'NULL': -999.25,
- 'COMP': COMPANY,
- 'WELL': WELL,
- 'FLD': FIELD,
- 'LOC': LOCATION,
- 'PROV': PROVINCE,
- 'SRVC': SERVICE COMPANY,
- 'DATE': LOG DATE,
- 'UWI': UNIQUE WELL ID}
+ 'COMP': # ANY OIL COMPANY LTD.,
+ 'WELL': ANY ET AL OIL WELL #12,
+ 'FLD': EDAM,
+ 'LOC': A9-16-49-20W3M,
+ 'PROV': SASKATCHEWAN,
+ 'SRVC': ANY LOGGING COMPANY LTD.,
+ 'DATE': 25-DEC-1988,
+ 'UWI': 100091604920W300}
 ```
 
 The ~Curve and ~Parameter sections are a bit different. For each mnemonic it returns a
