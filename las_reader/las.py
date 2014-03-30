@@ -5,6 +5,7 @@ import codecs
 import collections
 import datetime
 import os
+import pprint
 import logging
 import re
 try:
@@ -18,6 +19,15 @@ import numpy
 
 
 logger = logging.getLogger(__name__)
+
+url_regexp = re.compile(
+        r'^(?:http|ftp)s?://' # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}'
+        r'\.?|[A-Z0-9-]{2,}\.?)|' # (cont.) domain...
+        r'localhost|' #localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
+        r'(?::\d+)?' # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 sections_default = {
         '~V': {'VERS': {'value': '2.0', 
@@ -35,9 +45,17 @@ sections_default = {
         '~W': {},
         '~O': {'text': ''},
         }
-
-
     
+
+class OrderedDict(collections.OrderedDict):
+    def __repr__(self):
+        l = []
+        for key, value in self.iteritems():
+            s = "'%s': %s" % (key, value)
+            l.append(s)
+        s = '{' + ',\n '.join(l) + '}'
+        return s
+
 
 def open_file(file_obj, **kwargs):
     provenance = {'path': None,
@@ -67,7 +85,7 @@ def open_file(file_obj, **kwargs):
 
 
     
-class Las(object):
+class Las(OrderedDict):
     '''Read LAS file.
 
     Args:
@@ -75,6 +93,7 @@ class Las(object):
 
     '''
     def __init__(self, file, **kwargs):
+        OrderedDict.__init__(self)
         f, provenance = open_file(file, **kwargs)
         self.provenance = provenance
         self._text = f.read()
@@ -84,6 +103,7 @@ class Las(object):
         
         # Set version
         reader.version = self.version['VERS']
+        reader.wrap = self.version['WRAP'] == 'YES'
 
         self.well = reader.read_section('~W')
         self.curves = reader.read_section('~C')
@@ -95,9 +115,16 @@ class Las(object):
 
         self.data = reader.read_data()
 
-        for i, (key, value) in enumerate(self.curves.items()):
-            self[key] = self.data[:, i]
-
+        n = len(self.curves.keys())
+        for i, (key, value) in enumerate(self.curves.iteritems()):
+            d = self.data[:, i]
+            self[key] = d
+            self[i] = d
+            self[i - n] = d
+            
+    def keys(self):
+        k = super(OrderedDict, self).keys()
+        return [ki for ki in k if isinstance(ki, basestring)]
 
 
 class SectionParser(object):
@@ -114,14 +141,15 @@ class SectionParser(object):
         else:
             self.func = self.metadata
         self.version = version
+        self.section_name = section_name
 
 
     def __call__(self, *args, **kwargs):
         r = self.func(*args, **kwargs)
-        return num(r, default=r)
+        return self.num(r, default=r)
 
 
-    def num(x, default=None):
+    def num(self, x, default=None):
         if default is None:
             default = x
         try:
@@ -133,10 +161,10 @@ class SectionParser(object):
                 return default
 
 
-    def metadata(self, section_name, **keys):
+    def metadata(self, **keys):
         if self.version >= 2:
             if (keys['name'] in ['STRT', 'STOP', 'STEP', 'NULL']
-                or section_name.startswith('~V')):
+                or self.section_name.startswith('~V')):
                 return keys['value']
             else:
                 return keys['descr']
@@ -144,11 +172,11 @@ class SectionParser(object):
             return keys['value']
 
 
-    def curves(self, section_name, **keys):
+    def curves(self, **keys):
         return self.Curve(keys['unit'], keys['value'], keys['descr'])
 
 
-    def params(self, section_name, **keys):
+    def params(self, **keys):
         return self.Parameter(keys['unit'], keys['value'], keys['descr'])
 
 
@@ -192,30 +220,28 @@ class Reader(object):
         
     def read_section(self, section_name):
         is_section = lambda txt: section_name.startswith(txt)
-
         parser = SectionParser(section_name, version=self.version)
-        d = collections.OrderedDict()
+        d = OrderedDict()
         in_section = False
-        for line in self.iter_section_lines(section_name):            
+        for line in self.iter_section_lines(section_name):      
             try:
                 values = read_line(line)
             except:
-                logger.warning('Failed to read in NAME.UNIT VALUE:DESCR'
-                                ' from:\n\t%s' % line)
-            print('values=%s' % (str(values)))
-            d[name] = parser(values)
+                print('Failed to read in NAME.UNIT VALUE:DESCR'
+                      ' from:\n\t%s' % line)
+            else:
+                d[values['name']] = parser(**values)
         return d
     
 
-    def read_data(self, curve_names, wrap=False, null=None,
-                  autodetect_null=False):
+    def read_data(self):
         s = self.read_data_string()
         try:
             arr = numpy.loadtxt(StringIO.StringIO(s))
         except ValueError:
             logger.debug('Unable to read array straight from text section')
             lines = s.splitlines()
-            if wrap:
+            if self.wrap:
                 sobj = StringIO.StringIO(' '.join(lines[:-1]))
                 n = len(arr)
                 j = len(curve_names)
@@ -229,7 +255,7 @@ class Reader(object):
         else:
             logger.info('Las file shape = %s' % str(arr.shape))
         df_dict = {}
-        arr[arr == null] = numpy.nan
+        arr[arr == self.null] = numpy.nan
         return arr
         
 
@@ -258,7 +284,7 @@ def read_line(line):
         rest = '.'.join(split_period[1:])
         if not rest.startswith(' '):
             d['unit'] = rest.split()[0].strip()
-            rest = rest[len(unit):]
+            rest = rest[len(d['unit']):]
         split_colon = rest.split(':')
         d['descr'] = split_colon[-1].strip()
         d['value'] = ':'.join(split_colon[:-1]).strip()
