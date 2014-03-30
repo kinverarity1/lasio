@@ -47,6 +47,7 @@ sections_default = {
         }
     
 
+
 class OrderedDict(collections.OrderedDict):
     def __repr__(self):
         l = []
@@ -55,6 +56,7 @@ class OrderedDict(collections.OrderedDict):
             l.append(s)
         s = '{' + ',\n '.join(l) + '}'
         return s
+
 
 
 def open_file(file_obj, **kwargs):
@@ -92,6 +94,7 @@ class Las(OrderedDict):
         - *file*: open file object or filename
 
     '''
+
     def __init__(self, file, **kwargs):
         OrderedDict.__init__(self)
         f, provenance = open_file(file, **kwargs)
@@ -103,6 +106,7 @@ class Las(OrderedDict):
         
         # Set version
         reader.version = self.version['VERS']
+        print 'wrap = %s' % (self.version['WRAP'] == 'YES')
         reader.wrap = self.version['WRAP'] == 'YES'
 
         self.well = reader.read_section('~W')
@@ -113,7 +117,7 @@ class Las(OrderedDict):
         # Set null value
         reader.null = self.well['NULL']
 
-        self.data = reader.read_data()
+        self.data = reader.read_data(len(self.curves))
 
         n = len(self.curves.keys())
         for i, (key, value) in enumerate(self.curves.iteritems()):
@@ -122,9 +126,137 @@ class Las(OrderedDict):
             self[i] = d
             self[i - n] = d
             
+
     def keys(self):
         k = super(OrderedDict, self).keys()
         return [ki for ki in k if isinstance(ki, basestring)]
+
+
+    def values(self):
+        return [self[k] for k in self.keys()]
+
+
+    def items(self):
+        return [(k, self[k]) for k in self.keys()]
+
+
+    def iterkeys(self):
+        return iter(self.keys())
+
+
+    def itervalues(self):
+        return iter(self.values())
+
+
+    def iteritems(self):
+        return iter(self.items())
+
+
+    @property
+    def metadata(self):
+        d = {}
+        d.update(self.version)
+        d.update(self.well)
+        for k, param in self.params.iteritems():
+            d[k] = param.value
+        return d
+
+    @metadata.setter
+    def metadata(self, value):
+        raise Warning('Set the version/well/params attributes directly')
+    
+
+
+
+class Reader(object):
+
+    def __init__(self, text):
+        self.lines = text.split('\n')
+        self.version = 1.2
+        self.null = numpy.nan
+        self.wrap = True
+        
+
+    @property
+    def section_names(self):
+        names = []
+        for line in self.lines:
+            line = line.strip().strip('\t').strip()
+            if not line or line.startswith('#'):
+                continue
+            if line.startswith('~'):
+                names.append(line)
+        return names
+
+
+    def iter_section_lines(self, section_name):
+        in_section = False
+        for line in self.lines:
+            line = line.strip().strip('\t').strip()
+            if not line or line.startswith('#'):
+                continue
+            if line.startswith(section_name):
+                in_section = True
+                continue
+            if line.lower().startswith('~') and in_section:
+                # Start of the next section; we're done here.
+                break
+            if in_section:
+                yield line
+        
+
+    def read_raw_text(self, section_name):
+        return '\n'.join(self.iter_section_lines(section_name))
+        
+
+    def read_section(self, section_name):
+        is_section = lambda txt: section_name.startswith(txt)
+        parser = SectionParser(section_name, version=self.version)
+        d = OrderedDict()
+        in_section = False
+        for line in self.iter_section_lines(section_name):      
+            try:
+                values = read_line(line)
+            except:
+                print('Failed to read in NAME.UNIT VALUE:DESCR'
+                      ' from:\n\t%s' % line)
+            else:
+                d[values['name']] = parser(**values)
+        return d
+    
+
+    def read_data(self, number_of_curves=None):
+        s = self.read_data_string()
+        if not self.wrap:
+            arr = numpy.loadtxt(StringIO.StringIO(s))
+        else:
+            s = s.replace('\n', ' ').replace('\t', ' ')
+            arr = numpy.loadtxt(StringIO.StringIO(s))
+            print('arr shape = %s' % (arr.shape))
+            print('number of curves = %s' % number_of_curves)
+            arr = numpy.reshape(arr, (-1, number_of_curves))
+        if not arr.shape or (arr.ndim == 1 and arr.shape[0] == 0):
+            logger.warning('No data present.')
+            return None, None
+        else:
+            logger.info('Las file shape = %s' % str(arr.shape))
+        df_dict = {}
+        arr[arr == self.null] = numpy.nan
+        return arr
+        
+
+    def read_data_string(self):
+        for i, line in enumerate(self.lines):
+            line = line.strip().strip('\t').strip()
+            if line.startswith('~A'):
+                start_data = i + 1
+                break
+        s = '\n'.join(self.lines[start_data:])
+        s = re.sub(r'(\d)-(\d)', r'\1 -\2', s)
+        s = re.sub('-?\d*\.\d*\.\d*', ' NaN NaN ', s)
+        s = re.sub('NaN.\d*', ' NaN NaN ', s)
+        return s
+
 
 
 class SectionParser(object):
@@ -181,98 +313,6 @@ class SectionParser(object):
 
 
 
-class Reader(object):
-    def __init__(self, text):
-        self.lines = text.split('\n')
-        self.version = 1.2
-        self.null = numpy.nan
-        
-
-    @property
-    def section_names(self):
-        names = []
-        for line in self.lines:
-            line = line.strip().strip('\t').strip()
-            if not line or line.startswith('#'):
-                continue
-            if line.startswith('~'):
-                names.append(line)
-        return names
-
-
-    def iter_section_lines(self, section_name):
-        in_section = False
-        for line in self.lines:
-            line = line.strip().strip('\t').strip()
-            if not line or line.startswith('#'):
-                continue
-            if line.startswith(section_name):
-                in_section = True
-                continue
-            if line.lower().startswith('~') and in_section:
-                # Start of the next section; we're done here.
-                break
-            if in_section:
-                yield line
-        
-    def read_raw_text(self, section_name):
-        return '\n'.join(self.iter_section_lines(section_name))
-        
-    def read_section(self, section_name):
-        is_section = lambda txt: section_name.startswith(txt)
-        parser = SectionParser(section_name, version=self.version)
-        d = OrderedDict()
-        in_section = False
-        for line in self.iter_section_lines(section_name):      
-            try:
-                values = read_line(line)
-            except:
-                print('Failed to read in NAME.UNIT VALUE:DESCR'
-                      ' from:\n\t%s' % line)
-            else:
-                d[values['name']] = parser(**values)
-        return d
-    
-
-    def read_data(self):
-        s = self.read_data_string()
-        try:
-            arr = numpy.loadtxt(StringIO.StringIO(s))
-        except ValueError:
-            logger.debug('Unable to read array straight from text section')
-            lines = s.splitlines()
-            if self.wrap:
-                sobj = StringIO.StringIO(' '.join(lines[:-1]))
-                n = len(arr)
-                j = len(curve_names)
-                arr = numpy.reshape(arr, (-1, j))
-            else:
-                sobj = StringIO.StringIO('\n'.join(lines[:-1]))
-                arr = numpy.loadtxt(sobj)
-        if not arr.shape or (arr.ndim == 1 and arr.shape[0] == 0):
-            logger.warning('No data present.')
-            return None, None
-        else:
-            logger.info('Las file shape = %s' % str(arr.shape))
-        df_dict = {}
-        arr[arr == self.null] = numpy.nan
-        return arr
-        
-
-    def read_data_string(self):
-        for i, line in enumerate(self.lines):
-            line = line.strip().strip('\t').strip()
-            if line.startswith('~A'):
-                start_data = i + 1
-                break
-        s = '\n'.join(self.lines[start_data:])
-        s = re.sub(r'(\d)-(\d)', r'\1 -\2', s)
-        s = re.sub('-?\d*\.\d*\.\d*', ' NaN NaN ', s)
-        s = re.sub('NaN.\d*', ' NaN NaN ', s)
-        return s
-
-
-        
 def read_line(line):
     d = {'name': None,
          'unit': None,

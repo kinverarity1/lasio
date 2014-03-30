@@ -5,11 +5,12 @@ LAS Reader
 logging. The file format is specified by the 
 [Canadian Well Logging Society](http://cwls.org/las_info.php). 
 
-It works fine for 1.2 and 2.0 files, but not for 3.0 yet.
-
 It isn't intended to make every little bit of information from the LAS file available --
 this would be fairly straightforward for 1.2 and 2.0, but a bit of a headache for 3.0. The
 intention is simply to get it in a useful format for numpy.
+
+Usage
+-----
 
 ```python
 >>> import las_reader
@@ -39,7 +40,7 @@ True
 ```
 
 The first curve in a LAS file is special, and usually either depth or time. You can
-get to it by ``l[0]``.
+get to it by ``l[0]``. The ``data`` attribute is a 2D ndarray of all the curves.
 
 Each of the metadata sections of the LAS file are shown as dictionaries 
 (the ~Curves section is an OrderedDict) under their title as an attribute.
@@ -104,3 +105,9 @@ inside ``l.provenance``:
 {'url': 'https://raw.githubusercontent.com/kinverarity1/las-reader/unstable/standards/examples/1.2/sample.las', 'path': None, 'time_opened': datetime.datetime(2014, 3, 30, 20, 3, 25, 836000), 'name': 'sample.las'}
 ```
 
+Progress
+--------
+
+1/3/14: It works fine for 1.2 and 2.0 files, but not for 3.0 yet.
+30/3/14: Re-written interface for it (see usage above).
+31/3/14: Reads wrapped data in. Updated master branch.
