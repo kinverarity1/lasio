@@ -95,8 +95,14 @@ class Las(OrderedDict):
 
     '''
 
-    def __init__(self, file, **kwargs):
+    def __init__(self, file=None, create=None, **kwargs):
         OrderedDict.__init__(self)
+        if not file is None:
+            self.read(file, **kwargs)
+        elif not create is None:
+            self.create(create, **kwargs)
+        
+    def read(self, file):
         f, provenance = open_file(file, **kwargs)
         self.provenance = provenance
         self._text = f.read()
