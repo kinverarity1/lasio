@@ -1,3 +1,6 @@
-import _logging
+import las
 
-from core import LASFile, metadata
+
+def read(file, **kwargs):
+    return las.Las(file)
+
