@@ -4,7 +4,7 @@ except ImportError:
     argparse = None
 import sys
     
-import core
+import las
 
 
 def main():
@@ -22,8 +22,8 @@ def main():
                   'las2excel.py example.las output.xls')
             sys.exit(1)
         
-    las = core.LASFile(lasfn)
-    converter = core.ExcelConverter(las)
+    l = las.Las(lasfn)
+    converter = core.ExcelConverter(l)
     converter.write_excel(xlsfn)
 
     
@@ -32,6 +32,7 @@ def get_parser():
     parser.add_argument('las_filename')
     parser.add_argument('xls_filename')
     return parser
+    
     
 if __name__ == '__main__':
     main()

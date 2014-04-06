@@ -29,23 +29,22 @@ url_regexp = re.compile(
         r'(?::\d+)?' # optional port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
-sections_default = {
-        '~V': {'VERS': {'value': '2.0', 
-                        'descr': 'CWLS LOG ASCII STANDARD - VERSION 1.2', 
-                        'name': 'VERS', 
-                        'unit': None},
-               'WRAP': {'value': 'NO', 
-                        'descr': 'One line per depth step', 
-                        'name': 'WRAP', 
-                        'unit': None},
-               'DLM': {'value': 'SPACE', 
-                       'descr': '', 
-                       'name': 'DLM', 
-                       'unit': None}},
-        '~W': {},
-        '~O': {'text': ''},
-        }
-    
+Metadata = collections.namedtuple('Metadata', ['unit', 'value', 'descr'])
+Curve = collections.namedtuple('Curve', ['unit', 'API_code', 'descr'])
+Parameter = collections.namedtuple('Parameter', ['unit', 'value', 'descr'])
+
+DEFAULT_VALUES = {
+    'version': {'VERS': '2.0',
+                'WRAP': 'NO',
+                'DLM': 'SPACE'},
+    'well': {},
+    'params': {},
+    'other': '',
+    'data': numpy.zeros(shape=(0, 0))}
+
+DEFAULT_ORDER = {
+    'version': ['VERS', 'WRAP', 'DLM'],
+}
 
 
 class OrderedDict(collections.OrderedDict):
@@ -57,6 +56,9 @@ class OrderedDict(collections.OrderedDict):
         s = '{' + ',\n '.join(l) + '}'
         return s
 
+    @property
+    def _d(self):
+        return dict([(k, v.value) for k, v in self.items()])
 
 
 def open_file(file_obj, **kwargs):
@@ -102,7 +104,7 @@ class Las(OrderedDict):
         elif not create is None:
             self.create(create, **kwargs)
         
-    def read(self, file):
+    def read(self, file, **kwargs):
         f, provenance = open_file(file, **kwargs)
         self.provenance = provenance
         self._text = f.read()
@@ -111,9 +113,8 @@ class Las(OrderedDict):
         self.version = reader.read_section('~V')
         
         # Set version
-        reader.version = self.version['VERS']
-        print 'wrap = %s' % (self.version['WRAP'] == 'YES')
-        reader.wrap = self.version['WRAP'] == 'YES'
+        reader.version = self.version['VERS'].value
+        reader.wrap = self.version['WRAP'].value == 'YES'
 
         self.well = reader.read_section('~W')
         self.curves = reader.read_section('~C')
@@ -131,7 +132,7 @@ class Las(OrderedDict):
             self[key] = d
             self[i] = d
             self[i - n] = d
-            
+
 
     def keys(self):
         k = super(OrderedDict, self).keys()
@@ -161,15 +162,14 @@ class Las(OrderedDict):
     @property
     def metadata(self):
         d = {}
-        d.update(self.version)
-        d.update(self.well)
-        for k, param in self.params.iteritems():
-            d[k] = param.value
+        for di in (self.version, self.well, self.params):
+            for k, v in di.items():
+                d[k] = v.value
         return d
 
     @metadata.setter
     def metadata(self, value):
-        raise Warning('Set the version/well/params attributes directly')
+        raise Warning('Set values in the version/well/params attributes directly')
     
 
 
@@ -266,11 +266,7 @@ class Reader(object):
 
 
 class SectionParser(object):
-
-    Curve = collections.namedtuple('Curve', ['unit', 'API_code', 'descr'])
-    Parameter = collections.namedtuple('Parameter', ['unit', 'value', 'descr'])
-
-
+    
     def __init__(self, section_name, version=1.2):
         if section_name.startswith('~C'):
             self.func = self.curves
@@ -303,19 +299,19 @@ class SectionParser(object):
         if self.version < 2:
             if (keys['name'] in ['STRT', 'STOP', 'STEP', 'NULL']
                 or self.section_name.startswith('~V')):
-                return keys['value']
+                return Metadata(keys['unit'], self.num(keys['value']), keys['descr'])
             else:
-                return keys['descr']
+                return Metadata(keys['unit'], self.num(keys['descr']), keys['value'])
         else:
-            return keys['value']
+            return Metadata(keys['unit'], self.num(keys['value']), keys['descr'])
 
 
     def curves(self, **keys):
-        return self.Curve(keys['unit'], keys['value'], keys['descr'])
+        return Curve(keys['unit'], keys['value'], keys['descr'])
 
 
     def params(self, **keys):
-        return self.Parameter(keys['unit'], keys['value'], keys['descr'])
+        return Parameter(keys['unit'], self.num(keys['value']), keys['descr'])
 
 
 
@@ -351,8 +347,8 @@ def read_line(line):
 
 
 class ExcelConverter(object):
-    def __init__(self, las):
-        self.las = las
+    def __init__(self, las_obj):
+        self.las = las_obj
         
     def write_excel(self, xlsfn):
         import xlwt
@@ -360,13 +356,13 @@ class ExcelConverter(object):
         md_sheet = wb.add_sheet('Metadata')
         curves_sheet = wb.add_sheet('Curves')
         
-        for i, (key, value) in enumerate(self.las.metadata_list()):
+        for i, (key, value) in enumerate(self.las.metadata.items()):
             md_sheet.write(i, 0, key)
             md_sheet.write(i, 1, value)
             
-        for i, curve in enumerate(self.las.curves):
-            curves_sheet.write(0, i, curve.name)
-            for j, value in enumerate(curve.data):
+        for i, (name, data) in enumerate(self.las.items()):
+            curves_sheet.write(0, i, name)
+            for j, value in enumerate(data):
                 curves_sheet.write(j + 1, i, value)
         
         wb.save(xlsfn)
