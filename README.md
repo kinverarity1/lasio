@@ -108,6 +108,6 @@ inside ``l.provenance``:
 Progress
 --------
 
-1/3/14: It works fine for 1.2 and 2.0 files, but not for 3.0 yet.
-30/3/14: Re-written interface for it (see usage above).
-31/3/14: Reads wrapped data in. Updated master branch.
+- 1/3/14: It works fine for 1.2 and 2.0 files, but not for 3.0 yet.
+- 30/3/14: Re-written interface for it (see usage above).
+- 31/3/14: Reads wrapped data in. Updated master branch.
