@@ -58,7 +58,10 @@ class OrderedDict(collections.OrderedDict):
 
     @property
     def _d(self):
-        return dict([(k, v.value) for k, v in self.items()])
+        if hasattr(self.values()[0], 'value'):
+            return dict([(k, v.value) for k, v in self.items()])
+        else:
+            return dict([(k, v.descr) for k, v in self.items()])
 
 
 def open_file(file_obj, **kwargs):
