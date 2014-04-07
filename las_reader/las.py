@@ -16,6 +16,10 @@ import urllib2
 
 import numpy
 
+try:
+    from recordtype import recordtype
+except ImportError:
+    recordtype = collections.namedtuple
 
 
 logger = logging.getLogger(__name__)
@@ -29,9 +33,9 @@ url_regexp = re.compile(
         r'(?::\d+)?' # optional port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
-Metadata = collections.namedtuple('Metadata', ['unit', 'value', 'descr'])
-Curve = collections.namedtuple('Curve', ['unit', 'API_code', 'descr'])
-Parameter = collections.namedtuple('Parameter', ['unit', 'value', 'descr'])
+Metadata = recordtype('Metadata', ['unit', 'value', 'descr'])
+Curve = recordtype('Curve', ['unit', 'API_code', 'descr'])
+Parameter = recordtype('Parameter', ['unit', 'value', 'descr'])
 
 DEFAULT_VALUES = {
     'version': {'VERS': '2.0',
@@ -47,7 +51,7 @@ DEFAULT_ORDER = {
 }
 
 
-class OrderedDict(collections.OrderedDict):
+class OrderedDictionary(collections.OrderedDict):
     def __repr__(self):
         l = []
         for key, value in self.iteritems():
@@ -92,7 +96,7 @@ def open_file(file_obj, **kwargs):
 
 
     
-class Las(OrderedDict):
+class Las(OrderedDictionary):
     '''Read LAS file.
 
     Args:
@@ -101,7 +105,7 @@ class Las(OrderedDict):
     '''
 
     def __init__(self, file=None, create=None, **kwargs):
-        OrderedDict.__init__(self)
+        OrderedDictionary.__init__(self)
         if not file is None:
             self.read(file, **kwargs)
         elif not create is None:
@@ -138,7 +142,7 @@ class Las(OrderedDict):
 
 
     def keys(self):
-        k = super(OrderedDict, self).keys()
+        k = super(OrderedDictionary, self).keys()
         return [ki for ki in k if isinstance(ki, basestring)]
 
 
@@ -221,7 +225,7 @@ class Reader(object):
     def read_section(self, section_name):
         is_section = lambda txt: section_name.startswith(txt)
         parser = SectionParser(section_name, version=self.version)
-        d = OrderedDict()
+        d = OrderedDictionary()
         in_section = False
         for line in self.iter_section_lines(section_name):      
             try:
