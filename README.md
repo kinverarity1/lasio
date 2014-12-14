@@ -3,7 +3,7 @@ LAS Reader
 
 ``las_reader`` is a Python package to read in Log ASCII Standard (LAS) files, used in geophysical 
 logging. The file format is specified by the 
-[Canadian Well Logging Society](http://cwls.org/las_info.php). The intention is to get the data in a useful and easy format for ``numpy``.
+[Canadian Well Logging Society](http://www.cwls.org/las/). The intention is to get the data out for use with ``numpy`` and other scientific Python tools.
 
 There's an example IPython Notebook on how to use it here: 
 
