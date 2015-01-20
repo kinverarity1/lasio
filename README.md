@@ -5,6 +5,10 @@ LAS Reader
 logging. The file format is specified by the 
 [Canadian Well Logging Society](http://www.cwls.org/las/). The intention is to get the data out for use with ``numpy`` and other scientific Python tools.
 
+Install using:
+
+    $ python setup.py install
+
 There's an example IPython Notebook on how to use it here: 
 
 http://nbviewer.ipython.org/github/kinverarity1/las-reader/blob/master/docs/Example%20usage.ipynb
