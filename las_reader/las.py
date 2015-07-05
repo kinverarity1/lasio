@@ -8,19 +8,10 @@ import os
 import pprint
 import logging
 import re
-try:
-    import io as StringIO
-except ImportError:
-    import io
+import io
 import urllib.request, urllib.error, urllib.parse
-
 import numpy
-
-try:
-    from .recordtype import recordtype
-except ImportError:
-    recordtype = collections.namedtuple
-
+import namedlist as recordtype
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +94,7 @@ def open_file(file_obj, **kwargs):
     return f, provenance
 
 
-    
+
 class Las(OrderedDictionary):
     '''Read LAS file.
 
@@ -127,15 +118,15 @@ class Las(OrderedDictionary):
             self.read(file, **kwargs)
         elif not (create is None):
             self.create(create, **kwargs)
-        
+
     def read(self, file, **kwargs):
         f, provenance = open_file(file, **kwargs)
         self.provenance = provenance
         self._text = f.read()
         reader = Reader(self._text)
-        
+
         self.version = reader.read_section('~V')
-        
+
         # Set version
         reader.version = self.version['VERS'].value
         reader.wrap = self.version['WRAP'].value == 'YES'
@@ -322,7 +313,7 @@ class Las(OrderedDictionary):
     @property
     def index(self):
         return self.data[:, 0]
-    
+
 
 
 class Reader(object):
@@ -332,7 +323,7 @@ class Reader(object):
         self.version = 1.2
         self.null = numpy.nan
         self.wrap = True
-        
+
 
     @property
     def section_names(self):
@@ -362,16 +353,16 @@ class Reader(object):
                 break
             if in_section:
                 yield line
-        
+
 
     def read_raw_text(self, section_name):
         return '\n'.join(self.iter_section_lines(section_name, ignore_comments=False))
-        
+
 
     def read_section(self, section_name):
         parser = SectionParser(section_name, version=self.version)
         d = OrderedDictionary()
-        for line in self.iter_section_lines(section_name):      
+        for line in self.iter_section_lines(section_name):
             try:
                 values = read_line(line)
             except:
@@ -384,7 +375,7 @@ class Reader(object):
     def read_list_section(self, section_name):
         parser = SectionParser(section_name, version=self.version)
         l = []
-        for line in self.iter_section_lines(section_name):      
+        for line in self.iter_section_lines(section_name):
             try:
                 values = read_line(line)
             except:
@@ -412,7 +403,7 @@ class Reader(object):
         logger.debug('checking for nulls (NULL = %s)' % self.null)
         arr[arr == self.null] = numpy.nan
         return arr
-        
+
 
     def read_data_string(self):
         start_data = None
@@ -430,7 +421,7 @@ class Reader(object):
 
 
 class SectionParser(object):
-    
+
     def __init__(self, section_name, version=1.2):
         if section_name.startswith('~C'):
             self.func = self.curves
@@ -506,7 +497,3 @@ def read_line(line):
     else:
         d['descr'] = line
     return d
-  
-
-
-
