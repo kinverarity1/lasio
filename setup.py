@@ -53,5 +53,5 @@ setup(name='las_reader',
         'console_scripts': [
             'sample=sample:main',
         ],
-    }
+    },
 )
