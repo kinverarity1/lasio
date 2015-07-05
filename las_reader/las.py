@@ -9,15 +9,15 @@ import pprint
 import logging
 import re
 try:
-    import cStringIO as StringIO
+    import io as StringIO
 except ImportError:
-    import StringIO
-import urllib2
+    import io
+import urllib.request, urllib.error, urllib.parse
 
 import numpy
 
 try:
-    from recordtype import recordtype
+    from .recordtype import recordtype
 except ImportError:
     recordtype = collections.namedtuple
 
@@ -61,7 +61,7 @@ PARM_FMT = '{mnemonic}.{unit} {value} : {descr}'
 class OrderedDictionary(collections.OrderedDict):
     def __repr__(self):
         l = []
-        for key, value in self.iteritems():
+        for key, value in self.items():
             s = "'%s': %s" % (key, value)
             l.append(s)
         s = '{' + ',\n '.join(l) + '}'
@@ -69,10 +69,10 @@ class OrderedDictionary(collections.OrderedDict):
 
     @property
     def _d(self):
-        if hasattr(self.values()[0], 'value'):
-            return dict([(k, v.value) for k, v in self.items()])
+        if hasattr(list(self.values())[0], 'value'):
+            return dict([(k, v.value) for k, v in list(self.items())])
         else:
-            return dict([(k, v.descr) for k, v in self.items()])
+            return dict([(k, v.descr) for k, v in list(self.items())])
 
 
 
@@ -81,17 +81,17 @@ def open_file(file_obj, **kwargs):
                   'name': None,
                   'url': None,
                   'time_opened': datetime.datetime.now()}
-    if isinstance(file_obj, basestring):
+    if isinstance(file_obj, str):
         if os.path.exists(file_obj):
             f = codecs.open(file_obj, mode='r', **kwargs)
             provenance['name'] = os.path.basename(file_obj)
             provenance['path'] = file_obj
         elif url_regexp.match(file_obj):
-            f = urllib2.urlopen(file_obj, **kwargs)
+            f = urllib.request.urlopen(file_obj, **kwargs)
             provenance['name'] = file_obj.split('/')[-1]
             provenance['url'] = file_obj
         else:
-            f = StringIO.StringIO(file_obj)
+            f = io.StringIO(file_obj)
     else:
         f = file_obj
         try:
@@ -168,7 +168,7 @@ class Las(OrderedDictionary):
         for i, c in enumerate(self.curves):
             d = data[:, i]
             c.data = d
-            if c.mnemonic in self.keys():
+            if c.mnemonic in list(self.keys()):
                 logger.warning('Multiple curves with the same mnemonic (%s).' % c.mnemonic)
                 self[c.name] = d
             else:
@@ -189,12 +189,12 @@ class Las(OrderedDictionary):
         lines.append('~Version '.ljust(60, '-'))
         l_mnem = 0
         l_value = 0
-        for vm in self.version.values():
+        for vm in list(self.version.values()):
             if len(vm.mnemonic) > l_mnem:
                 l_mnem = len(vm.mnemonic)
             if len(str(vm.value)) > l_value:
                 l_value = len(str(vm.value))
-        for vm in self.version.values():
+        for vm in list(self.version.values()):
             vm_d = vm.todict()
             vm_d['mnemonic'] = vm_d['mnemonic'].rjust(l_mnem)
             vm_d['value'] = str(vm_d['value']).rjust(l_value)
@@ -206,14 +206,14 @@ class Las(OrderedDictionary):
         l_left = 0
         left_rev = lambda rt: '{mnemonic}.{unit} {value}'.format(**rt.todict())
         left_norm = lambda rt: '{mnemonic}.{unit} {descr}'.format(**rt.todict())
-        for wm in self.well.values():
+        for wm in list(self.well.values()):
             if wm.mnemonic in WELL_REV_MNEMONICS:
                 s_left = left_rev(wm)
             else:
                 s_left = left_norm(wm)
             if len(s_left) > l_left:
                 l_left = len(s_left)
-        for wm in self.well.values():
+        for wm in list(self.well.values()):
             wm_leftmost = '{mnemonic}.{unit}'.format(**wm.todict())
             if wm.mnemonic in WELL_REV_MNEMONICS:
                 wm_left = wm_leftmost + str(wm.value).rjust(l_left - len(wm_leftmost))
@@ -242,14 +242,14 @@ class Las(OrderedDictionary):
         lines.append('~Parameters '.ljust(60, '-'))
         l_mnem_unit = 0
         l_value = 0
-        for pm in self.params.values():
+        for pm in list(self.params.values()):
             s_mnem_unit = '{mnemonic}.{unit}'.format(**pm.todict())
             if len(s_mnem_unit) > l_mnem_unit:
                 l_mnem_unit = len(s_mnem_unit)
             s_value = str(pm.value)
             if len(s_value) > l_value:
                 l_value = len(s_value)
-        for pm in self.params.values():
+        for pm in list(self.params.values()):
             s_left = '{mnemonic}.{unit}'.format(**pm.todict()).ljust(l_mnem_unit)
             s_right = str(pm.value).rjust(l_value)
             lines.append(s_left + ' ' + s_right + ': ' + pm.descr)
@@ -283,35 +283,35 @@ class Las(OrderedDictionary):
                 return curve
 
     def keys(self):
-        k = super(OrderedDictionary, self).keys()
-        return [ki for ki in k if isinstance(ki, basestring)]
+        k = list(super(OrderedDictionary, self).keys())
+        return [ki for ki in k if isinstance(ki, str)]
 
 
     def values(self):
-        return [self[k] for k in self.keys()]
+        return [self[k] for k in list(self.keys())]
 
 
     def items(self):
-        return [(k, self[k]) for k in self.keys()]
+        return [(k, self[k]) for k in list(self.keys())]
 
 
     def iterkeys(self):
-        return iter(self.keys())
+        return iter(list(self.keys()))
 
 
     def itervalues(self):
-        return iter(self.values())
+        return iter(list(self.values()))
 
 
     def iteritems(self):
-        return iter(self.items())
+        return iter(list(self.items()))
 
 
     @property
     def metadata(self):
         d = {}
         for di in (self.version, self.well, self.params):
-            for k, v in di.items():
+            for k, v in list(di.items()):
                 d[k] = v.value
         return d
 
@@ -375,8 +375,8 @@ class Reader(object):
             try:
                 values = read_line(line)
             except:
-                print('Failed to read in NAME.UNIT VALUE:DESCR'
-                      ' from:\n\t%s' % line)
+                print(('Failed to read in NAME.UNIT VALUE:DESCR'
+                      ' from:\n\t%s' % line))
             else:
                 d[values['name']] = parser(**values)
         return d
@@ -388,8 +388,8 @@ class Reader(object):
             try:
                 values = read_line(line)
             except:
-                print('Failed to read in NAME.UNIT VALUE:DESCR'
-                      ' from:\n\t%s' % line)
+                print(('Failed to read in NAME.UNIT VALUE:DESCR'
+                      ' from:\n\t%s' % line))
             else:
                 l.append(parser(**values))
         return l
@@ -397,10 +397,10 @@ class Reader(object):
     def read_data(self, number_of_curves=None):
         s = self.read_data_string()
         if not self.wrap:
-            arr = numpy.loadtxt(StringIO.StringIO(s))
+            arr = numpy.loadtxt(io.StringIO(s))
         else:
             s = s.replace('\n', ' ').replace('\t', ' ')
-            arr = numpy.loadtxt(StringIO.StringIO(s))
+            arr = numpy.loadtxt(io.StringIO(s))
             logger.debug('arr shape = %s' % (arr.shape))
             logger.debug('number of curves = %s' % number_of_curves)
             arr = numpy.reshape(arr, (-1, number_of_curves))

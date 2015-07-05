@@ -4,10 +4,10 @@ import os
 import logging
 import re
 try:
-    import cStringIO as StringIO
+    import io as StringIO
 except ImportError:
-    import StringIO
-import urllib2
+    import io
+import urllib.request, urllib.error, urllib.parse
 
 import numpy
 import pandas
@@ -100,9 +100,9 @@ class LASFile(object):
     def metadata_list(self):
         ml = []
         fn = self.provenance['path']
-        for section_name, data in self.sections.items():
+        for section_name, data in list(self.sections.items()):
             if isinstance(data, dict):
-                for key, value in data.items():
+                for key, value in list(data.items()):
                     if section_name == '~O' and key == 'lines':
                         continue
                     if key == 'Azimuth degrees':
@@ -147,7 +147,7 @@ class LASFile(object):
         self.sections['~V']['WRAP']['data']
         
     _delimiter_map = {'COMMA': ',', 'TAB': '\t', 'SPACE': ' '}
-    _delimiter_map_inv = dict((v, k) for k, v in _delimiter_map.iteritems())
+    _delimiter_map_inv = dict((v, k) for k, v in _delimiter_map.items())
         
     @property
     def delimiter(self):
@@ -240,9 +240,9 @@ class LASFileReader(object):
     def assign_item(self, name, d, new):
         if name in d:
             existing = d[name]
-            if isinstance(existing['data'], basestring):
+            if isinstance(existing['data'], str):
                 d[name]['data'] += '\n' + new['data']
-            if isinstance(existing['descr'], basestring):
+            if isinstance(existing['descr'], str):
                 d[name]['descr'] += '\n' + new['descr']
         else:
             d[name] = new
@@ -253,10 +253,10 @@ class LASFileReader(object):
             return self.read_wrapped_data(curve_names)
         s = self.read_data_string()
         try:
-            arr = numpy.loadtxt(StringIO.StringIO(s))
+            arr = numpy.loadtxt(io.StringIO(s))
         except ValueError:
             lines = s.splitlines()
-            sobj = StringIO.StringIO('\n'.join(lines[:-1]))
+            sobj = io.StringIO('\n'.join(lines[:-1]))
             arr = numpy.loadtxt(sobj)
         if not arr.shape or (arr.ndim == 1 and arr.shape[0] == 0):
             logger.warning('No data present.')
@@ -297,17 +297,17 @@ def open_file(file_obj, **kwargs):
                   'name': None,
                   'url': None,
                   'time_opened': datetime.datetime.now()}
-    if isinstance(file_obj, basestring):
+    if isinstance(file_obj, str):
         if os.path.exists(file_obj):
             f = codecs.open(file_obj, mode='r', **kwargs)
             provenance['name'] = os.path.basename(file_obj)
             provenance['path'] = file_obj
         elif url_regexp.match(file_obj):
-            f = urllib2.urlopen(file_obj, **kwargs)
+            f = urllib.request.urlopen(file_obj, **kwargs)
             provenance['name'] = file_obj.split('/')[-1]
             provenance['url'] = file_obj
         else:
-            f = StringIO.StringIO(file_obj)
+            f = io.StringIO(file_obj)
     else:
         f = file_obj
         try:

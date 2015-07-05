@@ -1,4 +1,4 @@
-import las
+from . import las
 
 
 def read(file, **kwargs):
