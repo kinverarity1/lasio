@@ -11,7 +11,7 @@ import re
 import io
 import urllib.request, urllib.error, urllib.parse
 import numpy
-import namedlist as recordtype
+from namedlist as namedlist
 
 logger = logging.getLogger(__name__)
 
@@ -26,9 +26,9 @@ url_regexp = re.compile(
         r'(?::\d+)?' # optional port
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
-Metadata = recordtype('Metadata', ['mnemonic', 'unit', 'value', 'descr'])
-Curve = recordtype('Curve', ['mnemonic', 'unit', 'API_code', 'descr', 'data', 'name'])
-Parameter = recordtype('Parameter', ['mnemonic', 'unit', 'value', 'descr'])
+Metadata = namedlist('Metadata', ['mnemonic', 'unit', 'value', 'descr'])
+Curve = namedlist('Curve', ['mnemonic', 'unit', 'API_code', 'descr', 'data', 'name'])
+Parameter = namedlist('Parameter', ['mnemonic', 'unit', 'value', 'descr'])
 
 DEFAULT_VALUES = {
     'version': {'VERS': '2.0',
