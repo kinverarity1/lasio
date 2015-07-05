@@ -8,8 +8,6 @@ import urllib.request, urllib.error, urllib.parse
 
 import numpy
 import pandas
-import scipy
-from scipy import stats
 
 import logging
 logger = logging.getLogger(__name__)
@@ -359,11 +357,15 @@ def metadata(d, version=0):
             return [key, d['data']]
         return [key, d['descr']]
 
+def itemfreq(a):
+    items, inv = np.unique(a, return_inverse=True)
+    freq = np.bincount(inv)
+    return np.array([items, freq]).T
 
 def remove_possible_null_values(arr, key=''):
     lower_p = numpy.percentile(arr, 10)
     upper_p = numpy.percentile(arr, 90)
-    freqs = numpy.asarray(sorted(stats.itemfreq(arr), key=lambda r: r[1], reverse=True))
+    freqs = numpy.asarray(sorted(itemfreq(arr), key=lambda r: r[1], reverse=True))
     freqs_upper_p = numpy.percentile(freqs[:, 1], 95)
     for value, freq in freqs:
         if freq >= freqs_upper_p and (value <= lower_p or value >= upper_p):

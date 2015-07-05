@@ -1,10 +1,10 @@
 from distutils.core import setup
 
 setup(name='las_reader',
-      version='1.2.0',
+      version='0.9.0',
 
-      description='A sample Python project',
-      long_description=long_description,
+      description='LAS reader',
+      long_description='LAS reader that was started by https://github.com/kinverarity1',
 
       # The project's main homepage.
       url='https://github.com/VelizarVESSELINOV/las-reader',
@@ -12,7 +12,7 @@ setup(name='las_reader',
       # Author details
       author='Velizar VESSELINOV after fork of https://github.com/kinverarity1',
       author_email='Velizar.VESSELINOV@gmail.com',
-      install_requires=['numpy' , 'scipy', 'namedlist'],
+      install_requires=['numpy' , 'pandas', 'namedlist'],
 
       # Choose your license
       license='BSD',
@@ -29,6 +29,9 @@ setup(name='las_reader',
             'Intended Audience :: Intended Audience :: Customer Service',
             'Intended Audience :: Developers',
             'Intended Audience :: End Users/Desktop',
+            'Intended Audience :: Science/Research',
+            'Environment :: Console',
+            'Operating System :: OS Independent',
             'Topic :: System :: Filesystems',
             'Topic :: Scientific/Engineering :: Information Analysis',
 
