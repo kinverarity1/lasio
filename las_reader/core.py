@@ -3,10 +3,7 @@ import datetime
 import os
 import logging
 import re
-try:
-    import io as StringIO
-except ImportError:
-    import io
+import io
 import urllib.request, urllib.error, urllib.parse
 
 import numpy
@@ -14,10 +11,8 @@ import pandas
 import scipy
 from scipy import stats
 
-
 import logging
 logger = logging.getLogger(__name__)
-
 
 url_regexp = re.compile(
         r'^(?:http|ftp)s?://' # http:// or https://
@@ -34,45 +29,43 @@ sections_default = {
         '~W': {},
         '~O': {'lines': []},
         }
-      
 
-    
 class LASFile(object):
     '''A log from a LAS file.
-    
+
     See read() method for how to read data in.
-    
+
     '''
     def __init__(self, file=None, title='', autodetect_null=False, **kwargs):
         self.sections = dict(sections_default)
         self.title = title
-        self.fail_silently = False        
+        self.fail_silently = False
         self.autodetect_null = autodetect_null
         if 'fail_silently' in kwargs:
             self.fail_silently = kwargs['fail_silently']
             del kwargs['fail_silently']
-            
+
         if not file is None:
             self.read(file, **kwargs)
-        
+
     def read(self, file_obj, **kwargs):
         '''Read LAS file.
-        
+
         Args:
             - *file_obj*: either a filename, URL, file-like object, or a string which
                       is the ASCII content of a LAS file
-                      
+
         Kwargs: passed to either codecs.open() or urllib2.urlopen() if relevant
-        
+
         Returns: las_reader.LASFile object
-        
+
         '''
         f, self.provenance = open_file(file_obj, **kwargs)
         self.fn = self.provenance['path']
         file_contents = f.read()
-        f.close()        
-        reader = LASFileReader(file_contents)        
-        
+        f.close()
+        reader = LASFileReader(file_contents)
+
         section_names = reader.get_section_names()
         self.sections['~V'].update(reader.read_section('~V'))
         if self.version < 3:
@@ -88,7 +81,7 @@ class LASFile(object):
                     self.sections[s].update(reader.read_section(s))
         else:
             raise NotImplementedError('Cannot read LAS 3.0 files yet')
-            
+
         # Read data sections
         if self.version < 3:
             self.data, self.sections['~A'] = reader.read_data(
@@ -96,7 +89,7 @@ class LASFile(object):
                     null=self.null, autodetect_null=self.autodetect_null)
         else:
             raise NotImplementedError('Cannot read LAS 3.0 files yet')
-    
+
     def metadata_list(self):
         ml = []
         fn = self.provenance['path']
@@ -109,35 +102,35 @@ class LASFile(object):
                         continue
                     ml.append(metadata(data[key], version=self.version))
         return ml
-    
+
     def curves(self):
         curves = []
         for i, curve_name in enumerate(self.curve_names):
             curves.append([curve_name, self.data[curve_name]])
         return curves
-    
+
     def sampling_intervals(self):
         return [self.sample_interval for i in self.curves()]
-        
+
     def name(self):
         name = self.fn
         if name:
             return os.path.basename(name)
         else:
             return ''
-    
+
     @property
     def version(self):
         return float(self.sections['~V']['VERS']['data'])
-    
+
     @version.setter
     def version(self, value):
         self.sections['~V']['VERS']['data'] = str(value)
-    
+
     @property
     def wrap(self):
         return bool(self.sections['~V']['WRAP']['data'] == 'yes')
-        
+
     @wrap.setter
     def wrap(self, value):
         if value:
@@ -145,48 +138,48 @@ class LASFile(object):
         else:
             value = 'NO'
         self.sections['~V']['WRAP']['data']
-        
+
     _delimiter_map = {'COMMA': ',', 'TAB': '\t', 'SPACE': ' '}
     _delimiter_map_inv = dict((v, k) for k, v in _delimiter_map.items())
-        
+
     @property
     def delimiter(self):
         return self._delimiter_map[self.sections['~V']['DLM']['data']]
-        
+
     @delimiter.setter
     def delimiter(self, value):
         self.sections['~V']['DLM']['data'] = self._delimiter_map_inv[value]
-    
+
     @property
     def curve_names(self):
         return [d['name'] for d in self.sections['~C']]
-        
+
     @curve_names.setter
     def curve_names(self, value):
         raise NotImplementedError('You cannot set curve names like this.')
-        
+
     @property
     def sample_interval(self):
         return float(self.sections['~W']['STEP']['data'])
-        
+
     @sample_interval.setter
     def sample_interval(self, value):
         self.sections['~W']['STEP'] = '%1.4f' % value
-        
+
     @property
     def null(self):
         return self.sections['~W']['NULL']
-            
+
     @null.setter
     def null(self, value):
         self.sections['~W']['NULL'] = value
 
 
-    
+
 class LASFileReader(object):
     def __init__(self, text):
         self.lines = text.split('\n')
-        
+
     def get_section_names(self):
         names = []
         for line in self.lines:
@@ -196,7 +189,7 @@ class LASFileReader(object):
             if line.startswith('~'):
                 names.append(line)
         return names
-                
+
     def read_section(self, section):
         d = {}
         if section.startswith('~C'):
@@ -213,7 +206,7 @@ class LASFileReader(object):
                 return d
             if in_section:
                 if section.startswith('~O'):
-                    
+
                     # Some software puts LAS-style data lines in the ~Other
                     # section, whereas others use it as free text. The standard
                     # allows both, so try to parse both styles.
@@ -229,14 +222,14 @@ class LASFileReader(object):
                     except:
                         raise Exception('Failed to read in NAME.UNIT DATA:DESCR for:\n\t%s' % line)
                     di = dict(name=name, unit=unit, data=data, descr=descr)
-                    
+
                     # Retain order for ~Curves section.
-                    if section.startswith('~C'):                        
+                    if section.startswith('~C'):
                         d.append(di)
                     else:
                         self.assign_item(name, d, di)
         return d
-        
+
     def assign_item(self, name, d, new):
         if name in d:
             existing = d[name]
@@ -246,7 +239,7 @@ class LASFileReader(object):
                 d[name]['descr'] += '\n' + new['descr']
         else:
             d[name] = new
-    
+
     def read_data(self, wrap=False, curve_names=None, null=None,
                   autodetect_null=False):
         if wrap:
@@ -274,10 +267,10 @@ class LASFileReader(object):
             series = pandas.Series(data, index=arr[:, 0], name=name)
             df_dict[name] = series
         return pandas.DataFrame(df_dict), arr
-            
+
     def read_wrapped_data(self, curve_names=None):
         raise NotImplementedError('Cannot read wrapped data yet.')
-        
+
     def read_data_string(self):
         for i, line in enumerate(self.lines):
             line = line.strip().strip('\t').strip()
@@ -289,9 +282,9 @@ class LASFileReader(object):
         s = re.sub('-?\d*\.\d*\.\d*', ' NaN NaN ', s)
         s = re.sub('NaN.\d*', ' NaN NaN ', s)
         return s
-    
-    
-    
+
+
+
 def open_file(file_obj, **kwargs):
     provenance = {'path': None,
                   'name': None,
@@ -317,8 +310,8 @@ def open_file(file_obj, **kwargs):
         except:
             pass
     return f, provenance
-            
-    
+
+
 def read_line(line):
     if ':' in line and '.' in line.split(':', 1)[0]:
         split_period = line.split('.')
@@ -343,8 +336,8 @@ def read_line(line):
         name = split_period[0].strip()
         descr = '.'.join(split_period[1:])
         return name, None, descr, descr
-    
-    
+
+
 def convert_number(item):
     try:
         return int(item)
@@ -353,8 +346,8 @@ def convert_number(item):
             return float(item)
         except:
             return numpy.nan
-  
-    
+
+
 def metadata(d, version=0):
     for key_name in ['name', 'data', 'descr']:
         assert key_name in d
@@ -383,21 +376,20 @@ def remove_possible_null_values(arr, key=''):
 class ExcelConverter(object):
     def __init__(self, las):
         self.las = las
-        
+
     def write_excel(self, xlsfn):
         import xlwt
         wb = xlwt.Workbook()
         md_sheet = wb.add_sheet('Metadata')
         curves_sheet = wb.add_sheet('Curves')
-        
+
         for i, (key, value) in enumerate(self.las.metadata_list()):
             md_sheet.write(i, 0, key)
             md_sheet.write(i, 1, value)
-            
+
         for i, (name, data) in enumerate(self.las.curves()):
             curves_sheet.write(0, i, name)
             for j, value in enumerate(data):
                 curves_sheet.write(j + 1, i, value)
-        
+
         wb.save(xlsfn)
-        
