@@ -7,11 +7,11 @@ setup(name='las_reader',
       long_description='LAS reader that was started by https://github.com/kinverarity1',
 
       # The project's main homepage.
-      url='https://github.com/VelizarVESSELINOV/las-reader',
+      #url='https://github.com/VelizarVESSELINOV/las-reader',
 
       # Author details
-      author='Velizar VESSELINOV after fork of https://github.com/kinverarity1',
-      author_email='Velizar.VESSELINOV@gmail.com',
+      #author='Velizar VESSELINOV after fork of https://github.com/kinverarity1',
+      #author_email='Velizar.VESSELINOV@gmail.com',
       #install_requires=['numpy>1.8' , 'pandas>0.0', 'namedlist>1.6',],
 
       # Choose your license
