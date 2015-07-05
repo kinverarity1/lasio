@@ -11,7 +11,7 @@ import re
 import io
 import urllib.request, urllib.error, urllib.parse
 import numpy
-from namedlist as namedlist
+from namedlist import namedlist
 
 logger = logging.getLogger(__name__)
 

@@ -49,9 +49,4 @@ setup(name='las_reader',
             'Programming Language :: Python :: 3.4',
       ],
       packages=["las_reader"],
-      entry_points={
-        'console_scripts': [
-            'sample=sample:main',
-        ],
-    },
 )
