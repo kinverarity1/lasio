@@ -12,7 +12,7 @@ setup(name='las_reader',
       # Author details
       author='Velizar VESSELINOV after fork of https://github.com/kinverarity1',
       author_email='Velizar.VESSELINOV@gmail.com',
-      install_requires=['numpy' , 'pandas', 'namedlist'],
+      install_requires=['numpy' , 'pandas', 'namedlist',],
 
       # Choose your license
       license='BSD',
