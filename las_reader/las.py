@@ -48,7 +48,6 @@ WELL_FMT = '{mnemonic}.{unit} {descr}: {value}'
 CURV_FMT = '{mnemonic}.{unit} {API_code} : {descr}'
 PARM_FMT = '{mnemonic}.{unit} {value} : {descr}'
 
-
 class OrderedDictionary(collections.OrderedDict):
     def __repr__(self):
         l = []
@@ -314,16 +313,12 @@ class Las(OrderedDictionary):
     def index(self):
         return self.data[:, 0]
 
-
-
 class Reader(object):
-
     def __init__(self, text):
         self.lines = text.split('\n')
         self.version = 1.2
         self.null = numpy.nan
         self.wrap = True
-
 
     @property
     def section_names(self):
@@ -354,10 +349,8 @@ class Reader(object):
             if in_section:
                 yield line
 
-
     def read_raw_text(self, section_name):
         return '\n'.join(self.iter_section_lines(section_name, ignore_comments=False))
-
 
     def read_section(self, section_name):
         parser = SectionParser(section_name, version=self.version)
@@ -418,10 +411,7 @@ class Reader(object):
         s = re.sub('NaN.\d*', ' NaN NaN ', s)
         return s
 
-
-
 class SectionParser(object):
-
     def __init__(self, section_name, version=1.2):
         if section_name.startswith('~C'):
             self.func = self.curves
@@ -429,14 +419,13 @@ class SectionParser(object):
             self.func = self.params
         else:
             self.func = self.metadata
+
         self.version = version
         self.section_name = section_name
-
 
     def __call__(self, *args, **kwargs):
         r = self.func(*args, **kwargs)
         return self.num(r, default=r)
-
 
     def num(self, x, default=None):
         if default is None:
@@ -448,7 +437,6 @@ class SectionParser(object):
                 return numpy.float(x)
             except:
                 return default
-
 
     def metadata(self, **keys):
         if self.version < 2:

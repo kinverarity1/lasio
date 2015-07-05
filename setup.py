@@ -4,7 +4,7 @@ setup(name='las_reader',
       version='0.9.0',
 
       description='LAS reader',
-      long_description='LAS reader that was started by https://github.com/kinverarity1',
+      long_description='Python package to read Log ASCII Standard files that was started by https://github.com/kinverarity1',
 
       # The project's main homepage.
       #url='https://github.com/VelizarVESSELINOV/las-reader',
