@@ -1,9 +1,12 @@
 from distutils.core import setup
 
 setup(name='las_reader',
+      # packages=["las_reader",],
+      entry_points={'console_scripts': ['las2excel = las_reader.las2excel:main']})
+
       #version='0.9.0',
 
-      description='LAS reader',
+      #description='LAS reader',
       #long_description='',
 
       # The project's main homepage.
@@ -17,7 +20,7 @@ setup(name='las_reader',
       #license='',
 
       # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
-      classifiers=[
+      #classifiers=[
             # How mature is this project? Common values are
             #   3 - Alpha
             #   4 - Beta
@@ -45,7 +48,7 @@ setup(name='las_reader',
             #'Programming Language :: Python :: 3',
             #'Programming Language :: Python :: 3.2',
             #'Programming Language :: Python :: 3.3',
-            'Programming Language :: Python :: 3.4',
-      ],
-      packages=["las_reader"],
+            #'Programming Language :: Python :: 3.4',
+      #],
+      #packages=["las_reader"],
 )
