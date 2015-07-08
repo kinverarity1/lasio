@@ -1,5 +1,7 @@
 '''las.py - read Log ASCII Standard files
 
+See README.md and LICENSE for more information.
+
 '''
 from __future__ import print_function
 
@@ -8,8 +10,6 @@ import codecs
 import collections
 import datetime
 import os
-import pprint
-import logging
 import re
 try:
     import cStringIO as StringIO
@@ -21,8 +21,6 @@ from namedlist import namedlist
 import numpy
 
 
-
-logger = logging.getLogger(__name__)
 
 WELL_REV_MNEMONICS = ['STRT', 'STOP', 'STEP', 'NULL']
 
