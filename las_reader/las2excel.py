@@ -4,7 +4,7 @@ except ImportError:
     argparse = None
 import sys
     
-import las
+from . import las
 
 
 def main():
