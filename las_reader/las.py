@@ -1,6 +1,9 @@
 '''las.py - read Log ASCII Standard files
 
 '''
+from __future__ import print_function
+
+# Standard library packages
 import codecs
 import collections
 import datetime
