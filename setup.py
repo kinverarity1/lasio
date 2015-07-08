@@ -2,8 +2,7 @@ from distutils.core import setup
 
 setup(name='las_reader',
       # packages=["las_reader",],
-      entry_points={'console_scripts': ['las2excel = las_reader.las2excel:main']})
-
+      entry_points={'console_scripts': ['las2excel = las_reader.las2excel:main']}
       #version='0.9.0',
 
       #description='LAS reader',
