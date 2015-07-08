@@ -11,10 +11,16 @@ import os
 import pprint
 import logging
 import re
-import io
-import urllib.request, urllib.error, urllib.parse
-import numpy
+try:
+    import cStringIO as StringIO
+except:
+    import StringIO
+
+# Third-party packages available on PyPi
 from namedlist import namedlist
+import numpy
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -367,10 +373,10 @@ class Reader(object):
     def read_data(self, number_of_curves=None):
         s = self.read_data_string()
         if not self.wrap:
-            arr = numpy.loadtxt(io.StringIO(s))
+            arr = numpy.loadtxt(StringIO.StringIO(s))
         else:
             s = s.replace('\n', ' ').replace('\t', ' ')
-            arr = numpy.loadtxt(io.StringIO(s))
+            arr = numpy.loadtxt(StringIO.StringIO(s))
             logger.debug('arr shape = %s' % (arr.shape))
             logger.debug('number of curves = %s' % number_of_curves)
             arr = numpy.reshape(arr, (-1, number_of_curves))
@@ -487,12 +493,8 @@ def open_file(file_obj, **kwargs):
             f = codecs.open(file_obj, mode='r', **kwargs)
             provenance['name'] = os.path.basename(file_obj)
             provenance['path'] = file_obj
-        elif url_regexp.match(file_obj):
-            f = urllib.request.urlopen(file_obj, **kwargs)
-            provenance['name'] = file_obj.split('/')[-1]
-            provenance['url'] = file_obj
         else:
-            f = io.StringIO(file_obj)
+            f = StringIO.StringIO(file_obj)
     else:
         f = file_obj
         try:
