@@ -96,7 +96,7 @@ class Las(OrderedDictionary):
         # self.data = {}
 
         if not (file is None):
-            self.read(file, **kwargs)
+            self.read(file, **kwargs) 
         elif not (create is None):
             self.create(create, **kwargs)
 
@@ -265,26 +265,20 @@ class Las(OrderedDictionary):
         k = list(super(OrderedDictionary, self).keys())
         return [ki for ki in k if isinstance(ki, str)]
 
-
     def values(self):
         return [self[k] for k in list(self.keys())]
-
 
     def items(self):
         return [(k, self[k]) for k in list(self.keys())]
 
-
     def iterkeys(self):
         return iter(list(self.keys()))
-
 
     def itervalues(self):
         return iter(list(self.values()))
 
-
     def iteritems(self):
         return iter(list(self.items()))
-
 
     @property
     def metadata(self):
@@ -301,6 +295,8 @@ class Las(OrderedDictionary):
     @property
     def index(self):
         return self.data[:, 0]
+
+
 
 class Reader(object):
     def __init__(self, text):
@@ -319,7 +315,6 @@ class Reader(object):
             if line.startswith('~'):
                 names.append(line)
         return names
-
 
     def iter_section_lines(self, section_name, ignore_comments=True):
         in_section = False
@@ -387,7 +382,6 @@ class Reader(object):
         arr[arr == self.null] = numpy.nan
         return arr
 
-
     def read_data_string(self):
         start_data = None
         for i, line in enumerate(self.lines):
@@ -400,6 +394,8 @@ class Reader(object):
         s = re.sub('-?\d*\.\d*\.\d*', ' NaN NaN ', s)
         s = re.sub('NaN.\d*', ' NaN NaN ', s)
         return s
+
+
 
 class SectionParser(object):
     def __init__(self, section_name, version=1.2):
