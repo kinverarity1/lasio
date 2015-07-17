@@ -9,6 +9,7 @@ from __future__ import print_function
 import codecs
 import collections
 import datetime
+import logging
 import os
 import re
 try:
@@ -21,6 +22,7 @@ from namedlist import namedlist
 import numpy
 
 
+logger = logging.getLogger(__name__)
 
 WELL_REV_MNEMONICS = ['STRT', 'STOP', 'STEP', 'NULL']
 
