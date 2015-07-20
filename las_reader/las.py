@@ -1,17 +1,26 @@
 '''las.py - read Log ASCII Standard files
 
+See README.md and LICENSE for more information.
+
 '''
+from __future__ import print_function
+
+# Standard library packages
 import codecs
 import collections
 import datetime
-import os
-import pprint
 import logging
+import os
 import re
-import io
-import urllib.request, urllib.error, urllib.parse
-import numpy
+try:
+    import cStringIO as StringIO
+except:
+    import StringIO
+
+# Third-party packages available on PyPi
 from namedlist import namedlist
+import numpy
+
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +36,8 @@ url_regexp = re.compile(
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 Metadata = namedlist('Metadata', ['mnemonic', 'unit', 'value', 'descr'])
-Curve = namedlist('Curve', ['mnemonic', 'unit', 'API_code', 'descr', 'data', 'name'])
+Curve = namedlist('Curve', 
+            ['mnemonic', 'unit', 'API_code', 'descr', 'data', 'name'])
 Parameter = namedlist('Parameter', ['mnemonic', 'unit', 'value', 'descr'])
 
 DEFAULT_VALUES = {
@@ -48,6 +58,8 @@ WELL_FMT = '{mnemonic}.{unit} {descr}: {value}'
 CURV_FMT = '{mnemonic}.{unit} {API_code} : {descr}'
 PARM_FMT = '{mnemonic}.{unit} {value} : {descr}'
 
+
+
 class OrderedDictionary(collections.OrderedDict):
     def __repr__(self):
         l = []
@@ -63,34 +75,6 @@ class OrderedDictionary(collections.OrderedDict):
             return dict([(k, v.value) for k, v in list(self.items())])
         else:
             return dict([(k, v.descr) for k, v in list(self.items())])
-
-
-
-def open_file(file_obj, **kwargs):
-    provenance = {'path': None,
-                  'name': None,
-                  'url': None,
-                  'time_opened': datetime.datetime.now()}
-    if isinstance(file_obj, str):
-        if os.path.exists(file_obj):
-            f = codecs.open(file_obj, mode='r', **kwargs)
-            provenance['name'] = os.path.basename(file_obj)
-            provenance['path'] = file_obj
-        elif url_regexp.match(file_obj):
-            f = urllib.request.urlopen(file_obj, **kwargs)
-            provenance['name'] = file_obj.split('/')[-1]
-            provenance['url'] = file_obj
-        else:
-            f = io.StringIO(file_obj)
-    else:
-        f = file_obj
-        try:
-            provenance['name'] = f.name.split(os.sep)[-1]
-            if os.path.exists(f.name):
-                provenance['path'] = f.name
-        except:
-            pass
-    return f, provenance
 
 
 
@@ -114,7 +98,7 @@ class Las(OrderedDictionary):
         # self.data = {}
 
         if not (file is None):
-            self.read(file, **kwargs)
+            self.read(file, **kwargs) 
         elif not (create is None):
             self.create(create, **kwargs)
 
@@ -159,7 +143,8 @@ class Las(OrderedDictionary):
             d = data[:, i]
             c.data = d
             if c.mnemonic in list(self.keys()):
-                logger.warning('Multiple curves with the same mnemonic (%s).' % c.mnemonic)
+                logger.warning('Multiple curves with the same mnemonic (%s).'
+                               % c.mnemonic)
                 self[c.name] = d
             else:
                 self[c.name] = d
@@ -174,8 +159,10 @@ class Las(OrderedDictionary):
         lines = []
 
         # Write Version section
-        self.version['VERS'] = Metadata('VERS', '', 1.2, 'Version of LAS file format')
-        self.version['WRAP'] = Metadata('WRAP', '', 'NO', 'Is data wrapped across line breaks?')
+        self.version['VERS'] = Metadata('VERS', '', 1.2, 
+                'Version of LAS file format')
+        self.version['WRAP'] = Metadata('WRAP', '', 'NO', 
+                'Is data wrapped across line breaks?')
         lines.append('~Version '.ljust(60, '-'))
         l_mnem = 0
         l_value = 0
@@ -206,10 +193,12 @@ class Las(OrderedDictionary):
         for wm in list(self.well.values()):
             wm_leftmost = '{mnemonic}.{unit}'.format(**wm.todict())
             if wm.mnemonic in WELL_REV_MNEMONICS:
-                wm_left = wm_leftmost + str(wm.value).rjust(l_left - len(wm_leftmost))
+                wm_left = wm_leftmost + str(wm.value).rjust(
+                            l_left - len(wm_leftmost))
                 lines.append(wm_left + ': ' + wm.descr)
             else:
-                wm_left = wm_leftmost + str(wm.descr).rjust(l_left - len(wm_leftmost))
+                wm_left = wm_leftmost + str(wm.descr).rjust(
+                            l_left - len(wm_leftmost))
                 lines.append(wm_left + ': ' + wm.value)
 
         # Write Curves section
@@ -224,7 +213,8 @@ class Las(OrderedDictionary):
             if len(s_API_code) > l_API_code:
                 l_API_code = len(s_API_code)
         for cm in self.curves:
-            s_left = '{mnemonic}.{unit}'.format(**cm.todict()).ljust(l_mnem_unit)
+            s_left = '{mnemonic}.{unit}'.format(
+                        **cm.todict()).ljust(l_mnem_unit)
             s_right = str(cm.API_code).rjust(l_API_code)
             lines.append(s_left + ' ' + s_right + ': ' + cm.descr)
 
@@ -240,7 +230,8 @@ class Las(OrderedDictionary):
             if len(s_value) > l_value:
                 l_value = len(s_value)
         for pm in list(self.params.values()):
-            s_left = '{mnemonic}.{unit}'.format(**pm.todict()).ljust(l_mnem_unit)
+            s_left = '{mnemonic}.{unit}'.format(
+                        **pm.todict()).ljust(l_mnem_unit)
             s_right = str(pm.value).rjust(l_value)
             lines.append(s_left + ' ' + s_right + ': ' + pm.descr)
 
@@ -276,26 +267,20 @@ class Las(OrderedDictionary):
         k = list(super(OrderedDictionary, self).keys())
         return [ki for ki in k if isinstance(ki, str)]
 
-
     def values(self):
         return [self[k] for k in list(self.keys())]
-
 
     def items(self):
         return [(k, self[k]) for k in list(self.keys())]
 
-
     def iterkeys(self):
         return iter(list(self.keys()))
-
 
     def itervalues(self):
         return iter(list(self.values()))
 
-
     def iteritems(self):
         return iter(list(self.items()))
-
 
     @property
     def metadata(self):
@@ -307,11 +292,13 @@ class Las(OrderedDictionary):
 
     @metadata.setter
     def metadata(self, value):
-        raise Warning('Set values in the version/well/params attributes directly')
+        raise Warning('Set values in the version/well/params attrs directly')
 
     @property
     def index(self):
         return self.data[:, 0]
+
+
 
 class Reader(object):
     def __init__(self, text):
@@ -331,7 +318,6 @@ class Reader(object):
                 names.append(line)
         return names
 
-
     def iter_section_lines(self, section_name, ignore_comments=True):
         in_section = False
         for line in self.lines:
@@ -350,7 +336,8 @@ class Reader(object):
                 yield line
 
     def read_raw_text(self, section_name):
-        return '\n'.join(self.iter_section_lines(section_name, ignore_comments=False))
+        return '\n'.join(self.iter_section_lines(section_name, 
+                                                 ignore_comments=False))
 
     def read_section(self, section_name):
         parser = SectionParser(section_name, version=self.version)
@@ -381,10 +368,10 @@ class Reader(object):
     def read_data(self, number_of_curves=None):
         s = self.read_data_string()
         if not self.wrap:
-            arr = numpy.loadtxt(io.StringIO(s))
+            arr = numpy.loadtxt(StringIO.StringIO(s))
         else:
             s = s.replace('\n', ' ').replace('\t', ' ')
-            arr = numpy.loadtxt(io.StringIO(s))
+            arr = numpy.loadtxt(StringIO.StringIO(s))
             logger.debug('arr shape = %s' % (arr.shape))
             logger.debug('number of curves = %s' % number_of_curves)
             arr = numpy.reshape(arr, (-1, number_of_curves))
@@ -396,7 +383,6 @@ class Reader(object):
         logger.debug('checking for nulls (NULL = %s)' % self.null)
         arr[arr == self.null] = numpy.nan
         return arr
-
 
     def read_data_string(self):
         start_data = None
@@ -410,6 +396,8 @@ class Reader(object):
         s = re.sub('-?\d*\.\d*\.\d*', ' NaN NaN ', s)
         s = re.sub('NaN.\d*', ' NaN NaN ', s)
         return s
+
+
 
 class SectionParser(object):
     def __init__(self, section_name, version=1.2):
@@ -440,20 +428,24 @@ class SectionParser(object):
 
     def metadata(self, **keys):
         if self.version < 2:
-            if (keys['name'] in WELL_REV_MNEMONICS or self.section_name.startswith('~V')):
-                return Metadata(keys['name'], keys['unit'], self.num(keys['value']), keys['descr'])
+            if (keys['name'] in WELL_REV_MNEMONICS 
+                or self.section_name.startswith('~V')):
+                return Metadata(keys['name'], keys['unit'], 
+                                self.num(keys['value']), keys['descr'])
             else:
-                return Metadata(keys['name'], keys['unit'], self.num(keys['descr']), keys['value'])
+                return Metadata(keys['name'], keys['unit'], 
+                                self.num(keys['descr']), keys['value'])
         else:
-            return Metadata(keys['name'], keys['unit'], self.num(keys['value']), keys['descr'])
-
+            return Metadata(keys['name'], keys['unit'], 
+                            self.num(keys['value']), keys['descr'])
 
     def curves(self, **keys):
-        return Curve(keys['name'], keys['unit'], keys['value'], keys['descr'], None, keys['name'])
-
+        return Curve(keys['name'], keys['unit'], keys['value'], 
+                     keys['descr'], None, keys['name'])
 
     def params(self, **keys):
-        return Parameter(keys['name'], keys['unit'], self.num(keys['value']), keys['descr'])
+        return Parameter(keys['name'], keys['unit'], 
+                         self.num(keys['value']), keys['descr'])
 
 
 
@@ -485,3 +477,26 @@ def read_line(line):
     else:
         d['descr'] = line
     return d
+
+
+def open_file(file_obj, **kwargs):
+    provenance = {'path': None,
+                  'name': None,
+                  'url': None,
+                  'time_opened': datetime.datetime.now()}
+    if isinstance(file_obj, str):
+        if os.path.exists(file_obj):
+            f = codecs.open(file_obj, mode='r', **kwargs)
+            provenance['name'] = os.path.basename(file_obj)
+            provenance['path'] = file_obj
+        else:
+            f = StringIO.StringIO(file_obj)
+    else:
+        f = file_obj
+        try:
+            provenance['name'] = f.name.split(os.sep)[-1]
+            if os.path.exists(f.name):
+                provenance['path'] = f.name
+        except:
+            pass
+    return f, provenance
