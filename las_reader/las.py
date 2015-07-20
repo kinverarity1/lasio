@@ -14,9 +14,9 @@ import os
 import re
 try:
     import cStringIO as StringIO
-except:
-    import StringIO
-
+except ImportError:
+    from io import StringIO
+    
 # Third-party packages available on PyPi
 from namedlist import namedlist
 import numpy
@@ -36,7 +36,7 @@ url_regexp = re.compile(
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 Metadata = namedlist('Metadata', ['mnemonic', 'unit', 'value', 'descr'])
-Curve = namedlist('Curve', 
+Curve = namedlist('Curve',
             ['mnemonic', 'unit', 'API_code', 'descr', 'data', 'name'])
 Parameter = namedlist('Parameter', ['mnemonic', 'unit', 'value', 'descr'])
 
@@ -98,7 +98,7 @@ class Las(OrderedDictionary):
         # self.data = {}
 
         if not (file is None):
-            self.read(file, **kwargs) 
+            self.read(file, **kwargs)
         elif not (create is None):
             self.create(create, **kwargs)
 
@@ -159,9 +159,9 @@ class Las(OrderedDictionary):
         lines = []
 
         # Write Version section
-        self.version['VERS'] = Metadata('VERS', '', 1.2, 
+        self.version['VERS'] = Metadata('VERS', '', 1.2,
                 'Version of LAS file format')
-        self.version['WRAP'] = Metadata('WRAP', '', 'NO', 
+        self.version['WRAP'] = Metadata('WRAP', '', 'NO',
                 'Is data wrapped across line breaks?')
         lines.append('~Version '.ljust(60, '-'))
         l_mnem = 0
@@ -336,7 +336,7 @@ class Reader(object):
                 yield line
 
     def read_raw_text(self, section_name):
-        return '\n'.join(self.iter_section_lines(section_name, 
+        return '\n'.join(self.iter_section_lines(section_name,
                                                  ignore_comments=False))
 
     def read_section(self, section_name):
@@ -428,23 +428,23 @@ class SectionParser(object):
 
     def metadata(self, **keys):
         if self.version < 2:
-            if (keys['name'] in WELL_REV_MNEMONICS 
+            if (keys['name'] in WELL_REV_MNEMONICS
                 or self.section_name.startswith('~V')):
-                return Metadata(keys['name'], keys['unit'], 
+                return Metadata(keys['name'], keys['unit'],
                                 self.num(keys['value']), keys['descr'])
             else:
-                return Metadata(keys['name'], keys['unit'], 
+                return Metadata(keys['name'], keys['unit'],
                                 self.num(keys['descr']), keys['value'])
         else:
-            return Metadata(keys['name'], keys['unit'], 
+            return Metadata(keys['name'], keys['unit'],
                             self.num(keys['value']), keys['descr'])
 
     def curves(self, **keys):
-        return Curve(keys['name'], keys['unit'], keys['value'], 
+        return Curve(keys['name'], keys['unit'], keys['value'],
                      keys['descr'], None, keys['name'])
 
     def params(self, **keys):
-        return Parameter(keys['name'], keys['unit'], 
+        return Parameter(keys['name'], keys['unit'],
                          self.num(keys['value']), keys['descr'])
 
 
