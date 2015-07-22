@@ -334,6 +334,11 @@ class LASFile(OrderedDictionary):
 
 
 
+class Las(LASFile):
+    pass
+
+
+
 class Reader(object):
     def __init__(self, text):
         self.lines = text.split('\n')
