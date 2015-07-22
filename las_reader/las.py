@@ -24,39 +24,11 @@ import numpy
 
 logger = logging.getLogger(__name__)
 
-WELL_REV_MNEMONICS = ['STRT', 'STOP', 'STEP', 'NULL']
 
-url_regexp = re.compile(
-        r'^(?:http|ftp)s?://' # http:// or https://
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}'
-        r'\.?|[A-Z0-9-]{2,}\.?)|' # (cont.) domain...
-        r'localhost|' #localhost...
-        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
-        r'(?::\d+)?' # optional port
-        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 Metadata = namedlist('Metadata', ['mnemonic', 'unit', 'value', 'descr'])
-Curve = namedlist('Curve', 
-            ['mnemonic', 'unit', 'API_code', 'descr', 'data', 'name'])
+Curve = namedlist('Curve', ['mnemonic', 'unit', 'API_code', 'descr', 'data', 'name'])
 Parameter = namedlist('Parameter', ['mnemonic', 'unit', 'value', 'descr'])
-
-DEFAULT_VALUES = {
-    'version': {'VERS': '2.0',
-                'WRAP': 'NO',
-                'DLM': 'SPACE'},
-    'well': {},
-    'params': {},
-    'other': '',
-    'data': numpy.zeros(shape=(0, 0))}
-
-DEFAULT_ORDER = {
-    'version': ['VERS', 'WRAP', 'DLM'],
-}
-
-VERS_FMT = '{mnemonic}.{unit} {value}: {descr}'
-WELL_FMT = '{mnemonic}.{unit} {descr}: {value}'
-CURV_FMT = '{mnemonic}.{unit} {API_code} : {descr}'
-PARM_FMT = '{mnemonic}.{unit} {value} : {descr}'
 
 
 
@@ -78,30 +50,69 @@ class OrderedDictionary(collections.OrderedDict):
 
 
 
-class Las(OrderedDictionary):
+DEFAULT_ITEMS = {
+    "version": OrderedDictionary([
+        ("VERS", Metadata("VERS", "", 2.0,   "CWLS log ASCII Standard -VERSION 2.0")),
+        ("WRAP", Metadata("WRAP", "", "NO",  "One line per depth step")),
+        ("DLM",  Metadata("DLM", "", "SPACE", "Column Data Section Delimiter"))]),
+    "well": OrderedDictionary([
+        ("STRT", Metadata("STRT", "m", numpy.nan,   "START DEPTH")),
+        ("STOP", Metadata("STOP", "m", numpy.nan,   "STOP DEPTH")),
+        ("STEP", Metadata("STEP", "m", numpy.nan,   "STEP")),
+        ("COMP", Metadata("NULL", "", -9999.25,     "NULL VALUE")),
+        ("COMP", Metadata("NULL", "", -9999.25,     "COMPANY")),
+        ("WELL", Metadata("NULL", "", -9999.25,     "WELL")),
+        ("FLD",  Metadata("NULL", "", -9999.25,     "FIELD")),
+        ("LOC",  Metadata("NULL", "", -9999.25,     "LOCATION")),
+        ("PROV", Metadata("NULL", "", -9999.25,     "PROVINCE")),
+        ("CNTY", Metadata("NULL", "", -9999.25,     "COUNTY")),
+        ("STAT", Metadata("NULL", "", -9999.25,     "STATE")),
+        ("CTRY", Metadata("NULL", "", -9999.25,     "COUNTRY")),
+        ("SRVC", Metadata("NULL", "", -9999.25,     "SERVICE COMPANY")),
+        ("DATE", Metadata("NULL", "", -9999.25,     "DATE")),
+        ("UWI",  Metadata("NULL", "", -9999.25,     "UNIQUE WELL ID")),
+        ("API",  Metadata("NULL", "", -9999.25,     "API NUMBER"))
+        ]),
+    "curves": [
+        ("DEPT", Curve("DEPT", "m", "API code", "1 :   DEPTH", [], "DEPT"))
+        ],
+    "params": OrderedDictionary([]),
+    "other": "",
+    "data": numpy.zeros(shape=(0, 1))}
+
+ORDER_DEFINITIONS = {
+    1.2: {"version": ["value:descr"],
+          "well":    ["descr:value",
+                      ("value:descr", ["STRT", "STOP", "STEP", "NULL"])],
+          "curves":  ["value:descr"],
+          "params":  ["value:descr"]},
+    2.0: {"version": ["value:descr"],
+          "well":    ["value:descr"],
+          "curves":  ["value:descr"],
+          "params":  ["value:descr"]}}
+
+
+
+class LASFile(OrderedDictionary):
     '''Read LAS file.
 
     Args:
         - *file*: open file object or filename
 
     '''
-    def __init__(self, file=None, create=None, **kwargs):
+    def __init__(self, file=None, **kwargs):
         OrderedDictionary.__init__(self)
         self.provenance = None
         self._text = ''
-        self.version = {}
-        self.well = {}
-        self.curves = []
-        self.params = {}
-
-        self.other = ''
-        # self.data = {}
+        self.version = OrderedDictionary(DEFAULT_ITEMS["version"].items())
+        self.well = OrderedDictionary(DEFAULT_ITEMS["well"].items())
+        self.curves = list(DEFAULT_ITEMS["curves"])
+        self.params = OrderedDictionary(DEFAULT_ITEMS["params"].items())
+        self.other = str(DEFAULT_ITEMS["other"])
 
         if not (file is None):
-            self.read(file, **kwargs) 
-        elif not (create is None):
-            self.create(create, **kwargs)
-
+            self.read(file, **kwargs)
+    
     def read(self, file, **kwargs):
         f, provenance = open_file(file, **kwargs)
         self.provenance = provenance
@@ -155,15 +166,37 @@ class Las(OrderedDictionary):
     def data(self):
         return numpy.vstack([c.data for c in self.curves]).T
 
-    def write(self, file):
+    def get_formatter_function(order, left_width=None, middle_width=None):
+        '''
+
+        returns a function that takes an item and return a string.
+        '''
+        mnemonic_func = lambda mnemonic: mnemonic.ljust(left_width)
+        middle_func = lambda unit, right_hand_item: unit + " " * (middle_width - len(unit) - len(right_hand_item)) + right_hand_item
+        if order == "descr:value":
+            return lambda item: "%s.%s : %s" % (
+                mnemonic_func(item.mnemonic), middle_func(unit, item.descr), item.value)
+        elif order == "value:descr":
+            return lambda item: "%s.%s : %s" % (
+                mnemonic_func(item.mnemonic), middle_func(unit, item.value), item.descr)
+
+    def write(self, file, version=None):
         lines = []
 
-        # Write Version section
-        self.version['VERS'] = Metadata('VERS', '', 1.2, 
-                'Version of LAS file format')
-        self.version['WRAP'] = Metadata('WRAP', '', 'NO', 
-                'Is data wrapped across line breaks?')
-        lines.append('~Version '.ljust(60, '-'))
+        assert version in (1.2, 2, None)
+        if version is None:
+            version = self.version["VERS"].value
+        if version == 1.2:
+            self.version["VERS"] = Metadata("VERS", "", 1.2, "CWLS LOG ASCII STANDARD - VERSION 1.2")
+        elif version == 2:
+            self.version["VERS"] = Metadata("VERS", "", 2.0, "CWLS log ASCII Standard -VERSION 2.0")
+
+            # CONTINUE WORKING HERE
+
+        # TODO: Issue #5
+        self.version['WRAP'] = Metadata('WRAP', '', 'NO',  'One line per depth step')
+        
+        lines.append("~Version ".ljust(60, "-"))
         l_mnem = 0
         l_value = 0
         for vm in list(self.version.values()):
@@ -179,6 +212,7 @@ class Las(OrderedDictionary):
 
         # Write Well section
         self.well['NULL'] = Metadata('NULL', '', -999.25, '')
+
         lines.append('~Well '.ljust(60, '-'))
         l_left = 0
         left_rev = lambda rt: '{mnemonic}.{unit} {value}'.format(**rt.todict())
@@ -300,6 +334,11 @@ class Las(OrderedDictionary):
 
 
 
+class Las(LASFile):
+    pass
+
+
+
 class Reader(object):
     def __init__(self, text):
         self.lines = text.split('\n')
@@ -343,11 +382,11 @@ class Reader(object):
         parser = SectionParser(section_name, version=self.version)
         d = OrderedDictionary()
         for line in self.iter_section_lines(section_name):
+            # values = read_line(line)
             try:
                 values = read_line(line)
             except:
-                print(('Failed to read in NAME.UNIT VALUE:DESCR'
-                      ' from:\n\t%s' % line))
+                print('Failed to read in NAME.UNIT VALUE:DESCR from:\n\t%s' % line)
             else:
                 d[values['name']] = parser(**values)
         return d
@@ -359,8 +398,7 @@ class Reader(object):
             try:
                 values = read_line(line)
             except:
-                print(('Failed to read in NAME.UNIT VALUE:DESCR'
-                      ' from:\n\t%s' % line))
+                print('Failed to read in NAME.UNIT VALUE:DESCR from:\n\t%s' % line)
             else:
                 l.append(parser(**values))
         return l
@@ -410,6 +448,17 @@ class SectionParser(object):
 
         self.version = version
         self.section_name = section_name
+        self.section_name2 = {"~C": "curves",
+                              "~W": "well",
+                              "~V": "version",
+                              "~P": "params"}[section_name]
+
+        section_orders = ORDER_DEFINITIONS[self.version][self.section_name2]
+        self.default_order = section_orders[0]
+        self.orders = {}
+        for order, mnemonics in section_orders[1:]:
+            for mnemonic in mnemonics:
+                self.orders[mnemonic] = order
 
     def __call__(self, *args, **kwargs):
         r = self.func(*args, **kwargs)
@@ -427,55 +476,27 @@ class SectionParser(object):
                 return default
 
     def metadata(self, **keys):
-        if self.version < 2:
-            if (keys['name'] in WELL_REV_MNEMONICS 
-                or self.section_name.startswith('~V')):
-                return Metadata(keys['name'], keys['unit'], 
-                                self.num(keys['value']), keys['descr'])
-            else:
-                return Metadata(keys['name'], keys['unit'], 
-                                self.num(keys['descr']), keys['value'])
-        else:
-            return Metadata(keys['name'], keys['unit'], 
-                            self.num(keys['value']), keys['descr'])
+        key_order = self.orders.get(keys["name"], self.default_order)
+        if key_order == "value:descr":
+            return Metadata(keys["name"], keys["unit"], self.num(keys["value"]), keys["descr"])
+        elif key_order == "descr:value":
+            return Metadata(keys["name"], keys["unit"], keys["descr"], self.num(keys["value"]))
 
     def curves(self, **keys):
         return Curve(keys['name'], keys['unit'], keys['value'], 
                      keys['descr'], None, keys['name'])
 
     def params(self, **keys):
-        return Parameter(keys['name'], keys['unit'], 
-                         self.num(keys['value']), keys['descr'])
+        return Parameter(keys['name'], keys['unit'], self.num(keys['value']), keys['descr'])
 
 
 
 def read_line(line):
-    d = {'name': '',
-         'unit': '',
-         'value': '',
-         'descr': ''}
-    if ':' in line and '.' in line.split(':', 1)[0]:
-        split_period = line.split('.')
-        d['name'] = split_period[0].strip()
-        rest = '.'.join(split_period[1:])
-        if not rest.startswith(' '):
-            d['unit'] = rest.split()[0].strip()
-            rest = rest[len(d['unit']):]
-        split_colon = rest.split(':')
-        d['descr'] = split_colon[-1].strip()
-        d['value'] = ':'.join(split_colon[:-1]).strip()
-    elif ':' in line and not '.' in line.split(':', 1)[0]:
-        split_colon = line.split(':')
-        d['name'] = split_colon[0].strip()
-        d['descr'] = ':'.join(split_colon[1:]).strip()
-        d['value'] = d['descr']
-    elif '.' in line and not ':' in line:
-        split_period = line.split('.')
-        d['name'] = split_period[0].strip()
-        d['descr'] = '.'.join(split_period[1:])
-        d['value'] = d['descr']
-    else:
-        d['descr'] = line
+    d = {}
+    pattern = r"(?P<name>[^.]+)\.(?P<unit>[^\s:]*)(?P<value>[^:]*):(?P<descr>.*)"
+    m = re.match(pattern, line)
+    for key, value in m.groupdict().items():
+        d[key] = value.strip()
     return d
 
 
