@@ -377,11 +377,11 @@ class Reader(object):
         parser = SectionParser(section_name, version=self.version)
         d = OrderedDictionary()
         for line in self.iter_section_lines(section_name):
+            # values = read_line(line)
             try:
                 values = read_line(line)
             except:
-                print(('Failed to read in NAME.UNIT VALUE:DESCR'
-                      ' from:\n\t%s' % line))
+                print('Failed to read in NAME.UNIT VALUE:DESCR from:\n\t%s' % line)
             else:
                 d[values['name']] = parser(**values)
         return d
@@ -393,8 +393,7 @@ class Reader(object):
             try:
                 values = read_line(line)
             except:
-                print(('Failed to read in NAME.UNIT VALUE:DESCR'
-                      ' from:\n\t%s' % line))
+                print('Failed to read in NAME.UNIT VALUE:DESCR from:\n\t%s' % line)
             else:
                 l.append(parser(**values))
         return l
@@ -488,32 +487,11 @@ class SectionParser(object):
 
 
 def read_line(line):
-    d = {'name': '',
-         'unit': '',
-         'value': '',
-         'descr': ''}
-    if ':' in line and '.' in line.split(':', 1)[0]:
-        split_period = line.split('.')
-        d['name'] = split_period[0].strip()
-        rest = '.'.join(split_period[1:])
-        if not rest.startswith(' '):
-            d['unit'] = rest.split()[0].strip()
-            rest = rest[len(d['unit']):]
-        split_colon = rest.split(':')
-        d['descr'] = split_colon[-1].strip()
-        d['value'] = ':'.join(split_colon[:-1]).strip()
-    elif ':' in line and not '.' in line.split(':', 1)[0]:
-        split_colon = line.split(':')
-        d['name'] = split_colon[0].strip()
-        d['descr'] = ':'.join(split_colon[1:]).strip()
-        d['value'] = d['descr']
-    elif '.' in line and not ':' in line:
-        split_period = line.split('.')
-        d['name'] = split_period[0].strip()
-        d['descr'] = '.'.join(split_period[1:])
-        d['value'] = d['descr']
-    else:
-        d['descr'] = line
+    d = {}
+    pattern = r"(?P<name>[^.]+)\.(?P<unit>[^\s:]*)(?P<descr>[^:]*):(?P<value>\S*)"
+    m = re.match(pattern, line)
+    for key, value in m.groupdict().items():
+        d[key] = value.strip()
     return d
 
 
