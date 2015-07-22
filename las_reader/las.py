@@ -488,7 +488,7 @@ class SectionParser(object):
 
 def read_line(line):
     d = {}
-    pattern = r"(?P<name>[^.]+)\.(?P<unit>[^\s:]*)(?P<descr>[^:]*):(?P<value>\S*)"
+    pattern = r"(?P<name>[^.]+)\.(?P<unit>[^\s:]*)(?P<value>[^:]*):(?P<descr>.*)"
     m = re.match(pattern, line)
     for key, value in m.groupdict().items():
         d[key] = value.strip()
