@@ -15,7 +15,14 @@ import re
 try:
     import cStringIO as StringIO
 except:
-    import StringIO
+    try: # cStringIO not available on this system
+        import StringIO
+    except ImportError: # Python 3
+        from io import StringIO
+    else:
+        from StringIO import StringIO
+else:
+    from StringIO import StringIO
 
 # Third-party packages available on PyPi
 from namedlist import namedlist
@@ -406,10 +413,10 @@ class Reader(object):
     def read_data(self, number_of_curves=None):
         s = self.read_data_string()
         if not self.wrap:
-            arr = numpy.loadtxt(StringIO.StringIO(s))
+            arr = numpy.loadtxt(StringIO(s))
         else:
             s = s.replace('\n', ' ').replace('\t', ' ')
-            arr = numpy.loadtxt(StringIO.StringIO(s))
+            arr = numpy.loadtxt(StringIO(s))
             logger.debug('arr shape = %s' % (arr.shape))
             logger.debug('number of curves = %s' % number_of_curves)
             arr = numpy.reshape(arr, (-1, number_of_curves))
@@ -511,7 +518,7 @@ def open_file(file_obj, **kwargs):
             provenance['name'] = os.path.basename(file_obj)
             provenance['path'] = file_obj
         else:
-            f = StringIO.StringIO(file_obj)
+            f = StringIO(file_obj)
     else:
         f = file_obj
         try:
