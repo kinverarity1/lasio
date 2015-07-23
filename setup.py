@@ -17,7 +17,7 @@ from distutils.core import setup
 
 setup(name='las_reader',
 
-      version="0.2",
+      version="0.3",
       
       description="Read geophysical log standard ASCII files",
       long_description=("A library for reading data from log standard ASCII "
