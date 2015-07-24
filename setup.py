@@ -19,10 +19,10 @@ setup(name='las_reader',
 
       version="0.3",
       
-      description="Read geophysical log standard ASCII files",
-      long_description=("A library for reading data from log standard ASCII "
-                        "(LAS) files -- only versions 1.2 and 2.0 are currently"
-                        " supported."),
+      description="Read borehole data from Log ASCII Standard (LAS) files",
+      long_description=("A library for reading borehole data from log "
+                        "standard ASCII (LAS) files (only specifications "
+                        "1.2 and 2.0 are supported for now)."),
       
       url="https://github.com/kinverarity1/las_reader",
       
