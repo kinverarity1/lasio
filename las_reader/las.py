@@ -39,6 +39,16 @@ Parameter = namedlist('Parameter', ['mnemonic', 'unit', 'value', 'descr'])
 
 
 
+class LASDataError(Exception):
+    pass
+
+
+
+class LASHeaderError(Exception):
+    pass
+
+
+
 class OrderedDictionary(collections.OrderedDict):
     def __repr__(self):
         l = []
@@ -129,7 +139,10 @@ class LASFile(OrderedDictionary):
         self.version = reader.read_section('~V')
 
         # Set version
-        reader.version = self.version['VERS'].value
+        try:
+            reader.version = self.version['VERS'].value
+        except KeyError:
+            raise KeyError("No key VERS in ~V (%s)" % (", ".join(self.version.keys())))
         reader.wrap = self.version['WRAP'].value == 'YES'
 
         self.well = reader.read_section('~W')
@@ -393,7 +406,8 @@ class Reader(object):
             try:
                 values = read_line(line)
             except:
-                print('Failed to read in NAME.UNIT VALUE:DESCR from:\n\t%s' % line)
+                raise LASHeaderError("Failed in %s section on line:\n%s\n%s"% (
+                    section_name, line, traceback.format_exc()))
             else:
                 d[values['name']] = parser(**values)
         return d
@@ -405,7 +419,8 @@ class Reader(object):
             try:
                 values = read_line(line)
             except:
-                print('Failed to read in NAME.UNIT VALUE:DESCR from:\n\t%s' % line)
+                raise LASHeaderError("Failed in %s section on line:\n%s\n%s"% (
+                    section_name, line, traceback.format_exc()))
             else:
                 l.append(parser(**values))
         return l
@@ -413,10 +428,18 @@ class Reader(object):
     def read_data(self, number_of_curves=None):
         s = self.read_data_string()
         if not self.wrap:
-            arr = numpy.loadtxt(StringIO(s))
+            try:
+                arr = numpy.loadtxt(StringIO(s))
+            except:
+                raise LASDataError("Failed to read non-wrapped data:\n%s\n%s"% (
+                    s, traceback.format_exc()))
         else:
             s = s.replace('\n', ' ').replace('\t', ' ')
-            arr = numpy.loadtxt(StringIO(s))
+            try:
+                arr = numpy.loadtxt(StringIO(s))
+            except:
+                raise LASDataError("Failed to read wrapped data:\n%s\n%s"% (
+                    s, traceback.format_exc()))
             logger.debug('arr shape = %s' % (arr.shape))
             logger.debug('number of curves = %s' % number_of_curves)
             arr = numpy.reshape(arr, (-1, number_of_curves))
@@ -424,7 +447,7 @@ class Reader(object):
             logger.warning('No data present.')
             return None, None
         else:
-            logger.info('Las file shape = %s' % str(arr.shape))
+            logger.info('LAS file shape = %s' % str(arr.shape))
         logger.debug('checking for nulls (NULL = %s)' % self.null)
         arr[arr == self.null] = numpy.nan
         return arr
