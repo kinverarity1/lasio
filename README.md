@@ -1,7 +1,7 @@
 LAS Reader
 ==========
 
-``las_reader`` is a Python package to read in Log ASCII Standard (LAS) files, used in borehole geophysical logging. The LAS file format is specified by the [Canadian Well Logging Society](http://www.cwls.org/las/). This is intended to be a lightweight package for getting the data out for use with ``numpy`` and other scientific Python tools. It also has the ability to write LAS files.
+``las_reader`` is a Python package to read in Log ASCII Standard (LAS) files, used for borehole data (e.g. geophysical/geological/petrophysical logs). The LAS file format is specified by the [Canadian Well Logging Society](http://www.cwls.org/las/). This is intended to be a lightweight package for getting the data out for use with ``numpy`` and other scientific Python tools. It also has the ability to write LAS files.
 
 In principle it should read as many of the existing LAS files as possible, including common types of non-compliant files. Please submit an issue on GitHub or [email](kinverarity1+github@gmail.com) me if you have any examples of LAS files which this package does not read properly or as expected.
 
