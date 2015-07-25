@@ -8,16 +8,15 @@ from __future__ import print_function
 # Standard library packages
 import codecs
 import collections
-import datetime
 import logging
 import os
 import re
 try:
     import cStringIO as StringIO
-except:
-    try: # cStringIO not available on this system
+except ImportError:
+    try:  # cStringIO not available on this system
         import StringIO
-    except ImportError: # Python 3
+    except ImportError:  # Python 3
         from io import StringIO
     else:
         from StringIO import StringIO
@@ -26,10 +25,6 @@ else:
 import traceback
 
 # Third-party packages available on PyPi
-try:
-    import cchardet as chardet
-except ImportError:
-    import chardet
 from namedlist import namedlist
 import numpy
 
@@ -37,24 +32,22 @@ import numpy
 logger = logging.getLogger(__name__)
 
 
-
 Metadata = namedlist('Metadata', ['mnemonic', 'unit', 'value', 'descr'])
-Curve = namedlist('Curve', ['mnemonic', 'unit', 'API_code', 'descr', 'data', 'name'])
+Curve = namedlist('Curve', ['mnemonic', 'unit', 'API_code', 'descr', 'data',
+                            'name'])
 Parameter = namedlist('Parameter', ['mnemonic', 'unit', 'value', 'descr'])
-
 
 
 class LASDataError(Exception):
     pass
 
 
-
 class LASHeaderError(Exception):
     pass
 
 
-
 class OrderedDictionary(collections.OrderedDict):
+
     def __repr__(self):
         l = []
         for key, value in self.items():
@@ -71,12 +64,13 @@ class OrderedDictionary(collections.OrderedDict):
             return dict([(k, v.descr) for k, v in list(self.items())])
 
 
-
 DEFAULT_ITEMS = {
     "version": OrderedDictionary([
-        ("VERS", Metadata("VERS", "", 2.0, "CWLS log ASCII Standard -VERSION 2.0")),
+        ("VERS", Metadata("VERS", "", 2.0,
+                          "CWLS log ASCII Standard -VERSION 2.0")),
         ("WRAP", Metadata("WRAP", "", "NO", "One line per depth step")),
-        ("DLM",  Metadata("DLM", "", "SPACE", "Column Data Section Delimiter"))]),
+        ("DLM",  Metadata("DLM", "", "SPACE",
+                          "Column Data Section Delimiter"))]),
     "well": OrderedDictionary([
         ("STRT", Metadata("STRT", "m", numpy.nan, "START DEPTH")),
         ("STOP", Metadata("STOP", "m", numpy.nan, "STOP DEPTH")),
@@ -94,10 +88,10 @@ DEFAULT_ITEMS = {
         ("DATE", Metadata("DATE", "", -9999.25, "DATE")),
         ("UWI",  Metadata("UWI", "", -9999.25, "UNIQUE WELL ID")),
         ("API",  Metadata("API", "", -9999.25, "API NUMBER"))
-        ]),
+    ]),
     "curves": [
         ("DEPT", Curve("DEPT", "m", "API code", "1 :   DEPTH", [], "DEPT"))
-        ],
+    ],
     "params": OrderedDictionary([]),
     "other": "",
     "data": numpy.zeros(shape=(0, 1))}
@@ -114,17 +108,19 @@ ORDER_DEFINITIONS = {
           "params":  ["value:descr"]}}
 
 
-
 class LASFile(OrderedDictionary):
+
     '''Read LAS file.
 
     Args:
-        - *file*: open file object or filename
+        - *file_ref*: open file object or filename
 
     '''
-    def __init__(self, file=None, **kwargs):
+
+    def __init__(self, file_ref=None, encoding=None,
+                 autodetect_encoding=False, autodetect_encoding_chars=20000):
         OrderedDictionary.__init__(self)
-        self.provenance = None
+
         self._text = ''
         self.version = OrderedDictionary(DEFAULT_ITEMS["version"].items())
         self.well = OrderedDictionary(DEFAULT_ITEMS["well"].items())
@@ -132,12 +128,17 @@ class LASFile(OrderedDictionary):
         self.params = OrderedDictionary(DEFAULT_ITEMS["params"].items())
         self.other = str(DEFAULT_ITEMS["other"])
 
-        if not (file is None):
-            self.read(file, **kwargs)
-    
-    def read(self, file, **kwargs):
-        f, provenance = open_file(file, **kwargs)
-        self.provenance = provenance
+        if not (file_ref is None):
+            self.read(file_ref, encoding=encoding,
+                      autodetect_encoding=autodetect_encoding,
+                      autodetect_encoding_chars=autodetect_encoding_chars)
+
+    def read(self, file_ref, encoding=None,
+             autodetect_encoding=False, autodetect_encoding_chars=20000):
+        f = open_file(file_ref, encoding=encoding,
+                      autodetect_encoding=autodetect_encoding,
+                      autodetect_encoding_chars=autodetect_encoding_chars)
+
         self._text = f.read()
         reader = Reader(self._text, version=1.2)
 
@@ -147,7 +148,7 @@ class LASFile(OrderedDictionary):
         try:
             reader.version = self.version['VERS'].value
         except KeyError:
-            raise KeyError("No key VERS in ~V (%s)" % (", ".join(self.version.keys())))
+            raise KeyError("No key VERS in ~V section")
         reader.wrap = self.version['WRAP'].value == 'YES'
 
         self.well = reader.read_section('~W')
@@ -197,13 +198,17 @@ class LASFile(OrderedDictionary):
         returns a function that takes an item and return a string.
         '''
         mnemonic_func = lambda mnemonic: mnemonic.ljust(left_width)
-        middle_func = lambda unit, right_hand_item: unit + " " * (middle_width - len(unit) - len(right_hand_item)) + right_hand_item
+        middle_func = lambda unit, right_hand_item: (
+            unit + " " * (middle_width - len(unit) - len(right_hand_item))
+            + right_hand_item)
         if order == "descr:value":
             return lambda item: "%s.%s : %s" % (
-                mnemonic_func(item.mnemonic), middle_func(unit, item.descr), item.value)
+                mnemonic_func(item.mnemonic), middle_func(unit, item.descr),
+                item.value)
         elif order == "value:descr":
             return lambda item: "%s.%s : %s" % (
-                mnemonic_func(item.mnemonic), middle_func(unit, item.value), item.descr)
+                mnemonic_func(item.mnemonic), middle_func(unit, item.value),
+                item.descr)
 
     def write(self, file, version=None):
         lines = []
@@ -212,15 +217,18 @@ class LASFile(OrderedDictionary):
         if version is None:
             version = self.version["VERS"].value
         if version == 1.2:
-            self.version["VERS"] = Metadata("VERS", "", 1.2, "CWLS LOG ASCII STANDARD - VERSION 1.2")
+            self.version["VERS"] = Metadata(
+                "VERS", "", 1.2, "CWLS LOG ASCII STANDARD - VERSION 1.2")
         elif version == 2:
-            self.version["VERS"] = Metadata("VERS", "", 2.0, "CWLS log ASCII Standard -VERSION 2.0")
+            self.version["VERS"] = Metadata(
+                "VERS", "", 2.0, "CWLS log ASCII Standard -VERSION 2.0")
 
             # CONTINUE WORKING HERE
 
         # TODO: Issue #5
-        self.version['WRAP'] = Metadata('WRAP', '', 'NO',  'One line per depth step')
-        
+        self.version['WRAP'] = Metadata(
+            'WRAP', '', 'NO',  'One line per depth step')
+
         lines.append("~Version ".ljust(60, "-"))
         l_mnem = 0
         l_value = 0
@@ -241,7 +249,8 @@ class LASFile(OrderedDictionary):
         lines.append('~Well '.ljust(60, '-'))
         l_left = 0
         left_rev = lambda rt: '{mnemonic}.{unit} {value}'.format(**rt.todict())
-        left_norm = lambda rt: '{mnemonic}.{unit} {descr}'.format(**rt.todict())
+        left_norm = lambda rt: '{mnemonic}.{unit} {descr}'.format(
+            **rt.todict())
         for wm in list(self.well.values()):
             if wm.mnemonic in WELL_REV_MNEMONICS:
                 s_left = left_rev(wm)
@@ -253,11 +262,11 @@ class LASFile(OrderedDictionary):
             wm_leftmost = '{mnemonic}.{unit}'.format(**wm.todict())
             if wm.mnemonic in WELL_REV_MNEMONICS:
                 wm_left = wm_leftmost + str(wm.value).rjust(
-                            l_left - len(wm_leftmost))
+                    l_left - len(wm_leftmost))
                 lines.append(wm_left + ': ' + wm.descr)
             else:
                 wm_left = wm_leftmost + str(wm.descr).rjust(
-                            l_left - len(wm_leftmost))
+                    l_left - len(wm_leftmost))
                 lines.append(wm_left + ': ' + wm.value)
 
         # Write Curves section
@@ -273,7 +282,7 @@ class LASFile(OrderedDictionary):
                 l_API_code = len(s_API_code)
         for cm in self.curves:
             s_left = '{mnemonic}.{unit}'.format(
-                        **cm.todict()).ljust(l_mnem_unit)
+                **cm.todict()).ljust(l_mnem_unit)
             s_right = str(cm.API_code).rjust(l_API_code)
             lines.append(s_left + ' ' + s_right + ': ' + cm.descr)
 
@@ -290,7 +299,7 @@ class LASFile(OrderedDictionary):
                 l_value = len(s_value)
         for pm in list(self.params.values()):
             s_left = '{mnemonic}.{unit}'.format(
-                        **pm.todict()).ljust(l_mnem_unit)
+                **pm.todict()).ljust(l_mnem_unit)
             s_right = str(pm.value).rjust(l_value)
             lines.append(s_left + ' ' + s_right + ': ' + pm.descr)
 
@@ -305,6 +314,7 @@ class LASFile(OrderedDictionary):
         data_arr = numpy.column_stack([c.data for c in self.curves])
         nrows, ncols = data_arr.shape
         # FORMAT %10.5g
+
         def fmt(n, fmt='%10.5g', l=10, spacer=' '):
             if numpy.isnan(n):
                 return spacer + str(self.well['NULL'].value).rjust(l)
@@ -358,13 +368,12 @@ class LASFile(OrderedDictionary):
         return self.data[:, 0]
 
 
-
 class Las(LASFile):
     pass
 
 
-
 class Reader(object):
+
     def __init__(self, text, version):
         self.lines = text.splitlines()
         self.version = version
@@ -391,8 +400,11 @@ class Reader(object):
             if ignore_comments and line.startswith('#'):
                 continue
             if line.startswith(section_name):
-                in_section = True
-                continue
+                if in_section:
+                    return
+                else:
+                    in_section = True
+                    continue
             if line.lower().startswith('~') and in_section:
                 # Start of the next section; we're done here.
                 break
@@ -400,7 +412,7 @@ class Reader(object):
                 yield line
 
     def read_raw_text(self, section_name):
-        return '\n'.join(self.iter_section_lines(section_name, 
+        return '\n'.join(self.iter_section_lines(section_name,
                                                  ignore_comments=False))
 
     def read_section(self, section_name):
@@ -410,7 +422,7 @@ class Reader(object):
             try:
                 values = read_line(line)
             except:
-                raise LASHeaderError("Failed in %s section on line:\n%s%s"% (
+                raise LASHeaderError("Failed in %s section on line:\n%s%s" % (
                     section_name, line, traceback.format_exc().splitlines()[-1]))
             else:
                 d[values['name']] = parser(**values)
@@ -423,8 +435,9 @@ class Reader(object):
             try:
                 values = read_line(line)
             except:
-                raise LASHeaderError("Failed in %s section on line:\n%s%s"% (
-                    section_name, line, traceback.format_exc().splitlines()[-1]))
+                raise LASHeaderError("Failed in %s section on line:\n%s%s" % (
+                    section_name, line,
+                    traceback.format_exc().splitlines()[-1]))
             else:
                 l.append(parser(**values))
         return l
@@ -435,14 +448,14 @@ class Reader(object):
             try:
                 arr = numpy.loadtxt(StringIO(s))
             except:
-                raise LASDataError("Failed to read data:\n%s"% (
+                raise LASDataError("Failed to read data:\n%s" % (
                                    traceback.format_exc().splitlines()[-1]))
         else:
             s = s.replace('\n', ' ').replace('\t', ' ')
             try:
                 arr = numpy.loadtxt(StringIO(s))
             except:
-                raise LASDataError("Failed to read wrapped data: %s"% (
+                raise LASDataError("Failed to read wrapped data: %s" % (
                                    traceback.format_exc().splitlines()[-1]))
             logger.debug('arr shape = %s' % (arr.shape))
             logger.debug('number of curves = %s' % number_of_curves)
@@ -470,8 +483,8 @@ class Reader(object):
         return s
 
 
-
 class SectionParser(object):
+
     def __init__(self, section_name, version=1.2):
         if section_name.startswith('~C'):
             self.func = self.curves
@@ -512,52 +525,47 @@ class SectionParser(object):
     def metadata(self, **keys):
         key_order = self.orders.get(keys["name"], self.default_order)
         if key_order == "value:descr":
-            return Metadata(keys["name"], keys["unit"], self.num(keys["value"]), keys["descr"])
+            return Metadata(keys["name"], keys["unit"],
+                            self.num(keys["value"]), keys["descr"])
         elif key_order == "descr:value":
-            return Metadata(keys["name"], keys["unit"], keys["descr"], self.num(keys["value"]))
+            return Metadata(keys["name"], keys["unit"], keys["descr"],
+                            self.num(keys["value"]))
 
     def curves(self, **keys):
-        return Curve(keys['name'], keys['unit'], keys['value'], 
+        return Curve(keys['name'], keys['unit'], keys['value'],
                      keys['descr'], None, keys['name'])
 
     def params(self, **keys):
-        return Parameter(keys['name'], keys['unit'], self.num(keys['value']), keys['descr'])
-
+        return Parameter(keys['name'], keys['unit'], self.num(keys['value']),
+                         keys['descr'])
 
 
 def read_line(line):
     d = {}
-    pattern = r"(?P<name>[^.]+)\.(?P<unit>[^\s:]*)(?P<value>[^:]*):(?P<descr>.*)"
+    pattern = (r"(?P<name>[^.]+)\." +
+               r"(?P<unit>[^\s:]*)" +
+               r"(?P<value>[^:]*):" +
+               r"(?P<descr>.*)")
     m = re.match(pattern, line)
     for key, value in m.groupdict().items():
         d[key] = value.strip()
     return d
 
 
-def open_file(unknownref, autochardet=True, **kwargs):
-    provenance = {'path': None,
-                  'name': None,
-                  'url': None,
-                  'time_opened': datetime.datetime.now()}
-    if isinstance(unknownref, str):
-        if os.path.exists(unknownref):
-            if autochardet:
-                f = open(unknownref, mode="rb")
-                msg = f.read()
-                result = chardet.detect(msg)
-                kwargs["encoding"] = result["encoding"]
-                f.close()
-            f = codecs.open(unknownref, mode='r', **kwargs)
-            provenance['name'] = os.path.basename(unknownref)
-            provenance['path'] = unknownref
+def open_file(file_ref, encoding=None,
+              autodetect_encoding=False, autodetect_encoding_chars=20000):
+    if isinstance(file_ref, basestring):
+        if os.path.exists(file_ref):
+            if autodetect_encoding:
+                try:
+                    import cchardet as chardet
+                except ImportError:
+                    import chardet
+                with open(file_ref, mode="rb") as test_file:
+                    chunk = test_file.read(autodetect_encoding_chars)
+                    result = chardet.detect(chunk)
+                    encoding = result["encoding"]
+            file_ref = codecs.open(file_ref, mode="r", encoding=None)
         else:
-            f = StringIO(unknownref)
-    else:
-        f = unknownref
-        try:
-            provenance['name'] = f.name.split(os.sep)[-1]
-            if os.path.exists(f.name):
-                provenance['path'] = f.name
-        except:
-            pass
-    return f, provenance
+            file_ref = StringIO(file_ref)
+    return file_ref

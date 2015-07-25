@@ -6,9 +6,11 @@ In principle it should read as many of the existing LAS files as possible, inclu
 
 ## Installation
 
+``las_reader`` works on any platform. It depends on the small third-party package ``namedlist`` as well as ``numpy`` and ``setuptools``. To install use:
+
     $ pip install las_reader
 
-It requires the third-party packages ``namedlist``, ``numpy``, and ``setuptools``, which can all be installed via pip as well. 
+This will download and install the dependencies if necessary as well.
 
 ## Usage
 
@@ -17,13 +19,32 @@ It requires the third-party packages ``namedlist``, ``numpy``, and ``setuptools`
 >>> l = las_reader.read("example.las")
 ```
 
-### Character encodings
+The curve data are available as items:
 
-If you have ``chardet`` or ``cchardet`` installed, the encoding of the LAS file will be automatically detected and used. Otherwise you can specify it as a keyword argument, as it uses the standard library ``codecs.open`` function internally:
-
-    >>> l = las_reader.read("example.las", encoding="WINDOWS-1252")
+```python
+>>> l["ILD"]
+[145, 262, 272, ...]
+```
 
 There is an [example usage IPython notebook](http://nbviewer.ipython.org/github/kinverarity1/las-reader/blob/master/docs/Example%20usage.ipynb) demonstrating how to use the package.
+
+### Character encodings
+
+Three options:
+
+1. Do nothing and [hope for no errors](https://docs.python.org/2.7/howto/unicode.html#encodings).
+
+2. Specify the encoding (it uses [``codecs.open``](https://docs.python.org/2/library/codecs.html#standard-encodings) internally):
+
+   ```python
+   >>> l = las_reader.read("example.las", encoding="windows-1252")
+   ```
+
+3. Install a third-party package (``chardet`` (slow) or ``cchardet`` (fast)) to automatically detect the character encoding. If these packages are installed this code will use the fastest option:
+   
+   ```python
+   >>> l = las_reader.read("example.las", autochardet=True)
+   ```
 
 ## Development
 
@@ -34,9 +55,9 @@ There is an [example usage IPython notebook](http://nbviewer.ipython.org/github/
 
 ### Contributions
 
-Contributions, enhancements, comments, or bug reports are welcome -- please submit via GitHub or by [email](kinverarity1+github@gmail.com).
+Contributions, enhancements, comments, or bug reports are welcome -- please submit via GitHub or by [email](kinverarity@hotmail.com).
 
-Please let me if you have any examples of LAS files which this package does not read properly or as expected.
+Please let me know if you have any examples of LAS files which this package does not read properly or as expected.
 
 ### License
 
