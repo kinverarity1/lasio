@@ -34,7 +34,6 @@ from namedlist import namedlist
 import numpy
 
 
-logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -411,8 +410,8 @@ class Reader(object):
             try:
                 values = read_line(line)
             except:
-                raise LASHeaderError("Failed in %s section on line:\n%s\n%s"% (
-                    section_name, line, traceback.format_exc()))
+                raise LASHeaderError("Failed in %s section on line:\n%s%s"% (
+                    section_name, line, traceback.format_exc().splitlines()[-1]))
             else:
                 d[values['name']] = parser(**values)
         return d
@@ -424,8 +423,8 @@ class Reader(object):
             try:
                 values = read_line(line)
             except:
-                raise LASHeaderError("Failed in %s section on line:\n%s\n%s"% (
-                    section_name, line, traceback.format_exc()))
+                raise LASHeaderError("Failed in %s section on line:\n%s%s"% (
+                    section_name, line, traceback.format_exc().splitlines()[-1]))
             else:
                 l.append(parser(**values))
         return l
@@ -437,14 +436,14 @@ class Reader(object):
                 arr = numpy.loadtxt(StringIO(s))
             except:
                 raise LASDataError("Failed to read data:\n%s"% (
-                                   traceback.format_exc()))
+                                   traceback.format_exc().splitlines()[-1]))
         else:
             s = s.replace('\n', ' ').replace('\t', ' ')
             try:
                 arr = numpy.loadtxt(StringIO(s))
             except:
-                raise LASDataError("Failed to read wrapped data:\n%s"% (
-                                   traceback.format_exc()))
+                raise LASDataError("Failed to read wrapped data: %s"% (
+                                   traceback.format_exc().splitlines()[-1]))
             logger.debug('arr shape = %s' % (arr.shape))
             logger.debug('number of curves = %s' % number_of_curves)
             arr = numpy.reshape(arr, (-1, number_of_curves))
