@@ -23,12 +23,18 @@ except:
         from StringIO import StringIO
 else:
     from StringIO import StringIO
+import traceback
 
 # Third-party packages available on PyPi
+try:
+    import cchardet as chardet
+except ImportError:
+    import chardet
 from namedlist import namedlist
 import numpy
 
 
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -69,26 +75,26 @@ class OrderedDictionary(collections.OrderedDict):
 
 DEFAULT_ITEMS = {
     "version": OrderedDictionary([
-        ("VERS", Metadata("VERS", "", 2.0,   "CWLS log ASCII Standard -VERSION 2.0")),
-        ("WRAP", Metadata("WRAP", "", "NO",  "One line per depth step")),
+        ("VERS", Metadata("VERS", "", 2.0, "CWLS log ASCII Standard -VERSION 2.0")),
+        ("WRAP", Metadata("WRAP", "", "NO", "One line per depth step")),
         ("DLM",  Metadata("DLM", "", "SPACE", "Column Data Section Delimiter"))]),
     "well": OrderedDictionary([
-        ("STRT", Metadata("STRT", "m", numpy.nan,   "START DEPTH")),
-        ("STOP", Metadata("STOP", "m", numpy.nan,   "STOP DEPTH")),
-        ("STEP", Metadata("STEP", "m", numpy.nan,   "STEP")),
-        ("COMP", Metadata("NULL", "", -9999.25,     "NULL VALUE")),
-        ("COMP", Metadata("NULL", "", -9999.25,     "COMPANY")),
-        ("WELL", Metadata("NULL", "", -9999.25,     "WELL")),
-        ("FLD",  Metadata("NULL", "", -9999.25,     "FIELD")),
-        ("LOC",  Metadata("NULL", "", -9999.25,     "LOCATION")),
-        ("PROV", Metadata("NULL", "", -9999.25,     "PROVINCE")),
-        ("CNTY", Metadata("NULL", "", -9999.25,     "COUNTY")),
-        ("STAT", Metadata("NULL", "", -9999.25,     "STATE")),
-        ("CTRY", Metadata("NULL", "", -9999.25,     "COUNTRY")),
-        ("SRVC", Metadata("NULL", "", -9999.25,     "SERVICE COMPANY")),
-        ("DATE", Metadata("NULL", "", -9999.25,     "DATE")),
-        ("UWI",  Metadata("NULL", "", -9999.25,     "UNIQUE WELL ID")),
-        ("API",  Metadata("NULL", "", -9999.25,     "API NUMBER"))
+        ("STRT", Metadata("STRT", "m", numpy.nan, "START DEPTH")),
+        ("STOP", Metadata("STOP", "m", numpy.nan, "STOP DEPTH")),
+        ("STEP", Metadata("STEP", "m", numpy.nan, "STEP")),
+        ("NULL", Metadata("NULL", "", -9999.25, "NULL VALUE")),
+        ("COMP", Metadata("COMP", "", -9999.25, "COMPANY")),
+        ("WELL", Metadata("WELL", "", -9999.25, "WELL")),
+        ("FLD",  Metadata("FLD", "", -9999.25, "FIELD")),
+        ("LOC",  Metadata("LOC", "", -9999.25, "LOCATION")),
+        ("PROV", Metadata("PROV", "", -9999.25, "PROVINCE")),
+        ("CNTY", Metadata("CNTY", "", -9999.25, "COUNTY")),
+        ("STAT", Metadata("STAT", "", -9999.25, "STATE")),
+        ("CTRY", Metadata("CTRY", "", -9999.25, "COUNTRY")),
+        ("SRVC", Metadata("SRVC", "", -9999.25, "SERVICE COMPANY")),
+        ("DATE", Metadata("DATE", "", -9999.25, "DATE")),
+        ("UWI",  Metadata("UWI", "", -9999.25, "UNIQUE WELL ID")),
+        ("API",  Metadata("API", "", -9999.25, "API NUMBER"))
         ]),
     "curves": [
         ("DEPT", Curve("DEPT", "m", "API code", "1 :   DEPTH", [], "DEPT"))
@@ -134,7 +140,7 @@ class LASFile(OrderedDictionary):
         f, provenance = open_file(file, **kwargs)
         self.provenance = provenance
         self._text = f.read()
-        reader = Reader(self._text)
+        reader = Reader(self._text, version=1.2)
 
         self.version = reader.read_section('~V')
 
@@ -360,9 +366,9 @@ class Las(LASFile):
 
 
 class Reader(object):
-    def __init__(self, text):
-        self.lines = text.split('\n')
-        self.version = 1.2
+    def __init__(self, text, version):
+        self.lines = text.splitlines()
+        self.version = version
         self.null = numpy.nan
         self.wrap = True
 
@@ -379,7 +385,7 @@ class Reader(object):
 
     def iter_section_lines(self, section_name, ignore_comments=True):
         in_section = False
-        for line in self.lines:
+        for i, line in enumerate(self.lines):
             line = line.strip().strip('\t').strip()
             if not line:
                 continue
@@ -402,7 +408,6 @@ class Reader(object):
         parser = SectionParser(section_name, version=self.version)
         d = OrderedDictionary()
         for line in self.iter_section_lines(section_name):
-            # values = read_line(line)
             try:
                 values = read_line(line)
             except:
@@ -431,15 +436,15 @@ class Reader(object):
             try:
                 arr = numpy.loadtxt(StringIO(s))
             except:
-                raise LASDataError("Failed to read non-wrapped data:\n%s\n%s"% (
-                    s, traceback.format_exc()))
+                raise LASDataError("Failed to read data:\n%s"% (
+                                   traceback.format_exc()))
         else:
             s = s.replace('\n', ' ').replace('\t', ' ')
             try:
                 arr = numpy.loadtxt(StringIO(s))
             except:
-                raise LASDataError("Failed to read wrapped data:\n%s\n%s"% (
-                    s, traceback.format_exc()))
+                raise LASDataError("Failed to read wrapped data:\n%s"% (
+                                   traceback.format_exc()))
             logger.debug('arr shape = %s' % (arr.shape))
             logger.debug('number of curves = %s' % number_of_curves)
             arr = numpy.reshape(arr, (-1, number_of_curves))
@@ -530,20 +535,26 @@ def read_line(line):
     return d
 
 
-def open_file(file_obj, **kwargs):
+def open_file(unknownref, autochardet=True, **kwargs):
     provenance = {'path': None,
                   'name': None,
                   'url': None,
                   'time_opened': datetime.datetime.now()}
-    if isinstance(file_obj, str):
-        if os.path.exists(file_obj):
-            f = codecs.open(file_obj, mode='r', **kwargs)
-            provenance['name'] = os.path.basename(file_obj)
-            provenance['path'] = file_obj
+    if isinstance(unknownref, str):
+        if os.path.exists(unknownref):
+            if autochardet:
+                f = open(unknownref, mode="rb")
+                msg = f.read()
+                result = chardet.detect(msg)
+                kwargs["encoding"] = result["encoding"]
+                f.close()
+            f = codecs.open(unknownref, mode='r', **kwargs)
+            provenance['name'] = os.path.basename(unknownref)
+            provenance['path'] = unknownref
         else:
-            f = StringIO(file_obj)
+            f = StringIO(unknownref)
     else:
-        f = file_obj
+        f = unknownref
         try:
             provenance['name'] = f.name.split(os.sep)[-1]
             if os.path.exists(f.name):
