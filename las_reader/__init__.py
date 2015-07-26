@@ -1,5 +1,7 @@
 from . import las
 
+from las import __version__
+
 
 def read(file_ref, encoding=None,
          autodetect_encoding=False, autodetect_encoding_chars=20000):

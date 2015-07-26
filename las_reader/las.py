@@ -30,6 +30,7 @@ import numpy
 
 
 logger = logging.getLogger(__name__)
+__version__ = "0.4"
 
 
 Metadata = namedlist('Metadata', ['mnemonic', 'unit', 'value', 'descr'])
