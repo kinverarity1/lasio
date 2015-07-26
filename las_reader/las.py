@@ -560,7 +560,12 @@ def open_file(file_ref, encoding=None,
                 try:
                     import cchardet as chardet
                 except ImportError:
-                    import chardet
+                    try:
+                        import chardet
+                    except ImportError:
+                        raise ImportError("chardet or cchardet is required for "
+                                          "automatic detection of character "
+                                          "encodings.")
                 with open(file_ref, mode="rb") as test_file:
                     chunk = test_file.read(autodetect_encoding_chars)
                     result = chardet.detect(chunk)
