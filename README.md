@@ -43,7 +43,7 @@ Three options:
 3. Install a third-party package (``chardet`` (slow) or ``cchardet`` (fast)) to automatically detect the character encoding. If these packages are installed this code will use the fastest option:
    
    ```python
-   >>> l = las_reader.read("example.las", autochardet=True)
+   >>> l = las_reader.read("example.las", autodetect_encoding=True)
    ```
 
 ## Development
