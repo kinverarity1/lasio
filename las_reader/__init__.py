@@ -6,4 +6,3 @@ def read(file_ref, encoding=None,
     return las.LASFile(file_ref, encoding=encoding,
                        autodetect_encoding=autodetect_encoding,
                        autodetect_encoding_chars=autodetect_encoding_chars)
-
