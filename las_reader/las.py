@@ -39,14 +39,24 @@ Parameter = namedlist('Parameter', ['mnemonic', 'unit', 'value', 'descr'])
 
 
 class LASDataError(Exception):
+
+    '''Error during reading of numerical data from LAS file.'''
     pass
 
 
 class LASHeaderError(Exception):
+
+    '''Error during reading of header data from LAS file.'''
     pass
 
 
 class OrderedDictionary(collections.OrderedDict):
+
+    '''A minor wrapper over collections.OrderedDict.
+
+    This wrapper has a better string representation.
+
+    '''
 
     def __repr__(self):
         l = []
@@ -110,10 +120,15 @@ ORDER_DEFINITIONS = {
 
 class LASFile(OrderedDictionary):
 
-    '''Read LAS file.
+    '''LAS file object.
 
-    Args:
-        - *file_ref*: open file object or filename
+    Kwargs:
+      file_ref: either a filename, an open file object, or a string of
+        a LAS file contents.
+      encoding (str): character encoding to open file_ref with
+      autodetect_encoding (bool): use chardet/ccharet to detect encoding
+      autodetect_encoding_chars (int/None): number of chars to read from LAS
+        file for auto-detection of encoding.
 
     '''
 
@@ -135,6 +150,19 @@ class LASFile(OrderedDictionary):
 
     def read(self, file_ref, encoding=None,
              autodetect_encoding=False, autodetect_encoding_chars=20000):
+        '''Read a LAS file.
+
+        Args:
+          file_ref: either a filename, an open file object, or a string of
+            a LAS file contents.
+
+        Kwargs:
+          encoding (str): character encoding to open file_ref with
+          autodetect_encoding (bool): use chardet/ccharet to detect encoding
+          autodetect_encoding_chars (int/None): number of chars to read from LAS
+            file for auto-detection of encoding.
+
+        '''
         f = open_file(file_ref, encoding=encoding,
                       autodetect_encoding=autodetect_encoding,
                       autodetect_encoding_chars=autodetect_encoding_chars)
@@ -190,25 +218,8 @@ class LASFile(OrderedDictionary):
 
     @property
     def data(self):
+        '''2D array of data from LAS file.'''
         return numpy.vstack([c.data for c in self.curves]).T
-
-    def get_formatter_function(order, left_width=None, middle_width=None):
-        '''
-
-        returns a function that takes an item and return a string.
-        '''
-        mnemonic_func = lambda mnemonic: mnemonic.ljust(left_width)
-        middle_func = lambda unit, right_hand_item: (
-            unit + " " * (middle_width - len(unit) - len(right_hand_item))
-            + right_hand_item)
-        if order == "descr:value":
-            return lambda item: "%s.%s : %s" % (
-                mnemonic_func(item.mnemonic), middle_func(unit, item.descr),
-                item.value)
-        elif order == "value:descr":
-            return lambda item: "%s.%s : %s" % (
-                mnemonic_func(item.mnemonic), middle_func(unit, item.value),
-                item.descr)
 
     def write(self, file, version=None):
         lines = []
@@ -369,6 +380,12 @@ class LASFile(OrderedDictionary):
 
 
 class Las(LASFile):
+
+    '''LAS file object.
+
+    Retained for backwards compatibility.
+
+    '''
     pass
 
 
@@ -423,7 +440,8 @@ class Reader(object):
                 values = read_line(line)
             except:
                 raise LASHeaderError("Failed in %s section on line:\n%s%s" % (
-                    section_name, line, traceback.format_exc().splitlines()[-1]))
+                    section_name, line,
+                    traceback.format_exc().splitlines()[-1]))
             else:
                 d[values['name']] = parser(**values)
         return d
@@ -541,6 +559,21 @@ class SectionParser(object):
 
 
 def read_line(line):
+    '''Read a line from a LAS header section.
+
+    Args:
+      line (str): line from a LAS header section
+
+    Returns: dict with keys "name", "unit", "value", and "descr", each
+    containing a string as value.
+
+    The line is parsed with a regular expression -- see LAS file specs for
+    more details, but it should basically be in the format:
+
+        name.unit       value : descr
+
+    '''
+
     d = {}
     pattern = (r"(?P<name>[^.]+)\." +
                r"(?P<unit>[^\s:]*)" +
@@ -554,6 +587,24 @@ def read_line(line):
 
 def open_file(file_ref, encoding=None,
               autodetect_encoding=False, autodetect_encoding_chars=20000):
+    '''Open a file if necessary.
+
+    Args:
+      file_ref: either a filename, an open file object, or a string of
+        a LAS file contents.
+
+    Kwargs:
+      encoding (str): character encoding to open file_ref with
+      autodetect_encoding (bool): use chardet/ccharet to detect encoding
+      autodetect_encoding_chars (int/None): number of chars to read from LAS
+        file for auto-detection of encoding.
+
+    Returns: an open file object.
+
+    If autodetect_encoding is True then either cchardet or chardet (see PyPi)
+    needs to be installed, or else an ImportError will be raised.
+
+    '''
     if isinstance(file_ref, basestring):
         if os.path.exists(file_ref):
             if autodetect_encoding:
@@ -563,9 +614,9 @@ def open_file(file_ref, encoding=None,
                     try:
                         import chardet
                     except ImportError:
-                        raise ImportError("chardet or cchardet is required for "
-                                          "automatic detection of character "
-                                          "encodings.")
+                        raise ImportError("chardet or cchardet is required for"
+                                          " automatic detection of character"
+                                          " encodings.")
                 with open(file_ref, mode="rb") as test_file:
                     chunk = test_file.read(autodetect_encoding_chars)
                     result = chardet.detect(chunk)
@@ -574,3 +625,35 @@ def open_file(file_ref, encoding=None,
         else:
             file_ref = StringIO(file_ref)
     return file_ref
+
+
+def get_formatter_function(order, left_width=None, middle_width=None):
+    '''Create function to format a LAS header item.
+
+    Args:
+      order: format of item, either "descr:value" or "value:descr" -- see
+        LAS 1.2 and 2.0 specifications for more information.
+
+    Kwargs:
+      left_width (int): number of characters to the left hand side of the
+        first period
+      middle_width (int): total number of characters minus 1 between the 
+        first period from the left and the first colon from the left.
+
+    Returns a function which takes a header item (e.g. Metadata, Curve, 
+    Parameter) as its single argument and which in turn returns a string
+    which is the correctly formatted LAS header line.
+
+    '''
+    mnemonic_func = lambda mnemonic: mnemonic.ljust(left_width)
+    middle_func = lambda unit, right_hand_item: (
+        unit + " " * (middle_width - len(unit) - len(right_hand_item))
+        + right_hand_item)
+    if order == "descr:value":
+        return lambda item: "%s.%s : %s" % (
+            mnemonic_func(item.mnemonic), middle_func(unit, item.descr),
+            item.value)
+    elif order == "value:descr":
+        return lambda item: "%s.%s : %s" % (
+            mnemonic_func(item.mnemonic), middle_func(unit, item.value),
+            item.descr)
