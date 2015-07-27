@@ -34,7 +34,7 @@ __version__ = "0.4"
 
 
 Metadata = namedlist('Metadata', ['mnemonic', 'unit', 'value', 'descr'])
-Curve = namedlist('Curve', ['mnemonic', 'unit', 'API_code', 'descr', 'data',
+Curve = namedlist('Curve', ['mnemonic', 'unit', 'value', 'descr', 'data',
                             'name'])
 Parameter = namedlist('Parameter', ['mnemonic', 'unit', 'value', 'descr'])
 
@@ -222,7 +222,7 @@ class LASFile(OrderedDictionary):
         '''2D array of data from LAS file.'''
         return numpy.vstack([c.data for c in self.curves]).T
 
-    def write(self, file, version=None):
+    def write(self, file_object, version=None):
         lines = []
 
         assert version in (1.2, 2, None)
@@ -235,109 +235,83 @@ class LASFile(OrderedDictionary):
             self.version["VERS"] = Metadata(
                 "VERS", "", 2.0, "CWLS log ASCII Standard -VERSION 2.0")
 
-            # CONTINUE WORKING HERE
-
-        # TODO: Issue #5
-        self.version['WRAP'] = Metadata(
-            'WRAP', '', 'NO',  'One line per depth step')
-
+        # ~Version
         lines.append("~Version ".ljust(60, "-"))
-        l_mnem = 0
-        l_value = 0
-        for vm in list(self.version.values()):
-            if len(vm.mnemonic) > l_mnem:
-                l_mnem = len(vm.mnemonic)
-            if len(str(vm.value)) > l_value:
-                l_value = len(str(vm.value))
-        for vm in list(self.version.values()):
-            vm_d = vm.todict()
-            vm_d['mnemonic'] = vm_d['mnemonic'].rjust(l_mnem)
-            vm_d['value'] = str(vm_d['value']).rjust(l_value)
-            lines.append(VERS_FMT.format(**vm_d))
+        section_widths = {
+            "left_width": None,
+            "middle_width": None
+        }
+        order_func = get_section_order_function("version", version)
+        for mnemonic, header_item in self.version.items():
+            logger.debug(str(header_item))
+            order = order_func(mnemonic)
+            logger.debug("order = %s" % (order, ))
+            formatter_func = get_formatter_function(order, **section_widths)
+            line = formatter_func(header_item)
+            lines.append(line)
 
-        # Write Well section
-        self.well['NULL'] = Metadata('NULL', '', -999.25, '')
+        # ~Well
+        lines.append("~Well ".ljust(60, "-"))
+        section_widths = {
+            "left_width": None,
+            "middle_width": None
+        }
+        order_func = get_section_order_function("well", version)
+        for mnemonic, header_item in self.well.items():
+            order = order_func(mnemonic)
+            formatter_func = get_formatter_function(order, **section_widths)
+            line = formatter_func(header_item)
+            lines.append(line)
 
-        lines.append('~Well '.ljust(60, '-'))
-        l_left = 0
-        left_rev = lambda rt: '{mnemonic}.{unit} {value}'.format(**rt.todict())
-        left_norm = lambda rt: '{mnemonic}.{unit} {descr}'.format(
-            **rt.todict())
-        for wm in list(self.well.values()):
-            if wm.mnemonic in WELL_REV_MNEMONICS:
-                s_left = left_rev(wm)
-            else:
-                s_left = left_norm(wm)
-            if len(s_left) > l_left:
-                l_left = len(s_left)
-        for wm in list(self.well.values()):
-            wm_leftmost = '{mnemonic}.{unit}'.format(**wm.todict())
-            if wm.mnemonic in WELL_REV_MNEMONICS:
-                wm_left = wm_leftmost + str(wm.value).rjust(
-                    l_left - len(wm_leftmost))
-                lines.append(wm_left + ': ' + wm.descr)
-            else:
-                wm_left = wm_leftmost + str(wm.descr).rjust(
-                    l_left - len(wm_leftmost))
-                lines.append(wm_left + ': ' + wm.value)
+        # ~Curves
+        lines.append("~Curves ".ljust(60, "-"))
+        section_widths = {
+            "left_width": None,
+            "middle_width": None
+        }
+        order_func = get_section_order_function("curves", version)
+        for header_item in self.curves:
+            order = order_func(header_item.mnemonic)
+            formatter_func = get_formatter_function(order, **section_widths)
+            line = formatter_func(header_item)
+            lines.append(line)
 
-        # Write Curves section
-        lines.append('~Curves '.ljust(60, '-'))
-        l_mnem_unit = 0
-        l_API_code = 0
-        for cm in self.curves:
-            s_mnem_unit = '{mnemonic}.{unit}'.format(**cm.todict())
-            if len(s_mnem_unit) > l_mnem_unit:
-                l_mnem_unit = len(s_mnem_unit)
-            s_API_code = str(cm.API_code)
-            if len(s_API_code) > l_API_code:
-                l_API_code = len(s_API_code)
-        for cm in self.curves:
-            s_left = '{mnemonic}.{unit}'.format(
-                **cm.todict()).ljust(l_mnem_unit)
-            s_right = str(cm.API_code).rjust(l_API_code)
-            lines.append(s_left + ' ' + s_right + ': ' + cm.descr)
+        # ~Params
+        lines.append("~Params ".ljust(60, "-"))
+        section_widths = {
+            "left_width": None,
+            "middle_width": None
+        }
+        order_func = get_section_order_function("params", version)
+        for mnemonic, header_item in self.params.items():
+            order = order_func(mnemonic)
+            formatter_func = get_formatter_function(order, **section_widths)
+            line = formatter_func(header_item)
+            lines.append(line)
 
-        # Write Params section
-        lines.append('~Parameters '.ljust(60, '-'))
-        l_mnem_unit = 0
-        l_value = 0
-        for pm in list(self.params.values()):
-            s_mnem_unit = '{mnemonic}.{unit}'.format(**pm.todict())
-            if len(s_mnem_unit) > l_mnem_unit:
-                l_mnem_unit = len(s_mnem_unit)
-            s_value = str(pm.value)
-            if len(s_value) > l_value:
-                l_value = len(s_value)
-        for pm in list(self.params.values()):
-            s_left = '{mnemonic}.{unit}'.format(
-                **pm.todict()).ljust(l_mnem_unit)
-            s_right = str(pm.value).rjust(l_value)
-            lines.append(s_left + ' ' + s_right + ': ' + pm.descr)
+        # ~Other
+        lines.append("~Other ".ljust(60, "-"))
+        lines += self.other.splitlines()
 
-        # Write Other section
-        lines.append('~Other '.ljust(60, '-'))
-        lines += self.other.split('\n')
+        lines.append("~ASCII ".ljust(60, "-"))
 
-        # Write Data section
-        lines.append('~ASCII Data '.ljust(60, '-'))
-        file.write('\n'.join(lines))
-        file.write('\n')
+        file_object.write("\n".join(lines))
+        file_object.write("\n")
+
         data_arr = numpy.column_stack([c.data for c in self.curves])
         nrows, ncols = data_arr.shape
-        # FORMAT %10.5g
 
-        def fmt(n, fmt='%10.5g', l=10, spacer=' '):
+        def format_data_section_line(n, fmt="%10.5g", l=10, spacer=" "):
             if numpy.isnan(n):
-                return spacer + str(self.well['NULL'].value).rjust(l)
+                return spacer + str(self.well["NULL"].value).rjust(l)
             else:
                 return spacer + (fmt % n).rjust(l)
+
         for i in range(nrows):
             line = ''
             for j in range(ncols):
-                line += fmt(data_arr[i, j])
-            file.write(line + '\n')
-        # numpy.savetxt(file, data_arr, fmt='%10.5g')
+                line += format_data_section_line(data_arr[i, j])
+            file_object.write(line + "\n")
 
     def get_curve_name(self, curve_name):
         for curve in self.curves:
@@ -646,15 +620,51 @@ def get_formatter_function(order, left_width=None, middle_width=None):
     which is the correctly formatted LAS header line.
 
     '''
+    if left_width is None:
+        left_width = 10
+    if middle_width is None:
+        middle_width = 40
     mnemonic_func = lambda mnemonic: mnemonic.ljust(left_width)
     middle_func = lambda unit, right_hand_item: (
-        unit + " " * (middle_width - len(unit) - len(right_hand_item))
-        + right_hand_item)
+        unit
+        + " " * (middle_width - len(str(unit)) - len(right_hand_item))
+        + right_hand_item
+        )
     if order == "descr:value":
         return lambda item: "%s.%s : %s" % (
-            mnemonic_func(item.mnemonic), middle_func(unit, item.descr),
-            item.value)
+            mnemonic_func(item.mnemonic),
+            middle_func(str(item.unit), str(item.descr)),
+            item.value
+            )
     elif order == "value:descr":
         return lambda item: "%s.%s : %s" % (
-            mnemonic_func(item.mnemonic), middle_func(unit, item.value),
-            item.descr)
+            mnemonic_func(item.mnemonic), 
+            middle_func(str(item.unit), str(item.value)),
+            item.descr
+            )
+
+
+def get_section_order_function(section, version, 
+        order_definitions=ORDER_DEFINITIONS):
+    '''Get a function that returns the order per mnemonic and section.
+
+    Args:
+      section (str): either "well", "params", "curves", "version"
+      version (float): either 1.2 and 2.0
+
+    Kwargs:
+      order_definitions (dict): 
+
+    Returns a function which takes a mnemonic (str) as its only argument, and
+    in turn returns the order "value:descr" or "descr:value".
+
+    '''
+    section_orders = order_definitions[version][section]
+    default_order = section_orders[0]
+    orders = {}
+    for order, mnemonics in section_orders[1:]:
+        for mnemonic in mnemonics:
+            orders[mnemonic] = order
+    return lambda mnemonic: orders.get(mnemonic, default_order)
+
+
