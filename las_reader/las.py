@@ -223,6 +223,18 @@ class LASFile(OrderedDictionary):
         return numpy.vstack([c.data for c in self.curves]).T
 
     def write(self, file_object, version=None):
+        '''Write to a file.
+
+        Args:
+          file_object: a file_like object opening for writing.
+          version (float): either 1.2 or 2
+
+        Example usage:
+
+            >>> with open("test_output.las", mode="w") as f:
+            ...     lasfile_obj.write(f, 2.0)   # <-- this method
+
+        '''
         lines = []
 
         assert version in (1.2, 2, None)
