@@ -229,12 +229,17 @@ class LASFile(OrderedDictionary):
         '''2D array of data from LAS file.'''
         return numpy.vstack([c.data for c in self.curves]).T
 
-    def write(self, file_object, version=None):
+    def write(self, file_object, version=None, 
+              STRT=None, STOP=None, STEP=None):
         '''Write to a file.
 
         Args:
           file_object: a file_like object opening for writing.
           version (float): either 1.2 or 2
+          STRT, STOP, STEP (float): optional overrides to automatic
+            calculation. By default STRT and STOP are the first and last 
+            index curve values, and STEP is the first step size in the
+            index curve.
 
         Example usage:
 
@@ -254,9 +259,15 @@ class LASFile(OrderedDictionary):
             self.version["VERS"] = HeaderItem(
                 "VERS", "", 2.0, "CWLS log ASCII Standard -VERSION 2.0")
 
-        self.well["STRT"].value = self.index[0]
-        self.well["STOP"].value = self.index[-1]
-        self.well["STEP"].value = numpy.gradient(self.index)[0]
+        if STRT is None:
+            STRT = self.index[0]
+        if STOP is None:
+            STOP = self.index[-1]
+        if STEP is None:
+            STEP = self.index[1] - self.index[0]  # Faster than numpy.gradient
+        self.well["STRT"].value = STRT
+        self.well["STOP"].value = STOP
+        self.well["STEP"].value = STEP
 
         # ~Version
         lines.append("~Version ".ljust(60, "-"))
