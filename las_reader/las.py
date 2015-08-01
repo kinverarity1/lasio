@@ -30,7 +30,7 @@ import numpy
 
 
 logger = logging.getLogger(__name__)
-__version__ = "0.5"
+__version__ = "0.5.1"
 
 
 HeaderItem = namedlist("HeaderItem", ["mnemonic", "unit", "value", "descr"])
@@ -174,6 +174,17 @@ class LASFile(OrderedDictionary):
             reader.version = self.version['VERS'].value
         except KeyError:
             raise KeyError("No key VERS in ~V section")
+
+        # Validate version
+        try:
+            assert reader.version in (1.2, 2)
+        except AssertionError:
+            logger.warning("LAS spec version is %s -- neither 1.2 nor 2" % 
+                           reader.version)
+            if reader.version < 2:
+                reader.version = 1.2
+            else:
+                reader.version = 2
         reader.wrap = self.version['WRAP'].value == 'YES'
 
         self.well = reader.read_section('~W')
