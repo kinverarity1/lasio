@@ -30,7 +30,7 @@ The curve data are available as items:
 [145, 262, 272, ...]
 ```
 
-There is an [example usage IPython notebook](http://nbviewer.ipython.org/github/kinverarity1/las-reader/blob/master/docs/Example%20usage.ipynb) demonstrating how to use the package.
+There are some [example IPython notebooks here](https://github.com/kinverarity1/las-reader/tree/master/docs) demonstrating how to use the package. More are in the works.
 
 ### Character encodings
 
