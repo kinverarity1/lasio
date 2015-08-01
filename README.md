@@ -56,6 +56,7 @@ Three options:
 
 ### Version history
 
+  - 0.5 (2015-08-01) - Improvements to writing LAS files
   - 0.4 (2015-07-26) - Improved handling of character encodings, other internal improvements
   - 0.3 (2015-07-23) - Added Python 3 support, now reads LAS 1.2 and 2.0
   - 0.2 (2015-07-08) - Tidied code and published on PyPi

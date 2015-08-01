@@ -1,6 +1,6 @@
 from . import las
 
-from las import __version__
+from las import __version__, LASFile, Curve, HeaderItem
 
 
 def read(file_ref, encoding=None,

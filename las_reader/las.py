@@ -30,13 +30,11 @@ import numpy
 
 
 logger = logging.getLogger(__name__)
-__version__ = "0.4.1"
+__version__ = "0.5"
 
 
-Metadata = namedlist('Metadata', ['mnemonic', 'unit', 'value', 'descr'])
-Curve = namedlist('Curve', ['mnemonic', 'unit', 'value', 'descr', 'data',
-                            'name'])
-Parameter = namedlist('Parameter', ['mnemonic', 'unit', 'value', 'descr'])
+HeaderItem = namedlist("HeaderItem", ["mnemonic", "unit", "value", "descr"])
+Curve = namedlist("Curve", ["mnemonic", "unit", "value", "descr", "data"])
 
 
 class LASDataError(Exception):
@@ -77,32 +75,30 @@ class OrderedDictionary(collections.OrderedDict):
 
 DEFAULT_ITEMS = {
     "version": OrderedDictionary([
-        ("VERS", Metadata("VERS", "", 2.0,
-                          "CWLS log ASCII Standard -VERSION 2.0")),
-        ("WRAP", Metadata("WRAP", "", "NO", "One line per depth step")),
-        ("DLM",  Metadata("DLM", "", "SPACE",
-                          "Column Data Section Delimiter"))]),
+        ("VERS", HeaderItem("VERS", "", 2.0,
+                            "CWLS log ASCII Standard -VERSION 2.0")),
+        ("WRAP", HeaderItem("WRAP", "", "NO", "One line per depth step")),
+        ("DLM",  HeaderItem("DLM", "", "SPACE",
+                            "Column Data Section Delimiter"))]),
     "well": OrderedDictionary([
-        ("STRT", Metadata("STRT", "m", numpy.nan, "START DEPTH")),
-        ("STOP", Metadata("STOP", "m", numpy.nan, "STOP DEPTH")),
-        ("STEP", Metadata("STEP", "m", numpy.nan, "STEP")),
-        ("NULL", Metadata("NULL", "", -9999.25, "NULL VALUE")),
-        ("COMP", Metadata("COMP", "", -9999.25, "COMPANY")),
-        ("WELL", Metadata("WELL", "", -9999.25, "WELL")),
-        ("FLD",  Metadata("FLD", "", -9999.25, "FIELD")),
-        ("LOC",  Metadata("LOC", "", -9999.25, "LOCATION")),
-        ("PROV", Metadata("PROV", "", -9999.25, "PROVINCE")),
-        ("CNTY", Metadata("CNTY", "", -9999.25, "COUNTY")),
-        ("STAT", Metadata("STAT", "", -9999.25, "STATE")),
-        ("CTRY", Metadata("CTRY", "", -9999.25, "COUNTRY")),
-        ("SRVC", Metadata("SRVC", "", -9999.25, "SERVICE COMPANY")),
-        ("DATE", Metadata("DATE", "", -9999.25, "DATE")),
-        ("UWI",  Metadata("UWI", "", -9999.25, "UNIQUE WELL ID")),
-        ("API",  Metadata("API", "", -9999.25, "API NUMBER"))
+        ("STRT", HeaderItem("STRT", "m", numpy.nan, "START DEPTH")),
+        ("STOP", HeaderItem("STOP", "m", numpy.nan, "STOP DEPTH")),
+        ("STEP", HeaderItem("STEP", "m", numpy.nan, "STEP")),
+        ("NULL", HeaderItem("NULL", "", -9999.25, "NULL VALUE")),
+        ("COMP", HeaderItem("COMP", "", "", "COMPANY")),
+        ("WELL", HeaderItem("WELL", "", "", "WELL")),
+        ("FLD",  HeaderItem("FLD", "", "", "FIELD")),
+        ("LOC",  HeaderItem("LOC", "", "", "LOCATION")),
+        ("PROV", HeaderItem("PROV", "", "", "PROVINCE")),
+        ("CNTY", HeaderItem("CNTY", "", "", "COUNTY")),
+        ("STAT", HeaderItem("STAT", "", "", "STATE")),
+        ("CTRY", HeaderItem("CTRY", "", "", "COUNTRY")),
+        ("SRVC", HeaderItem("SRVC", "", "", "SERVICE COMPANY")),
+        ("DATE", HeaderItem("DATE", "", "", "DATE")),
+        ("UWI",  HeaderItem("UWI", "", "", "UNIQUE WELL ID")),
+        ("API",  HeaderItem("API", "", "", "API NUMBER"))
     ]),
-    "curves": [
-        ("DEPT", Curve("DEPT", "m", "API code", "1 :   DEPTH", [], "DEPT"))
-    ],
+    "curves": [],
     "params": OrderedDictionary([]),
     "other": "",
     "data": numpy.zeros(shape=(0, 1))}
@@ -190,8 +186,15 @@ class LASFile(OrderedDictionary):
 
         data = reader.read_data(len(self.curves))
 
+        for i, c in enumerate(self.curves):
+            d = data[:, i]
+            c.data = d
+        self.refresh()
+        
+    def refresh(self):
+        '''Refresh curve names and indices.'''
         n = len(self.curves)
-        curve_names = [c.name for c in self.curves]
+        curve_names = [c.mnemonic for c in self.curves]
         curve_freq = {}
         curve_count = {}
         for curve_name in curve_names:
@@ -203,19 +206,12 @@ class LASFile(OrderedDictionary):
         for i, c in enumerate(self.curves):
             curve_count[c.mnemonic] += 1
             if curve_freq[c.mnemonic] > 1:
-                c.name += '[%d]' % curve_count[c.mnemonic]
+                c.mnemonic += "[%d]" % (curve_count[c.mnemonic] - 1, )
 
         for i, c in enumerate(self.curves):
-            d = data[:, i]
-            c.data = d
-            if c.mnemonic in list(self.keys()):
-                logger.warning('Multiple curves with the same mnemonic (%s).'
-                               % c.mnemonic)
-                self[c.name] = d
-            else:
-                self[c.name] = d
-            self[i] = d
-            self[i - n] = d
+            self[c.mnemonic] = c.data
+            self[i] = c.data
+            self[i - n] = c.data
 
     @property
     def data(self):
@@ -241,11 +237,15 @@ class LASFile(OrderedDictionary):
         if version is None:
             version = self.version["VERS"].value
         if version == 1.2:
-            self.version["VERS"] = Metadata(
+            self.version["VERS"] = HeaderItem(
                 "VERS", "", 1.2, "CWLS LOG ASCII STANDARD - VERSION 1.2")
         elif version == 2:
-            self.version["VERS"] = Metadata(
+            self.version["VERS"] = HeaderItem(
                 "VERS", "", 2.0, "CWLS log ASCII Standard -VERSION 2.0")
+
+        self.well["STRT"].value = self.index[0]
+        self.well["STOP"].value = self.index[-1]
+        self.well["STEP"].value = numpy.gradient(self.index)[0]
 
         # ~Version
         lines.append("~Version ".ljust(60, "-"))
@@ -364,6 +364,22 @@ class LASFile(OrderedDictionary):
     @property
     def index(self):
         return self.data[:, 0]
+
+    def add_curve(self, mnemonic, data, unit="", descr="", value=""):
+        curve = Curve(mnemonic, unit, value, descr, data)
+        self.curves.append(curve)
+        self.refresh()
+
+    @property
+    def header(self):
+        return OrderedDictionary([
+            ("~V", self.version),
+            ("~W", self.well), 
+            ("~C", self.curves),
+            ("~P", self.params),
+            ("~O", self.other)])
+    
+
 
 
 class Las(LASFile):
@@ -530,19 +546,19 @@ class SectionParser(object):
     def metadata(self, **keys):
         key_order = self.orders.get(keys["name"], self.default_order)
         if key_order == "value:descr":
-            return Metadata(keys["name"], keys["unit"],
-                            self.num(keys["value"]), keys["descr"])
+            return HeaderItem(keys["name"], keys["unit"],
+                              self.num(keys["value"]), keys["descr"])
         elif key_order == "descr:value":
-            return Metadata(keys["name"], keys["unit"], keys["descr"],
-                            self.num(keys["value"]))
+            return HeaderItem(keys["name"], keys["unit"], keys["descr"],
+                              self.num(keys["value"]))
 
     def curves(self, **keys):
         return Curve(keys['name'], keys['unit'], keys['value'],
-                     keys['descr'], None, keys['name'])
+                     keys['descr'], None)
 
     def params(self, **keys):
-        return Parameter(keys['name'], keys['unit'], self.num(keys['value']),
-                         keys['descr'])
+        return HeaderItem(keys['name'], keys['unit'], self.num(keys['value']),
+                          keys['descr'])
 
 
 def read_line(line):
@@ -641,23 +657,23 @@ def get_formatter_function(order, left_width=None, middle_width=None):
         unit
         + " " * (middle_width - len(str(unit)) - len(right_hand_item))
         + right_hand_item
-        )
+    )
     if order == "descr:value":
         return lambda item: "%s.%s : %s" % (
             mnemonic_func(item.mnemonic),
             middle_func(str(item.unit), str(item.descr)),
             item.value
-            )
+        )
     elif order == "value:descr":
         return lambda item: "%s.%s : %s" % (
-            mnemonic_func(item.mnemonic), 
+            mnemonic_func(item.mnemonic),
             middle_func(str(item.unit), str(item.value)),
             item.descr
-            )
+        )
 
 
-def get_section_order_function(section, version, 
-        order_definitions=ORDER_DEFINITIONS):
+def get_section_order_function(section, version,
+                               order_definitions=ORDER_DEFINITIONS):
     '''Get a function that returns the order per mnemonic and section.
 
     Args:
@@ -678,5 +694,3 @@ def get_section_order_function(section, version,
         for mnemonic in mnemonics:
             orders[mnemonic] = order
     return lambda mnemonic: orders.get(mnemonic, default_order)
-
-
