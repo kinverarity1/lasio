@@ -572,7 +572,7 @@ class SectionParser(object):
                           keys['descr'])
 
 
-def read_line(line):
+def read_line(line, pattern=None):
     '''Read a line from a LAS header section.
 
     Args:
@@ -589,13 +589,17 @@ def read_line(line):
     '''
 
     d = {}
-    pattern = (r"(?P<name>[^.]+)\." +
-               r"(?P<unit>[^\s:]*)" +
-               r"(?P<value>[^:]*):" +
-               r"(?P<descr>.*)")
+    if pattern is None:
+        pattern = (r"\.?(?P<name>[^.]+)\." +
+                   r"(?P<unit>[^\s:]*)" +
+                   r"(?P<value>[^:]*):" +
+                   r"(?P<descr>.*)")
     m = re.match(pattern, line)
     for key, value in m.groupdict().items():
         d[key] = value.strip()
+        if key == "unit":
+            if d[key].endswith("."):
+                d[key] = d[key].strip(".") # see issue #36
     return d
 
 
