@@ -8,7 +8,7 @@ In principle it is designed to read as many types of LAS files as possible, incl
 
 ## Installation
 
-``las_reader`` works on any platform. It depends on the small third-party package [``namedlist``][namedlist] as well as [``numpy``][numpy] and [``setuptools``][setuptools]. To install use:
+``las_reader`` is written entirely in Python and works on any platform. It depends on the small third-party package [``namedlist``][namedlist] as well as [``numpy``][numpy] and [``setuptools``][setuptools]. To install from [PyPi][PyPi] use:
 
 ```bash
 $ pip install las_reader
@@ -30,7 +30,7 @@ The curve data are available as items:
 [145, 262, 272, ...]
 ```
 
-There are some [example IPython notebooks here](https://github.com/kinverarity1/las-reader/tree/master/docs) demonstrating how to use the package. More are in the works.
+There are some [example IPython notebooks here](http://nbviewer.ipython.org/github/kinverarity1/las-reader/tree/master/docs/) demonstrating how to use the package. More are in the works.
 
 ### Character encodings
 
@@ -75,3 +75,4 @@ The code is freely available for any kind of use or modification under the MIT L
 [setuptools]: https://pypi.python.org/pypi/setuptools "setuptools"
 [chardet]:  https://pypi.python.org/pypi/chardet "chardet"
 [cChardet]: https://github.com/PyYoshi/cChardet "cChardet"
+[PyPi]: https://pypi.python.org/pypi/las_reader "PyPi"
