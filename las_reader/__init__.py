@@ -1,6 +1,4 @@
-from . import las
-
-from las import __version__, LASFile, Curve, HeaderItem
+from .las import __version__, LASFile, Curve, HeaderItem
 
 
 def read(file_ref, encoding=None,
@@ -23,6 +21,6 @@ def read(file_ref, encoding=None,
     specification.
 
     '''
-    return las.LASFile(file_ref, encoding=encoding,
-                       autodetect_encoding=autodetect_encoding,
-                       autodetect_encoding_chars=autodetect_encoding_chars)
+    return LASFile(file_ref, encoding=encoding,
+                   autodetect_encoding=autodetect_encoding,
+                   autodetect_encoding_chars=autodetect_encoding_chars)
