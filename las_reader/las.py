@@ -634,7 +634,7 @@ def open_file(file_ref, encoding=None,
     needs to be installed, or else an ImportError will be raised.
 
     '''
-    if isinstance(file_ref, basestring):
+    if isinstance(file_ref, str):
         if os.path.exists(file_ref):
             if autodetect_encoding:
                 try:
