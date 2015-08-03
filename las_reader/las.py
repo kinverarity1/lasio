@@ -349,7 +349,7 @@ class LASFile(OrderedDictionary):
 
     def get_curve_name(self, curve_name):
         for curve in self.curves:
-            if curve.name == curve_name:
+            if curve.mnemonic == curve_name:
                 return curve
 
     def keys(self):
