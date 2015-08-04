@@ -494,7 +494,8 @@ class Reader(object):
                 raise LASDataError("Failed to read data:\n%s" % (
                                    traceback.format_exc().splitlines()[-1]))
         else:
-            s = s.replace('\n', ' ').replace('\t', ' ')
+            eol_chars = r"[\n\t\r]"
+            s = re.sub(eol_chars, " ", s)
             try:
                 arr = numpy.loadtxt(StringIO(s))
             except:
