@@ -648,7 +648,6 @@ def open_file(file_ref, encoding=None,
     '''
     if isinstance(file_ref, str):
         if os.path.exists(file_ref):
-            encoding = None
             if autodetect_encoding:
                 try:
                     import cchardet as chardet
