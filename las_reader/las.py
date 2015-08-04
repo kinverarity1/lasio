@@ -189,7 +189,10 @@ class LASFile(OrderedDictionary):
 
         self.well = reader.read_section('~W')
         self.curves = reader.read_list_section('~C')
-        self.params = reader.read_section('~P')
+        try:
+            self.params = reader.read_section('~P')
+        except LASHeaderError:
+            logger.warning(traceback.format_exc().splitlines()[-1])            
         self.other = reader.read_raw_text('~O')
 
         # Set null value
