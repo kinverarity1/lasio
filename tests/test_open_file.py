@@ -1,5 +1,7 @@
 import os
 
+import pytest
+
 import las_reader
 
 test_dir = os.path.dirname(__file__)
@@ -12,12 +14,20 @@ def test_open_url():
         "https://raw.githubusercontent.com/kinverarity1/las-reader"
         "/master/standards/examples/1.2/sample_curve_api.las")
 
+
 def test_open_file_object():
     with open(egfn("sample.las"), mode="r") as f:
         l = las_reader.read(f)
 
+
 def test_open_filename():
     l = las_reader.read(egfn("sample.las"))
+
+
+def test_open_incorrect_filename():
+    with pytest.raises(IOError):
+        l = las_reader.read(egfn("sampleXXXDOES NOT EXIST.las"))
+
 
 def test_open_string():
     l = las_reader.read("""~VERSION INFORMATION
@@ -67,4 +77,3 @@ def test_open_string():
 1669.875   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
 1669.750   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
 """)
-
