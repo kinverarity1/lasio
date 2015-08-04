@@ -637,6 +637,7 @@ def open_file(file_ref, encoding=None,
     '''
     if isinstance(file_ref, str):
         if os.path.exists(file_ref):
+            encoding = None
             if autodetect_encoding:
                 try:
                     import cchardet as chardet
@@ -651,7 +652,7 @@ def open_file(file_ref, encoding=None,
                     chunk = test_file.read(autodetect_encoding_chars)
                     result = chardet.detect(chunk)
                     encoding = result["encoding"]
-            file_ref = codecs.open(file_ref, mode="r", encoding=None)
+            file_ref = codecs.open(file_ref, mode="r", encoding=encoding)
         else:
             file_ref = StringIO(file_ref)
     return file_ref
