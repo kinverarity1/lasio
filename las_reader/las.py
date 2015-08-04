@@ -347,9 +347,17 @@ class LASFile(OrderedDictionary):
                 line += format_data_section_line(data_arr[i, j])
             file_object.write(line + "\n")
 
-    def get_curve_name(self, curve_name):
+    def get_curve(self, mnemonic):
+        '''Return Curve object.
+
+        Args:
+          mnemonic (str): the name of the curve
+
+        Returns: Curve object (i.e. not just the data array).
+
+        '''
         for curve in self.curves:
-            if curve.mnemonic == curve_name:
+            if curve.mnemonic == mnemonic:
                 return curve
 
     def keys(self):
