@@ -115,6 +115,16 @@ ORDER_DEFINITIONS = {
           "params":  ["value:descr"]}}
 
 
+URL_REGEXP = re.compile(
+    r'^(?:http|ftp)s?://'  # http:// or https://
+    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}'
+    r'\.?|[A-Z0-9-]{2,}\.?)|'  # (cont.) domain...
+    r'localhost|'  # localhost...
+    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+    r'(?::\d+)?'  # optional port
+    r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+
+
 class LASFile(OrderedDictionary):
 
     '''LAS file object.
@@ -179,7 +189,7 @@ class LASFile(OrderedDictionary):
         try:
             assert reader.version in (1.2, 2)
         except AssertionError:
-            logger.warning("LAS spec version is %s -- neither 1.2 nor 2" % 
+            logger.warning("LAS spec version is %s -- neither 1.2 nor 2" %
                            reader.version)
             if reader.version < 2:
                 reader.version = 1.2
@@ -192,7 +202,7 @@ class LASFile(OrderedDictionary):
         try:
             self.params = reader.read_section('~P')
         except LASHeaderError:
-            logger.warning(traceback.format_exc().splitlines()[-1])            
+            logger.warning(traceback.format_exc().splitlines()[-1])
         self.other = reader.read_raw_text('~O')
 
         # Set null value
@@ -204,7 +214,7 @@ class LASFile(OrderedDictionary):
             d = data[:, i]
             c.data = d
         self.refresh()
-        
+
     def refresh(self):
         '''Refresh curve names and indices.'''
         n = len(self.curves)
@@ -232,7 +242,7 @@ class LASFile(OrderedDictionary):
         '''2D array of data from LAS file.'''
         return numpy.vstack([c.data for c in self.curves]).T
 
-    def write(self, file_object, version=None, 
+    def write(self, file_object, version=None,
               STRT=None, STOP=None, STEP=None):
         '''Write to a file.
 
@@ -407,12 +417,10 @@ class LASFile(OrderedDictionary):
     def header(self):
         return OrderedDictionary([
             ("~V", self.version),
-            ("~W", self.well), 
+            ("~W", self.well),
             ("~C", self.curves),
             ("~P", self.params),
             ("~O", self.other)])
-    
-
 
 
 class Las(LASFile):
@@ -622,7 +630,7 @@ def read_line(line, pattern=None):
         d[key] = value.strip()
         if key == "unit":
             if d[key].endswith("."):
-                d[key] = d[key].strip(".") # see issue #36
+                d[key] = d[key].strip(".")  # see issue #36
     return d
 
 
@@ -631,7 +639,7 @@ def open_file(file_ref, encoding=None,
     '''Open a file if necessary.
 
     Args:
-      file_ref: either a filename, an open file object, or a string of
+      file_ref: either a filename, an open file object, a URL, or a string of
         a LAS file contents.
 
     Kwargs:
@@ -647,24 +655,33 @@ def open_file(file_ref, encoding=None,
 
     '''
     if isinstance(file_ref, str):
-        if os.path.exists(file_ref):
-            if autodetect_encoding:
+        lines = file_ref.splitlines()
+        if len(lines) == 1:  # File name
+            if URL_REGEXP.match(file_ref):
                 try:
-                    import cchardet as chardet
+                    import urllib2
+                    file_ref = urllib2.urlopen(file_ref)
                 except ImportError:
+                    import urllib.request
+                    file_ref = urllib.request.urlopen(file_ref)
+            else:  # filename
+                if autodetect_encoding:
                     try:
-                        import chardet
+                        import cchardet as chardet
                     except ImportError:
-                        raise ImportError("chardet or cchardet is required for"
-                                          " automatic detection of character"
-                                          " encodings.")
-                with open(file_ref, mode="rb") as test_file:
-                    chunk = test_file.read(autodetect_encoding_chars)
-                    result = chardet.detect(chunk)
-                    encoding = result["encoding"]
-            file_ref = codecs.open(file_ref, mode="r", encoding=encoding)
+                        try:
+                            import chardet
+                        except ImportError:
+                            raise ImportError("chardet or cchardet is required for"
+                                              " automatic detection of character"
+                                              " encodings.")
+                    with open(file_ref, mode="rb") as test_file:
+                        chunk = test_file.read(autodetect_encoding_chars)
+                        result = chardet.detect(chunk)
+                        encoding = result["encoding"]
+                file_ref = codecs.open(file_ref, mode="r", encoding=encoding)
         else:
-            file_ref = StringIO(file_ref)
+            file_ref = StringIO("\n".join(lines))
     return file_ref
 
 
