@@ -1,4 +1,4 @@
-"""Setup script for las_reader
+"""Setup script for lasio
 
 Based on:
 https://packaging.python.org/en/latest/distributing.html
@@ -15,7 +15,7 @@ from os import path
 from distutils.core import setup
 
 
-setup(name='las_reader',
+setup(name='lasio',
 
       version="0.5.2",
 
@@ -24,7 +24,7 @@ setup(name='las_reader',
                         "standard ASCII (LAS) files (only specifications "
                         "1.2 and 2.0 are supported for now)."),
 
-      url="https://github.com/kinverarity1/las_reader",
+      url="https://github.com/kinverarity1/lasio",
 
       author="Kent Inverarity",
       author_email="kinverarity1@gmail.com",
@@ -52,13 +52,13 @@ setup(name='las_reader',
 
       keywords="science geophysics io",
 
-      packages=["las_reader", ],
+      packages=["lasio", ],
 
       install_requires=["numpy", "namedlist", ],
 
       entry_points={
           'console_scripts': [
-              'las2excel = las_reader.las2excel:main'
+              'las2excel = lasio.las2excel:main'
           ],
       }
       )

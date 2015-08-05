@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-import las_reader
+import lasio
 
 test_dir = os.path.dirname(__file__)
 
@@ -10,27 +10,27 @@ egfn = lambda fn: os.path.join(test_dir, "examples", fn)
 
 
 def test_open_url():
-    l = las_reader.read(
+    l = lasio.read(
         "https://raw.githubusercontent.com/kinverarity1/las-reader"
         "/master/standards/examples/1.2/sample_curve_api.las")
 
 
 def test_open_file_object():
     with open(egfn("sample.las"), mode="r") as f:
-        l = las_reader.read(f)
+        l = lasio.read(f)
 
 
 def test_open_filename():
-    l = las_reader.read(egfn("sample.las"))
+    l = lasio.read(egfn("sample.las"))
 
 
 def test_open_incorrect_filename():
     with pytest.raises(IOError):
-        l = las_reader.read(egfn("sampleXXXDOES NOT EXIST.las"))
+        l = lasio.read(egfn("sampleXXXDOES NOT EXIST.las"))
 
 
 def test_open_string():
-    l = las_reader.read("""~VERSION INFORMATION
+    l = lasio.read("""~VERSION INFORMATION
  VERS.                  1.2:   CWLS LOG ASCII STANDARD -VERSION 1.2
  WRAP.                  NO:   ONE LINE PER DEPTH STEP
 ~WELL INFORMATION BLOCK
