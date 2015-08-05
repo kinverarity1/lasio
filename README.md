@@ -85,6 +85,7 @@ Three options:
 
 ### Development
 
+  - 0.6 (2015-08-05) - bugfixes and renamed from ``las_reader`` to ``lasio``
   - 0.5 (2015-08-01) - Improvements to writing LAS files
   - 0.4 (2015-07-26) - Improved handling of character encodings, other internal improvements
   - 0.3 (2015-07-23) - Added Python 3 support, now reads LAS 1.2 and 2.0

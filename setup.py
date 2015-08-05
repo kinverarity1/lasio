@@ -17,7 +17,7 @@ from distutils.core import setup
 
 setup(name='lasio',
 
-      version="0.5.2",
+      version="0.6",
 
       description="Read borehole data from Log ASCII Standard (LAS) files",
       long_description=("A library for reading borehole data from log "
