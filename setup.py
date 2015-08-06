@@ -19,10 +19,16 @@ setup(name='lasio',
 
       version="0.6",
 
-      description="Read borehole data from Log ASCII Standard (LAS) files",
-      long_description=("A library for reading borehole data from log "
-                        "standard ASCII (LAS) files (only specifications "
-                        "1.2 and 2.0 are supported for now)."),
+      description="Read/write well data from Log ASCII Standard (LAS) files",
+      long_description=(
+          "This is a Python package to read and write Log ASCII Standard (LAS)"
+          " files, used for borehole/well data (e.g. geophysical/geological/ "
+          "petrophysical logs). It is compatible with versions 1.2 and 2.0 of "
+          "the LAS file specification, published by the Canadian Well Logging "
+          "Society. In principle it is designed to read as many types of LAS "
+          "files as possible, including ones containing common errors or "
+          "non-compliant formatting. \n\nIt is written entirely in Python and "
+          "works on any platform."),
 
       url="https://github.com/kinverarity1/lasio",
 
