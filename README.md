@@ -1,6 +1,6 @@
 # lasio
 
-[![Build Status](https://travis-ci.org/kinverarity1/lasio.svg)](https://travis-ci.org/kinverarity1/lasio)
+[![Build Status](https://travis-ci.org/kinverarity1/lasio.svg)](https://travis-ci.org/kinverarity1/lasio) [![Coverage Status](https://coveralls.io/repos/kinverarity1/lasio/badge.svg?branch=master&service=github)](https://coveralls.io/github/kinverarity1/lasio?branch=master)
 
 Read/write well data from Log ASCII Standard (LAS) files.
 
