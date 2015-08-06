@@ -174,7 +174,7 @@ class LASFile(OrderedDictionary):
                       autodetect_encoding=autodetect_encoding,
                       autodetect_encoding_chars=autodetect_encoding_chars)
 
-        self._text = f.read()
+        self._text = str(f.read())
         reader = Reader(self._text, version=1.2)
 
         self.version = reader.read_section('~V')
