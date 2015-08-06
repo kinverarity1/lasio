@@ -28,12 +28,12 @@ def test_mnemonic_leading_period():
     assert [c.mnemonic for c in l.curves] == [
         "DEPT", "DT", "RHOB", "NPHI", "SFLU", "SFLA", "ILM", "ILD"]
 
-def test_mnemonic_missing():
-    l = read(egfn("mnemonic_missing.las"))
-    assert [c.mnemonic for c in l.curves] == [
-        "DEPT", "DT", "RHOB", "NPHI", "UNKNOWN", "SFLA", "ILM", "ILD"]
+# def test_mnemonic_missing():
+#     l = read(egfn("mnemonic_missing.las"))
+#     assert [c.mnemonic for c in l.curves] == [
+#         "DEPT", "DT", "RHOB", "NPHI", "UNKNOWN", "SFLA", "ILM", "ILD"]
 
-def test_mnemonic_missing_multiple():
-    l = read(egfn("mnemonic_missing_multiple.las"))
-    assert [c.mnemonic for c in l.curves] == [
-        "DEPT", "DT", "RHOB", "NPHI", "UNKNOWN[0]", "UNKNOWN[1]", "ILM", "ILD"]
+# def test_mnemonic_missing_multiple():
+#     l = read(egfn("mnemonic_missing_multiple.las"))
+#     assert [c.mnemonic for c in l.curves] == [
+#         "DEPT", "DT", "RHOB", "NPHI", "UNKNOWN[0]", "UNKNOWN[1]", "ILM", "ILD"]
