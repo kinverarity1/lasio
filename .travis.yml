@@ -8,6 +8,6 @@ before_install:
     - pip install coveralls
 install: "pip install -r requirements.txt"
 script:
-    - py.test
+    - py.test --cov=lasio
 after_success:
     - coveralls
