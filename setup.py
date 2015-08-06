@@ -15,6 +15,10 @@ from os import path
 from distutils.core import setup
 
 
+with open(path.join(path.dirname(__file__), "requirements.txt"), "r") as f:
+    requirements = f.read().splitlines()
+
+
 setup(name='lasio',
 
       version="0.6",
@@ -60,7 +64,7 @@ setup(name='lasio',
 
       packages=["lasio", ],
 
-      install_requires=["numpy", "namedlist", ],
+      install_requires=requirements,
 
       entry_points={
           'console_scripts': [
