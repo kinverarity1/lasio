@@ -173,8 +173,22 @@ class LASFile(OrderedDictionary):
         f = open_file(file_ref, encoding=encoding,
                       autodetect_encoding=autodetect_encoding,
                       autodetect_encoding_chars=autodetect_encoding_chars)
-
-        self._text = str(f.read())
+        
+        if encoding is None:
+            encoding = "ascii"
+            logger.debug("Encoding not specified; set to %s" % encoding)
+        else:
+            logger.debug("Encoding=%s" % encoding)
+        
+        text = f.read()
+        logger.debug("file content has type %s" % type(text))
+        if isinstance(text, bytes):
+            self._text = text.decode(encoding)
+        elif isinstance(text, str):
+            self._text = text
+        else:
+            self._text = str(text)
+        
         reader = Reader(self._text, version=1.2)
 
         self.version = reader.read_section('~V')
