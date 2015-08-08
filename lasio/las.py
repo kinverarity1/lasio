@@ -7,7 +7,10 @@ from __future__ import print_function
 
 # Standard library packages
 import codecs
-import collections
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 import logging
 import os
 import re
@@ -30,7 +33,7 @@ import numpy
 
 
 logger = logging.getLogger(__name__)
-__version__ = "0.6"
+__version__ = "0.7"
 
 
 HeaderItem = namedlist("HeaderItem", ["mnemonic", "unit", "value", "descr"])
@@ -49,9 +52,9 @@ class LASHeaderError(Exception):
     pass
 
 
-class OrderedDictionary(collections.OrderedDict):
+class OrderedDictionary(OrderedDict):
 
-    '''A minor wrapper over collections.OrderedDict.
+    '''A minor wrapper over OrderedDict.
 
     This wrapper has a better string representation.
 

@@ -21,7 +21,7 @@ with open(path.join(path.dirname(__file__), "requirements.txt"), "r") as f:
 
 setup(name='lasio',
 
-      version="0.6",
+      version="0.7",
 
       description="Read/write well data from Log ASCII Standard (LAS) files",
       long_description=(
@@ -53,8 +53,12 @@ setup(name='lasio',
           "License :: OSI Approved :: MIT License",
           "Natural Language :: English",
           "Operating System :: OS Independent",
+          "Programming Language :: Python :: 2.6",
           "Programming Language :: Python :: 2.7",
           "Programming Language :: Python :: 3",
+          "Programming Language :: Python :: 3.2",
+          "Programming Language :: Python :: 3.3",
+          "Programming Language :: Python :: 3.4",
           "Topic :: Scientific/Engineering",
           "Topic :: System :: Filesystems",
           "Topic :: Scientific/Engineering :: Information Analysis",
