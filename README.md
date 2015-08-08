@@ -11,8 +11,7 @@ This is a Python package to read and write Log ASCII Standard (LAS) files, used 
 
 It is written entirely in Python and works on any platform. It requires:
 
-  - Python >= 2.7
-  - the small third-party package [``namedlist``][namedlist]
+  - the small third-party packages [``namedlist``][namedlist] and [``ordereddict``][ordereddict]
   - [``numpy``][numpy]. 
 
 ### Install
@@ -92,6 +91,7 @@ Three options:
 
 ### Development
 
+  - 0.7 (2015-08-08) - all tests passing on Python 2.6 through 3.4
   - 0.6 (2015-08-05) - bugfixes and renamed from ``las_reader`` to ``lasio``
   - 0.5 (2015-08-01) - Improvements to writing LAS files
   - 0.4 (2015-07-26) - Improved handling of character encodings, other internal improvements
