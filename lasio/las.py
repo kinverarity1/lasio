@@ -52,9 +52,9 @@ class LASHeaderError(Exception):
     pass
 
 
-class OrderedDictionary(collections.OrderedDict):
+class OrderedDictionary(OrderedDict):
 
-    '''A minor wrapper over collections.OrderedDict.
+    '''A minor wrapper over OrderedDict.
 
     This wrapper has a better string representation.
 
