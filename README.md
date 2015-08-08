@@ -1,8 +1,10 @@
 # lasio
 
 [![Build Status](https://travis-ci.org/kinverarity1/lasio.svg)](https://travis-ci.org/kinverarity1/lasio) 
-[![Coverage Status](https://coveralls.io/repos/kinverarity1/lasio/badge.svg?branch=master&service=github)](https://coveralls.io/github/kinverarity1/lasio?branch=master) 
+[![Coverage Status](https://coveralls.io/repos/kinverarity1/lasio/badge.svg?branch=master&service=github)](https://coveralls.io/github/kinverarity1/lasio?branch=master)<br \>
 [![PyPI Version](http://img.shields.io/pypi/v/lasio.svg?style=flat-square)](https://pypi.python.org/pypi/lasio/)
+[![PyPI Downloads](https://img.shields.io/pypi/dd/lasio.svg)](https://pypi.python.org/pypi/lasio/)<br />
+[![Python Version](https://img.shields.io/pypi/pyversions/lasio.svg)](https://www.python.org/downloads/)
 [![MIT License](http://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/kinverarity1/lasio/blob/master/LICENSE)
 
 Read/write well data from Log ASCII Standard (LAS) files.
