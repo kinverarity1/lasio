@@ -7,7 +7,10 @@ from __future__ import print_function
 
 # Standard library packages
 import codecs
-import collections
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 import logging
 import os
 import re
