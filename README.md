@@ -1,14 +1,14 @@
 # lasio
 
-[![Python Version](https://img.shields.io/pypi/pyversions/lasio.svg)](https://www.python.org/downloads/)
-[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/kinverarity1/lasio/blob/master/LICENSE)
 [![PyPI Version](http://img.shields.io/pypi/v/lasio.svg)](https://pypi.python.org/pypi/lasio/)
 [![PyPI Downloads](https://img.shields.io/pypi/dd/lasio.svg)](https://pypi.python.org/pypi/lasio/)
-[![PyPI Format](https://img.shields.io/pypi/format/lasio.svg)](https://pypi.python.org/pypi/lasio/)
 [![Build Status](https://travis-ci.org/kinverarity1/lasio.svg)](https://travis-ci.org/kinverarity1/lasio) 
 [![Coverage Status](https://coveralls.io/repos/kinverarity1/lasio/badge.svg?branch=master&service=github)](https://coveralls.io/github/kinverarity1/lasio?branch=master)
 [![GitHub Issues](http://githubbadges.herokuapp.com/kinverarity1/lasio/issues.svg)](https://github.com/kinverarity1/lasio/issues)
 [![GitHub PRs](http://githubbadges.herokuapp.com/kinverarity1/lasio/pulls.svg)](https://github.com/kinverarity1/lasio/pulls)
+[![Python Version](https://img.shields.io/pypi/pyversions/lasio.svg)](https://www.python.org/downloads/)
+[![PyPI Format](https://img.shields.io/pypi/format/lasio.svg)](https://pypi.python.org/pypi/lasio/)
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/kinverarity1/lasio/blob/master/LICENSE)
 
 Read/write well data from Log ASCII Standard (LAS) files.
 
