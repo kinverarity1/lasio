@@ -14,25 +14,21 @@ from os import path
 
 from distutils.core import setup
 
+from lasio import __version__
+
 
 with open(path.join(path.dirname(__file__), "requirements.txt"), "r") as f:
     requirements = f.read().splitlines()
 
+with open(path.join(path.dirname(__file__), "README.rst"), "r") as f:
+    README = f.read()
 
 setup(name='lasio',
 
-      version="0.7",
+      version=__version__,
 
       description="Read/write well data from Log ASCII Standard (LAS) files",
-      long_description=(
-          "This is a Python package to read and write Log ASCII Standard (LAS)"
-          " files, used for borehole/well data (e.g. geophysical/geological/ "
-          "petrophysical logs). It is compatible with versions 1.2 and 2.0 of "
-          "the LAS file specification, published by the Canadian Well Logging "
-          "Society. In principle it is designed to read as many types of LAS "
-          "files as possible, including ones containing common errors or "
-          "non-compliant formatting. \n\nIt is written entirely in Python and "
-          "works on any platform."),
+      long_description=README,
 
       url="https://github.com/kinverarity1/lasio",
 
