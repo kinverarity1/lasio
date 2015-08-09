@@ -1,41 +1,28 @@
 lasio
 =====
 
-|PyPI Version| |PyPI Downloads| |Build Status| |Coverage Status| |GitHub
-Issues| |GitHub PRs| |Python Version| |PyPI Format| |MIT License|
+|PyPI Version| |PyPI Downloads| |Build Status| |Coverage Status| |GitHub Issues| |GitHub PRs| |Python Version| |PyPI Format| |MIT License|
 
-Read/write well data from Log ASCII Standard (LAS) files.
+This is a Python package to read and write Log ASCII Standard (LAS) files, used for borehole/well data (e.g. geophysical/geological/petrophysical logs). It is compatible with versions 1.2 and 2.0 of the LAS file specification, published by the `Canadian Well Logging Society`_. In principle it is designed to read as many types of LAS files as possible, including ones containing common errors or non-compliant formatting.
 
-This is a Python package to read and write Log ASCII Standard (LAS)
-files, used for borehole/well data (e.g.
-geophysical/geological/petrophysical logs). It is compatible with
-versions 1.2 and 2.0 of the LAS file specification, published by the
-`Canadian Well Logging Society <http://www.cwls.org/las/>`__. In
-principle it is designed to read as many types of LAS files as possible,
-including ones containing common errors or non-compliant formatting.
+It is written entirely in Python and works on any platform. It depends on the following packages available on PyPI:
 
-It is written entirely in Python and works on any platform. It requires:
-
--  the small third-party packages
-   ```namedlist`` <https://pypi.python.org/pypi/namedlist>`__ and
-   ```ordereddict`` <https://pypi.python.org/pypi/ordereddict>`__
--  ```numpy`` <http://www.numpy.org/>`__.
+- `namedlist`_
+- `ordereddict`_
+- `numpy`_
 
 Install
 -------
 
-To install from `PyPI <https://pypi.python.org/pypi/lasio>`__ use:
+To install from `PyPI`_ use:
 
 .. code:: bash
 
     $ pip install lasio
 
-If necessary this will download and install the package dependencies.
+If necessary this will download and install the package dependencies listed above.
 
-Alternatively if you would like the latest version (which may contain
-bugs and errors) make sure you have
-```setuptools`` <https://pypi.python.org/pypi/setuptools>`__ and ``git``
-installed and then:
+Alternatively if you would like the latest version (which may contain bugs and errors) make sure you have `setuptools`_ and `git`_ installed and then use:
 
 .. code:: bash
 
@@ -46,21 +33,20 @@ installed and then:
 How to use
 ----------
 
-Look at the `example IPython notebooks
-here <http://nbviewer.ipython.org/github/kinverarity1/lasio/tree/master/notebooks/>`__.
+Look at the `example IPython notebooks here <http://nbviewer.ipython.org/github/kinverarity1/lasio/tree/master/notebooks/>`__.
 More detailed examples are coming.
 
 Opening LAS files
 ~~~~~~~~~~~~~~~~~
 
-From a filename:
+To open a LAS file from disk:
 
 .. code:: python
 
     >>> import lasio
     >>> l = lasio.read("example.las")
 
-Or a URL:
+To open a LAS file from a URL:
 
 .. code:: python
 
@@ -90,22 +76,19 @@ Character encodings
 
 Three options:
 
-1. Do nothing and `hope for no
-   errors <https://docs.python.org/2.7/howto/unicode.html#encodings>`__.
+1. Do nothing and hope for no errors_.
 
-2. Specify the encoding (it uses
-   ```codecs.open`` <https://docs.python.org/2/library/codecs.html#codecs.open>`__
-   internally):
+2. Specify the encoding (internally ``lasio`` uses the ``open`` function from `codecs`_ which is part of the standard library):
 
-``python    >>> l = lasio.read("example.las", encoding="windows-1252")``
+.. code:: python
 
-3. Install a third-party package like
-   ```cChardet`` <https://github.com/PyYoshi/cChardet>`__ (faster) or
-   ```chardet`` <https://pypi.python.org/pypi/chardet>`__ (slower) to
-   automatically detect the character encoding. If these packages are
-   installed this code will use the fastest option:
+    >>> l = lasio.read("example.las", encoding="windows-1252")
 
-``python    >>> l = lasio.read("example.las", autodetect_encoding=True)``
+3. Install a third-party package like `cChardet`_ (faster) or `chardet`_ (slower) to automatically detect the character encoding. If these packages are installed this code will use whichever is faster:
+
+.. code:: python
+
+    >>> l = lasio.read("example.las", autodetect_encoding=True)
 
 Note that by default ``autodetect_encoding=False``.
 
@@ -113,25 +96,18 @@ Development
 -----------
 
 -  0.7 (2015-08-08) - all tests passing on Python 2.6 through 3.4
--  0.6 (2015-08-05) - bugfixes and renamed from ``las_reader`` to
-   ``lasio``
+-  0.6 (2015-08-05) - bugfixes and renamed from ``las_reader`` to ``lasio``
 -  0.5 (2015-08-01) - Improvements to writing LAS files
--  0.4 (2015-07-26) - Improved handling of character encodings, other
-   internal improvements
+-  0.4 (2015-07-26) - Improved handling of character encodings, other internal improvements
 -  0.3 (2015-07-23) - Added Python 3 support, now reads LAS 1.2 and 2.0
 -  0.2 (2015-07-08) - Tidied code and published on PyPI
 
 Contributions
 ~~~~~~~~~~~~~
 
-Contributions are very welcome. Please fork ``kinverarity1/lasio`` on
-GitHub and submit a PR request containing any changes you have made.
+Contributions are very welcome. Please fork the project on GitHub and submit a pull request (PR) containing any changes you have made.
 
-Suggested improvements, bug reports, shortcomings, desirable features,
-examples of LAS files which do not load as you expected, are all also
-welcome either `via
-GitHub <https://github.com/kinverarity1/lasio/issues/new>`__ or by
-`email <kinverarity@hotmail.com>`__.
+Suggested improvements, bug reports, shortcomings, desirable features, examples of LAS files which do not load as you expected, are all also welcome either via GitHub_ or email_.
 
 Thanks to the following people in chronological order for their help:
 
@@ -141,8 +117,7 @@ Thanks to the following people in chronological order for their help:
 License
 ~~~~~~~
 
-The code is freely available for any kind of use or modification under
-the MIT License.
+The code is freely available for any kind of use or modification under the MIT License.
 
 .. |PyPI Version| image:: http://img.shields.io/pypi/v/lasio.svg
    :target: https://pypi.python.org/pypi/lasio/
@@ -162,3 +137,16 @@ the MIT License.
    :target: https://pypi.python.org/pypi/lasio/
 .. |MIT License| image:: http://img.shields.io/badge/license-MIT-blue.svg
    :target: https://github.com/kinverarity1/lasio/blob/master/LICENSE
+.. _Canadian Well Logging Society: http://www.cwls.org/las
+.. _namedlist: https://pypi.python.org/pypi/namedlist
+.. _ordereddict: https://pypi.python.org/pypi/ordereddict
+.. _numpy: http://numpy.org
+.. _PyPI: https://pypi.python.org/pypi/lasio
+.. _setuptools: https://pypi.python.org/pypi/setuptools
+.. _git: http://www.git-scm.com/
+.. _codecs: https://docs.python.org/2/library/codecs.html#codecs.open
+.. _cChardet: https://github.com/PyYoshi/cChardet
+.. _chardet: https://pypi.python.org/pypi/chardet
+.. _GitHub: https://github.com/kinverarity1/lasio/issues/new
+.. _email: mailto:kinverarity@hotmail.com
+.. _errors: https://docs.python.org/2.7/howto/unicode.html#encodings
