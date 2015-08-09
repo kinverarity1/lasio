@@ -46,6 +46,14 @@ def test_read_v2_sample_wrapped():
     l = read(stegfn("2.0", "sample_2.0_wrapped.las"))
 
 
+def test_read_v3_sample():
+    l = read(stegfn("3.0", "sample_3.0.las"))
+
+
+def test_read_v3_sample_spec():
+    l = read(stegfn("3.0", "sample_las3.0_spec.las"))
+
+
 def test_dodgy_param_sect():
     l = read(egfn("dodgy_param_sect.las"))
 
