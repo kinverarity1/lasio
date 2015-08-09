@@ -267,7 +267,7 @@ class LASFile(OrderedDictionary):
           file_object: a file_like object opening for writing.
           version (float): either 1.2 or 2
           STRT, STOP, STEP (float): optional overrides to automatic
-            calculation. By default STRT and STOP are the first and last 
+            calculation. By default STRT and STOP are the first and last
             index curve values, and STEP is the first step size in the
             index curve.
 
@@ -306,7 +306,7 @@ class LASFile(OrderedDictionary):
         #     "middle_width": None
         # }
         order_func = get_section_order_function("version", version)
-        section_widths = get_section_widths(self.version)
+        section_widths = get_section_widths("version", self.version, version)
         for mnemonic, header_item in self.version.items():
             logger.debug(str(header_item))
             order = order_func(mnemonic)
@@ -322,7 +322,7 @@ class LASFile(OrderedDictionary):
         #     "middle_width": None
         # }
         order_func = get_section_order_function("well", version)
-        section_widths = get_section_widths(self.well)
+        section_widths = get_section_widths("well", self.well, version)
         for mnemonic, header_item in self.well.items():
             order = order_func(mnemonic)
             formatter_func = get_formatter_function(order, **section_widths)
@@ -336,7 +336,7 @@ class LASFile(OrderedDictionary):
         #     "middle_width": None
         # }
         order_func = get_section_order_function("curves", version)
-        section_widths = get_section_widths(self.curves)
+        section_widths = get_section_widths("curves", self.curves, version)
         for header_item in self.curves:
             order = order_func(header_item.mnemonic)
             formatter_func = get_formatter_function(order, **section_widths)
@@ -350,7 +350,7 @@ class LASFile(OrderedDictionary):
         #     "middle_width": None
         # }
         order_func = get_section_order_function("params", version)
-        section_widths = get_section_widths(self.params)
+        section_widths = get_section_widths("params", self.params, version)
         for mnemonic, header_item in self.params.items():
             order = order_func(mnemonic)
             formatter_func = get_formatter_function(order, **section_widths)
@@ -716,10 +716,10 @@ def get_formatter_function(order, left_width=None, middle_width=None):
     Kwargs:
       left_width (int): number of characters to the left hand side of the
         first period
-      middle_width (int): total number of characters minus 1 between the 
+      middle_width (int): total number of characters minus 1 between the
         first period from the left and the first colon from the left.
 
-    Returns a function which takes a header item (e.g. Metadata, Curve, 
+    Returns a function which takes a header item (e.g. Metadata, Curve,
     Parameter) as its single argument and which in turn returns a string
     which is the correctly formatted LAS header line.
 
@@ -757,7 +757,7 @@ def get_section_order_function(section, version,
       version (float): either 1.2 and 2.0
 
     Kwargs:
-      order_definitions (dict): 
+      order_definitions (dict):
 
     Returns a function which takes a mnemonic (str) as its only argument, and
     in turn returns the order "value:descr" or "descr:value".
@@ -772,11 +772,13 @@ def get_section_order_function(section, version,
     return lambda mnemonic: orders.get(mnemonic, default_order)
 
 
-def get_section_widths(section):
+def get_section_widths(section_name, section, version, middle_padding=5):
     '''Find minimum section widths fitting the content in *section*.
 
     Args:
+      section_name (str): either "version", "well", "curves", or "params"
       section (dict|list): section items
+      version (float): either 1.2 or 2.0
 
     '''
     section_widths = {}
@@ -787,11 +789,19 @@ def get_section_widths(section):
 
     section_widths["left_width"] = max([len(i.mnemonic) for i in items])
 
-    descr_widths = max([len(i.descr) for i in items])
-    value_widths = max(
-        [(len(str(i.unit)) + len(str(i.value)) + 1) for i in items])
-    middle_widths = []
-    for i in range(len(descr_widths)):
-        middle_width.append(max([descr_widths[i], value_widths[i]]))
-    section_widths["middle_width"] = max(middle_widths)
+    if section_name == "well" and version == 1.2:
+        mw = max([len(str(i.unit)) + len(str(i.descr)) for i in items])
+        section_widths["middle_width"] = mw + middle_padding
+        # descr_widths = [len(i.descr) for i in items]
+        # value_widths = [len(str(i.unit)) + len(str(i.value))
+        #                 for i in items]
+        # middle_widths = []
+        # for i in range(len(descr_widths)):
+        #     middle_widths.append(
+        #         max([descr_widths[i], value_widths[i]]) + middle_padding)
+        # section_widths["middle_width"] = max(middle_widths)
+    else:
+        mw = max([len(str(i.unit)) + len(str(i.value)) for i in items])
+        section_widths["middle_width"] = mw + middle_padding
+
     return section_widths

@@ -7,26 +7,22 @@
  STRT.M        1670.000000:
  STOP.M        1660.000000:
  STEP.M            -0.1250:
- NULLPL.           -999.2500:
- COMP.             COMPANY:   # ANY OIL COMPANY LTD.
+ NULL.           -999.2500:
+ COMPANY.             COMPANY:   # ANY OIL COMPANY LTD.
  WELL.                WELL:   ANY ET AL OIL WELL #12
  FLD .               FIELD:   EDAM
  LOC .            LOCATION:   A9-16-49-20W3M
  PROV.            PROVINCE:   SASKATCHEWAN
- SRVC.     SERVICE COMPANY:   ANY LOGGING COMPANY AT ALL!!!!
+ SRVC.     SERVICE:   The company that did this logging has a very very long name....
  DATE.            LOG DATE:   25-DEC-1988
- UWI .      UNIQUE WELL ID:   100091604920W300
+ UWI .      WELL ID:   100091604920W300
 ~CURVE INFORMATION
 #MNEM.UNIT      API CODE      CURVE DESCRIPTION
 #---------    -------------   ------------------------------
- DEPT.M                      :  1  DEPTH
- DT  .US/M               :  2  SONIC TRANSIT TIME
- RHOB.K/M3                   :  3  BULK DENSITY
- NPHI.V/V                    :  4   NEUTRON POROSITY
- SFLU.OHMM                   :  5  RXO RESISTIVITY
- SFLA.OHMM                   :  6  SHALLOW RESISTIVITY
- ILM .OHMM                   :  7  MEDIUM RESISTIVITY
- ILD .OHMM                   :  8  DEEP RESISTIVITY
+ D   .M                      :  1  DEPTH
+A  .US/M               :  2  SONIC TRANSIT TIME
+ B    .K/M3                   :  3  BULK DENSITY
+C .V/V                    :  4   NEUTRON POROSITY
 ~PARAMETER INFORMATION
 #MNEM.UNIT        VALUE       DESCRIPTION
 #---------    -------------   ------------------------------
