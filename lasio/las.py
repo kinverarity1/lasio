@@ -301,11 +301,12 @@ class LASFile(OrderedDictionary):
 
         # ~Version
         lines.append("~Version ".ljust(60, "-"))
-        section_widths = {
-            "left_width": None,
-            "middle_width": None
-        }
+        # section_widths = {
+        #     "left_width": None,
+        #     "middle_width": None
+        # }
         order_func = get_section_order_function("version", version)
+        section_widths = get_section_widths(self.version)
         for mnemonic, header_item in self.version.items():
             logger.debug(str(header_item))
             order = order_func(mnemonic)
@@ -316,11 +317,12 @@ class LASFile(OrderedDictionary):
 
         # ~Well
         lines.append("~Well ".ljust(60, "-"))
-        section_widths = {
-            "left_width": None,
-            "middle_width": None
-        }
+        # section_widths = {
+        #     "left_width": None,
+        #     "middle_width": None
+        # }
         order_func = get_section_order_function("well", version)
+        section_widths = get_section_widths(self.well)
         for mnemonic, header_item in self.well.items():
             order = order_func(mnemonic)
             formatter_func = get_formatter_function(order, **section_widths)
@@ -329,11 +331,12 @@ class LASFile(OrderedDictionary):
 
         # ~Curves
         lines.append("~Curves ".ljust(60, "-"))
-        section_widths = {
-            "left_width": None,
-            "middle_width": None
-        }
+        # section_widths = {
+        #     "left_width": None,
+        #     "middle_width": None
+        # }
         order_func = get_section_order_function("curves", version)
+        section_widths = get_section_widths(self.curves)
         for header_item in self.curves:
             order = order_func(header_item.mnemonic)
             formatter_func = get_formatter_function(order, **section_widths)
@@ -342,11 +345,12 @@ class LASFile(OrderedDictionary):
 
         # ~Params
         lines.append("~Params ".ljust(60, "-"))
-        section_widths = {
-            "left_width": None,
-            "middle_width": None
-        }
+        # section_widths = {
+        #     "left_width": None,
+        #     "middle_width": None
+        # }
         order_func = get_section_order_function("params", version)
+        section_widths = get_section_widths(self.params)
         for mnemonic, header_item in self.params.items():
             order = order_func(mnemonic)
             formatter_func = get_formatter_function(order, **section_widths)
@@ -766,3 +770,28 @@ def get_section_order_function(section, version,
         for mnemonic in mnemonics:
             orders[mnemonic] = order
     return lambda mnemonic: orders.get(mnemonic, default_order)
+
+
+def get_section_widths(section):
+    '''Find minimum section widths fitting the content in *section*.
+
+    Args:
+      section (dict|list): section items
+
+    '''
+    section_widths = {}
+    if isinstance(section, dict):
+        items = section.values()
+    elif isinstance(section, list):
+        items = list(section)
+
+    section_widths["left_width"] = max([len(i.mnemonic) for i in items])
+
+    descr_widths = max([len(i.descr) for i in items])
+    value_widths = max(
+        [(len(str(i.unit)) + len(str(i.value)) + 1) for i in items])
+    middle_widths = []
+    for i in range(len(descr_widths)):
+        middle_width.append(max([descr_widths[i], value_widths[i]]))
+    section_widths["middle_width"] = max(middle_widths)
+    return section_widths
