@@ -118,6 +118,7 @@ The code is freely available for any kind of use or modification under the MIT L
 [CWLS]: http://www.cwls.org/las/ "Canadian Well Logging Society"
 [numpy]: http://www.numpy.org/  "NumPy website"
 [namedlist]: https://pypi.python.org/pypi/namedlist "namedlist"
+[ordereddict]: https://pypi.python.org/pypi/ordereddict "ordereddict"
 [setuptools]: https://pypi.python.org/pypi/setuptools "setuptools"
 [chardet]:  https://pypi.python.org/pypi/chardet "chardet"
 [cChardet]: https://github.com/PyYoshi/cChardet "cChardet"
