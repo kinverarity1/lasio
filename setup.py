@@ -68,7 +68,7 @@ setup(name='lasio',
 
       entry_points={
           'console_scripts': [
-              'las2excel = lasio.las2excel:main'
+              'las2excel = lasio.excel:main'
           ],
       }
       )
