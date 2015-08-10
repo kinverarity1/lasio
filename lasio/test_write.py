@@ -9,6 +9,7 @@ test_dir = os.path.dirname(__file__)
 
 egfn = lambda fn: os.path.join(os.path.dirname(__file__), "test_examples", fn)
 
+
 def test_write_sect_widths_12():
     l = read(egfn("sample_write_sect_widths_12.las"))
     s = StringIO()
@@ -52,6 +53,7 @@ between 625 meters and 615 meters to be invalid.
      1669.8     123.45       2550       0.45
 """
 
+
 def test_write_sect_widths_12_curves():
     l = read(egfn("sample_write_sect_widths_12.las"))
     s = StringIO()
@@ -59,6 +61,7 @@ def test_write_sect_widths_12_curves():
     for start in ("D.M ", "A.US/M ", "B.K/M3 ", "C.V/V "):
         s.seek(0)
         assert "\n" + start in s.read()
+
 
 def test_write_sect_widths_20_narrow():
     l = read(egfn("sample_write_sect_widths_20_narrow.las"))
@@ -108,6 +111,7 @@ between 625 metres and 615 metres to be invalid.
      1669.8     123.45       2550       0.45     123.45     123.45      110.2      105.6
 """
 
+
 def test_write_sect_widths_20_wide():
     l = read(egfn("sample_write_sect_widths_20_wide.las"))
     s = StringIO()
@@ -156,3 +160,7 @@ between 625 metres and 615 metres to be invalid.
      1669.8     123.45       2550       0.45     123.45     123.45      110.2      105.6
 """
 
+
+def test_write_sample_empty_params():
+    l = read(egfn("sample_write_empty_params.las"))
+    l.write(StringIO(), version=2)
