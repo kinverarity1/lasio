@@ -260,7 +260,7 @@ class LASFile(OrderedDictionary):
         return numpy.vstack([c.data for c in self.curves]).T
 
     def write(self, file_object, version=None,
-              STRT=None, STOP=None, STEP=None):
+              STRT=None, STOP=None, STEP=None, fmt="%10.5g"):
         '''Write to a file.
 
         Args:
@@ -270,6 +270,8 @@ class LASFile(OrderedDictionary):
             calculation. By default STRT and STOP are the first and last
             index curve values, and STEP is the first step size in the
             index curve.
+          fmt (str): format string for numerical data being written to data
+            section.
 
         Example usage:
 
@@ -369,7 +371,7 @@ class LASFile(OrderedDictionary):
         data_arr = numpy.column_stack([c.data for c in self.curves])
         nrows, ncols = data_arr.shape
 
-        def format_data_section_line(n, fmt="%10.5g", l=10, spacer=" "):
+        def format_data_section_line(n, fmt, l=10, spacer=" "):
             if numpy.isnan(n):
                 return spacer + str(self.well["NULL"].value).rjust(l)
             else:
@@ -378,7 +380,7 @@ class LASFile(OrderedDictionary):
         for i in range(nrows):
             line = ''
             for j in range(ncols):
-                line += format_data_section_line(data_arr[i, j])
+                line += format_data_section_line(data_arr[i, j], fmt)
             file_object.write(line + "\n")
 
     def get_curve(self, mnemonic):
