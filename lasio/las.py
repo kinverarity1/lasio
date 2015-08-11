@@ -7,7 +7,10 @@ from __future__ import print_function
 
 # Standard library packages
 import codecs
-import collections
+try:
+    from collections import OrderedDict
+except ImportError:
+    from ordereddict import OrderedDict
 import logging
 import os
 import re
@@ -30,7 +33,7 @@ import numpy
 
 
 logger = logging.getLogger(__name__)
-__version__ = "0.6"
+__version__ = "0.7.4"
 
 
 HeaderItem = namedlist("HeaderItem", ["mnemonic", "unit", "value", "descr"])
@@ -49,9 +52,9 @@ class LASHeaderError(Exception):
     pass
 
 
-class OrderedDictionary(collections.OrderedDict):
+class OrderedDictionary(OrderedDict):
 
-    '''A minor wrapper over collections.OrderedDict.
+    '''A minor wrapper over OrderedDict.
 
     This wrapper has a better string representation.
 
@@ -174,7 +177,21 @@ class LASFile(OrderedDictionary):
                       autodetect_encoding=autodetect_encoding,
                       autodetect_encoding_chars=autodetect_encoding_chars)
 
-        self._text = str(f.read())
+        if encoding is None:
+            encoding = "ascii"
+            logger.debug("Encoding not specified; set to %s" % encoding)
+        else:
+            logger.debug("Encoding=%s" % encoding)
+
+        text = f.read()
+        logger.debug("file content has type %s" % type(text))
+        if isinstance(text, bytes):
+            self._text = text.decode(encoding)
+        elif isinstance(text, str):
+            self._text = text
+        else:
+            self._text = str(text)
+
         reader = Reader(self._text, version=1.2)
 
         self.version = reader.read_section('~V')
@@ -243,16 +260,18 @@ class LASFile(OrderedDictionary):
         return numpy.vstack([c.data for c in self.curves]).T
 
     def write(self, file_object, version=None,
-              STRT=None, STOP=None, STEP=None):
+              STRT=None, STOP=None, STEP=None, fmt="%10.5g"):
         '''Write to a file.
 
         Args:
           file_object: a file_like object opening for writing.
           version (float): either 1.2 or 2
           STRT, STOP, STEP (float): optional overrides to automatic
-            calculation. By default STRT and STOP are the first and last 
+            calculation. By default STRT and STOP are the first and last
             index curve values, and STEP is the first step size in the
             index curve.
+          fmt (str): format string for numerical data being written to data
+            section.
 
         Example usage:
 
@@ -284,11 +303,8 @@ class LASFile(OrderedDictionary):
 
         # ~Version
         lines.append("~Version ".ljust(60, "-"))
-        section_widths = {
-            "left_width": None,
-            "middle_width": None
-        }
         order_func = get_section_order_function("version", version)
+        section_widths = get_section_widths("version", self.version, version)
         for mnemonic, header_item in self.version.items():
             logger.debug(str(header_item))
             order = order_func(mnemonic)
@@ -299,11 +315,8 @@ class LASFile(OrderedDictionary):
 
         # ~Well
         lines.append("~Well ".ljust(60, "-"))
-        section_widths = {
-            "left_width": None,
-            "middle_width": None
-        }
         order_func = get_section_order_function("well", version)
+        section_widths = get_section_widths("well", self.well, version)
         for mnemonic, header_item in self.well.items():
             order = order_func(mnemonic)
             formatter_func = get_formatter_function(order, **section_widths)
@@ -312,11 +325,8 @@ class LASFile(OrderedDictionary):
 
         # ~Curves
         lines.append("~Curves ".ljust(60, "-"))
-        section_widths = {
-            "left_width": None,
-            "middle_width": None
-        }
         order_func = get_section_order_function("curves", version)
+        section_widths = get_section_widths("curves", self.curves, version)
         for header_item in self.curves:
             order = order_func(header_item.mnemonic)
             formatter_func = get_formatter_function(order, **section_widths)
@@ -325,11 +335,8 @@ class LASFile(OrderedDictionary):
 
         # ~Params
         lines.append("~Params ".ljust(60, "-"))
-        section_widths = {
-            "left_width": None,
-            "middle_width": None
-        }
         order_func = get_section_order_function("params", version)
+        section_widths = get_section_widths("params", self.params, version)
         for mnemonic, header_item in self.params.items():
             order = order_func(mnemonic)
             formatter_func = get_formatter_function(order, **section_widths)
@@ -348,7 +355,7 @@ class LASFile(OrderedDictionary):
         data_arr = numpy.column_stack([c.data for c in self.curves])
         nrows, ncols = data_arr.shape
 
-        def format_data_section_line(n, fmt="%10.5g", l=10, spacer=" "):
+        def format_data_section_line(n, fmt, l=10, spacer=" "):
             if numpy.isnan(n):
                 return spacer + str(self.well["NULL"].value).rjust(l)
             else:
@@ -357,7 +364,7 @@ class LASFile(OrderedDictionary):
         for i in range(nrows):
             line = ''
             for j in range(ncols):
-                line += format_data_section_line(data_arr[i, j])
+                line += format_data_section_line(data_arr[i, j], fmt)
             file_object.write(line + "\n")
 
     def get_curve(self, mnemonic):
@@ -698,10 +705,10 @@ def get_formatter_function(order, left_width=None, middle_width=None):
     Kwargs:
       left_width (int): number of characters to the left hand side of the
         first period
-      middle_width (int): total number of characters minus 1 between the 
+      middle_width (int): total number of characters minus 1 between the
         first period from the left and the first colon from the left.
 
-    Returns a function which takes a header item (e.g. Metadata, Curve, 
+    Returns a function which takes a header item (e.g. Metadata, Curve,
     Parameter) as its single argument and which in turn returns a string
     which is the correctly formatted LAS header line.
 
@@ -739,7 +746,7 @@ def get_section_order_function(section, version,
       version (float): either 1.2 and 2.0
 
     Kwargs:
-      order_definitions (dict): 
+      order_definitions (dict):
 
     Returns a function which takes a mnemonic (str) as its only argument, and
     in turn returns the order "value:descr" or "descr:value".
@@ -752,3 +759,56 @@ def get_section_order_function(section, version,
         for mnemonic in mnemonics:
             orders[mnemonic] = order
     return lambda mnemonic: orders.get(mnemonic, default_order)
+
+
+def get_section_widths(section_name, section, version, middle_padding=5):
+    '''Find minimum section widths fitting the content in *section*.
+
+    Args:
+      section_name (str): either "version", "well", "curves", or "params"
+      section (dict|list): section items
+      version (float): either 1.2 or 2.0
+
+    '''
+    section_widths = {
+        "left_width": None,
+        "middle_width": None
+        }
+    if isinstance(section, dict):
+        items = section.values()
+    elif isinstance(section, list):
+        items = list(section)
+    if len(items) > 0:
+        section_widths["left_width"] = max([len(i.mnemonic) for i in items])
+        if section_name == "well" and version == 1.2:
+            mw = max([len(str(i.unit)) + len(str(i.descr)) for i in items])
+            section_widths["middle_width"] = mw + middle_padding
+        else:
+            mw = max([len(str(i.unit)) + len(str(i.value)) for i in items])
+            section_widths["middle_width"] = mw + middle_padding
+    return section_widths
+
+
+def read(file_ref, encoding=None,
+         autodetect_encoding=False, autodetect_encoding_chars=20000):
+    '''Read a LAS file.
+
+        Args:
+          file_ref: either a filename, an open file object, or a string of
+            a LAS file contents.
+
+        Kwargs:
+          encoding (str): character encoding to open file_ref with
+          autodetect_encoding (bool): use chardet/ccharet to detect encoding
+          autodetect_encoding_chars (int/None): number of chars to read from LAS
+            file for auto-detection of encoding.
+
+    Returns: a las.LASFile object
+
+    Note that it only supports versions 1.2 and 2.0 of the LAS file
+    specification.
+
+    '''
+    return LASFile(file_ref, encoding=encoding,
+                   autodetect_encoding=autodetect_encoding,
+                   autodetect_encoding_chars=autodetect_encoding_chars)
