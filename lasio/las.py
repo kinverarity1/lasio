@@ -621,12 +621,15 @@ def read_line(line, pattern=None):
 
     d = {}
     if pattern is None:
-        pattern = (r"\.?(?P<name>[^.]+)\." +
+        pattern = (r"\.?(?P<name>[^.]*)\." +
                    r"(?P<unit>[^\s:]*)" +
                    r"(?P<value>[^:]*):" +
                    r"(?P<descr>.*)")
     m = re.match(pattern, line)
-    for key, value in m.groupdict().items():
+    mdict = m.groupdict()
+    if mdict["name"] == "":
+        mdict["name"] = "UNKNOWN"
+    for key, value in mdict.items():
         d[key] = value.strip()
         if key == "unit":
             if d[key].endswith("."):
