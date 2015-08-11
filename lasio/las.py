@@ -33,7 +33,7 @@ import numpy
 
 
 logger = logging.getLogger(__name__)
-__version__ = "0.7.5"
+__version__ = "0.7.6"
 
 
 HeaderItem = namedlist("HeaderItem", ["mnemonic", "unit", "value", "descr"])
