@@ -301,10 +301,6 @@ class LASFile(OrderedDictionary):
 
         # ~Version
         lines.append("~Version ".ljust(60, "-"))
-        # section_widths = {
-        #     "left_width": None,
-        #     "middle_width": None
-        # }
         order_func = get_section_order_function("version", version)
         section_widths = get_section_widths("version", self.version, version)
         for mnemonic, header_item in self.version.items():
@@ -317,10 +313,6 @@ class LASFile(OrderedDictionary):
 
         # ~Well
         lines.append("~Well ".ljust(60, "-"))
-        # section_widths = {
-        #     "left_width": None,
-        #     "middle_width": None
-        # }
         order_func = get_section_order_function("well", version)
         section_widths = get_section_widths("well", self.well, version)
         for mnemonic, header_item in self.well.items():
@@ -331,10 +323,6 @@ class LASFile(OrderedDictionary):
 
         # ~Curves
         lines.append("~Curves ".ljust(60, "-"))
-        # section_widths = {
-        #     "left_width": None,
-        #     "middle_width": None
-        # }
         order_func = get_section_order_function("curves", version)
         section_widths = get_section_widths("curves", self.curves, version)
         for header_item in self.curves:
@@ -345,10 +333,6 @@ class LASFile(OrderedDictionary):
 
         # ~Params
         lines.append("~Params ".ljust(60, "-"))
-        # section_widths = {
-        #     "left_width": None,
-        #     "middle_width": None
-        # }
         order_func = get_section_order_function("params", version)
         section_widths = get_section_widths("params", self.params, version)
         for mnemonic, header_item in self.params.items():
