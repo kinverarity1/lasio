@@ -765,29 +765,22 @@ def get_section_widths(section_name, section, version, middle_padding=5):
       version (float): either 1.2 or 2.0
 
     '''
-    section_widths = {}
+    section_widths = {
+        "left_width": None,
+        "middle_width": None
+        }
     if isinstance(section, dict):
         items = section.values()
     elif isinstance(section, list):
         items = list(section)
-
-    section_widths["left_width"] = max([len(i.mnemonic) for i in items])
-
-    if section_name == "well" and version == 1.2:
-        mw = max([len(str(i.unit)) + len(str(i.descr)) for i in items])
-        section_widths["middle_width"] = mw + middle_padding
-        # descr_widths = [len(i.descr) for i in items]
-        # value_widths = [len(str(i.unit)) + len(str(i.value))
-        #                 for i in items]
-        # middle_widths = []
-        # for i in range(len(descr_widths)):
-        #     middle_widths.append(
-        #         max([descr_widths[i], value_widths[i]]) + middle_padding)
-        # section_widths["middle_width"] = max(middle_widths)
-    else:
-        mw = max([len(str(i.unit)) + len(str(i.value)) for i in items])
-        section_widths["middle_width"] = mw + middle_padding
-
+    if len(items) > 0:
+        section_widths["left_width"] = max([len(i.mnemonic) for i in items])
+        if section_name == "well" and version == 1.2:
+            mw = max([len(str(i.unit)) + len(str(i.descr)) for i in items])
+            section_widths["middle_width"] = mw + middle_padding
+        else:
+            mw = max([len(str(i.unit)) + len(str(i.value)) for i in items])
+            section_widths["middle_width"] = mw + middle_padding
     return section_widths
 
 
