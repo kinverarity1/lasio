@@ -52,6 +52,12 @@ class LASHeaderError(Exception):
     pass
 
 
+class LASUnknownUnitError(Exception):
+
+    '''Error of unknown unit in LAS file.'''
+    pass
+
+
 class OrderedDictionary(OrderedDict):
 
     '''A minor wrapper over OrderedDict.
@@ -147,6 +153,7 @@ class LASFile(OrderedDictionary):
         OrderedDictionary.__init__(self)
 
         self._text = ''
+        self.index_unit = None
         self.version = OrderedDictionary(DEFAULT_ITEMS["version"].items())
         self.well = OrderedDictionary(DEFAULT_ITEMS["well"].items())
         self.curves = list(DEFAULT_ITEMS["curves"])
@@ -230,6 +237,18 @@ class LASFile(OrderedDictionary):
         for i, c in enumerate(self.curves):
             d = data[:, i]
             c.data = d
+
+        if (self.well["STRT"].unit.upper() == "M" and
+                self.well["STOP"].unit.upper() == "M" and
+                self.well["STEP"].unit.upper() == "M" and
+                self.curves[0].unit.upper() == "M"):
+            self.index_unit = "M"
+        elif (self.well["STRT"].unit.upper() in ("F", "FT") and
+              self.well["STOP"].unit.upper() in ("F", "FT") and
+              self.well["STEP"].unit.upper() in ("F", "FT") and
+              self.curves[0].unit.upper() in ("F", "FT")):
+            self.index_unit = "FT"
+
         self.refresh()
 
     def refresh(self):
@@ -414,6 +433,24 @@ class LASFile(OrderedDictionary):
     @property
     def index(self):
         return self.data[:, 0]
+
+    @property
+    def index_m(self):
+        if self.index_unit == "M":
+            return self.index
+        elif self.index_unit == "FT":
+            return self.index / 3.28084
+        else:
+            raise LASUnknownUnitError("Unit of depth index not known")
+
+    @property
+    def index_ft(self):
+        if self.index_unit == "M":
+            return self.index * 3.28084
+        elif self.index_unit == "FT":
+            return self.index
+        else:
+            raise LASUnknownUnitError("Unit of depth index not known")
 
     def add_curve(self, mnemonic, data, unit="", descr="", value=""):
         curve = Curve(mnemonic, unit, value, descr, data)
@@ -773,7 +810,7 @@ def get_section_widths(section_name, section, version, middle_padding=5):
     section_widths = {
         "left_width": None,
         "middle_width": None
-        }
+    }
     if isinstance(section, dict):
         items = section.values()
     elif isinstance(section, list):
