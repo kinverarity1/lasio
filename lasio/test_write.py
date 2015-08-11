@@ -164,3 +164,10 @@ between 625 metres and 615 metres to be invalid.
 def test_write_sample_empty_params():
     l = read(egfn("sample_write_empty_params.las"))
     l.write(StringIO(), version=2)
+
+def test_readwritecomments():
+    l = read(egfn("readwritecomments.las"))
+    s = StringIO()
+    l.write(s, version=2)
+    s.seek(0)
+    assert s.read() == """"""
