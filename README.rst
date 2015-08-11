@@ -190,7 +190,7 @@ Finally write the result (in this case to the console):
 .. code:: python
 
     >>> import sys
-    >>> l.write(sys.stdout, version=2.0)
+    >>> l.write(sys.stdout, version=2.0, fmt="%10.5g")
     ~Version ---------------------------------------------------
     VERS.       2.0 : CWLS log ASCII Standard -VERSION 2.0
     WRAP.        NO : One line per depth step
