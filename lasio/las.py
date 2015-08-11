@@ -33,7 +33,7 @@ import numpy
 
 
 logger = logging.getLogger(__name__)
-__version__ = "0.7.3"
+__version__ = "0.7.4"
 
 
 HeaderItem = namedlist("HeaderItem", ["mnemonic", "unit", "value", "descr"])
@@ -303,10 +303,6 @@ class LASFile(OrderedDictionary):
 
         # ~Version
         lines.append("~Version ".ljust(60, "-"))
-        # section_widths = {
-        #     "left_width": None,
-        #     "middle_width": None
-        # }
         order_func = get_section_order_function("version", version)
         section_widths = get_section_widths("version", self.version, version)
         for mnemonic, header_item in self.version.items():
@@ -319,10 +315,6 @@ class LASFile(OrderedDictionary):
 
         # ~Well
         lines.append("~Well ".ljust(60, "-"))
-        # section_widths = {
-        #     "left_width": None,
-        #     "middle_width": None
-        # }
         order_func = get_section_order_function("well", version)
         section_widths = get_section_widths("well", self.well, version)
         for mnemonic, header_item in self.well.items():
@@ -333,10 +325,6 @@ class LASFile(OrderedDictionary):
 
         # ~Curves
         lines.append("~Curves ".ljust(60, "-"))
-        # section_widths = {
-        #     "left_width": None,
-        #     "middle_width": None
-        # }
         order_func = get_section_order_function("curves", version)
         section_widths = get_section_widths("curves", self.curves, version)
         for header_item in self.curves:
@@ -347,10 +335,6 @@ class LASFile(OrderedDictionary):
 
         # ~Params
         lines.append("~Params ".ljust(60, "-"))
-        # section_widths = {
-        #     "left_width": None,
-        #     "middle_width": None
-        # }
         order_func = get_section_order_function("params", version)
         section_widths = get_section_widths("params", self.params, version)
         for mnemonic, header_item in self.params.items():
@@ -783,29 +767,22 @@ def get_section_widths(section_name, section, version, middle_padding=5):
       version (float): either 1.2 or 2.0
 
     '''
-    section_widths = {}
+    section_widths = {
+        "left_width": None,
+        "middle_width": None
+        }
     if isinstance(section, dict):
         items = section.values()
     elif isinstance(section, list):
         items = list(section)
-
-    section_widths["left_width"] = max([len(i.mnemonic) for i in items])
-
-    if section_name == "well" and version == 1.2:
-        mw = max([len(str(i.unit)) + len(str(i.descr)) for i in items])
-        section_widths["middle_width"] = mw + middle_padding
-        # descr_widths = [len(i.descr) for i in items]
-        # value_widths = [len(str(i.unit)) + len(str(i.value))
-        #                 for i in items]
-        # middle_widths = []
-        # for i in range(len(descr_widths)):
-        #     middle_widths.append(
-        #         max([descr_widths[i], value_widths[i]]) + middle_padding)
-        # section_widths["middle_width"] = max(middle_widths)
-    else:
-        mw = max([len(str(i.unit)) + len(str(i.value)) for i in items])
-        section_widths["middle_width"] = mw + middle_padding
-
+    if len(items) > 0:
+        section_widths["left_width"] = max([len(i.mnemonic) for i in items])
+        if section_name == "well" and version == 1.2:
+            mw = max([len(str(i.unit)) + len(str(i.descr)) for i in items])
+            section_widths["middle_width"] = mw + middle_padding
+        else:
+            mw = max([len(str(i.unit)) + len(str(i.value)) for i in items])
+            section_widths["middle_width"] = mw + middle_padding
     return section_widths
 
 
