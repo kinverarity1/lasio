@@ -13,3 +13,9 @@ script:
     - py.test --cov=lasio
 after_success:
     - coveralls
+notifications:
+  email:
+    recipients:
+      - kinverarity@hotmail.com
+    on_success: change
+    on_failure: change
