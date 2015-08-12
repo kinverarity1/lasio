@@ -435,18 +435,18 @@ class LASFile(OrderedDictionary):
         return self.data[:, 0]
 
     @property
-    def index_m(self):
+    def depth_m(self):
         if self.index_unit == "M":
             return self.index
         elif self.index_unit == "FT":
-            return self.index / 3.28084
+            return self.index * 0.3048
         else:
             raise LASUnknownUnitError("Unit of depth index not known")
 
     @property
-    def index_ft(self):
+    def depth_ft(self):
         if self.index_unit == "M":
-            return self.index * 3.28084
+            return self.index / 0.3048
         elif self.index_unit == "FT":
             return self.index
         else:

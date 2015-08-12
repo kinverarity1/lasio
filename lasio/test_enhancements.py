@@ -24,19 +24,19 @@ def test_autodepthindex():
 def test_autodepthindex_inconsistent():
     err = read(egfn("autodepthindex_M_FT.las"))
     with pytest.raises(las.LASUnknownUnitError):
-        print(err.index_m)
+        print(err.depth_m)
 
 
 def test_autodepthindex_m():
     l = read(egfn("autodepthindex_M.las"))
-    assert l.index_ft[-1] == 328.084
+    assert (l.depth_ft[-1] * 0.3048 == l.index[-1])
 
 
 def test_autodepthindex_f():
     l = read(egfn("autodepthindex_F.las"))
-    assert numpy.abs(l.index_m[-1] - 30.48) < 0.00001
+    assert (l.depth_m[-1] / 0.3048 == l.index[-1])
 
 
 def test_autodepthindex_ft():
     l = read(egfn("autodepthindex_FT.las"))
-    assert numpy.abs(l.index_m[-1] - 30.48) < 0.00001
+    assert (l.depth_m[-1] / 0.3048 == l.index[-1])
