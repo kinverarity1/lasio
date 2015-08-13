@@ -211,7 +211,7 @@ class LASFile(OrderedDictionary):
 
         # Validate version
         try:
-            assert reader.version in (1.2, 2)
+            assert reader.version in (1.2, 2, 3)
         except AssertionError:
             logger.warning("LAS spec version is %s -- neither 1.2 nor 2" %
                            reader.version)
