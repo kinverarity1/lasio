@@ -180,9 +180,9 @@ class LASFile(OrderedDictionary):
             file for auto-detection of encoding.
 
         '''
-        f = open_file(file_ref, encoding=encoding,
-                      autodetect_encoding=autodetect_encoding,
-                      autodetect_encoding_chars=autodetect_encoding_chars)
+        f, encoding = open_file(
+            file_ref, encoding=encoding, autodetect_encoding=autodetect_encoding,
+            autodetect_encoding_chars=autodetect_encoding_chars)
 
         if encoding is None:
             encoding = "ascii"
@@ -192,12 +192,25 @@ class LASFile(OrderedDictionary):
 
         text = f.read()
         logger.debug("file content has type %s" % type(text))
-        if isinstance(text, bytes):
-            self._text = text.decode(encoding)
-        elif isinstance(text, str):
-            self._text = text
-        else:
-            self._text = str(text)
+
+        try:
+            if isinstance(text, str):
+                logger.debug("text instance is bytes")
+                self._text = text.decode(encoding)
+            elif isinstance(text, bytes):
+                logger.debug("text instance is str")
+                self._text = text
+            else:
+                logger.debug("text instance is neither")
+                self._text = text
+        except UnicodeDecodeError as uerr:
+            m = 30
+            sample = "- extract: "
+            sample += text[int(uerr.args[2]) - m: int(uerr.args[3]) + m]
+            uerr.args = list(uerr.args[:-1]) + [uerr.args[-1] + sample]
+            raise UnicodeDecodeError(*uerr.args)
+
+        logger.debug("LAS data has type %s" % type(self._text))
 
         reader = Reader(self._text, version=1.2)
 
@@ -723,13 +736,16 @@ def open_file(file_ref, encoding=None,
                                 "chardet or cchardet is required for automatic"
                                 " detection of character encodings.")
                     with open(file_ref, mode="rb") as test_file:
-                        chunk = test_file.read(autodetect_encoding_chars)
+                        if not autodetect_encoding_chars:
+                            chunk = test_file.read()
+                        else:
+                            chunk = test_file.read(autodetect_encoding_chars)
                         result = chardet.detect(chunk)
                         encoding = result["encoding"]
                 file_ref = codecs.open(file_ref, mode="r", encoding=encoding)
         else:
             file_ref = StringIO("\n".join(lines))
-    return file_ref
+    return file_ref, encoding
 
 
 def get_formatter_function(order, left_width=None, middle_width=None):
