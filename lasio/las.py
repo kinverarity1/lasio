@@ -194,10 +194,10 @@ class LASFile(OrderedDictionary):
         logger.debug("file content has type %s" % type(text))
 
         try:
-            if isinstance(text, str):
+            if isinstance(text, bytes):
                 logger.debug("text instance is bytes")
                 self._text = text.decode(encoding)
-            elif isinstance(text, bytes):
+            elif isinstance(text, str):
                 logger.debug("text instance is str")
                 self._text = text
             else:
