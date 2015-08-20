@@ -247,6 +247,11 @@ Three options:
 
 Note that by default ``autodetect_encoding=False``.
 
+API documentation
+~~~~~~~~~~~~~~~~~
+
+The API for lasio is `documented here <https://pythonhosted.org/lasio>`__.
+
 Development
 -----------
 

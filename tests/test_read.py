@@ -1,13 +1,14 @@
-import fnmatch
-import os
+import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from . import read
+import fnmatch
+
+from lasio import read
 
 test_dir = os.path.dirname(__file__)
 
-egfn = lambda fn: os.path.join(os.path.dirname(__file__), "test_examples", fn)
+egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
 stegfn = lambda vers, fn: os.path.join(
-    os.path.dirname(__file__), "test_examples", vers, fn)
+    os.path.dirname(__file__), "examples", vers, fn)
 
 
 def test_read_v12_sample():

@@ -1,6 +1,6 @@
 '''las.py - read Log ASCII Standard files
 
-See README.md and LICENSE for more information.
+See README.rst and LICENSE for more information.
 
 '''
 from __future__ import print_function
@@ -138,13 +138,13 @@ class LASFile(OrderedDictionary):
 
     '''LAS file object.
 
-    Kwargs:
-      file_ref: either a filename, an open file object, or a string of
-        a LAS file contents.
-      encoding (str): character encoding to open file_ref with
-      autodetect_encoding (bool): use chardet/ccharet to detect encoding
-      autodetect_encoding_chars (int/None): number of chars to read from LAS
-        file for auto-detection of encoding.
+    Keyword Arguments:
+        file_ref: either a filename, an open file object, or a string of
+            a LAS file contents.
+        encoding (str): character encoding to open file_ref with
+            autodetect_encoding (bool): use chardet/ccharet to detect encoding
+        autodetect_encoding_chars (int/None): number of chars to read from LAS
+            file for auto-detection of encoding.
 
     '''
 
@@ -169,15 +169,15 @@ class LASFile(OrderedDictionary):
              autodetect_encoding=False, autodetect_encoding_chars=20000):
         '''Read a LAS file.
 
-        Args:
-          file_ref: either a filename, an open file object, or a string of
-            a LAS file contents.
+        Arguments:
+            file_ref: either a filename, an open file object, or a string of
+                a LAS file contents.
 
-        Kwargs:
-          encoding (str): character encoding to open file_ref with
-          autodetect_encoding (bool): use chardet/ccharet to detect encoding
-          autodetect_encoding_chars (int/None): number of chars to read from LAS
-            file for auto-detection of encoding.
+        Keyword Arguments:
+            encoding (str): character encoding to open file_ref with
+            autodetect_encoding (bool): use chardet/ccharet to detect encoding
+            autodetect_encoding_chars (int/None): number of chars to read from LAS
+                file for auto-detection of encoding.
 
         '''
         f = open_file(file_ref, encoding=encoding,
@@ -282,17 +282,19 @@ class LASFile(OrderedDictionary):
               STRT=None, STOP=None, STEP=None, fmt="%10.5g"):
         '''Write to a file.
 
-        Args:
-          file_object: a file_like object opening for writing.
-          version (float): either 1.2 or 2
-          STRT, STOP, STEP (float): optional overrides to automatic
-            calculation. By default STRT and STOP are the first and last
-            index curve values, and STEP is the first step size in the
-            index curve.
-          fmt (str): format string for numerical data being written to data
-            section.
+        Arguments:
+            file_object: a file_like object opening for writing.
+            version (float): either 1.2 or 2
+            STRT (float): optional override to automatic calculation using 
+                the first index curve value.
+            STOP (float): optional override to automatic calculation using 
+                the last index curve value.
+            STEP (float): optional override to automatic calculation using 
+                the first step size in the index curve.
+            fmt (str): format string for numerical data being written to data
+                section.
 
-        Example usage:
+        Examples:
 
             >>> with open("test_output.las", mode="w") as f:
             ...     lasfile_obj.write(f, 2.0)   # <-- this method
@@ -389,10 +391,11 @@ class LASFile(OrderedDictionary):
     def get_curve(self, mnemonic):
         '''Return Curve object.
 
-        Args:
-          mnemonic (str): the name of the curve
+        Arguments:
+            mnemonic (str): the name of the curve
 
-        Returns: Curve object (i.e. not just the data array).
+        Returns: 
+            A Curve object, not just the data array.
 
         '''
         for curve in self.curves:
@@ -650,19 +653,19 @@ class SectionParser(object):
 def read_line(line, pattern=None):
     '''Read a line from a LAS header section.
 
-    Args:
-      line (str): line from a LAS header section
-
-    Returns: dict with keys "name", "unit", "value", and "descr", each
-    containing a string as value.
-
     The line is parsed with a regular expression -- see LAS file specs for
     more details, but it should basically be in the format:
 
         name.unit       value : descr
 
-    '''
+    Arguments:
+        line (str): line from a LAS header section
 
+    Returns:
+        A dictionary with keys "name", "unit", "value", and "descr", each
+        containing a string as value.
+
+    '''
     d = {}
     if pattern is None:
         pattern = (r"\.?(?P<name>[^.]*)\." +
@@ -685,20 +688,21 @@ def open_file(file_ref, encoding=None,
               autodetect_encoding=False, autodetect_encoding_chars=20000):
     '''Open a file if necessary.
 
-    Args:
-      file_ref: either a filename, an open file object, a URL, or a string of
-        a LAS file contents.
-
-    Kwargs:
-      encoding (str): character encoding to open file_ref with
-      autodetect_encoding (bool): use chardet/ccharet to detect encoding
-      autodetect_encoding_chars (int/None): number of chars to read from LAS
-        file for auto-detection of encoding.
-
-    Returns: an open file object.
-
     If autodetect_encoding is True then either cchardet or chardet (see PyPi)
     needs to be installed, or else an ImportError will be raised.
+
+    Arguments:
+        file_ref: either a filename, an open file object, a URL, or a string of
+            a LAS file contents.
+
+    Keyword Arguments:
+        encoding (str): character encoding to open file_ref with
+        autodetect_encoding (bool): use chardet/ccharet to detect encoding
+        autodetect_encoding_chars (int/None): number of chars to read from LAS
+            file for auto-detection of encoding.
+
+    Returns: 
+        An open file-like object ready for reading from.
 
     '''
     if isinstance(file_ref, str):
@@ -735,19 +739,20 @@ def open_file(file_ref, encoding=None,
 def get_formatter_function(order, left_width=None, middle_width=None):
     '''Create function to format a LAS header item.
 
-    Args:
-      order: format of item, either "descr:value" or "value:descr" -- see
-        LAS 1.2 and 2.0 specifications for more information.
+    Arguments:
+        order: format of item, either "descr:value" or "value:descr" -- see
+            LAS 1.2 and 2.0 specifications for more information.
 
-    Kwargs:
-      left_width (int): number of characters to the left hand side of the
-        first period
-      middle_width (int): total number of characters minus 1 between the
-        first period from the left and the first colon from the left.
+    Keyword Arguments:
+        left_width (int): number of characters to the left hand side of the
+            first period
+        middle_width (int): total number of characters minus 1 between the
+            first period from the left and the first colon from the left.
 
-    Returns a function which takes a header item (e.g. Metadata, Curve,
-    Parameter) as its single argument and which in turn returns a string
-    which is the correctly formatted LAS header line.
+    Returns:
+        A function which takes a header item (e.g. LASHeaderItem or Curve)
+        as its single argument and which in turn returns a string which is
+        the correctly formatted LAS header line.
 
     '''
     if left_width is None:
@@ -778,15 +783,16 @@ def get_section_order_function(section, version,
                                order_definitions=ORDER_DEFINITIONS):
     '''Get a function that returns the order per mnemonic and section.
 
-    Args:
-      section (str): either "well", "params", "curves", "version"
-      version (float): either 1.2 and 2.0
+    Arguments:
+        section (str): either "well", "params", "curves", "version"
+        version (float): either 1.2 and 2.0
 
-    Kwargs:
-      order_definitions (dict):
+    Keyword Arguments:
+        order_definitions (dict): ...
 
-    Returns a function which takes a mnemonic (str) as its only argument, and
-    in turn returns the order "value:descr" or "descr:value".
+    Returns:
+        A function which takes a mnemonic (str) as its only argument, and 
+        in turn returns the order "value:descr" or "descr:value".
 
     '''
     section_orders = order_definitions[version][section]
@@ -801,10 +807,10 @@ def get_section_order_function(section, version,
 def get_section_widths(section_name, section, version, middle_padding=5):
     '''Find minimum section widths fitting the content in *section*.
 
-    Args:
-      section_name (str): either "version", "well", "curves", or "params"
-      section (dict|list): section items
-      version (float): either 1.2 or 2.0
+    Arguments:
+        section_name (str): either "version", "well", "curves", or "params"
+        section (dict|list): section items
+        version (float): either 1.2 or 2.0
 
     '''
     section_widths = {
@@ -830,20 +836,21 @@ def read(file_ref, encoding=None,
          autodetect_encoding=False, autodetect_encoding_chars=20000):
     '''Read a LAS file.
 
-        Args:
-          file_ref: either a filename, an open file object, or a string of
+    Note that only versions 1.2 and 2.0 of the LAS file specification
+    are currently supported.
+
+    Arguments:
+        file_ref: either a filename, an open file object, or a string of
             a LAS file contents.
 
-        Kwargs:
-          encoding (str): character encoding to open file_ref with
-          autodetect_encoding (bool): use chardet/ccharet to detect encoding
-          autodetect_encoding_chars (int/None): number of chars to read from LAS
+    Keyword Arguments:
+        encoding (str): character encoding to open file_ref with
+        autodetect_encoding (bool): use chardet/ccharet to detect encoding
+        autodetect_encoding_chars (int/None): number of chars to read from LAS
             file for auto-detection of encoding.
 
-    Returns: a las.LASFile object
-
-    Note that it only supports versions 1.2 and 2.0 of the LAS file
-    specification.
+    Returns: 
+        A LASFile object representing the file -- see above
 
     '''
     return LASFile(file_ref, encoding=encoding,
