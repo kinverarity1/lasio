@@ -1,6 +1,8 @@
+import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
 import codecs
 
-from . import read
+from lasio import read
 
 # These tests seem to be pointless as they always pass... better ideas?
 
