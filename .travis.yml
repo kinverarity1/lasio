@@ -8,6 +8,7 @@ python:
 before_install:
     - pip install pytest pytest-cov
     - pip install coveralls
+    - pip install chardet cchardet
 install: "pip install -r requirements.txt"
 script:
     - py.test --cov=lasio
