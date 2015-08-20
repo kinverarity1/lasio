@@ -250,11 +250,12 @@ Note that by default ``autodetect_encoding=False``.
 API documentation
 ~~~~~~~~~~~~~~~~~
 
-The API for lasio is `documented here <https://pythonhosted.org/lasio>`__.
+The API for ``lasio`` is `documented here <https://pythonhosted.org/lasio>`__.
 
 Development
 -----------
 
+-  0.8 (2015-08-20) - numerous bug fixes, API documentation added
 -  0.7 (2015-08-08) - all tests passing on Python 2.6 through 3.4
 -  0.6 (2015-08-05) - bugfixes and renamed from ``las_reader`` to ``lasio``
 -  0.5 (2015-08-01) - Improvements to writing LAS files
