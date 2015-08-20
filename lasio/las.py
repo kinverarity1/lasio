@@ -184,14 +184,7 @@ class LASFile(OrderedDictionary):
         '''
         f = open_file(file_ref, **kwargs)
 
-        try:
-            self._text = f.read()
-        except UnicodeDecodeError as uerr:
-            m = 30
-            sample = "- extract: "
-            sample += text[int(uerr.args[2]) - m: int(uerr.args[3]) + m]
-            uerr.args = list(uerr.args[:-1]) + [uerr.args[-1] + sample]
-            raise UnicodeDecodeError(*uerr.args)
+        self._text = f.read()
 
         reader = Reader(self._text, version=1.2)
         self.version = reader.read_section('~V')
@@ -678,7 +671,7 @@ def read_line(line, pattern=None):
 
 
 def open_file(file_ref, encoding=None, encoding_errors="replace",
-              autodetect_encoding=False, autodetect_encoding_chars=20000):
+              autodetect_encoding=False, autodetect_encoding_chars=40e3):
     '''Open a file if necessary.
 
     If autodetect_encoding is True then either cchardet or chardet (see PyPi)
@@ -712,30 +705,88 @@ def open_file(file_ref, encoding=None, encoding_errors="replace",
                     import urllib.request
                     file_ref = urllib.request.urlopen(file_ref)
             else:  # filename
-                if autodetect_encoding:
-                    try:
-                        import cchardet as chardet
-                    except ImportError:
-                        try:
-                            import chardet
-                        except ImportError:
-                            raise ImportError(
-                                "chardet or cchardet is required for automatic"
-                                " detection of character encodings.")
-                    with open(file_ref, mode="rb") as test_file:
-                        if not autodetect_encoding_chars:
-                            chunk = test_file.read()
-                        else:
-                            chunk = test_file.read(autodetect_encoding_chars)
-                        result = chardet.detect(chunk)
-                        encoding = result["encoding"]
+                auto_encoding, skip = get_encoding(
+                    file_ref, autodetect_encoding, autodetect_encoding_chars)
+                if encoding and auto_encoding != encoding:
+                    logger.warning(
+                        "Auto-detect encoding found %s instead of the "
+                        "specified %s" % (auto_encoding, encoding))
+                elif not encoding:
+                    encoding = auto_encoding
+
                 logger.debug("Opening %s with encoding=%s, errors=%s" %
                              (file_ref, encoding, encoding_errors))
-                file_ref = codecs.open(file_ref, mode="r", encoding=encoding,
-                                       errors=encoding_errors)
+                if not os.path.isfile(file_ref):
+                    raise IOError("The file %s does not exist" % file_ref)
+                with open(file_ref, mode="rb") as f:
+                    f.seek(skip)
+                    encoded_data = f.read()
+                data = encoded_data.decode(encoding)
+                file_ref = StringIO(data)
         else:
             file_ref = StringIO("\n".join(lines))
     return file_ref
+
+
+def get_encoding(file_ref, auto, nbytes):
+    if nbytes:
+        nbytes = int(nbytes)
+    logger.debug("auto = %s, nbyte = %s" % (auto, nbytes))
+    if not auto:
+        auto_method = None
+    elif auto is True:
+        try:
+            import cchardet as chardet
+        except ImportError:
+            try:
+                import chardet
+            except ImportError:
+                raise ImportError(
+                    "chardet or cchardet is required for automatic"
+                    " detection of character encodings.")
+            else:
+                logger.debug("Using chardet")
+                auto_method = "chardet"
+        else:
+            logger.debug("Using cchardet")
+            auto_method = "cchardet"
+    elif auto.lower() == "chardet":
+        import chardet
+        logger.debug("Using chardet")
+        auto_method = "chardet"
+    elif auto.lower() == "cchardet":
+        import cchardet as chardet
+        logger.debug("Using cchardet")
+        auto_method = "cchardet"        
+
+    with open(file_ref, mode="rb") as test_file:
+        if not nbytes:
+            chunk = test_file.read()
+        else:
+            chunk = test_file.read(nbytes)
+    
+        skip_beginning = 0
+        for bom in (codecs.BOM_UTF8,
+                    codecs.BOM_UTF16,
+                    codecs.BOM_UTF16_BE,
+                    codecs.BOM_UTF16_LE,
+                    codecs.BOM_UTF32):
+            if chunk.startswith(bom):
+                logger.debug("Removing BOM of length %d bytes" % len(bom))
+                skip_beginning = len(bom)
+                break
+
+        if auto_method:
+            result = chardet.detect(chunk)
+            encoding = result["encoding"]
+            logger.debug("%s found %s" % (auto_method, result))
+        else:
+            encoding = "ascii"
+            logger.debug("Encoding unknown - using %s" % encoding)
+
+    logger.debug("Using encoding=%s" % encoding)
+    return encoding, skip_beginning
+    
 
 
 def get_formatter_function(order, left_width=None, middle_width=None):
