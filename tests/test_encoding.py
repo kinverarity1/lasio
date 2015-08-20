@@ -1,3 +1,5 @@
+import sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
 import codecs
 
 from lasio import read
