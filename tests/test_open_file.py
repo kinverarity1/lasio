@@ -25,7 +25,7 @@ def test_open_filename():
 
 
 def test_open_incorrect_filename():
-    with pytest.raises(IOError):
+    with pytest.raises(OSError):
         l = read(egfn("sampleXXXDOES NOT EXIST.las"))
 
 

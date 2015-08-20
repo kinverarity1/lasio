@@ -705,36 +705,74 @@ def open_file(file_ref, encoding=None, encoding_errors="replace",
                     import urllib.request
                     file_ref = urllib.request.urlopen(file_ref)
             else:  # filename
-                auto_encoding, skip = get_encoding(
-                    file_ref, autodetect_encoding, autodetect_encoding_chars)
-                if encoding and auto_encoding != encoding:
-                    logger.warning(
-                        "Auto-detect encoding found %s instead of the "
-                        "specified %s" % (auto_encoding, encoding))
-                elif not encoding:
-                    encoding = auto_encoding
+                data = get_unicode_from_filename(
+                    file_ref, encoding, encoding_errors, autodetect_encoding,
+                    autodetect_encoding_chars)
 
-                logger.debug("Opening %s with encoding=%s, errors=%s" %
-                             (file_ref, encoding, encoding_errors))
-                if not os.path.isfile(file_ref):
-                    raise IOError("The file %s does not exist" % file_ref)
-                with open(file_ref, mode="rb") as f:
-                    f.seek(skip)
-                    encoded_data = f.read()
-                data = encoded_data.decode(encoding)
                 file_ref = StringIO(data)
         else:
             file_ref = StringIO("\n".join(lines))
     return file_ref
 
 
-def get_encoding(file_ref, auto, nbytes):
+def get_unicode_from_filename(fn, enc, errors, auto, nbytes):
+    '''
+    Read Unicode data from file.
+
+    Arguments:
+        fn (str): path to file
+        enc (str): encoding - can be None
+        errors (str): unicode error handling - can be "strict", "ignore", "replace"
+        auto (str): auto-detection of character encoding - can be either
+            "chardet", "cchardet", or True
+        nbytes (int): number of characters for read for auto-detection
+
+    Returns:
+        a unicode or string object
+
+    '''
     if nbytes:
         nbytes = int(nbytes)
-    logger.debug("auto = %s, nbyte = %s" % (auto, nbytes))
-    if not auto:
-        auto_method = None
-    elif auto is True:
+
+    # Detect BOM in UTF-8 files
+
+    nbytes_test = min(32, os.path.getsize(fn))
+    with open(fn, mode="rb") as test:
+        raw = test.read(nbytes_test)
+    if raw.startswith(codecs.BOM_UTF8):
+        enc = "utf-8-sig"
+        auto = False
+
+    if auto:
+        with open(fn, mode="rb") as test:
+            if nbytes is None:
+                raw = test.read()
+            else:
+                raw = test.read(nbytes)
+        enc = get_encoding(auto, raw)
+
+    # codecs.open is smarter than cchardet or chardet IME.
+
+    with codecs.open(fn, mode="r", encoding=enc, errors=errors) as f:
+        data = f.read()
+
+    return data
+
+
+def get_encoding(auto, raw):
+    '''
+    Automatically detect character encoding.
+
+    Arguments:
+        auto (str): auto-detection of character encoding - can be either
+            "chardet", "cchardet", or True
+        raw (bytes): array of bytes to detect from
+
+    Returns:
+        A string specifying the character encoding.
+
+    '''
+    if auto is True:
         try:
             import cchardet as chardet
         except ImportError:
@@ -746,47 +784,22 @@ def get_encoding(file_ref, auto, nbytes):
                     " detection of character encodings.")
             else:
                 logger.debug("Using chardet")
-                auto_method = "chardet"
+                method = "chardet"
         else:
             logger.debug("Using cchardet")
-            auto_method = "cchardet"
+            method = "cchardet"
     elif auto.lower() == "chardet":
         import chardet
         logger.debug("Using chardet")
-        auto_method = "chardet"
+        method = "chardet"
     elif auto.lower() == "cchardet":
         import cchardet as chardet
         logger.debug("Using cchardet")
-        auto_method = "cchardet"        
+        method = "cchardet"
 
-    with open(file_ref, mode="rb") as test_file:
-        if not nbytes:
-            chunk = test_file.read()
-        else:
-            chunk = test_file.read(nbytes)
-    
-        skip_beginning = 0
-        for bom in (codecs.BOM_UTF8,
-                    codecs.BOM_UTF16,
-                    codecs.BOM_UTF16_BE,
-                    codecs.BOM_UTF16_LE,
-                    codecs.BOM_UTF32):
-            if chunk.startswith(bom):
-                logger.debug("Removing BOM of length %d bytes" % len(bom))
-                skip_beginning = len(bom)
-                break
-
-        if auto_method:
-            result = chardet.detect(chunk)
-            encoding = result["encoding"]
-            logger.debug("%s found %s" % (auto_method, result))
-        else:
-            encoding = "ascii"
-            logger.debug("Encoding unknown - using %s" % encoding)
-
-    logger.debug("Using encoding=%s" % encoding)
-    return encoding, skip_beginning
-    
+    result = chardet.detect(raw)
+    logger.debug("%s results=%s" % (method, result))
+    return result["encoding"]
 
 
 def get_formatter_function(order, left_width=None, middle_width=None):
