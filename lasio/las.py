@@ -148,8 +148,10 @@ class LASFile(OrderedDictionary):
 
     '''
 
-    def __init__(self, file_ref=None, encoding=None,
-                 autodetect_encoding=False, autodetect_encoding_chars=20000):
+    def __init__(self, file_ref=None, encoding=None, 
+                 encoding_errors="ignore",
+                 autodetect_encoding=False, 
+                 autodetect_encoding_chars=20000):
         OrderedDictionary.__init__(self)
 
         self._text = ''
@@ -162,10 +164,11 @@ class LASFile(OrderedDictionary):
 
         if not (file_ref is None):
             self.read(file_ref, encoding=encoding,
+                      encoding_errors=encoding_errors,
                       autodetect_encoding=autodetect_encoding,
                       autodetect_encoding_chars=autodetect_encoding_chars)
 
-    def read(self, file_ref, encoding=None,
+    def read(self, file_ref, encoding=None, encoding_errors="ignore",
              autodetect_encoding=False, autodetect_encoding_chars=20000):
         '''Read a LAS file.
 
@@ -180,29 +183,13 @@ class LASFile(OrderedDictionary):
             file for auto-detection of encoding.
 
         '''
-        f, encoding = open_file(
-            file_ref, encoding=encoding, autodetect_encoding=autodetect_encoding,
+        f = open_file(file_ref, encoding=encoding, 
+            encoding_errors=encoding_errors,
+            autodetect_encoding=autodetect_encoding,
             autodetect_encoding_chars=autodetect_encoding_chars)
 
-        if encoding is None:
-            encoding = "ascii"
-            logger.debug("Encoding not specified; set to %s" % encoding)
-        else:
-            logger.debug("Encoding=%s" % encoding)
-
-        text = f.read()
-        logger.debug("file content has type %s" % type(text))
-
         try:
-            if isinstance(text, bytes):
-                logger.debug("text instance is bytes")
-                self._text = text.decode(encoding)
-            elif isinstance(text, str):
-                logger.debug("text instance is str")
-                self._text = text
-            else:
-                logger.debug("text instance is neither")
-                self._text = text
+            self._text = f.read()
         except UnicodeDecodeError as uerr:
             m = 30
             sample = "- extract: "
@@ -210,10 +197,9 @@ class LASFile(OrderedDictionary):
             uerr.args = list(uerr.args[:-1]) + [uerr.args[-1] + sample]
             raise UnicodeDecodeError(*uerr.args)
 
-        logger.debug("LAS data has type %s" % type(self._text))
+        logger.debug("LAS text: %s" % (type(self._text))
 
         reader = Reader(self._text, version=1.2)
-
         self.version = reader.read_section('~V')
 
         # Set version
