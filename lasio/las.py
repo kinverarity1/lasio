@@ -142,16 +142,16 @@ class LASFile(OrderedDictionary):
         file_ref: either a filename, an open file object, or a string of
             a LAS file contents.
         encoding (str): character encoding to open file_ref with
-            autodetect_encoding (bool): use chardet/ccharet to detect encoding
+        encoding_errors (str): "strict", "replace" (default), "ignore" - how to
+            handle errors with encodings (see standard library codecs module or
+            Python Unicode HOWTO for more information)
+        autodetect_encoding (bool): use chardet/ccharet to detect encoding
         autodetect_encoding_chars (int/None): number of chars to read from LAS
             file for auto-detection of encoding.
 
     '''
 
-    def __init__(self, file_ref=None, encoding=None, 
-                 encoding_errors="ignore",
-                 autodetect_encoding=False, 
-                 autodetect_encoding_chars=20000):
+    def __init__(self, file_ref=None, **kwargs):
         OrderedDictionary.__init__(self)
 
         self._text = ''
@@ -163,13 +163,9 @@ class LASFile(OrderedDictionary):
         self.other = str(DEFAULT_ITEMS["other"])
 
         if not (file_ref is None):
-            self.read(file_ref, encoding=encoding,
-                      encoding_errors=encoding_errors,
-                      autodetect_encoding=autodetect_encoding,
-                      autodetect_encoding_chars=autodetect_encoding_chars)
+            self.read(file_ref, **kwargs)
 
-    def read(self, file_ref, encoding=None, encoding_errors="ignore",
-             autodetect_encoding=False, autodetect_encoding_chars=20000):
+    def read(self, file_ref, **kwargs):
         '''Read a LAS file.
 
         Arguments:
@@ -178,15 +174,15 @@ class LASFile(OrderedDictionary):
 
         Keyword Arguments:
             encoding (str): character encoding to open file_ref with
+            encoding_errors (str): "strict", "replace" (default), "ignore" - how to
+                handle errors with encodings (see standard library codecs module or
+                Python Unicode HOWTO for more information)
             autodetect_encoding (bool): use chardet/ccharet to detect encoding
             autodetect_encoding_chars (int/None): number of chars to read from LAS
                 file for auto-detection of encoding.
 
         '''
-        f = open_file(file_ref, encoding=encoding, 
-            encoding_errors=encoding_errors,
-            autodetect_encoding=autodetect_encoding,
-            autodetect_encoding_chars=autodetect_encoding_chars)
+        f = open_file(file_ref, **kwargs)
 
         try:
             self._text = f.read()
@@ -196,8 +192,6 @@ class LASFile(OrderedDictionary):
             sample += text[int(uerr.args[2]) - m: int(uerr.args[3]) + m]
             uerr.args = list(uerr.args[:-1]) + [uerr.args[-1] + sample]
             raise UnicodeDecodeError(*uerr.args)
-
-        logger.debug("LAS text: %s" % (type(self._text))
 
         reader = Reader(self._text, version=1.2)
         self.version = reader.read_section('~V')
@@ -683,7 +677,7 @@ def read_line(line, pattern=None):
     return d
 
 
-def open_file(file_ref, encoding=None,
+def open_file(file_ref, encoding=None, encoding_errors="replace",
               autodetect_encoding=False, autodetect_encoding_chars=20000):
     '''Open a file if necessary.
 
@@ -696,6 +690,9 @@ def open_file(file_ref, encoding=None,
 
     Keyword Arguments:
         encoding (str): character encoding to open file_ref with
+        encoding_errors (str): "strict", "replace" (default), "ignore" - how to
+            handle errors with encodings (see standard library codecs module or
+            Python Unicode HOWTO for more information)
         autodetect_encoding (bool): use chardet/ccharet to detect encoding
         autodetect_encoding_chars (int/None): number of chars to read from LAS
             file for auto-detection of encoding.
@@ -732,10 +729,13 @@ def open_file(file_ref, encoding=None,
                             chunk = test_file.read(autodetect_encoding_chars)
                         result = chardet.detect(chunk)
                         encoding = result["encoding"]
-                file_ref = codecs.open(file_ref, mode="r", encoding=encoding)
+                logger.debug("Opening %s with encoding=%s, errors=%s" %
+                             (file_ref, encoding, encoding_errors))
+                file_ref = codecs.open(file_ref, mode="r", encoding=encoding,
+                                       errors=encoding_errors)
         else:
             file_ref = StringIO("\n".join(lines))
-    return file_ref, encoding
+    return file_ref
 
 
 def get_formatter_function(order, left_width=None, middle_width=None):
@@ -834,8 +834,7 @@ def get_section_widths(section_name, section, version, middle_padding=5):
     return section_widths
 
 
-def read(file_ref, encoding=None,
-         autodetect_encoding=False, autodetect_encoding_chars=20000):
+def read(file_ref, **kwargs):
     '''Read a LAS file.
 
     Note that only versions 1.2 and 2.0 of the LAS file specification
@@ -847,6 +846,9 @@ def read(file_ref, encoding=None,
 
     Keyword Arguments:
         encoding (str): character encoding to open file_ref with
+        encoding_errors (str): "strict", "replace" (default), "ignore" - how to
+            handle errors with encodings (see standard library codecs module or
+            Python Unicode HOWTO for more information)
         autodetect_encoding (bool): use chardet/ccharet to detect encoding
         autodetect_encoding_chars (int/None): number of chars to read from LAS
             file for auto-detection of encoding.
@@ -855,6 +857,4 @@ def read(file_ref, encoding=None,
         A LASFile object representing the file -- see above
 
     '''
-    return LASFile(file_ref, encoding=encoding,
-                   autodetect_encoding=autodetect_encoding,
-                   autodetect_encoding_chars=autodetect_encoding_chars)
+    return LASFile(file_ref, **kwargs)
