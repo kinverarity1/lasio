@@ -10,9 +10,9 @@ egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
 
 
 def test_open_url():
-    l = read(
-        "https://raw.githubusercontent.com/kinverarity1/lasio"
-        "/master/standards/examples/1.2/sample_curve_api.las")
+    l = read("https://raw.githubusercontent.com/kinverarity1/"
+             "lasio/master/standards/examples"
+             "/1.2/sample_curve_api.las")
 
 
 def test_open_file_object():

@@ -185,6 +185,7 @@ class LASFile(OrderedDictionary):
         f = open_file(file_ref, **kwargs)
 
         self._text = f.read()
+        logger.debug("LAS content is type %s" % type(self._text))
 
         reader = Reader(self._text, version=1.2)
         self.version = reader.read_section('~V')
@@ -703,12 +704,13 @@ def open_file(file_ref, encoding=None, encoding_errors="replace",
                     file_ref = urllib2.urlopen(file_ref)
                 except ImportError:
                     import urllib.request
-                    file_ref = urllib.request.urlopen(file_ref)
+                    response = urllib.request.urlopen(file_ref)
+                    enc = response.headers.get_content_charset("utf-8")
+                    file_ref = StringIO(response.read().decode(enc))
             else:  # filename
                 data = get_unicode_from_filename(
                     file_ref, encoding, encoding_errors, autodetect_encoding,
                     autodetect_encoding_chars)
-
                 file_ref = StringIO(data)
         else:
             file_ref = StringIO("\n".join(lines))
