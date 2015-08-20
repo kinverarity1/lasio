@@ -1,6 +1,6 @@
 import codecs
 
-from . import read
+from lasio import read
 
 # These tests seem to be pointless as they always pass... better ideas?
 

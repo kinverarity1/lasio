@@ -2,11 +2,11 @@ import os
 
 import pytest
 
-from . import read
+from lasio import read
 
 test_dir = os.path.dirname(__file__)
 
-egfn = lambda fn: os.path.join(os.path.dirname(__file__), "test_examples", fn)
+egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
 
 
 def test_open_url():
