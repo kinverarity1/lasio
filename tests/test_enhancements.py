@@ -41,3 +41,19 @@ def test_autodepthindex_f():
 def test_autodepthindex_ft():
     l = read(egfn("autodepthindex_FT.las"))
     assert (l.depth_m[-1] / 0.3048 == l.index[-1])
+
+def test_df_indexing():
+    l = read(egfn("6038187_v1.2.las"), use_pandas=True)
+    metres = 9.05
+    spacing = l.well["STEP"].value
+    calc_index = (metres / spacing) - (l.well["STRT"].value / spacing)
+    assert l["GAMN"][calc_index] == l.df.GAMN[metres]
+
+def test_use_pandas_False():
+    l = read(egfn("6038187_v1.2.las"), use_pandas=False)
+    l.df
+    assert True
+
+# TODO: make above test in reverse-ordered LAS (e.g. STRT > STOP)
+# def test_df_reverse():
+

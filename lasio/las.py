@@ -7,13 +7,25 @@ from __future__ import print_function
 
 # Standard library packages
 import codecs
+import logging
+import os
+import re
+import traceback
+
+# The standard library OrderedDict was introduced in Python 2.7 so
+# we have a third-party option to support Python 2.6
+
 try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
-import logging
-import os
-import re
+
+# Convoluted import for StringIO in order to support:
+#
+# - Python 3 - io.StringIO
+# - Python 2 (optimized) - cStringIO.StringIO
+# - Python 2 (all) - StringIO.StringIO
+
 try:
     import cStringIO as StringIO
 except ImportError:
@@ -25,11 +37,14 @@ except ImportError:
         from StringIO import StringIO
 else:
     from StringIO import StringIO
-import traceback
 
-# Third-party packages available on PyPi
+# Required third-party packages available on PyPi:
+
 from namedlist import namedlist
 import numpy
+
+# Optional third-party packages available on PyPI are mostly
+# imported inline below.
 
 
 logger = logging.getLogger(__name__)
@@ -155,6 +170,7 @@ class LASFile(OrderedDictionary):
         OrderedDictionary.__init__(self)
 
         self._text = ''
+        self._use_pandas = "auto"
         self.index_unit = None
         self.version = OrderedDictionary(DEFAULT_ITEMS["version"].items())
         self.well = OrderedDictionary(DEFAULT_ITEMS["well"].items())
@@ -165,7 +181,7 @@ class LASFile(OrderedDictionary):
         if not (file_ref is None):
             self.read(file_ref, **kwargs)
 
-    def read(self, file_ref, **kwargs):
+    def read(self, file_ref, use_pandas="auto", **kwargs):
         '''Read a LAS file.
 
         Arguments:
@@ -173,6 +189,9 @@ class LASFile(OrderedDictionary):
                 a LAS file contents.
 
         Keyword Arguments:
+            use_pandas (str): bool or "auto" -- use pandas if available -- provide
+                False option for faster loading where pandas functionality is not
+                needed. "auto" becomes True if pandas is installed, and False if not.
             encoding (str): character encoding to open file_ref with
             encoding_errors (str): "strict", "replace" (default), "ignore" - how to
                 handle errors with encodings (see standard library codecs module or
@@ -182,6 +201,9 @@ class LASFile(OrderedDictionary):
                 file for auto-detection of encoding.
 
         '''
+        if not use_pandas is None:
+            self._use_pandas = use_pandas
+
         f = open_file(file_ref, **kwargs)
 
         self._text = f.read()
@@ -238,8 +260,11 @@ class LASFile(OrderedDictionary):
 
         self.refresh()
 
-    def refresh(self):
+    def refresh(self, use_pandas=None):
         '''Refresh curve names and indices.'''
+        if not use_pandas is None:
+            self._use_pandas = use_pandas
+
         n = len(self.curves)
         curve_names = [c.mnemonic for c in self.curves]
         curve_freq = {}
@@ -259,6 +284,22 @@ class LASFile(OrderedDictionary):
             self[c.mnemonic] = c.data
             self[i] = c.data
             self[i - n] = c.data
+
+        if not self._use_pandas is False:
+            try:
+                import pandas
+            except ImportError:
+                logger.info("pandas not installed - skipping LASFile.df creation")
+                self._use_pandas = False
+
+        if self._use_pandas:
+            pd_index = pandas.Index(self.curves[0].data)
+            self.df = pandas.DataFrame(index=pd_index)
+            for i, c in enumerate(self.curves):
+                data = pandas.Series(c.data, index=pd_index, name=c.mnemonic)
+                self.df[c.mnemonic] = data
+                logger.debug("%s index_type=%s" % (c.mnemonic, type(pd_index)))
+            # self.df.set_index(self.curves[0].mnemonic)
 
     @property
     def data(self):
@@ -419,6 +460,18 @@ class LASFile(OrderedDictionary):
     @metadata.setter
     def metadata(self, value):
         raise Warning('Set values in the version/well/params attrs directly')
+
+    @property
+    def df(self):
+        if self._use_pandas:
+            return self._df
+        else:
+            logger.warning("pandas is not installed or use_pandas was set to False")
+            # raise Warning("pandas is not installed or use_pandas was set to False")
+
+    @df.setter
+    def df(self, value):
+        self._df = value
 
     @property
     def index(self):
