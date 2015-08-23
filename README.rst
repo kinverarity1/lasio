@@ -8,17 +8,17 @@ This is a Python 2/3 package to read and write Log ASCII Standard (LAS) files, u
 Links
 ~~~~~
 
-`Package home page and documentation <http://pythonhosted.org/lasio/>`__.
+- `Package home page and documentation <http://pythonhosted.org/lasio/>`__.
+- `Source code (GitHub) <https://github.com/kinverarity1/lasio>`__.
+- `Latest release (PyPI) <https://pypi.python.org/pypi/lasio>`__.
+- Automated testing results:
 
-`Source code (GitHub) <https://github.com/kinverarity1/lasio>`__.
+  * `Test suite (Travis CI) <https://travis-ci.org/kinverarity1/lasio>`__ 
+  * `Test suite coverage (Coveralls) <https://coveralls.io/github/kinverarity1/lasio?branch=master>`__.
 
-`Latest release (PyPI) <https://pypi.python.org/pypi/lasio>`__.
+- Released under the `MIT License <https://raw.githubusercontent.com/kinverarity1/lasio/master/LICENSE>`__.
 
-Automated test results: `Travis CI <https://travis-ci.org/kinverarity1/lasio>`__ and `Coveralls <https://coveralls.io/github/kinverarity1/lasio?branch=master>`__.
-
-The license is at https://raw.githubusercontent.com/kinverarity1/lasio/master/LICENSE
-
-You can contact the author/package maintainer at kinverarity@hotmail.com
+Contact the author/package maintainer by `email <mailto:kinverarity@hotmail.com>`__.
 
 .. |PyPI Version| image:: http://img.shields.io/pypi/v/lasio.svg
    :target: https://pypi.python.org/pypi/lasio/
