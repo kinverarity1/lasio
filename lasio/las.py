@@ -7,13 +7,25 @@ from __future__ import print_function
 
 # Standard library packages
 import codecs
+import logging
+import os
+import re
+import traceback
+
+# The standard library OrderedDict was introduced in Python 2.7 so
+# we have a third-party option to support Python 2.6
+
 try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
-import logging
-import os
-import re
+
+# Convoluted import for StringIO in order to support:
+#
+# - Python 3 - io.StringIO
+# - Python 2 (optimized) - cStringIO.StringIO
+# - Python 2 (all) - StringIO.StringIO
+
 try:
     import cStringIO as StringIO
 except ImportError:
@@ -25,11 +37,14 @@ except ImportError:
         from StringIO import StringIO
 else:
     from StringIO import StringIO
-import traceback
 
-# Third-party packages available on PyPi
+# Required third-party packages available on PyPi:
+
 from namedlist import namedlist
 import numpy
+
+# Optional third-party packages available on PyPI are mostly
+# imported inline below.
 
 
 logger = logging.getLogger(__name__)
@@ -259,6 +274,21 @@ class LASFile(OrderedDictionary):
             self[c.mnemonic] = c.data
             self[i] = c.data
             self[i - n] = c.data
+
+        try:
+            import pandas
+        except ImportError:
+            logger.info("pandas not installed - skipping LASFile.df creation")
+            continue
+        else:
+            self.df = pandas.DataFrame()
+            for i, c in self.curves:
+                if i == 0:
+                    index = pandas.Series(c.data, name=c.mnemonic)
+                    self.df[c.mnemonic] = c.data
+                    self.df.set_index(c.mnemonic)
+                else:
+                    self.df[c.mnemonic] = c.data
 
     @property
     def data(self):
