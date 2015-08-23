@@ -466,7 +466,8 @@ class LASFile(OrderedDictionary):
         if self._use_pandas:
             return self._df
         else:
-            raise Warning("pandas is not installed or use_pandas was set to False")
+            logger.warning("pandas is not installed or use_pandas was set to False")
+            # raise Warning("pandas is not installed or use_pandas was set to False")
 
     @df.setter
     def df(self, value):
