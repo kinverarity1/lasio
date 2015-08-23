@@ -279,16 +279,16 @@ class LASFile(OrderedDictionary):
             import pandas
         except ImportError:
             logger.info("pandas not installed - skipping LASFile.df creation")
-            continue
         else:
             self.df = pandas.DataFrame()
-            for i, c in self.curves:
+            for i, c in enumerate(self.curves):
                 if i == 0:
                     index = pandas.Series(c.data, name=c.mnemonic)
                     self.df[c.mnemonic] = c.data
                     self.df.set_index(c.mnemonic)
                 else:
-                    self.df[c.mnemonic] = c.data
+                    data = pandas.Series(c.data, index=index, name=c.mnemonic)
+                    self.df[c.mnemonic] = data
 
     @property
     def data(self):
