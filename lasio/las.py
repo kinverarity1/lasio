@@ -641,7 +641,7 @@ def read_line(line, pattern=None):
     '''Read a line from a LAS header section.
 
     The line is parsed with a regular expression -- see LAS file specs for
-    more details, but it should basically be in the format:
+    more details, but it should basically be in the format::
 
         name.unit       value : descr
 
