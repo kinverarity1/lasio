@@ -41,3 +41,7 @@ def test_autodepthindex_f():
 def test_autodepthindex_ft():
     l = read(egfn("autodepthindex_FT.las"))
     assert (l.depth_m[-1] / 0.3048 == l.index[-1])
+
+def test_df():
+    l = read(egfn("6038187_v1.2.las"), use_pandas=True)
+    assert l

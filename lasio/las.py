@@ -170,6 +170,7 @@ class LASFile(OrderedDictionary):
         OrderedDictionary.__init__(self)
 
         self._text = ''
+        self._use_pandas = "auto"
         self.index_unit = None
         self.version = OrderedDictionary(DEFAULT_ITEMS["version"].items())
         self.well = OrderedDictionary(DEFAULT_ITEMS["well"].items())
@@ -180,7 +181,7 @@ class LASFile(OrderedDictionary):
         if not (file_ref is None):
             self.read(file_ref, **kwargs)
 
-    def read(self, file_ref, **kwargs):
+    def read(self, file_ref, use_pandas="auto", **kwargs):
         '''Read a LAS file.
 
         Arguments:
@@ -188,6 +189,9 @@ class LASFile(OrderedDictionary):
                 a LAS file contents.
 
         Keyword Arguments:
+            use_pandas (str): bool or "auto" -- use pandas if available -- provide
+                False option for faster loading where pandas functionality is not
+                needed. "auto" becomes True if pandas is installed, and False if not.
             encoding (str): character encoding to open file_ref with
             encoding_errors (str): "strict", "replace" (default), "ignore" - how to
                 handle errors with encodings (see standard library codecs module or
@@ -197,6 +201,9 @@ class LASFile(OrderedDictionary):
                 file for auto-detection of encoding.
 
         '''
+        if not use_pandas is None:
+            self._use_pandas = use_pandas
+
         f = open_file(file_ref, **kwargs)
 
         self._text = f.read()
@@ -253,8 +260,11 @@ class LASFile(OrderedDictionary):
 
         self.refresh()
 
-    def refresh(self):
+    def refresh(self, use_pandas=None):
         '''Refresh curve names and indices.'''
+        if not use_pandas is None:
+            self._use_pandas = use_pandas
+
         n = len(self.curves)
         curve_names = [c.mnemonic for c in self.curves]
         curve_freq = {}
@@ -275,20 +285,21 @@ class LASFile(OrderedDictionary):
             self[i] = c.data
             self[i - n] = c.data
 
-        try:
-            import pandas
-        except ImportError:
-            logger.info("pandas not installed - skipping LASFile.df creation")
-        else:
-            self.df = pandas.DataFrame()
+        if not self._use_pandas is False:
+            try:
+                import pandas
+            except ImportError:
+                logger.info("pandas not installed - skipping LASFile.df creation")
+                self._use_pandas = False
+
+        if self._use_pandas:
+            pd_index = pandas.Index(self.curves[0].data)
+            self.df = pandas.DataFrame(index=pd_index)
             for i, c in enumerate(self.curves):
-                if i == 0:
-                    index = pandas.Series(c.data, name=c.mnemonic)
-                    self.df[c.mnemonic] = c.data
-                    self.df.set_index(c.mnemonic)
-                else:
-                    data = pandas.Series(c.data, index=index, name=c.mnemonic)
-                    self.df[c.mnemonic] = data
+                data = pandas.Series(c.data, index=pd_index, name=c.mnemonic)
+                self.df[c.mnemonic] = data
+                logger.debug("%s index_type=%s" % (c.mnemonic, type(pd_index)))
+            # self.df.set_index(self.curves[0].mnemonic)
 
     @property
     def data(self):
@@ -449,6 +460,17 @@ class LASFile(OrderedDictionary):
     @metadata.setter
     def metadata(self, value):
         raise Warning('Set values in the version/well/params attrs directly')
+
+    @property
+    def df(self):
+        if self._use_pandas:
+            return self._df
+        else:
+            raise Warning("pandas is not installed or use_pandas was set to False")
+
+    @df.setter
+    def df(self, value):
+        self._df = value
 
     @property
     def index(self):
