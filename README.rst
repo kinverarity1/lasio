@@ -3,15 +3,18 @@ lasio
 
 |PyPI Version| |PyPI Downloads| |Build Status| |Coverage Status| |Python Version| |PyPI Format| |MIT License|
 
-This is a Python 2/3 package to read and write Log ASCII Standard (LAS) files, used for borehole/well data (e.g. geophysical/geological/petrophysical logs). It is compatible with versions 1.2 and 2.0 of the LAS file specification, published by the `Canadian Well Logging Society`_. In principle it is designed to read as many types of LAS files as possible, including ones containing common errors or non-compliant formatting.
+This is a Python 2/3 package to read and write Log ASCII Standard (LAS) files, used for borehole/well data (e.g. geophysical/geological/petrophysical logs). It is compatible with versions 1.2 and 2.0 of the LAS file specification, published by the `Canadian Well Logging Society <http://www.cwls.org/las>`__. In principle it is designed to read as many types of LAS files as possible, including ones containing common errors or non-compliant formatting.
 
-The package documentation and home page is at http://pythonhosted.org/lasio/
+Links
+~~~~~
 
-The source code is at https://github.com/kinverarity1/lasio
+`Package home page and documentation <http://pythonhosted.org/lasio/>`__.
 
-The latest release on PyPI is at https://pypi.python.org/pypi/lasio
+`Source code (GitHub) <https://github.com/kinverarity1/lasio>`__.
 
-Latest automated test results are at https://travis-ci.org/kinverarity1/lasio and https://coveralls.io/github/kinverarity1/lasio?branch=master.
+`Latest release (PyPI) <https://pypi.python.org/pypi/lasio>`__.
+
+Automated test results: `Travis CI <https://travis-ci.org/kinverarity1/lasio>`__ and `Coveralls <https://coveralls.io/github/kinverarity1/lasio?branch=master>`__.
 
 The license is at https://raw.githubusercontent.com/kinverarity1/lasio/master/LICENSE
 
