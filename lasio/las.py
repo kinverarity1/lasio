@@ -10,6 +10,7 @@ import codecs
 import logging
 import os
 import re
+import textwrap
 import traceback
 
 # The standard library OrderedDict was introduced in Python 2.7 so
@@ -410,11 +411,25 @@ class LASFile(OrderedDictionary):
             else:
                 return spacer + (fmt % n).rjust(l)
 
+        twrapper = textwrap.TextWrapper(width=79)
         for i in range(nrows):
-            line = ''
+            depth_slice = ''
             for j in range(ncols):
-                line += format_data_section_line(data_arr[i, j], fmt)
-            file_object.write(line + "\n")
+                depth_slice += format_data_section_line(data_arr[i, j], fmt)
+
+            if self.version["WRAP"].value == "YES":
+                lines = twrapper.wrap(depth_slice)
+                logger.debug("Wrapped %d lines out of %s" % (len(lines), depth_slice))
+            else:
+                lines = [depth_slice]
+            
+            if self.version["VERS"].value == 1.2:
+                for line in lines:
+                    if len(line) > 255:
+                        logger.warning("Data line > 256 chars: %s" % line)
+            
+            for line in lines:
+                file_object.write(line + "\n")
 
     def get_curve(self, mnemonic):
         '''Return Curve object.
