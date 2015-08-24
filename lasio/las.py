@@ -307,13 +307,14 @@ class LASFile(OrderedDictionary):
         '''2D array of data from LAS file.'''
         return numpy.vstack([c.data for c in self.curves]).T
 
-    def write(self, file_object, version=None,
+    def write(self, file_object, version=None, wrap=None,
               STRT=None, STOP=None, STEP=None, fmt="%10.5g"):
         '''Write to a file.
 
         Arguments:
             file_object: a file_like object opening for writing.
             version (float): either 1.2 or 2
+            wrap (bool): True, False, or None (last uses WRAP item in version)
             STRT (float): optional override to automatic calculation using 
                 the first index curve value.
             STOP (float): optional override to automatic calculation using 
@@ -329,6 +330,14 @@ class LASFile(OrderedDictionary):
             ...     lasfile_obj.write(f, 2.0)   # <-- this method
 
         '''
+        if wrap is None:
+            wrap = self.version["WRAP"] == "YES"
+        elif wrap is True:
+            self.version["WRAP"] = HeaderItem(
+                "WRAP", "", "YES", "Multiple lines per depth step")
+        elif wrap is False:
+            self.version["WRAP"] = HeaderItem(
+                "WRAP", "", "NO", "One line per depth step")
         lines = []
 
         assert version in (1.2, 2, None)
@@ -417,7 +426,7 @@ class LASFile(OrderedDictionary):
             for j in range(ncols):
                 depth_slice += format_data_section_line(data_arr[i, j], fmt)
 
-            if self.version["WRAP"].value == "YES":
+            if wrap:
                 lines = twrapper.wrap(depth_slice)
                 logger.debug("Wrapped %d lines out of %s" % (len(lines), depth_slice))
             else:

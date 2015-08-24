@@ -15,7 +15,7 @@ def test_write_wrapped():
     fn = stegfn("1.2", "sample_wrapped.las")
     l = read(fn)
     s = StringIO()
-    l.write(s, version=2.0, fmt="%.5f")
+    l.write(s, version=2.0, wrap=True, fmt="%.5f")
     s.seek(0)
     assert s.read() == """~Version ---------------------------------------------------
 VERS.     2.0 : CWLS log ASCII Standard -VERSION 2.0
@@ -109,13 +109,12 @@ LSWB.          : 35 Flag -Limit SWB
 def test_write_unwrapped():
     fn = stegfn("1.2", "sample_wrapped.las")
     l = read(fn)
-    l.version["WRAP"].value = "NO"
     s = StringIO()
-    l.write(s, version=2.0, fmt="%.5f")
+    l.write(s, version=2.0, wrap=False, fmt="%.5f")
     s.seek(0)
     assert s.read() == """~Version ---------------------------------------------------
 VERS.     2.0 : CWLS log ASCII Standard -VERSION 2.0
-WRAP.      NO : Multiple lines per depth step
+WRAP.      NO : One line per depth step
 ~Well ------------------------------------------------------
 STRT.M                       910.0 : 
 STOP.M                       909.5 : 
