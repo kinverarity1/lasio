@@ -52,10 +52,6 @@ logger = logging.getLogger(__name__)
 __version__ = "0.8"
 
 
-HeaderItem = namedlist("HeaderItem", ["mnemonic", "unit", "value", "descr"])
-Curve = namedlist("Curve", ["mnemonic", "unit", "value", "descr", "data"])
-
-
 class LASDataError(Exception):
 
     '''Error during reading of numerical data from LAS file.'''
@@ -74,70 +70,146 @@ class LASUnknownUnitError(Exception):
     pass
 
 
-class OrderedDictionary(OrderedDict):
-
-    '''A minor wrapper over OrderedDict.
-
-    This wrapper has a better string representation.
-
-    '''
+class HeaderItem(OrderedDict):
+    def __init__(self, mnemonic, unit="", value="", descr=""):
+        self.mnemonic = mnemonic
+        self.original_mnemonic = mnemonic
+        self.unit = unit
+        self.value = value
+        self.descr = descr
 
     def __repr__(self):
-        l = []
-        for key, value in self.items():
-            s = "'%s': %s" % (key, value)
-            l.append(s)
-        s = '{' + ',\n '.join(l) + '}'
-        return s
+        return "%s(mnemonic=%s, unit=%s, value=%s, descr=%s, original_mnemonic=%s)" % (
+            self.__class__.__name__, self.mnemonic, self.unit, self.value, self.descr, self.original_mnemonic)
+
+
+class CurveItem(HeaderItem):
+    # def __init__(self, *args, **kwargs):
+    #     super(CurveItem, self).__init__(*args, **kwargs)
 
     @property
-    def _d(self):
-        if hasattr(list(self.values())[0], 'value'):
-            return dict([(k, v.value) for k, v in list(self.items())])
+    def API_code(self):
+        return self.value
+    
+
+
+class SectionItems(list):
+
+    def __contains__(self, testitem):
+        '''Allows testing of a mnemonic or an actual item.'''
+        for item in self:
+            if testitem == item.mnemonic:
+                return True 
+            elif testitem.mnemonic == item.mnemonic:
+                return True
+            elif testitem is item:
+                return True
         else:
-            return dict([(k, v.descr) for k, v in list(self.items())])
+            return False
+
+    def keys(self):
+        return [item.mnemonic for item in self]
+
+    def values(self):
+        return self
+
+    def items(self):
+        return [(item.mnemonic, item) for item in self]
+
+    def iterkeys(self):
+        return iter(self.keys())
+
+    def itervalues(self):
+        return iter(self)
+
+    def iteritems(self):
+        return iter(self.items())
+
+    def __getitem__(self, key):
+        for item in self:
+            if item.mnemonic == key:
+                return item
+        if isinstance(key, int):
+            return super(SectionItems, self).__getitem__(key)
+        else:
+            raise KeyError("%s not in %s" % (key, self.keys()))
+
+    def __setitem__(self, key, newitem):
+        for item in self:
+            if key == item.mnemonic:
+                item = newitem
+        else:
+            self.append(newitem)
+
+    def append(self, newitem):
+        '''Check to see if the item's mnemonic needs altering.'''
+        logger.debug("type=%s str=%s" % (type(newitem), newitem))
+        if newitem.mnemonic.strip() == "":
+            newitem.original_mnemonic = newitem.mnemonic
+            newitem.mnemonic = "UNKNOWN"
+        super(SectionItems, self).append(newitem)
+
+        # Check to fix the :n suffixes
+        existing = [item.original_mnemonic for item in self]
+        locations = []
+        for i, item in enumerate(self):
+            if item.original_mnemonic == newitem.mnemonic:
+                locations.append(i)
+        if len(locations) > 1:
+            current_count = 1
+            for i, loc in enumerate(locations):
+                item = self[loc]
+                # raise Exception("%s" % str(type(item)))
+                item.mnemonic = item.original_mnemonic + ":%d" % (i + 1)
+
 
 
 DEFAULT_ITEMS = {
-    "version": OrderedDictionary([
-        ("VERS", HeaderItem("VERS", "", 2.0,
-                            "CWLS log ASCII Standard -VERSION 2.0")),
-        ("WRAP", HeaderItem("WRAP", "", "NO", "One line per depth step")),
-        ("DLM",  HeaderItem("DLM", "", "SPACE",
-                            "Column Data Section Delimiter"))]),
-    "well": OrderedDictionary([
-        ("STRT", HeaderItem("STRT", "m", numpy.nan, "START DEPTH")),
-        ("STOP", HeaderItem("STOP", "m", numpy.nan, "STOP DEPTH")),
-        ("STEP", HeaderItem("STEP", "m", numpy.nan, "STEP")),
-        ("NULL", HeaderItem("NULL", "", -9999.25, "NULL VALUE")),
-        ("COMP", HeaderItem("COMP", "", "", "COMPANY")),
-        ("WELL", HeaderItem("WELL", "", "", "WELL")),
-        ("FLD",  HeaderItem("FLD", "", "", "FIELD")),
-        ("LOC",  HeaderItem("LOC", "", "", "LOCATION")),
-        ("PROV", HeaderItem("PROV", "", "", "PROVINCE")),
-        ("CNTY", HeaderItem("CNTY", "", "", "COUNTY")),
-        ("STAT", HeaderItem("STAT", "", "", "STATE")),
-        ("CTRY", HeaderItem("CTRY", "", "", "COUNTRY")),
-        ("SRVC", HeaderItem("SRVC", "", "", "SERVICE COMPANY")),
-        ("DATE", HeaderItem("DATE", "", "", "DATE")),
-        ("UWI",  HeaderItem("UWI", "", "", "UNIQUE WELL ID")),
-        ("API",  HeaderItem("API", "", "", "API NUMBER"))
-    ]),
-    "curves": [],
-    "params": OrderedDictionary([]),
-    "other": "",
-    "data": numpy.zeros(shape=(0, 1))}
+    "Version": [
+        HeaderItem("VERS", "", 2.0, "CWLS log ASCII Standard -VERSION 2.0"),
+        HeaderItem("WRAP", "", "NO", "One line per depth step"),
+        HeaderItem("DLM", "", "SPACE", "Column Data Section Delimiter"),
+        ],
+    "Well": [
+        HeaderItem("STRT", "m", numpy.nan, "START DEPTH"),
+        HeaderItem("STOP", "m", numpy.nan, "STOP DEPTH"),
+        HeaderItem("STEP", "m", numpy.nan, "STEP"),
+        HeaderItem("NULL", "", -9999.25, "NULL VALUE"),
+        HeaderItem("COMP", "", "", "COMPANY"),
+        HeaderItem("WELL", "", "", "WELL"),
+        HeaderItem("FLD", "", "", "FIELD"),
+        HeaderItem("LOC", "", "", "LOCATION"),
+        HeaderItem("PROV", "", "", "PROVINCE"),
+        HeaderItem("CNTY", "", "", "COUNTY"),
+        HeaderItem("STAT", "", "", "STATE"),
+        HeaderItem("CTRY", "", "", "COUNTRY"),
+        HeaderItem("SRVC", "", "", "SERVICE COMPANY"),
+        HeaderItem("DATE", "", "", "DATE"),
+        HeaderItem("UWI", "", "", "UNIQUE WELL ID"),
+        HeaderItem("API", "", "", "API NUMBER")
+        ],
+    "Curves": [],
+    "Parameter": [],
+    "Other": "",
+    "Data": numpy.zeros(shape=(0, 1)),
+    }
+
 
 ORDER_DEFINITIONS = {
-    1.2: {"version": ["value:descr"],
-          "well":    ["descr:value",
-                      ("value:descr", ["STRT", "STOP", "STEP", "NULL"])],
-          "curves":  ["value:descr"],
-          "params":  ["value:descr"]},
-    2.0: {"version": ["value:descr"],
-          "well":    ["value:descr"],
-          "curves":  ["value:descr"],
-          "params":  ["value:descr"]}}
+    1.2: OrderedDict([
+        ("Version", ["value:descr"]),
+        ("Well", [
+            "descr:value",
+            ("value:descr", ["STRT", "STOP", "STEP", "NULL"])]),
+        ("Curves", ["value:descr"]),
+        ("Parameter", ["value:descr"]),
+        ]),
+    2.0: OrderedDict([
+        ("Version", ["value:descr"]),
+        ("Well", ["value:descr"]),
+        ("Curves", ["value:descr"]),
+        ("Parameter", ["value:descr"])
+        ])}
 
 
 URL_REGEXP = re.compile(
@@ -150,7 +222,7 @@ URL_REGEXP = re.compile(
     r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 
-class LASFile(OrderedDictionary):
+class LASFile(OrderedDict):
 
     '''LAS file object.
 
@@ -168,16 +240,18 @@ class LASFile(OrderedDictionary):
     '''
 
     def __init__(self, file_ref=None, **kwargs):
-        OrderedDictionary.__init__(self)
+        OrderedDict.__init__(self)
 
         self._text = ''
         self._use_pandas = "auto"
         self.index_unit = None
-        self.version = OrderedDictionary(DEFAULT_ITEMS["version"].items())
-        self.well = OrderedDictionary(DEFAULT_ITEMS["well"].items())
-        self.curves = list(DEFAULT_ITEMS["curves"])
-        self.params = OrderedDictionary(DEFAULT_ITEMS["params"].items())
-        self.other = str(DEFAULT_ITEMS["other"])
+        self.sections = {
+            "Version": DEFAULT_ITEMS["Version"],
+            "Well": DEFAULT_ITEMS["Well"],
+            "Curves": DEFAULT_ITEMS["Curves"],
+            "Parameter": DEFAULT_ITEMS["Parameter"],
+            "Other": str(DEFAULT_ITEMS["Other"]),
+            }
 
         if not (file_ref is None):
             self.read(file_ref, **kwargs)
@@ -211,10 +285,11 @@ class LASFile(OrderedDictionary):
         logger.debug("LAS content is type %s" % type(self._text))
 
         reader = Reader(self._text, version=1.2)
-        self.version = reader.read_section('~V')
+        self.sections["Version"] = reader.read_section('~V')
 
         # Set version
         try:
+            # raise Exception("%s %s" % (type(self.version['VERS']), self.version["VERS"]))
             reader.version = self.version['VERS'].value
         except KeyError:
             raise KeyError("No key VERS in ~V section")
@@ -231,13 +306,13 @@ class LASFile(OrderedDictionary):
                 reader.version = 2
         reader.wrap = self.version['WRAP'].value == 'YES'
 
-        self.well = reader.read_section('~W')
-        self.curves = reader.read_list_section('~C')
+        self.sections["Well"] = reader.read_section('~W')
+        self.sections["Curves"] = reader.read_section('~C')
         try:
-            self.params = reader.read_section('~P')
+            self.sections["Parameter"] = reader.read_section('~P')
         except LASHeaderError:
             logger.warning(traceback.format_exc().splitlines()[-1])
-        self.other = reader.read_raw_text('~O')
+        self.sections["Other"] = reader.read_raw_text('~O')
 
         # Set null value
         reader.null = self.well['NULL'].value
@@ -267,30 +342,17 @@ class LASFile(OrderedDictionary):
             self._use_pandas = use_pandas
 
         n = len(self.curves)
-        curve_names = [c.mnemonic for c in self.curves]
-        curve_freq = {}
-        curve_count = {}
-        for curve_name in curve_names:
-            if not curve_name in curve_freq:
-                curve_freq[curve_name] = 1
-            else:
-                curve_freq[curve_name] += 1
-            curve_count[curve_name] = 0
-        for i, c in enumerate(self.curves):
-            curve_count[c.mnemonic] += 1
-            if curve_freq[c.mnemonic] > 1:
-                c.mnemonic += "[%d]" % (curve_count[c.mnemonic] - 1, )
-
-        for i, c in enumerate(self.curves):
-            self[c.mnemonic] = c.data
-            self[i] = c.data
-            self[i - n] = c.data
+        for i, curve in enumerate(self.curves):
+            self[curve.mnemonic] = curve.data
+            self[i] = curve.data
+            self[i - n] = curve.data
 
         if not self._use_pandas is False:
             try:
                 import pandas
             except ImportError:
-                logger.info("pandas not installed - skipping LASFile.df creation")
+                logger.info(
+                    "pandas not installed - skipping LASFile.df creation")
                 self._use_pandas = False
 
         if self._use_pandas:
@@ -362,9 +424,10 @@ class LASFile(OrderedDictionary):
 
         # ~Version
         lines.append("~Version ".ljust(60, "-"))
-        order_func = get_section_order_function("version", version)
-        section_widths = get_section_widths("version", self.version, version)
-        for mnemonic, header_item in self.version.items():
+        order_func = get_section_order_function("Version", version)
+        section_widths = get_section_widths("Version", self.version, version)
+        for header_item in self.version.values():
+            mnemonic = header_item.original_mnemonic
             logger.debug(str(header_item))
             order = order_func(mnemonic)
             logger.debug("order = %s" % (order, ))
@@ -374,9 +437,10 @@ class LASFile(OrderedDictionary):
 
         # ~Well
         lines.append("~Well ".ljust(60, "-"))
-        order_func = get_section_order_function("well", version)
-        section_widths = get_section_widths("well", self.well, version)
-        for mnemonic, header_item in self.well.items():
+        order_func = get_section_order_function("Well", version)
+        section_widths = get_section_widths("Well", self.well, version)
+        for header_item in self.well.values():
+            mnemonic = header_item.original_mnemonic
             order = order_func(mnemonic)
             formatter_func = get_formatter_function(order, **section_widths)
             line = formatter_func(header_item)
@@ -384,19 +448,21 @@ class LASFile(OrderedDictionary):
 
         # ~Curves
         lines.append("~Curves ".ljust(60, "-"))
-        order_func = get_section_order_function("curves", version)
-        section_widths = get_section_widths("curves", self.curves, version)
+        order_func = get_section_order_function("Curves", version)
+        section_widths = get_section_widths("Curves", self.curves, version)
         for header_item in self.curves:
-            order = order_func(header_item.mnemonic)
+            mnemonic = header_item.original_mnemonic
+            order = order_func(mnemonic)
             formatter_func = get_formatter_function(order, **section_widths)
             line = formatter_func(header_item)
             lines.append(line)
 
         # ~Params
         lines.append("~Params ".ljust(60, "-"))
-        order_func = get_section_order_function("params", version)
-        section_widths = get_section_widths("params", self.params, version)
-        for mnemonic, header_item in self.params.items():
+        order_func = get_section_order_function("Parameter", version)
+        section_widths = get_section_widths("Parameter", self.params, version)
+        for header_item in self.params.values():
+            mnemonic = header_item.original_mnemonic
             order = order_func(mnemonic)
             formatter_func = get_formatter_function(order, **section_widths)
             line = formatter_func(header_item)
@@ -428,15 +494,16 @@ class LASFile(OrderedDictionary):
 
             if wrap:
                 lines = twrapper.wrap(depth_slice)
-                logger.debug("Wrapped %d lines out of %s" % (len(lines), depth_slice))
+                logger.debug("Wrapped %d lines out of %s" %
+                             (len(lines), depth_slice))
             else:
                 lines = [depth_slice]
-            
+
             if self.version["VERS"].value == 1.2:
                 for line in lines:
                     if len(line) > 255:
                         logger.warning("Data line > 256 chars: %s" % line)
-            
+
             for line in lines:
                 file_object.write(line + "\n")
 
@@ -455,7 +522,7 @@ class LASFile(OrderedDictionary):
                 return curve
 
     def keys(self):
-        k = list(super(OrderedDictionary, self).keys())
+        k = list(super(OrderedDict, self).keys())
         return [ki for ki in k if isinstance(ki, str)]
 
     def values(self):
@@ -474,6 +541,47 @@ class LASFile(OrderedDictionary):
         return iter(list(self.items()))
 
     @property
+    def version(self):
+        return self.sections["Version"]
+    
+    @version.setter
+    def version(self, section):
+        self.sections["Version"] = section
+
+    @property
+    def well(self):
+        return self.sections["Well"]
+    
+    @well.setter
+    def well(self, section):
+        self.sections["Well"] = section
+
+    @property
+    def curves(self):
+        return self.sections["Curves"]
+    
+    @curves.setter
+    def curves(self, section):
+        self.sections["Curves"] = section
+
+    @property
+    def params(self):
+        return self.sections["Parameter"]
+    
+    @params.setter
+    def params(self, section):
+        self.sections["Parameter"] = section
+
+    @property
+    def other(self):
+        return self.sections["Other"]
+    
+    @other.setter
+    def other(self, section):
+        self.sections["Other"] = section
+    
+
+    @property
     def metadata(self):
         d = {}
         for di in (self.version, self.well, self.params):
@@ -490,7 +598,8 @@ class LASFile(OrderedDictionary):
         if self._use_pandas:
             return self._df
         else:
-            logger.warning("pandas is not installed or use_pandas was set to False")
+            logger.warning(
+                "pandas is not installed or use_pandas was set to False")
             # raise Warning("pandas is not installed or use_pandas was set to False")
 
     @df.setter
@@ -520,13 +629,15 @@ class LASFile(OrderedDictionary):
             raise LASUnknownUnitError("Unit of depth index not known")
 
     def add_curve(self, mnemonic, data, unit="", descr="", value=""):
-        curve = Curve(mnemonic, unit, value, descr, data)
-        self.curves.append(curve)
+        # assert not mnemonic in self.curves
+        curve = CurveItem(mnemonic, unit, value, descr)
+        curve.data = data
+        self.curves_dict[mnemonic] = curve
         self.refresh()
 
     @property
     def header(self):
-        return OrderedDictionary([
+        return OrderedDict([
             ("~V", self.version),
             ("~W", self.well),
             ("~C", self.curves),
@@ -589,7 +700,7 @@ class Reader(object):
 
     def read_section(self, section_name):
         parser = SectionParser(section_name, version=self.version)
-        d = OrderedDictionary()
+        section = SectionItems()
         for line in self.iter_section_lines(section_name):
             try:
                 values = read_line(line)
@@ -598,22 +709,8 @@ class Reader(object):
                     section_name, line,
                     traceback.format_exc().splitlines()[-1]))
             else:
-                d[values['name']] = parser(**values)
-        return d
-
-    def read_list_section(self, section_name):
-        parser = SectionParser(section_name, version=self.version)
-        l = []
-        for line in self.iter_section_lines(section_name):
-            try:
-                values = read_line(line)
-            except:
-                raise LASHeaderError("Failed in %s section on line:\n%s%s" % (
-                    section_name, line,
-                    traceback.format_exc().splitlines()[-1]))
-            else:
-                l.append(parser(**values))
-        return l
+                section.append(parser(**values))
+        return section
 
     def read_data(self, number_of_curves=None):
         s = self.read_data_string()
@@ -669,10 +766,10 @@ class SectionParser(object):
 
         self.version = version
         self.section_name = section_name
-        self.section_name2 = {"~C": "curves",
-                              "~W": "well",
-                              "~V": "version",
-                              "~P": "params"}[section_name]
+        self.section_name2 = {"~C": "Curves",
+                              "~W": "Well",
+                              "~V": "Version",
+                              "~P": "Parameter"}[section_name]
 
         section_orders = ORDER_DEFINITIONS[self.version][self.section_name2]
         self.default_order = section_orders[0]
@@ -681,9 +778,11 @@ class SectionParser(object):
             for mnemonic in mnemonics:
                 self.orders[mnemonic] = order
 
-    def __call__(self, *args, **kwargs):
-        r = self.func(*args, **kwargs)
-        return self.num(r, default=r)
+    def __call__(self, **keys):
+        item = self.func(**keys)
+        # if item.name == "":
+        #     item.mnemonic = "UNKNOWN"
+        return item
 
     def num(self, x, default=None):
         if default is None:
@@ -699,19 +798,39 @@ class SectionParser(object):
     def metadata(self, **keys):
         key_order = self.orders.get(keys["name"], self.default_order)
         if key_order == "value:descr":
-            return HeaderItem(keys["name"], keys["unit"],
-                              self.num(keys["value"]), keys["descr"])
+            return HeaderItem(
+                keys["name"],                 # mnemonic
+                keys["unit"],                 # unit
+                self.num(keys["value"]),      # value
+                keys["descr"],                # descr
+                )
         elif key_order == "descr:value":
-            return HeaderItem(keys["name"], keys["unit"], keys["descr"],
-                              self.num(keys["value"]))
+            return HeaderItem(
+                keys["name"],                   # mnemonic
+                keys["unit"],                   # unit
+                keys["descr"],                  # descr
+                self.num(keys["value"]),        # value
+                )
 
     def curves(self, **keys):
-        return Curve(keys['name'], keys['unit'], keys['value'],
-                     keys['descr'], None)
+        # logger.debug(str(keys))
+        item = CurveItem(
+            keys['name'],               # mnemonic
+            keys['unit'],               # unit
+            keys['value'],              # value
+            keys['descr'],              # descr
+            )
+        # logger.debug(str(item))
+        item.data = None
+        return item
 
     def params(self, **keys):
-        return HeaderItem(keys['name'], keys['unit'], self.num(keys['value']),
-                          keys['descr'])
+        return HeaderItem(
+            keys['name'],               # mnemonic
+            keys['unit'],               # unit
+            self.num(keys['value']),    # value
+            keys['descr'],              # descr
+            )
 
 
 def read_line(line, pattern=None):
@@ -738,8 +857,8 @@ def read_line(line, pattern=None):
                    r"(?P<descr>.*)")
     m = re.match(pattern, line)
     mdict = m.groupdict()
-    if mdict["name"] == "":
-        mdict["name"] = "UNKNOWN"
+    # if mdict["name"] == "":
+    #     mdict["name"] = "UNKNOWN"
     for key, value in mdict.items():
         d[key] = value.strip()
         if key == "unit":
@@ -912,13 +1031,13 @@ def get_formatter_function(order, left_width=None, middle_width=None):
     )
     if order == "descr:value":
         return lambda item: "%s.%s : %s" % (
-            mnemonic_func(item.mnemonic),
+            mnemonic_func(item.original_mnemonic),
             middle_func(str(item.unit), str(item.descr)),
             item.value
         )
     elif order == "value:descr":
         return lambda item: "%s.%s : %s" % (
-            mnemonic_func(item.mnemonic),
+            mnemonic_func(item.original_mnemonic),
             middle_func(str(item.unit), str(item.value)),
             item.descr
         )
@@ -967,7 +1086,7 @@ def get_section_widths(section_name, section, version, middle_padding=5):
     elif isinstance(section, list):
         items = list(section)
     if len(items) > 0:
-        section_widths["left_width"] = max([len(i.mnemonic) for i in items])
+        section_widths["left_width"] = max([len(i.original_mnemonic) for i in items])
         if section_name == "well" and version == 1.2:
             mw = max([len(str(i.unit)) + len(str(i.descr)) for i in items])
             section_widths["middle_width"] = mw + middle_padding

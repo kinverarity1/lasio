@@ -1,1 +1,1 @@
-from .las import __version__, read, LASFile, Curve, HeaderItem
+from .las import __version__, read, LASFile, CurveItem, HeaderItem
