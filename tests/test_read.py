@@ -2,6 +2,7 @@ import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import fnmatch
 
+import numpy
 import pytest
 
 from lasio import read
@@ -78,3 +79,15 @@ def test_mnemonic_missing_multiple():
     l = read(egfn("mnemonic_missing_multiple.las"))
     assert [c.mnemonic for c in l.curves] == [
         "DEPT", "DT", "RHOB", "NPHI", "UNKNOWN[0]", "UNKNOWN[1]", "ILM", "ILD"]
+
+def test_null_subs_default():
+    l = read(egfn("null_subs.las"))
+    assert numpy.isnan(l['DT'][0])
+
+def test_null_subs_True():
+    l = read(egfn("null_subs.las"), null_subs=True)
+    assert numpy.isnan(l['DT'][0])
+
+def test_null_subs_False():
+    l = read(egfn("null_subs.las"), null_subs=False)
+    assert l['DT'][0] == -999.25

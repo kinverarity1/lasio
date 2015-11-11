@@ -182,7 +182,7 @@ class LASFile(OrderedDictionary):
         if not (file_ref is None):
             self.read(file_ref, **kwargs)
 
-    def read(self, file_ref, use_pandas="auto", **kwargs):
+    def read(self, file_ref, use_pandas="auto", null_subs=True, **kwargs):
         '''Read a LAS file.
 
         Arguments:
@@ -197,7 +197,7 @@ class LASFile(OrderedDictionary):
             encoding_errors (str): "strict", "replace" (default), "ignore" - how to
                 handle errors with encodings (see standard library codecs module or
                 Python Unicode HOWTO for more information)
-            autodetect_encoding (bool): use chardet/ccharet to detect encoding
+            autodetect_encoding (bool): use chardet/cchardet to detect encoding
             autodetect_encoding_chars (int/None): number of chars to read from LAS
                 file for auto-detection of encoding.
 
@@ -242,7 +242,7 @@ class LASFile(OrderedDictionary):
         # Set null value
         reader.null = self.well['NULL'].value
 
-        data = reader.read_data(len(self.curves))
+        data = reader.read_data(len(self.curves), null_subs=null_subs)
 
         for i, c in enumerate(self.curves):
             d = data[:, i]
@@ -615,7 +615,7 @@ class Reader(object):
                 l.append(parser(**values))
         return l
 
-    def read_data(self, number_of_curves=None):
+    def read_data(self, number_of_curves=None, null_subs=True):
         s = self.read_data_string()
         if not self.wrap:
             try:
@@ -640,7 +640,8 @@ class Reader(object):
         else:
             logger.info('LAS file shape = %s' % str(arr.shape))
         logger.debug('checking for nulls (NULL = %s)' % self.null)
-        arr[arr == self.null] = numpy.nan
+        if null_subs:
+            arr[arr == self.null] = numpy.nan
         return arr
 
     def read_data_string(self):
