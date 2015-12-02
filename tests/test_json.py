@@ -13,10 +13,14 @@ stegfn = lambda vers, fn: os.path.join(
     os.path.dirname(__file__), "examples", vers, fn)
 
 def test_json_encoder_direct():
-    t = json.dumps(lasobj)
+    l = read(egfn("sample.las"))
+    with pytest.raises(TypeError):
+        t = json.dumps(l)
 
 def test_json_encoder_default():
-    t = json.dumps(lasobj, default=lambda x: None)
+    l = read(egfn("sample.las"))
+    t = json.dumps(l, default=lambda x: None)
 
 def test_json_encoder_cls_specify():
-    t = json.dumps(lasobj, cls=las.JSONEncoder)
+    l = read(egfn("sample.las"))
+    t = json.dumps(l, cls=las.JSONEncoder)
