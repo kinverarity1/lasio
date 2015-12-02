@@ -7,6 +7,7 @@ from __future__ import print_function
 
 # Standard library packages
 import codecs
+import json
 import logging
 import os
 import re
@@ -96,6 +97,19 @@ class OrderedDictionary(OrderedDict):
             return dict([(k, v.value) for k, v in list(self.items())])
         else:
             return dict([(k, v.descr) for k, v in list(self.items())])
+
+
+class JSONEncoder(json.JSONEncoder):
+
+    def default(self, obj):
+        """If input object is an ndarray it will be converted into a dict 
+        holding dtype, shape and the data, base64 encoded.
+        """
+        if isinstance(obj, numpy.ndarray):
+            return list(obj)
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder(self, obj)
+
 
 
 DEFAULT_ITEMS = {
