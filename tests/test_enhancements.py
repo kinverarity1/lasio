@@ -61,3 +61,7 @@ def test_df_reverse():
     spacing = l.well["STEP"].value
     calc_index = (metres / spacing) - (l.well["STRT"].value / spacing)
     assert l["DT"][calc_index] == l.df.DT[metres]
+
+def test_df_curve_names():
+    l = read(egfn("sample_rev.las"), use_pandas=True)
+    assert l.keys() == list(l.df.columns.values)
