@@ -304,13 +304,8 @@ class LASFile(OrderedDictionary):
                 self._use_pandas = False
 
         if self._use_pandas:
-            pd_index = pandas.Index(self.curves[0].data)
-            self.df = pandas.DataFrame(index=pd_index)
-            for i, c in enumerate(self.curves):
-                data = pandas.Series(c.data, index=pd_index, name=c.mnemonic)
-                self.df[c.mnemonic] = data
-                logger.debug("%s index_type=%s" % (c.mnemonic, type(pd_index)))
-            # self.df.set_index(self.curves[0].mnemonic)
+            self.df = pandas.DataFrame(self.data, columns=self.keys())
+            self.df.set_index(self.curves[0].mnemonic, inplace=True)
 
     @property
     def data(self):
