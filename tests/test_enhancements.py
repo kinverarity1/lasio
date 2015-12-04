@@ -64,4 +64,4 @@ def test_df_reverse():
 
 def test_df_curve_names():
     l = read(egfn("sample_rev.las"), use_pandas=True)
-    assert l.keys() == list(l.df.columns.values)
+    assert l.keys()[1:] == list(l.df.columns.values)
