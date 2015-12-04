@@ -164,3 +164,52 @@ between 625 metres and 615 metres to be invalid.
 def test_write_sample_empty_params():
     l = read(egfn("sample_write_empty_params.las"))
     l.write(StringIO(), version=2)
+
+def test_df_curve_addition_on_export():
+    l = read(egfn("sample.las"), use_pandas=True)
+    l.df["ILD_COND"] = 1000 / l.df.ILD
+    s = StringIO()
+    l.write(s, version=2)
+    s.seek(0)
+    assert s.read() == """~Version ---------------------------------------------------
+VERS.     2.0 : CWLS log ASCII Standard -VERSION 2.0
+WRAP.      NO : ONE LINE PER DEPTH STEP
+~Well ------------------------------------------------------
+STRT.M                      1670.0 : 
+STOP.M                     1669.75 : 
+STEP.M                      -0.125 : 
+NULL.                      -999.25 : 
+COMP.       # ANY OIL COMPANY LTD. : COMPANY
+WELL.       ANY ET AL OIL WELL #12 : WELL
+FLD .                         EDAM : FIELD
+LOC .               A9-16-49-20W3M : LOCATION
+PROV.                 SASKATCHEWAN : PROVINCE
+SRVC.     ANY LOGGING COMPANY LTD. : SERVICE COMPANY
+DATE.                  25-DEC-1988 : LOG DATE
+UWI .             100091604920W300 : UNIQUE WELL ID
+~Curves ----------------------------------------------------
+DEPT    .M         : 1  DEPTH
+DT      .US/M      : 2  SONIC TRANSIT TIME
+RHOB    .K/M3      : 3  BULK DENSITY
+NPHI    .V/V       : 4   NEUTRON POROSITY
+SFLU    .OHMM      : 5  RXO RESISTIVITY
+SFLA    .OHMM      : 6  SHALLOW RESISTIVITY
+ILM     .OHMM      : 7  MEDIUM RESISTIVITY
+ILD     .OHMM      : 8  DEEP RESISTIVITY
+ILD_COND.          : 
+~Params ----------------------------------------------------
+BHT .DEGC       35.5 : BOTTOM HOLE TEMPERATURE
+BS  .MM        200.0 : BIT SIZE
+FD  .K/M3     1000.0 : FLUID DENSITY
+MATR.            0.0 : NEUTRON MATRIX(0=LIME,1=SAND,2=DOLO)
+MDEN.         2710.0 : LOGGING MATRIX DENSITY
+RMF .OHMM      0.216 : MUD FILTRATE RESISTIVITY
+DFD .K/M3     1525.0 : DRILL FLUID DENSITY
+~Other -----------------------------------------------------
+Note: The logging tools became stuck at 625 meters causing the data
+between 625 meters and 615 meters to be invalid.
+~ASCII -----------------------------------------------------
+       1670     123.45       2550       0.45     123.45     123.45      110.2      105.6     9.4697
+     1669.9     123.45       2550       0.45     123.45     123.45      110.2      105.6     9.4697
+     1669.8     123.45       2550       0.45     123.45     123.45      110.2      105.6     9.4697
+"""

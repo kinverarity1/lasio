@@ -365,6 +365,18 @@ class LASFile(OrderedDictionary):
         self.well["STOP"].value = STOP
         self.well["STEP"].value = STEP
 
+
+        # Check for any changes in the pandas dataframe and if there are,
+        # create new curves so they are reflected in the output LAS file.
+
+        if self._use_pandas:
+            curve_names = lambda: [ci.mnemonic for ci in self.curves]
+            for df_curve_name in list(self.df.columns.values):
+                if not df_curve_name in curve_names():
+                    self.add_curve(df_curve_name, self.df[df_curve_name])
+        
+        # Write each section.
+
         # ~Version
         lines.append("~Version ".ljust(60, "-"))
         order_func = get_section_order_function("version", version)
