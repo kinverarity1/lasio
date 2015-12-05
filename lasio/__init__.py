@@ -1,3 +1,8 @@
 from .las import __version__, read, LASFile, Curve, HeaderItem, JSONEncoder
 
-from .excel import ExcelConverter
+try:
+    import openpyxl
+except ImportError:
+    pass
+else:
+    from .excel import ExcelConverter

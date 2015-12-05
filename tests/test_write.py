@@ -218,5 +218,5 @@ def test_write_xlsx():
     l = read(egfn("sample.las"))
     e = ExcelConverter(l)
     xlsxfn = "test.xlsx"
-    e.write_excel(xlsxfn)
+    e.write(xlsxfn)
     os.remove(xlsxfn)

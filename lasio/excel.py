@@ -10,14 +10,16 @@ class ExcelConverter(object):
     Arguments:
         las: LASFile object
 
-
     '''
 
     def __init__(self, las):
         self.las = las
 
-    def write_excel(self, xlsfn):
-        assert xlsfn.lower().endswith('.xlsx')
+    def set_las(self, las):
+        self.las = las
+
+    def write(self, xlsxfn):
+        assert xlsxfn.lower().endswith('.xlsx')
         wb = openpyxl.Workbook()
         header = wb['Sheet']
         # header = wb.create_sheet()
@@ -56,23 +58,23 @@ class ExcelConverter(object):
             for j, value in enumerate(curve.data):
                 write_cell(curves, j + 1, i, value)
 
-        wb.save(xlsfn)
+        wb.save(xlsxfn)
 
 
 def main():
     args = get_parser().parse_args(sys.argv[1:])
     lasfn = args.LAS_filename
-    xlsfn = args.Excel_filename
+    xlsxfn = args.XLSX_filename
 
     l = las.LASFile(lasfn)
     converter = ExcelConverter(l)
-    converter.write_excel(xlsfn)
+    converter.write_excel(xlsxfn)
 
 
 def get_parser():
-    parser = argparse.ArgumentParser('Convert LAS file to Excel')
+    parser = argparse.ArgumentParser('Convert LAS file to XLSX')
     parser.add_argument('LAS_filename')
-    parser.add_argument('Excel_filename')
+    parser.add_argument('XLSX_filename')
     return parser
 
 
