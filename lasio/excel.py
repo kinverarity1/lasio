@@ -1,30 +1,60 @@
 import argparse
 
-import xlwt
+import openpyxl
 
 from . import las
 
 
 class ExcelConverter(object):
+    '''
+    Arguments:
+        las: LASFile object
+
+
+    '''
 
     def __init__(self, las):
         self.las = las
 
     def write_excel(self, xlsfn):
-        wb = xlwt.Workbook()
-        md_sheet = wb.add_sheet("Header")
-        curves_sheet = wb.add_sheet("Curves")
+        assert xlsfn.lower().endswith('.xlsx')
+        wb = openpyxl.Workbook()
+        header = wb['Sheet']
+        # header = wb.create_sheet()
+        header.title = 'Header'
+        curves = wb.create_sheet()
+        curves.title = 'Curves'
 
-        md_sheet.write(0, 0, "Mnemonic")
-        md_sheet.write(0, 1, "Value")
-        for i, (key, value) in enumerate(self.las.metadata.items()):
-            md_sheet.write(i + 1, 0, key)
-            md_sheet.write(i + 1, 1, value)
+        def write_cell(sh, i, j, value):
+            c = sh.cell(row=i + 1, column=j + 1)
+            c.value = value
+
+        write_cell(header, 0, 0, "Section")
+        write_cell(header, 0, 1, "Mnemonic")
+        write_cell(header, 0, 2, "Unit")
+        write_cell(header, 0, 3, "Value")
+        write_cell(header, 0, 4, "Description")
+
+        sections = [
+            ('~Version', self.las.version),
+            ('~Well', self.las.well),
+            ('~Parameter', self.las.params)
+            ]
+
+        n = 1
+        for sect_name, sect in sections:
+            for i, item in enumerate(sect.values()):
+                write_cell(header, n, 0, sect_name)
+                write_cell(header, n, 1, item.mnemonic)
+                write_cell(header, n, 2, item.unit)
+                write_cell(header, n, 3, item.value)
+                write_cell(header, n, 4, item.descr)
+                n += 1
 
         for i, curve in enumerate(self.las.curves):
-            curves_sheet.write(0, i, curve.mnemonic)
+            write_cell(curves, 0, i, curve.mnemonic)
             for j, value in enumerate(curve.data):
-                curves_sheet.write(j + 1, i, value)
+                write_cell(curves, j + 1, i, value)
 
         wb.save(xlsfn)
 
