@@ -6,6 +6,7 @@ from . import las
 
 
 class ExcelConverter(object):
+
     '''
     Arguments:
         las: LASFile object
@@ -13,13 +14,13 @@ class ExcelConverter(object):
     '''
 
     def __init__(self, las):
-        self.las = las
+        self.set_las(las)
 
     def set_las(self, las):
         self.las = las
+        self.generate_workbook()
 
-    def write(self, xlsxfn):
-        assert xlsxfn.lower().endswith('.xlsx')
+    def generate_workbook(self):
         wb = openpyxl.Workbook()
         header = wb['Sheet']
         # header = wb.create_sheet()
@@ -41,7 +42,7 @@ class ExcelConverter(object):
             ('~Version', self.las.version),
             ('~Well', self.las.well),
             ('~Parameter', self.las.params)
-            ]
+        ]
 
         n = 1
         for sect_name, sect in sections:
@@ -58,7 +59,12 @@ class ExcelConverter(object):
             for j, value in enumerate(curve.data):
                 write_cell(curves, j + 1, i, value)
 
-        wb.save(xlsxfn)
+        self.workbook = wb
+
+    def write(self, xlsxfn):
+        assert xlsxfn.lower().endswith('.xlsx')
+
+        self.workbook.save(xlsxfn)
 
 
 def main():
