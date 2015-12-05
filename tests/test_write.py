@@ -2,7 +2,7 @@ import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import pytest
 
-from lasio import read
+from lasio import read, ExcelConverter
 from lasio.las import StringIO
 
 test_dir = os.path.dirname(__file__)
@@ -213,3 +213,10 @@ between 625 meters and 615 meters to be invalid.
      1669.9     123.45       2550       0.45     123.45     123.45      110.2      105.6     9.4697
      1669.8     123.45       2550       0.45     123.45     123.45      110.2      105.6     9.4697
 """
+
+def test_write_xlsx():
+    l = read(egfn("sample.las"))
+    e = ExcelConverter(l)
+    xlsxfn = "test.xlsx"
+    e.write_excel(xlsxfn)
+    os.remove(xlsxfn)
