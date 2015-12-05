@@ -37,6 +37,7 @@
 What's new
 ----------
 
+-  0.9.1 (2015-11-11) - pandas.DataFrame now as .df attribute, bugfix
 -  0.8 (2015-08-20) - numerous bug fixes, API documentation added
 -  0.7 (2015-08-08) - all tests passing on Python 2.6 through 3.4
 -  0.6 (2015-08-05) - bugfixes and renamed from ``las_reader`` to ``lasio``

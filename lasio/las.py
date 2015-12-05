@@ -7,6 +7,7 @@ from __future__ import print_function
 
 # Standard library packages
 import codecs
+import json
 import logging
 import os
 import re
@@ -49,7 +50,7 @@ import numpy
 
 
 logger = logging.getLogger(__name__)
-__version__ = "0.8"
+__version__ = "0.9.1"
 
 
 class LASDataError(Exception):
@@ -164,6 +165,15 @@ class SectionItems(list):
 
 
 
+class JSONEncoder(json.JSONEncoder):
+
+    def default(self, obj):
+        if isinstance(obj, numpy.ndarray):
+            return list(obj)
+        return json.JSONEncoder(self, obj)
+
+
+
 DEFAULT_ITEMS = {
     "Version": [
         HeaderItem("VERS", "", 2.0, "CWLS log ASCII Standard -VERSION 2.0"),
@@ -256,7 +266,7 @@ class LASFile(OrderedDict):
         if not (file_ref is None):
             self.read(file_ref, **kwargs)
 
-    def read(self, file_ref, use_pandas="auto", **kwargs):
+    def read(self, file_ref, use_pandas="auto", null_subs=True, **kwargs):
         '''Read a LAS file.
 
         Arguments:
@@ -271,7 +281,7 @@ class LASFile(OrderedDict):
             encoding_errors (str): "strict", "replace" (default), "ignore" - how to
                 handle errors with encodings (see standard library codecs module or
                 Python Unicode HOWTO for more information)
-            autodetect_encoding (bool): use chardet/ccharet to detect encoding
+            autodetect_encoding (bool): use chardet/cchardet to detect encoding
             autodetect_encoding_chars (int/None): number of chars to read from LAS
                 file for auto-detection of encoding.
 
@@ -317,7 +327,7 @@ class LASFile(OrderedDict):
         # Set null value
         reader.null = self.well['NULL'].value
 
-        data = reader.read_data(len(self.curves))
+        data = reader.read_data(len(self.curves), null_subs=null_subs)
 
         for i, c in enumerate(self.curves):
             d = data[:, i]
@@ -356,13 +366,8 @@ class LASFile(OrderedDict):
                 self._use_pandas = False
 
         if self._use_pandas:
-            pd_index = pandas.Index(self.curves[0].data)
-            self.df = pandas.DataFrame(index=pd_index)
-            for i, c in enumerate(self.curves):
-                data = pandas.Series(c.data, index=pd_index, name=c.mnemonic)
-                self.df[c.mnemonic] = data
-                logger.debug("%s index_type=%s" % (c.mnemonic, type(pd_index)))
-            # self.df.set_index(self.curves[0].mnemonic)
+            self.df = pandas.DataFrame(self.data, columns=self.keys())
+            self.df.set_index(self.curves[0].mnemonic, inplace=True)
 
     @property
     def data(self):
@@ -421,6 +426,18 @@ class LASFile(OrderedDict):
         self.well["STRT"].value = STRT
         self.well["STOP"].value = STOP
         self.well["STEP"].value = STEP
+
+
+        # Check for any changes in the pandas dataframe and if there are,
+        # create new curves so they are reflected in the output LAS file.
+
+        if self._use_pandas:
+            curve_names = lambda: [ci.mnemonic for ci in self.curves]
+            for df_curve_name in list(self.df.columns.values):
+                if not df_curve_name in curve_names():
+                    self.add_curve(df_curve_name, self.df[df_curve_name])
+        
+        # Write each section.
 
         # ~Version
         lines.append("~Version ".ljust(60, "-"))
@@ -583,7 +600,7 @@ class LASFile(OrderedDict):
 
     @property
     def metadata(self):
-        d = {}
+        d = OrderedDict()
         for di in (self.version, self.well, self.params):
             for k, v in list(di.items()):
                 d[k] = v.value
@@ -712,7 +729,7 @@ class Reader(object):
                 section.append(parser(**values))
         return section
 
-    def read_data(self, number_of_curves=None):
+    def read_data(self, number_of_curves=None, null_subs=True):
         s = self.read_data_string()
         if not self.wrap:
             try:
@@ -737,7 +754,8 @@ class Reader(object):
         else:
             logger.info('LAS file shape = %s' % str(arr.shape))
         logger.debug('checking for nulls (NULL = %s)' % self.null)
-        arr[arr == self.null] = numpy.nan
+        if null_subs:
+            arr[arr == self.null] = numpy.nan
         return arr
 
     def read_data_string(self):

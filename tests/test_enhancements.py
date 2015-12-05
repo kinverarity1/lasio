@@ -55,5 +55,13 @@ def test_use_pandas_False():
     assert True
 
 # TODO: make above test in reverse-ordered LAS (e.g. STRT > STOP)
-# def test_df_reverse():
+def test_df_reverse():
+    l = read(egfn("sample_rev.las"), use_pandas=True)
+    metres = 1667
+    spacing = l.well["STEP"].value
+    calc_index = (metres / spacing) - (l.well["STRT"].value / spacing)
+    assert l["DT"][calc_index] == l.df.DT[metres]
 
+def test_df_curve_names():
+    l = read(egfn("sample_rev.las"), use_pandas=True)
+    assert l.keys()[1:] == list(l.df.columns.values)
