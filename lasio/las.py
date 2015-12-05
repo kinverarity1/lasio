@@ -1,19 +1,33 @@
 '''las.py - read Log ASCII Standard files
 
-See README.md and LICENSE for more information.
+See README.rst and LICENSE for more information.
 
 '''
 from __future__ import print_function
 
 # Standard library packages
 import codecs
+import json
+import logging
+import os
+import re
+import textwrap
+import traceback
+
+# The standard library OrderedDict was introduced in Python 2.7 so
+# we have a third-party option to support Python 2.6
+
 try:
     from collections import OrderedDict
 except ImportError:
     from ordereddict import OrderedDict
-import logging
-import os
-import re
+
+# Convoluted import for StringIO in order to support:
+#
+# - Python 3 - io.StringIO
+# - Python 2 (optimized) - cStringIO.StringIO
+# - Python 2 (all) - StringIO.StringIO
+
 try:
     import cStringIO as StringIO
 except ImportError:
@@ -25,15 +39,18 @@ except ImportError:
         from StringIO import StringIO
 else:
     from StringIO import StringIO
-import traceback
 
-# Third-party packages available on PyPi
+# Required third-party packages available on PyPi:
+
 from namedlist import namedlist
 import numpy
 
+# Optional third-party packages available on PyPI are mostly
+# imported inline below.
+
 
 logger = logging.getLogger(__name__)
-__version__ = "0.7"
+__version__ = "0.9.1"
 
 
 HeaderItem = namedlist("HeaderItem", ["mnemonic", "unit", "value", "descr"])
@@ -49,6 +66,12 @@ class LASDataError(Exception):
 class LASHeaderError(Exception):
 
     '''Error during reading of header data from LAS file.'''
+    pass
+
+
+class LASUnknownUnitError(Exception):
+
+    '''Error of unknown unit in LAS file.'''
     pass
 
 
@@ -74,6 +97,15 @@ class OrderedDictionary(OrderedDict):
             return dict([(k, v.value) for k, v in list(self.items())])
         else:
             return dict([(k, v.descr) for k, v in list(self.items())])
+
+
+class JSONEncoder(json.JSONEncoder):
+
+    def default(self, obj):
+        if isinstance(obj, numpy.ndarray):
+            return list(obj)
+        return json.JSONEncoder(self, obj)
+
 
 
 DEFAULT_ITEMS = {
@@ -132,21 +164,25 @@ class LASFile(OrderedDictionary):
 
     '''LAS file object.
 
-    Kwargs:
-      file_ref: either a filename, an open file object, or a string of
-        a LAS file contents.
-      encoding (str): character encoding to open file_ref with
-      autodetect_encoding (bool): use chardet/ccharet to detect encoding
-      autodetect_encoding_chars (int/None): number of chars to read from LAS
-        file for auto-detection of encoding.
+    Keyword Arguments:
+        file_ref: either a filename, an open file object, or a string of
+            a LAS file contents.
+        encoding (str): character encoding to open file_ref with
+        encoding_errors (str): "strict", "replace" (default), "ignore" - how to
+            handle errors with encodings (see standard library codecs module or
+            Python Unicode HOWTO for more information)
+        autodetect_encoding (bool): use chardet/ccharet to detect encoding
+        autodetect_encoding_chars (int/None): number of chars to read from LAS
+            file for auto-detection of encoding.
 
     '''
 
-    def __init__(self, file_ref=None, encoding=None,
-                 autodetect_encoding=False, autodetect_encoding_chars=20000):
+    def __init__(self, file_ref=None, **kwargs):
         OrderedDictionary.__init__(self)
 
         self._text = ''
+        self._use_pandas = "auto"
+        self.index_unit = None
         self.version = OrderedDictionary(DEFAULT_ITEMS["version"].items())
         self.well = OrderedDictionary(DEFAULT_ITEMS["well"].items())
         self.curves = list(DEFAULT_ITEMS["curves"])
@@ -154,46 +190,37 @@ class LASFile(OrderedDictionary):
         self.other = str(DEFAULT_ITEMS["other"])
 
         if not (file_ref is None):
-            self.read(file_ref, encoding=encoding,
-                      autodetect_encoding=autodetect_encoding,
-                      autodetect_encoding_chars=autodetect_encoding_chars)
+            self.read(file_ref, **kwargs)
 
-    def read(self, file_ref, encoding=None,
-             autodetect_encoding=False, autodetect_encoding_chars=20000):
+    def read(self, file_ref, use_pandas="auto", null_subs=True, **kwargs):
         '''Read a LAS file.
 
-        Args:
-          file_ref: either a filename, an open file object, or a string of
-            a LAS file contents.
+        Arguments:
+            file_ref: either a filename, an open file object, or a string of
+                a LAS file contents.
 
-        Kwargs:
-          encoding (str): character encoding to open file_ref with
-          autodetect_encoding (bool): use chardet/ccharet to detect encoding
-          autodetect_encoding_chars (int/None): number of chars to read from LAS
-            file for auto-detection of encoding.
+        Keyword Arguments:
+            use_pandas (str): bool or "auto" -- use pandas if available -- provide
+                False option for faster loading where pandas functionality is not
+                needed. "auto" becomes True if pandas is installed, and False if not.
+            encoding (str): character encoding to open file_ref with
+            encoding_errors (str): "strict", "replace" (default), "ignore" - how to
+                handle errors with encodings (see standard library codecs module or
+                Python Unicode HOWTO for more information)
+            autodetect_encoding (bool): use chardet/cchardet to detect encoding
+            autodetect_encoding_chars (int/None): number of chars to read from LAS
+                file for auto-detection of encoding.
 
         '''
-        f = open_file(file_ref, encoding=encoding,
-                      autodetect_encoding=autodetect_encoding,
-                      autodetect_encoding_chars=autodetect_encoding_chars)
+        if not use_pandas is None:
+            self._use_pandas = use_pandas
 
-        if encoding is None:
-            encoding = "ascii"
-            logger.debug("Encoding not specified; set to %s" % encoding)
-        else:
-            logger.debug("Encoding=%s" % encoding)
+        f = open_file(file_ref, **kwargs)
 
-        text = f.read()
-        logger.debug("file content has type %s" % type(text))
-        if isinstance(text, bytes):
-            self._text = text.decode(encoding)
-        elif isinstance(text, str):
-            self._text = text
-        else:
-            self._text = str(text)
+        self._text = f.read()
+        logger.debug("LAS content is type %s" % type(self._text))
 
         reader = Reader(self._text, version=1.2)
-
         self.version = reader.read_section('~V')
 
         # Set version
@@ -225,15 +252,30 @@ class LASFile(OrderedDictionary):
         # Set null value
         reader.null = self.well['NULL'].value
 
-        data = reader.read_data(len(self.curves))
+        data = reader.read_data(len(self.curves), null_subs=null_subs)
 
         for i, c in enumerate(self.curves):
             d = data[:, i]
             c.data = d
+
+        if (self.well["STRT"].unit.upper() == "M" and
+                self.well["STOP"].unit.upper() == "M" and
+                self.well["STEP"].unit.upper() == "M" and
+                self.curves[0].unit.upper() == "M"):
+            self.index_unit = "M"
+        elif (self.well["STRT"].unit.upper() in ("F", "FT") and
+              self.well["STOP"].unit.upper() in ("F", "FT") and
+              self.well["STEP"].unit.upper() in ("F", "FT") and
+              self.curves[0].unit.upper() in ("F", "FT")):
+            self.index_unit = "FT"
+
         self.refresh()
 
-    def refresh(self):
+    def refresh(self, use_pandas=None):
         '''Refresh curve names and indices.'''
+        if not use_pandas is None:
+            self._use_pandas = use_pandas
+
         n = len(self.curves)
         curve_names = [c.mnemonic for c in self.curves]
         curve_freq = {}
@@ -254,29 +296,53 @@ class LASFile(OrderedDictionary):
             self[i] = c.data
             self[i - n] = c.data
 
+        if not self._use_pandas is False:
+            try:
+                import pandas
+            except ImportError:
+                logger.info("pandas not installed - skipping LASFile.df creation")
+                self._use_pandas = False
+
+        if self._use_pandas:
+            self.df = pandas.DataFrame(self.data, columns=self.keys())
+            self.df.set_index(self.curves[0].mnemonic, inplace=True)
+
     @property
     def data(self):
         '''2D array of data from LAS file.'''
         return numpy.vstack([c.data for c in self.curves]).T
 
-    def write(self, file_object, version=None,
-              STRT=None, STOP=None, STEP=None):
+    def write(self, file_object, version=None, wrap=None,
+              STRT=None, STOP=None, STEP=None, fmt="%10.5g"):
         '''Write to a file.
 
-        Args:
-          file_object: a file_like object opening for writing.
-          version (float): either 1.2 or 2
-          STRT, STOP, STEP (float): optional overrides to automatic
-            calculation. By default STRT and STOP are the first and last
-            index curve values, and STEP is the first step size in the
-            index curve.
+        Arguments:
+            file_object: a file_like object opening for writing.
+            version (float): either 1.2 or 2
+            wrap (bool): True, False, or None (last uses WRAP item in version)
+            STRT (float): optional override to automatic calculation using 
+                the first index curve value.
+            STOP (float): optional override to automatic calculation using 
+                the last index curve value.
+            STEP (float): optional override to automatic calculation using 
+                the first step size in the index curve.
+            fmt (str): format string for numerical data being written to data
+                section.
 
-        Example usage:
+        Examples:
 
             >>> with open("test_output.las", mode="w") as f:
             ...     lasfile_obj.write(f, 2.0)   # <-- this method
 
         '''
+        if wrap is None:
+            wrap = self.version["WRAP"] == "YES"
+        elif wrap is True:
+            self.version["WRAP"] = HeaderItem(
+                "WRAP", "", "YES", "Multiple lines per depth step")
+        elif wrap is False:
+            self.version["WRAP"] = HeaderItem(
+                "WRAP", "", "NO", "One line per depth step")
         lines = []
 
         assert version in (1.2, 2, None)
@@ -299,12 +365,20 @@ class LASFile(OrderedDictionary):
         self.well["STOP"].value = STOP
         self.well["STEP"].value = STEP
 
+
+        # Check for any changes in the pandas dataframe and if there are,
+        # create new curves so they are reflected in the output LAS file.
+
+        if self._use_pandas:
+            curve_names = lambda: [ci.mnemonic for ci in self.curves]
+            for df_curve_name in list(self.df.columns.values):
+                if not df_curve_name in curve_names():
+                    self.add_curve(df_curve_name, self.df[df_curve_name])
+        
+        # Write each section.
+
         # ~Version
         lines.append("~Version ".ljust(60, "-"))
-        # section_widths = {
-        #     "left_width": None,
-        #     "middle_width": None
-        # }
         order_func = get_section_order_function("version", version)
         section_widths = get_section_widths("version", self.version, version)
         for mnemonic, header_item in self.version.items():
@@ -317,10 +391,6 @@ class LASFile(OrderedDictionary):
 
         # ~Well
         lines.append("~Well ".ljust(60, "-"))
-        # section_widths = {
-        #     "left_width": None,
-        #     "middle_width": None
-        # }
         order_func = get_section_order_function("well", version)
         section_widths = get_section_widths("well", self.well, version)
         for mnemonic, header_item in self.well.items():
@@ -331,10 +401,6 @@ class LASFile(OrderedDictionary):
 
         # ~Curves
         lines.append("~Curves ".ljust(60, "-"))
-        # section_widths = {
-        #     "left_width": None,
-        #     "middle_width": None
-        # }
         order_func = get_section_order_function("curves", version)
         section_widths = get_section_widths("curves", self.curves, version)
         for header_item in self.curves:
@@ -345,10 +411,6 @@ class LASFile(OrderedDictionary):
 
         # ~Params
         lines.append("~Params ".ljust(60, "-"))
-        # section_widths = {
-        #     "left_width": None,
-        #     "middle_width": None
-        # }
         order_func = get_section_order_function("params", version)
         section_widths = get_section_widths("params", self.params, version)
         for mnemonic, header_item in self.params.items():
@@ -369,25 +431,40 @@ class LASFile(OrderedDictionary):
         data_arr = numpy.column_stack([c.data for c in self.curves])
         nrows, ncols = data_arr.shape
 
-        def format_data_section_line(n, fmt="%10.5g", l=10, spacer=" "):
+        def format_data_section_line(n, fmt, l=10, spacer=" "):
             if numpy.isnan(n):
                 return spacer + str(self.well["NULL"].value).rjust(l)
             else:
                 return spacer + (fmt % n).rjust(l)
 
+        twrapper = textwrap.TextWrapper(width=79)
         for i in range(nrows):
-            line = ''
+            depth_slice = ''
             for j in range(ncols):
-                line += format_data_section_line(data_arr[i, j])
-            file_object.write(line + "\n")
+                depth_slice += format_data_section_line(data_arr[i, j], fmt)
+
+            if wrap:
+                lines = twrapper.wrap(depth_slice)
+                logger.debug("Wrapped %d lines out of %s" % (len(lines), depth_slice))
+            else:
+                lines = [depth_slice]
+            
+            if self.version["VERS"].value == 1.2:
+                for line in lines:
+                    if len(line) > 255:
+                        logger.warning("Data line > 256 chars: %s" % line)
+            
+            for line in lines:
+                file_object.write(line + "\n")
 
     def get_curve(self, mnemonic):
         '''Return Curve object.
 
-        Args:
-          mnemonic (str): the name of the curve
+        Arguments:
+            mnemonic (str): the name of the curve
 
-        Returns: Curve object (i.e. not just the data array).
+        Returns: 
+            A Curve object, not just the data array.
 
         '''
         for curve in self.curves:
@@ -426,8 +503,38 @@ class LASFile(OrderedDictionary):
         raise Warning('Set values in the version/well/params attrs directly')
 
     @property
+    def df(self):
+        if self._use_pandas:
+            return self._df
+        else:
+            logger.warning("pandas is not installed or use_pandas was set to False")
+            # raise Warning("pandas is not installed or use_pandas was set to False")
+
+    @df.setter
+    def df(self, value):
+        self._df = value
+
+    @property
     def index(self):
         return self.data[:, 0]
+
+    @property
+    def depth_m(self):
+        if self.index_unit == "M":
+            return self.index
+        elif self.index_unit == "FT":
+            return self.index * 0.3048
+        else:
+            raise LASUnknownUnitError("Unit of depth index not known")
+
+    @property
+    def depth_ft(self):
+        if self.index_unit == "M":
+            return self.index / 0.3048
+        elif self.index_unit == "FT":
+            return self.index
+        else:
+            raise LASUnknownUnitError("Unit of depth index not known")
 
     def add_curve(self, mnemonic, data, unit="", descr="", value=""):
         curve = Curve(mnemonic, unit, value, descr, data)
@@ -525,7 +632,7 @@ class Reader(object):
                 l.append(parser(**values))
         return l
 
-    def read_data(self, number_of_curves=None):
+    def read_data(self, number_of_curves=None, null_subs=True):
         s = self.read_data_string()
         if not self.wrap:
             try:
@@ -550,7 +657,8 @@ class Reader(object):
         else:
             logger.info('LAS file shape = %s' % str(arr.shape))
         logger.debug('checking for nulls (NULL = %s)' % self.null)
-        arr[arr == self.null] = numpy.nan
+        if null_subs:
+            arr[arr == self.null] = numpy.nan
         return arr
 
     def read_data_string(self):
@@ -627,27 +735,30 @@ class SectionParser(object):
 def read_line(line, pattern=None):
     '''Read a line from a LAS header section.
 
-    Args:
-      line (str): line from a LAS header section
-
-    Returns: dict with keys "name", "unit", "value", and "descr", each
-    containing a string as value.
-
     The line is parsed with a regular expression -- see LAS file specs for
-    more details, but it should basically be in the format:
+    more details, but it should basically be in the format::
 
         name.unit       value : descr
 
-    '''
+    Arguments:
+        line (str): line from a LAS header section
 
+    Returns:
+        A dictionary with keys "name", "unit", "value", and "descr", each
+        containing a string as value.
+
+    '''
     d = {}
     if pattern is None:
-        pattern = (r"\.?(?P<name>[^.]+)\." +
+        pattern = (r"\.?(?P<name>[^.]*)\." +
                    r"(?P<unit>[^\s:]*)" +
                    r"(?P<value>[^:]*):" +
                    r"(?P<descr>.*)")
     m = re.match(pattern, line)
-    for key, value in m.groupdict().items():
+    mdict = m.groupdict()
+    if mdict["name"] == "":
+        mdict["name"] = "UNKNOWN"
+    for key, value in mdict.items():
         d[key] = value.strip()
         if key == "unit":
             if d[key].endswith("."):
@@ -655,24 +766,28 @@ def read_line(line, pattern=None):
     return d
 
 
-def open_file(file_ref, encoding=None,
-              autodetect_encoding=False, autodetect_encoding_chars=20000):
+def open_file(file_ref, encoding=None, encoding_errors="replace",
+              autodetect_encoding=False, autodetect_encoding_chars=40e3):
     '''Open a file if necessary.
-
-    Args:
-      file_ref: either a filename, an open file object, a URL, or a string of
-        a LAS file contents.
-
-    Kwargs:
-      encoding (str): character encoding to open file_ref with
-      autodetect_encoding (bool): use chardet/ccharet to detect encoding
-      autodetect_encoding_chars (int/None): number of chars to read from LAS
-        file for auto-detection of encoding.
-
-    Returns: an open file object.
 
     If autodetect_encoding is True then either cchardet or chardet (see PyPi)
     needs to be installed, or else an ImportError will be raised.
+
+    Arguments:
+        file_ref: either a filename, an open file object, a URL, or a string of
+            a LAS file contents.
+
+    Keyword Arguments:
+        encoding (str): character encoding to open file_ref with
+        encoding_errors (str): "strict", "replace" (default), "ignore" - how to
+            handle errors with encodings (see standard library codecs module or
+            Python Unicode HOWTO for more information)
+        autodetect_encoding (bool): use chardet/ccharet to detect encoding
+        autodetect_encoding_chars (int/None): number of chars to read from LAS
+            file for auto-detection of encoding.
+
+    Returns: 
+        An open file-like object ready for reading from.
 
     '''
     if isinstance(file_ref, str):
@@ -684,44 +799,123 @@ def open_file(file_ref, encoding=None,
                     file_ref = urllib2.urlopen(file_ref)
                 except ImportError:
                     import urllib.request
-                    file_ref = urllib.request.urlopen(file_ref)
+                    response = urllib.request.urlopen(file_ref)
+                    enc = response.headers.get_content_charset("utf-8")
+                    file_ref = StringIO(response.read().decode(enc))
             else:  # filename
-                if autodetect_encoding:
-                    try:
-                        import cchardet as chardet
-                    except ImportError:
-                        try:
-                            import chardet
-                        except ImportError:
-                            raise ImportError(
-                                "chardet or cchardet is required for automatic"
-                                " detection of character encodings.")
-                    with open(file_ref, mode="rb") as test_file:
-                        chunk = test_file.read(autodetect_encoding_chars)
-                        result = chardet.detect(chunk)
-                        encoding = result["encoding"]
-                file_ref = codecs.open(file_ref, mode="r", encoding=encoding)
+                data = get_unicode_from_filename(
+                    file_ref, encoding, encoding_errors, autodetect_encoding,
+                    autodetect_encoding_chars)
+                file_ref = StringIO(data)
         else:
             file_ref = StringIO("\n".join(lines))
     return file_ref
 
 
+def get_unicode_from_filename(fn, enc, errors, auto, nbytes):
+    '''
+    Read Unicode data from file.
+
+    Arguments:
+        fn (str): path to file
+        enc (str): encoding - can be None
+        errors (str): unicode error handling - can be "strict", "ignore", "replace"
+        auto (str): auto-detection of character encoding - can be either
+            "chardet", "cchardet", or True
+        nbytes (int): number of characters for read for auto-detection
+
+    Returns:
+        a unicode or string object
+
+    '''
+    if nbytes:
+        nbytes = int(nbytes)
+
+    # Detect BOM in UTF-8 files
+
+    nbytes_test = min(32, os.path.getsize(fn))
+    with open(fn, mode="rb") as test:
+        raw = test.read(nbytes_test)
+    if raw.startswith(codecs.BOM_UTF8):
+        enc = "utf-8-sig"
+        auto = False
+
+    if auto:
+        with open(fn, mode="rb") as test:
+            if nbytes is None:
+                raw = test.read()
+            else:
+                raw = test.read(nbytes)
+        enc = get_encoding(auto, raw)
+
+    # codecs.open is smarter than cchardet or chardet IME.
+
+    with codecs.open(fn, mode="r", encoding=enc, errors=errors) as f:
+        data = f.read()
+
+    return data
+
+
+def get_encoding(auto, raw):
+    '''
+    Automatically detect character encoding.
+
+    Arguments:
+        auto (str): auto-detection of character encoding - can be either
+            "chardet", "cchardet", or True
+        raw (bytes): array of bytes to detect from
+
+    Returns:
+        A string specifying the character encoding.
+
+    '''
+    if auto is True:
+        try:
+            import cchardet as chardet
+        except ImportError:
+            try:
+                import chardet
+            except ImportError:
+                raise ImportError(
+                    "chardet or cchardet is required for automatic"
+                    " detection of character encodings.")
+            else:
+                logger.debug("Using chardet")
+                method = "chardet"
+        else:
+            logger.debug("Using cchardet")
+            method = "cchardet"
+    elif auto.lower() == "chardet":
+        import chardet
+        logger.debug("Using chardet")
+        method = "chardet"
+    elif auto.lower() == "cchardet":
+        import cchardet as chardet
+        logger.debug("Using cchardet")
+        method = "cchardet"
+
+    result = chardet.detect(raw)
+    logger.debug("%s results=%s" % (method, result))
+    return result["encoding"]
+
+
 def get_formatter_function(order, left_width=None, middle_width=None):
     '''Create function to format a LAS header item.
 
-    Args:
-      order: format of item, either "descr:value" or "value:descr" -- see
-        LAS 1.2 and 2.0 specifications for more information.
+    Arguments:
+        order: format of item, either "descr:value" or "value:descr" -- see
+            LAS 1.2 and 2.0 specifications for more information.
 
-    Kwargs:
-      left_width (int): number of characters to the left hand side of the
-        first period
-      middle_width (int): total number of characters minus 1 between the
-        first period from the left and the first colon from the left.
+    Keyword Arguments:
+        left_width (int): number of characters to the left hand side of the
+            first period
+        middle_width (int): total number of characters minus 1 between the
+            first period from the left and the first colon from the left.
 
-    Returns a function which takes a header item (e.g. Metadata, Curve,
-    Parameter) as its single argument and which in turn returns a string
-    which is the correctly formatted LAS header line.
+    Returns:
+        A function which takes a header item (e.g. LASHeaderItem or Curve)
+        as its single argument and which in turn returns a string which is
+        the correctly formatted LAS header line.
 
     '''
     if left_width is None:
@@ -752,15 +946,16 @@ def get_section_order_function(section, version,
                                order_definitions=ORDER_DEFINITIONS):
     '''Get a function that returns the order per mnemonic and section.
 
-    Args:
-      section (str): either "well", "params", "curves", "version"
-      version (float): either 1.2 and 2.0
+    Arguments:
+        section (str): either "well", "params", "curves", "version"
+        version (float): either 1.2 and 2.0
 
-    Kwargs:
-      order_definitions (dict):
+    Keyword Arguments:
+        order_definitions (dict): ...
 
-    Returns a function which takes a mnemonic (str) as its only argument, and
-    in turn returns the order "value:descr" or "descr:value".
+    Returns:
+        A function which takes a mnemonic (str) as its only argument, and 
+        in turn returns the order "value:descr" or "descr:value".
 
     '''
     section_orders = order_definitions[version][section]
@@ -775,58 +970,52 @@ def get_section_order_function(section, version,
 def get_section_widths(section_name, section, version, middle_padding=5):
     '''Find minimum section widths fitting the content in *section*.
 
-    Args:
-      section_name (str): either "version", "well", "curves", or "params"
-      section (dict|list): section items
-      version (float): either 1.2 or 2.0
+    Arguments:
+        section_name (str): either "version", "well", "curves", or "params"
+        section (dict|list): section items
+        version (float): either 1.2 or 2.0
 
     '''
-    section_widths = {}
+    section_widths = {
+        "left_width": None,
+        "middle_width": None
+    }
     if isinstance(section, dict):
         items = section.values()
     elif isinstance(section, list):
         items = list(section)
-
-    section_widths["left_width"] = max([len(i.mnemonic) for i in items])
-
-    if section_name == "well" and version == 1.2:
-        mw = max([len(str(i.unit)) + len(str(i.descr)) for i in items])
-        section_widths["middle_width"] = mw + middle_padding
-        # descr_widths = [len(i.descr) for i in items]
-        # value_widths = [len(str(i.unit)) + len(str(i.value))
-        #                 for i in items]
-        # middle_widths = []
-        # for i in range(len(descr_widths)):
-        #     middle_widths.append(
-        #         max([descr_widths[i], value_widths[i]]) + middle_padding)
-        # section_widths["middle_width"] = max(middle_widths)
-    else:
-        mw = max([len(str(i.unit)) + len(str(i.value)) for i in items])
-        section_widths["middle_width"] = mw + middle_padding
-
+    if len(items) > 0:
+        section_widths["left_width"] = max([len(i.mnemonic) for i in items])
+        if section_name == "well" and version == 1.2:
+            mw = max([len(str(i.unit)) + len(str(i.descr)) for i in items])
+            section_widths["middle_width"] = mw + middle_padding
+        else:
+            mw = max([len(str(i.unit)) + len(str(i.value)) for i in items])
+            section_widths["middle_width"] = mw + middle_padding
     return section_widths
 
 
-def read(file_ref, encoding=None,
-         autodetect_encoding=False, autodetect_encoding_chars=20000):
+def read(file_ref, **kwargs):
     '''Read a LAS file.
 
-        Args:
-          file_ref: either a filename, an open file object, or a string of
+    Note that only versions 1.2 and 2.0 of the LAS file specification
+    are currently supported.
+
+    Arguments:
+        file_ref: either a filename, an open file object, or a string of
             a LAS file contents.
 
-        Kwargs:
-          encoding (str): character encoding to open file_ref with
-          autodetect_encoding (bool): use chardet/ccharet to detect encoding
-          autodetect_encoding_chars (int/None): number of chars to read from LAS
+    Keyword Arguments:
+        encoding (str): character encoding to open file_ref with
+        encoding_errors (str): "strict", "replace" (default), "ignore" - how to
+            handle errors with encodings (see standard library codecs module or
+            Python Unicode HOWTO for more information)
+        autodetect_encoding (bool): use chardet/ccharet to detect encoding
+        autodetect_encoding_chars (int/None): number of chars to read from LAS
             file for auto-detection of encoding.
 
-    Returns: a las.LASFile object
-
-    Note that it only supports versions 1.2 and 2.0 of the LAS file
-    specification.
+    Returns: 
+        A LASFile object representing the file -- see above
 
     '''
-    return LASFile(file_ref, encoding=encoding,
-                   autodetect_encoding=autodetect_encoding,
-                   autodetect_encoding_chars=autodetect_encoding_chars)
+    return LASFile(file_ref, **kwargs)

@@ -1,18 +1,18 @@
-import os
+import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import pytest
 
-from . import read
+from lasio import read
 
 test_dir = os.path.dirname(__file__)
 
-egfn = lambda fn: os.path.join(os.path.dirname(__file__), "test_examples", fn)
+egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
 
 
 def test_open_url():
-    l = read(
-        "https://raw.githubusercontent.com/kinverarity1/lasio"
-        "/master/standards/examples/1.2/sample_curve_api.las")
+    l = read("https://raw.githubusercontent.com/kinverarity1/"
+             "lasio/master/standards/examples"
+             "/1.2/sample_curve_api.las")
 
 
 def test_open_file_object():
@@ -25,7 +25,7 @@ def test_open_filename():
 
 
 def test_open_incorrect_filename():
-    with pytest.raises(IOError):
+    with pytest.raises(OSError):
         l = read(egfn("sampleXXXDOES NOT EXIST.las"))
 
 

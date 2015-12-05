@@ -1,14 +1,17 @@
-import fnmatch
-import os
+import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from . import read
+import fnmatch
+
+import numpy
+import pytest
+
+from lasio import read
 
 test_dir = os.path.dirname(__file__)
 
-egfn = lambda fn: os.path.join(os.path.dirname(__file__), "test_examples", fn)
+egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
 stegfn = lambda vers, fn: os.path.join(
-    os.path.dirname(__file__), "test_examples", vers, fn)
-
+    os.path.dirname(__file__), "examples", vers, fn)
 
 def test_read_v12_sample():
     l = read(stegfn("1.2", "sample.las"))
@@ -67,12 +70,24 @@ def test_mnemonic_leading_period():
     assert [c.mnemonic for c in l.curves] == [
         "DEPT", "DT", "RHOB", "NPHI", "SFLU", "SFLA", "ILM", "ILD"]
 
-# def test_mnemonic_missing():
-#     l = read(egfn("mnemonic_missing.las"))
-#     assert [c.mnemonic for c in l.curves] == [
-#         "DEPT", "DT", "RHOB", "NPHI", "UNKNOWN", "SFLA", "ILM", "ILD"]
+def test_mnemonic_missing():
+    l = read(egfn("mnemonic_missing.las"))
+    assert [c.mnemonic for c in l.curves] == [
+        "DEPT", "DT", "RHOB", "NPHI", "UNKNOWN", "SFLA", "ILM", "ILD"]
 
-# def test_mnemonic_missing_multiple():
-#     l = read(egfn("mnemonic_missing_multiple.las"))
-#     assert [c.mnemonic for c in l.curves] == [
-#         "DEPT", "DT", "RHOB", "NPHI", "UNKNOWN[0]", "UNKNOWN[1]", "ILM", "ILD"]
+def test_mnemonic_missing_multiple():
+    l = read(egfn("mnemonic_missing_multiple.las"))
+    assert [c.mnemonic for c in l.curves] == [
+        "DEPT", "DT", "RHOB", "NPHI", "UNKNOWN[0]", "UNKNOWN[1]", "ILM", "ILD"]
+
+def test_null_subs_default():
+    l = read(egfn("null_subs.las"))
+    assert numpy.isnan(l['DT'][0])
+
+def test_null_subs_True():
+    l = read(egfn("null_subs.las"), null_subs=True)
+    assert numpy.isnan(l['DT'][0])
+
+def test_null_subs_False():
+    l = read(egfn("null_subs.las"), null_subs=False)
+    assert l['DT'][0] == -999.25
