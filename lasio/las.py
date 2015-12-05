@@ -492,7 +492,7 @@ class LASFile(OrderedDictionary):
 
     @property
     def metadata(self):
-        d = {}
+        d = OrderedDict()
         for di in (self.version, self.well, self.params):
             for k, v in list(di.items()):
                 d[k] = v.value
