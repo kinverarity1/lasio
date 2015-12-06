@@ -62,7 +62,7 @@ def test_mnemonic_good():
 def test_mnemonic_duplicate():
     l = read(egfn("mnemonic_duplicate.las"))
     assert [c.mnemonic for c in l.curves] == [
-        "DEPT", "DT", "RHOB", "NPHI", "SFLU[0]", "SFLU[1]", "ILM", "ILD"]
+        "DEPT", "DT", "RHOB", "NPHI", "SFLU:1", "SFLU:2", "ILM", "ILD"]
 
 
 def test_mnemonic_leading_period():
@@ -78,7 +78,7 @@ def test_mnemonic_missing():
 def test_mnemonic_missing_multiple():
     l = read(egfn("mnemonic_missing_multiple.las"))
     assert [c.mnemonic for c in l.curves] == [
-        "DEPT", "DT", "RHOB", "NPHI", "UNKNOWN[0]", "UNKNOWN[1]", "ILM", "ILD"]
+        "DEPT", "DT", "RHOB", "NPHI", "UNKNOWN:1", "UNKNOWN:2", "ILM", "ILD"]
 
 def test_null_subs_default():
     l = read(egfn("null_subs.las"))

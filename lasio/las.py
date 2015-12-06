@@ -75,19 +75,22 @@ class HeaderItem(OrderedDict):
     def __init__(self, mnemonic, unit="", value="", descr=""):
         self.mnemonic = mnemonic
         self.original_mnemonic = mnemonic
+
+        # Used only for the keys e.g. "" > "UNKNOWN" > "UNKNOWN:2"
+        self.original_mnemonic2 = mnemonic
         self.unit = unit
         self.value = value
         self.descr = descr
 
     def __repr__(self):
-        return "%s(mnemonic=%s, unit=%s, value=%s, descr=%s, original_mnemonic=%s)" % (
-            self.__class__.__name__, self.mnemonic, self.unit, self.value, self.descr, self.original_mnemonic)
+        return (
+            "%s(mnemonic=%s, unit=%s, value=%s, "
+            "descr=%s, original_mnemonic=%s)" % (
+                self.__class__.__name__, self.mnemonic, self.unit, self.value, 
+                self.descr, self.original_mnemonic))
 
 
 class CurveItem(HeaderItem):
-    # def __init__(self, *args, **kwargs):
-    #     super(CurveItem, self).__init__(*args, **kwargs)
-
     @property
     def API_code(self):
         return self.value
@@ -136,15 +139,16 @@ class SectionItems(list):
             raise KeyError("%s not in %s" % (key, self.keys()))
 
     def __setitem__(self, key, newitem):
-        for item in self:
+        for i, item in enumerate(self):
             if key == item.mnemonic:
-                item = newitem
+                logger.debug('SectionItems.__setitem__ Replaced %s item' % key)
+                return super(SectionItems, self).__setitem__(i, newitem)  
         else:
             self.append(newitem)
 
     def append(self, newitem):
         '''Check to see if the item's mnemonic needs altering.'''
-        logger.debug("type=%s str=%s" % (type(newitem), newitem))
+        logger.debug("SectionItems.append type=%s str=%s" % (type(newitem), newitem))
         if newitem.mnemonic.strip() == "":
             newitem.original_mnemonic = newitem.mnemonic
             newitem.mnemonic = "UNKNOWN"
@@ -292,7 +296,7 @@ class LASFile(OrderedDict):
         f = open_file(file_ref, **kwargs)
 
         self._text = f.read()
-        logger.debug("LAS content is type %s" % type(self._text))
+        logger.debug("LASFile.read LAS content is type %s" % type(self._text))
 
         reader = Reader(self._text, version=1.2)
         self.sections["Version"] = reader.read_section('~V')
@@ -445,9 +449,9 @@ class LASFile(OrderedDict):
         section_widths = get_section_widths("Version", self.version, version)
         for header_item in self.version.values():
             mnemonic = header_item.original_mnemonic
-            logger.debug(str(header_item))
+            logger.debug("LASFile.write " + str(header_item))
             order = order_func(mnemonic)
-            logger.debug("order = %s" % (order, ))
+            logger.debug("LASFile.write order = %s" % (order, ))
             formatter_func = get_formatter_function(order, **section_widths)
             line = formatter_func(header_item)
             lines.append(line)
@@ -511,7 +515,7 @@ class LASFile(OrderedDict):
 
             if wrap:
                 lines = twrapper.wrap(depth_slice)
-                logger.debug("Wrapped %d lines out of %s" %
+                logger.debug("LASFile.write Wrapped %d lines out of %s" %
                              (len(lines), depth_slice))
             else:
                 lines = [depth_slice]
@@ -519,7 +523,7 @@ class LASFile(OrderedDict):
             if self.version["VERS"].value == 1.2:
                 for line in lines:
                     if len(line) > 255:
-                        logger.warning("Data line > 256 chars: %s" % line)
+                        logger.warning("LASFile.write Data line > 256 chars: %s" % line)
 
             for line in lines:
                 file_object.write(line + "\n")
@@ -539,14 +543,13 @@ class LASFile(OrderedDict):
                 return curve
 
     def keys(self):
-        k = list(super(OrderedDict, self).keys())
-        return [ki for ki in k if isinstance(ki, str)]
+        return [c.mnemonic for c in self.curves]
 
     def values(self):
-        return [self[k] for k in list(self.keys())]
+        return [c.data for c in self.curves]
 
     def items(self):
-        return [(k, self[k]) for k in list(self.keys())]
+        return [(c.mnemonic, c.data) for c in self.curves]
 
     def iterkeys(self):
         return iter(list(self.keys()))
@@ -649,7 +652,7 @@ class LASFile(OrderedDict):
         # assert not mnemonic in self.curves
         curve = CurveItem(mnemonic, unit, value, descr)
         curve.data = data
-        self.curves_dict[mnemonic] = curve
+        self.curves[mnemonic] = curve
         self.refresh()
 
     @property
@@ -745,15 +748,15 @@ class Reader(object):
             except:
                 raise LASDataError("Failed to read wrapped data: %s" % (
                                    traceback.format_exc().splitlines()[-1]))
-            logger.debug('arr shape = %s' % (arr.shape))
-            logger.debug('number of curves = %s' % number_of_curves)
+            logger.debug('Reader.read_data arr shape = %s' % (arr.shape))
+            logger.debug('Reader.read_data number of curves = %s' % number_of_curves)
             arr = numpy.reshape(arr, (-1, number_of_curves))
         if not arr.shape or (arr.ndim == 1 and arr.shape[0] == 0):
-            logger.warning('No data present.')
+            logger.warning('Reader.read_dataN o data present.')
             return None, None
         else:
-            logger.info('LAS file shape = %s' % str(arr.shape))
-        logger.debug('checking for nulls (NULL = %s)' % self.null)
+            logger.info('Reader.read_data LAS file shape = %s' % str(arr.shape))
+        logger.debug('Reader.read_data checking for nulls (NULL = %s)' % self.null)
         if null_subs:
             arr[arr == self.null] = numpy.nan
         return arr
@@ -999,22 +1002,22 @@ def get_encoding(auto, raw):
                     "chardet or cchardet is required for automatic"
                     " detection of character encodings.")
             else:
-                logger.debug("Using chardet")
+                logger.debug("get_encoding Using chardet")
                 method = "chardet"
         else:
-            logger.debug("Using cchardet")
+            logger.debug("get_encoding Using cchardet")
             method = "cchardet"
     elif auto.lower() == "chardet":
         import chardet
-        logger.debug("Using chardet")
+        logger.debug("get_encoding Using chardet")
         method = "chardet"
     elif auto.lower() == "cchardet":
         import cchardet as chardet
-        logger.debug("Using cchardet")
+        logger.debug("get_encoding Using cchardet")
         method = "cchardet"
 
     result = chardet.detect(raw)
-    logger.debug("%s results=%s" % (method, result))
+    logger.debug("get_encoding %s results=%s" % (method, result))
     return result["encoding"]
 
 
