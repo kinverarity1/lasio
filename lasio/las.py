@@ -126,11 +126,20 @@ class HeaderItem(OrderedDict):
 
 
 class CurveItem(HeaderItem):
+    def __init__(self, *args, **kwargs):
+        self.data = numpy.ndarray([])
+        super(CurveItem, self).__init__(*args, **kwargs)
+
     @property
     def API_code(self):
         return self.value
     
-
+    def __repr__(self):
+        return (
+            "%s(mnemonic=%s, unit=%s, value=%s, "
+            "descr=%s, original_mnemonic=%s, data.shape=%s)" % (
+                self.__class__.__name__, self.mnemonic, self.unit, self.value, 
+                self.descr, self.original_mnemonic, self.data.shape))
 
 class SectionItems(list):
 
@@ -139,8 +148,9 @@ class SectionItems(list):
         for item in self:
             if testitem == item.mnemonic:
                 return True 
-            elif testitem.mnemonic == item.mnemonic:
-                return True
+            elif hasattr(testitem, 'mnemonic'):
+                if testitem.mnemonic == item.mnemonic:
+                    return True
             elif testitem is item:
                 return True
         else:
@@ -174,6 +184,24 @@ class SectionItems(list):
             raise KeyError("%s not in %s" % (key, self.keys()))
 
     def __setitem__(self, key, newitem):
+        if isinstance(newitem, HeaderItem):
+            self.set_item(key, newitem)
+        else:
+            self.set_item_value(key, newitem)
+
+    def __getattr__(self, key):
+        if key in self:
+            return self[key]
+        else:
+            super(SectionItems, self).__getattr__(key)
+
+    def __setattr__(self, key, value):
+        if key in self:
+            self[key] = value
+        else:
+            super(SectionItems, self).__setattr__(key, value)
+
+    def set_item(self, key, newitem):
         for i, item in enumerate(self):
             if key == item.mnemonic:
 
@@ -186,6 +214,9 @@ class SectionItems(list):
                 return super(SectionItems, self).__setitem__(i, newitem)  
         else:
             self.append(newitem)
+
+    def set_item_value(self, key, value):
+        self[key].value = value
 
     def append(self, newitem):
         '''Check to see if the item's mnemonic needs altering.'''
@@ -205,6 +236,8 @@ class SectionItems(list):
                 # raise Exception("%s" % str(type(item)))
                 item.mnemonic = item.useful_mnemonic + ":%d" % (i + 1)
 
+    def dictview(self):
+        return dict(zip(self.keys(), [i.value for i in self.values()]))
 
 
 class JSONEncoder(json.JSONEncoder):
@@ -885,8 +918,6 @@ class SectionParser(object):
             keys['value'],              # value
             keys['descr'],              # descr
             )
-        # logger.debug(str(item))
-        item.data = None
         return item
 
     def params(self, **keys):
