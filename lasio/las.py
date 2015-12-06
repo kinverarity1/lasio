@@ -250,12 +250,12 @@ class JSONEncoder(json.JSONEncoder):
 
 
 DEFAULT_ITEMS = {
-    "Version": [
+    "Version": SectionItems([
         HeaderItem("VERS", "", 2.0, "CWLS log ASCII Standard -VERSION 2.0"),
         HeaderItem("WRAP", "", "NO", "One line per depth step"),
         HeaderItem("DLM", "", "SPACE", "Column Data Section Delimiter"),
-        ],
-    "Well": [
+        ]),
+    "Well": SectionItems([
         HeaderItem("STRT", "m", numpy.nan, "START DEPTH"),
         HeaderItem("STOP", "m", numpy.nan, "STOP DEPTH"),
         HeaderItem("STEP", "m", numpy.nan, "STEP"),
@@ -272,9 +272,9 @@ DEFAULT_ITEMS = {
         HeaderItem("DATE", "", "", "DATE"),
         HeaderItem("UWI", "", "", "UNIQUE WELL ID"),
         HeaderItem("API", "", "", "API NUMBER")
-        ],
-    "Curves": [],
-    "Parameter": [],
+        ]),
+    "Curves": SectionItems([]),
+    "Parameter": SectionItems([]),
     "Other": "",
     "Data": numpy.zeros(shape=(0, 1)),
     }
@@ -307,7 +307,7 @@ URL_REGEXP = re.compile(
     r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 
-class LASFile(OrderedDict):
+class LASFile(object):
 
     '''LAS file object.
 
@@ -325,7 +325,6 @@ class LASFile(OrderedDict):
     '''
 
     def __init__(self, file_ref=None, **kwargs):
-        OrderedDict.__init__(self)
 
         self._text = ''
         self._use_pandas = "auto"
@@ -426,11 +425,11 @@ class LASFile(OrderedDict):
         if not use_pandas is None:
             self._use_pandas = use_pandas
 
-        n = len(self.curves)
-        for i, curve in enumerate(self.curves):
-            self[curve.mnemonic] = curve.data
-            self[i] = curve.data
-            self[i - n] = curve.data
+        # n = len(self.curves)
+        # for i, curve in enumerate(self.curves):
+        #     self[curve.mnemonic] = curve.data
+        #     self[i] = curve.data
+        #     self[i - n] = curve.data
 
         if not self._use_pandas is False:
             try:
@@ -619,6 +618,27 @@ class LASFile(OrderedDict):
             if curve.mnemonic == mnemonic:
                 return curve
 
+    def __getattr__(self, key):
+        if key in self.sections['Curves']:
+            return self[key]
+        else:
+            super(LASFile, self).__getattr__(key)
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return self.curves[key].data
+        elif isinstance(key, str):
+            if key in self.keys():
+                return self.curves[key]
+        else:
+            super(LASFile, self).__getitem__(key)
+
+    def __setattr__(self, key, value):
+        assert NotImplementedError('not yet')
+
+    def __setitem__(self, key, value):
+        assert NotImplementedError('not yet')
+
     def keys(self):
         return [c.mnemonic for c in self.curves]
 
@@ -680,11 +700,11 @@ class LASFile(OrderedDict):
 
     @property
     def metadata(self):
-        d = OrderedDict()
-        for di in (self.version, self.well, self.params):
-            for k, v in list(di.items()):
-                d[k] = v.value
-        return d
+        s = SectionItems()
+        for section in self.sections:
+            for item in section:
+                s.append(item)
+        return s
 
     @metadata.setter
     def metadata(self, value):
@@ -734,12 +754,7 @@ class LASFile(OrderedDict):
 
     @property
     def header(self):
-        return OrderedDict([
-            ("~V", self.version),
-            ("~W", self.well),
-            ("~C", self.curves),
-            ("~P", self.params),
-            ("~O", self.other)])
+        return self.sections
 
 
 class Las(LASFile):
