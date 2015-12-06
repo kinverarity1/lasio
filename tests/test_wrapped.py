@@ -18,59 +18,59 @@ def test_write_wrapped():
     l.write(s, version=2.0, wrap=True, fmt="%.5f")
     s.seek(0)
     assert s.read() == """~Version ---------------------------------------------------
-VERS.     2.0 : CWLS log ASCII Standard -VERSION 2.0
-WRAP.     YES : Multiple lines per depth step
+VERS. 2.0 : CWLS log ASCII Standard -VERSION 2.0
+WRAP. YES : Multiple lines per depth step
 ~Well ------------------------------------------------------
-STRT.M                       910.0 : 
-STOP.M                       909.5 : 
-STEP.M                      -0.125 : 
-NULL.                      -999.25 : Null value
-COMP.         ANY OIL COMPANY INC. : COMPANY
-WELL.        ANY ET AL XX-XX-XX-XX : WELL
-FLD .                      WILDCAT : FIELD
-LOC .               XX-XX-XX-XXW3M : LOCATION
-PROV.                 SASKATCHEWAN : PROVINCE
-SRVC.     ANY LOGGING COMPANY INC. : SERVICE COMPANY
-SON .                       142085 : SERVICE ORDER
-DATE.                    13-DEC-86 : LOG DATE
-UWI .                              : UNIQUE WELL ID
+STRT.M                   910.0 : 
+STOP.M                   909.5 : 
+STEP.M                  -0.125 : 
+NULL.                  -999.25 : Null value
+COMP.     ANY OIL COMPANY INC. : COMPANY
+WELL.    ANY ET AL XX-XX-XX-XX : WELL
+FLD .                  WILDCAT : FIELD
+LOC .           XX-XX-XX-XXW3M : LOCATION
+PROV.             SASKATCHEWAN : PROVINCE
+SRVC. ANY LOGGING COMPANY INC. : SERVICE COMPANY
+SON .                   142085 : SERVICE ORDER
+DATE.                13-DEC-86 : LOG DATE
+UWI .                          : UNIQUE WELL ID
 ~Curves ----------------------------------------------------
-DEPT.M         : Depth
-DT  .US/M      : 1 Sonic Travel Time
-RHOB.K/M       : 2 Density-Bulk Density
-NPHI.V/V       : 3 Porosity -Neutron
-RX0 .OHMM      : 4 Resistivity -Rxo
-RESS.OHMM      : 5 Resistivity -Shallow
-RESM.OHMM      : 6 Resistivity -Medium
-RESD.OHMM      : 7 Resistivity -Deep
-SP  .MV        : 8 Spon. Potential
-GR  .GAPI      : 9 Gamma Ray
-CALI.MM        : 10 Caliper
-DRHO.K/M3      : 11 Delta-Rho
-EATT.DBM       : 12 EPT Attenuation
-TPL .NS/M      : 13 TP -EPT
-PEF .          : 14 PhotoElectric Factor
-FFI .V/V       : 15 Porosity -NML FFI
-DCAL.MM        : 16 Caliper-Differential
-RHGF.K/M3      : 17 Density-Formation
-RHGA.K/M3      : 18 Density-Apparent
-SPBL.MV        : 19 Baselined SP
-GRC .GAPI      : 20 Gamma Ray BHC
-PHIA.V/V       : 21 Porosity -Apparent
-PHID.V/V       : 22 Porosity -Density
-PHIE.V/V       : 23 Porosity -Effective
-PHIN.V/V       : 24 Porosity -Neut BHC
-PHIC.V/V       : 25 Porosity -Total HCC
-R0  .OHMM      : 26 Ro
-RWA .OHMM      : 27 Rfa
-SW  .          : 28 Sw -Effective
-MSI .          : 29 Sh Idx -Min
-BVW .          : 30 BVW
-FGAS.          : 31 Flag -Gas Index
-PIDX.          : 32 Prod Idx
-FBH .          : 33 Flag -Bad Hole
-FHCC.          : 34 Flag -HC Correction
-LSWB.          : 35 Flag -Limit SWB
+DEPT.M     : Depth
+DT  .US/M  : 1 Sonic Travel Time
+RHOB.K/M   : 2 Density-Bulk Density
+NPHI.V/V   : 3 Porosity -Neutron
+RX0 .OHMM  : 4 Resistivity -Rxo
+RESS.OHMM  : 5 Resistivity -Shallow
+RESM.OHMM  : 6 Resistivity -Medium
+RESD.OHMM  : 7 Resistivity -Deep
+SP  .MV    : 8 Spon. Potential
+GR  .GAPI  : 9 Gamma Ray
+CALI.MM    : 10 Caliper
+DRHO.K/M3  : 11 Delta-Rho
+EATT.DBM   : 12 EPT Attenuation
+TPL .NS/M  : 13 TP -EPT
+PEF .      : 14 PhotoElectric Factor
+FFI .V/V   : 15 Porosity -NML FFI
+DCAL.MM    : 16 Caliper-Differential
+RHGF.K/M3  : 17 Density-Formation
+RHGA.K/M3  : 18 Density-Apparent
+SPBL.MV    : 19 Baselined SP
+GRC .GAPI  : 20 Gamma Ray BHC
+PHIA.V/V   : 21 Porosity -Apparent
+PHID.V/V   : 22 Porosity -Density
+PHIE.V/V   : 23 Porosity -Effective
+PHIN.V/V   : 24 Porosity -Neut BHC
+PHIC.V/V   : 25 Porosity -Total HCC
+R0  .OHMM  : 26 Ro
+RWA .OHMM  : 27 Rfa
+SW  .      : 28 Sw -Effective
+MSI .      : 29 Sh Idx -Min
+BVW .      : 30 BVW
+FGAS.      : 31 Flag -Gas Index
+PIDX.      : 32 Prod Idx
+FBH .      : 33 Flag -Bad Hole
+FHCC.      : 34 Flag -HC Correction
+LSWB.      : 35 Flag -Limit SWB
 ~Params ----------------------------------------------------
 ~Other -----------------------------------------------------
 ~ASCII -----------------------------------------------------
@@ -110,62 +110,62 @@ def test_write_unwrapped():
     fn = stegfn("1.2", "sample_wrapped.las")
     l = read(fn)
     s = StringIO()
-    l.write(s, version=2.0, wrap=False, fmt="%.5f")
+    l.write(s, version=2, wrap=False, fmt="%.5f")
     s.seek(0)
     assert s.read() == """~Version ---------------------------------------------------
-VERS.     2.0 : CWLS log ASCII Standard -VERSION 2.0
-WRAP.      NO : One line per depth step
+VERS. 2.0 : CWLS log ASCII Standard -VERSION 2.0
+WRAP.  NO : One line per depth step
 ~Well ------------------------------------------------------
-STRT.M                       910.0 : 
-STOP.M                       909.5 : 
-STEP.M                      -0.125 : 
-NULL.                      -999.25 : Null value
-COMP.         ANY OIL COMPANY INC. : COMPANY
-WELL.        ANY ET AL XX-XX-XX-XX : WELL
-FLD .                      WILDCAT : FIELD
-LOC .               XX-XX-XX-XXW3M : LOCATION
-PROV.                 SASKATCHEWAN : PROVINCE
-SRVC.     ANY LOGGING COMPANY INC. : SERVICE COMPANY
-SON .                       142085 : SERVICE ORDER
-DATE.                    13-DEC-86 : LOG DATE
-UWI .                              : UNIQUE WELL ID
+STRT.M                   910.0 : 
+STOP.M                   909.5 : 
+STEP.M                  -0.125 : 
+NULL.                  -999.25 : Null value
+COMP.     ANY OIL COMPANY INC. : COMPANY
+WELL.    ANY ET AL XX-XX-XX-XX : WELL
+FLD .                  WILDCAT : FIELD
+LOC .           XX-XX-XX-XXW3M : LOCATION
+PROV.             SASKATCHEWAN : PROVINCE
+SRVC. ANY LOGGING COMPANY INC. : SERVICE COMPANY
+SON .                   142085 : SERVICE ORDER
+DATE.                13-DEC-86 : LOG DATE
+UWI .                          : UNIQUE WELL ID
 ~Curves ----------------------------------------------------
-DEPT.M         : Depth
-DT  .US/M      : 1 Sonic Travel Time
-RHOB.K/M       : 2 Density-Bulk Density
-NPHI.V/V       : 3 Porosity -Neutron
-RX0 .OHMM      : 4 Resistivity -Rxo
-RESS.OHMM      : 5 Resistivity -Shallow
-RESM.OHMM      : 6 Resistivity -Medium
-RESD.OHMM      : 7 Resistivity -Deep
-SP  .MV        : 8 Spon. Potential
-GR  .GAPI      : 9 Gamma Ray
-CALI.MM        : 10 Caliper
-DRHO.K/M3      : 11 Delta-Rho
-EATT.DBM       : 12 EPT Attenuation
-TPL .NS/M      : 13 TP -EPT
-PEF .          : 14 PhotoElectric Factor
-FFI .V/V       : 15 Porosity -NML FFI
-DCAL.MM        : 16 Caliper-Differential
-RHGF.K/M3      : 17 Density-Formation
-RHGA.K/M3      : 18 Density-Apparent
-SPBL.MV        : 19 Baselined SP
-GRC .GAPI      : 20 Gamma Ray BHC
-PHIA.V/V       : 21 Porosity -Apparent
-PHID.V/V       : 22 Porosity -Density
-PHIE.V/V       : 23 Porosity -Effective
-PHIN.V/V       : 24 Porosity -Neut BHC
-PHIC.V/V       : 25 Porosity -Total HCC
-R0  .OHMM      : 26 Ro
-RWA .OHMM      : 27 Rfa
-SW  .          : 28 Sw -Effective
-MSI .          : 29 Sh Idx -Min
-BVW .          : 30 BVW
-FGAS.          : 31 Flag -Gas Index
-PIDX.          : 32 Prod Idx
-FBH .          : 33 Flag -Bad Hole
-FHCC.          : 34 Flag -HC Correction
-LSWB.          : 35 Flag -Limit SWB
+DEPT.M     : Depth
+DT  .US/M  : 1 Sonic Travel Time
+RHOB.K/M   : 2 Density-Bulk Density
+NPHI.V/V   : 3 Porosity -Neutron
+RX0 .OHMM  : 4 Resistivity -Rxo
+RESS.OHMM  : 5 Resistivity -Shallow
+RESM.OHMM  : 6 Resistivity -Medium
+RESD.OHMM  : 7 Resistivity -Deep
+SP  .MV    : 8 Spon. Potential
+GR  .GAPI  : 9 Gamma Ray
+CALI.MM    : 10 Caliper
+DRHO.K/M3  : 11 Delta-Rho
+EATT.DBM   : 12 EPT Attenuation
+TPL .NS/M  : 13 TP -EPT
+PEF .      : 14 PhotoElectric Factor
+FFI .V/V   : 15 Porosity -NML FFI
+DCAL.MM    : 16 Caliper-Differential
+RHGF.K/M3  : 17 Density-Formation
+RHGA.K/M3  : 18 Density-Apparent
+SPBL.MV    : 19 Baselined SP
+GRC .GAPI  : 20 Gamma Ray BHC
+PHIA.V/V   : 21 Porosity -Apparent
+PHID.V/V   : 22 Porosity -Density
+PHIE.V/V   : 23 Porosity -Effective
+PHIN.V/V   : 24 Porosity -Neut BHC
+PHIC.V/V   : 25 Porosity -Total HCC
+R0  .OHMM  : 26 Ro
+RWA .OHMM  : 27 Rfa
+SW  .      : 28 Sw -Effective
+MSI .      : 29 Sh Idx -Min
+BVW .      : 30 BVW
+FGAS.      : 31 Flag -Gas Index
+PIDX.      : 32 Prod Idx
+FBH .      : 33 Flag -Bad Hole
+FHCC.      : 34 Flag -HC Correction
+LSWB.      : 35 Flag -Limit SWB
 ~Params ----------------------------------------------------
 ~Other -----------------------------------------------------
 ~ASCII -----------------------------------------------------

@@ -73,14 +73,49 @@ class LASUnknownUnitError(Exception):
 
 class HeaderItem(OrderedDict):
     def __init__(self, mnemonic, unit="", value="", descr=""):
-        self.mnemonic = mnemonic
+        
+        # The original mnemonic needs to be stored for rewriting a new file.
+        # it might be nothing - '' - or a duplicate e.g. two 'RHO' curves,
+        # or unique - 'X11124' - or perhaps invalid??
+
         self.original_mnemonic = mnemonic
 
-        # Used only for the keys e.g. "" > "UNKNOWN" > "UNKNOWN:2"
-        self.original_mnemonic2 = mnemonic
+        # We also need to store a more useful mnemonic, which will be used
+        # (technically not, but read on) for people to access the curve while
+        # the LASFile object exists. For example, a curve which is unnamed
+        # and has the mnemonic '' will be accessed via 'UNKNOWN'.
+
+        if mnemonic.strip() == '':
+            self.useful_mnemonic = 'UNKNOWN'
+        else:
+            self.useful_mnemonic = mnemonic
+
+        # But note that we need to (later) check (repeatedly) for duplicate
+        # mnemonics. Any duplicates will have ':1', ':2', ':3', etc., appended
+        # to them. The result of this will be stored in the below variable,
+        # which is what the user should actually see and use 99.5% of the time.
+
+        self.mnemonic = self.useful_mnemonic
+
         self.unit = unit
         self.value = value
         self.descr = descr
+
+    def __getitem__(self, key):
+        if key == 'mnemonic':
+            return self.mnemonic
+        elif key == 'original_mnemonic':
+            return self.original_mnemonic
+        elif key == 'useful_mnemonic':
+            return self.useful_mnemonic
+        elif key == 'unit':
+            return self.unit
+        elif key == 'value':
+            return self.value
+        elif key == 'descr':
+            return self.descr
+        else:
+            super(HeaderItem, self).__getitem__(key)
 
     def __repr__(self):
         return (
@@ -141,6 +176,12 @@ class SectionItems(list):
     def __setitem__(self, key, newitem):
         for i, item in enumerate(self):
             if key == item.mnemonic:
+
+                # This is very important. We replace items where
+                # 'mnemonic' is equal - i.e. we do not check useful_mnemonic
+                # or original_mnemonic. Is this correct? Needs to thought
+                # about and tested more carefully.
+
                 logger.debug('SectionItems.__setitem__ Replaced %s item' % key)
                 return super(SectionItems, self).__setitem__(i, newitem)  
         else:
@@ -149,23 +190,20 @@ class SectionItems(list):
     def append(self, newitem):
         '''Check to see if the item's mnemonic needs altering.'''
         logger.debug("SectionItems.append type=%s str=%s" % (type(newitem), newitem))
-        if newitem.mnemonic.strip() == "":
-            newitem.original_mnemonic = newitem.mnemonic
-            newitem.mnemonic = "UNKNOWN"
         super(SectionItems, self).append(newitem)
 
         # Check to fix the :n suffixes
-        existing = [item.original_mnemonic for item in self]
+        existing = [item.useful_mnemonic for item in self]
         locations = []
         for i, item in enumerate(self):
-            if item.original_mnemonic == newitem.mnemonic:
+            if item.useful_mnemonic == newitem.mnemonic:
                 locations.append(i)
         if len(locations) > 1:
             current_count = 1
             for i, loc in enumerate(locations):
                 item = self[loc]
                 # raise Exception("%s" % str(type(item)))
-                item.mnemonic = item.original_mnemonic + ":%d" % (i + 1)
+                item.mnemonic = item.useful_mnemonic + ":%d" % (i + 1)
 
 
 
@@ -444,33 +482,39 @@ class LASFile(OrderedDict):
         # Write each section.
 
         # ~Version
+        logger.debug('LASFile.write Version section')
         lines.append("~Version ".ljust(60, "-"))
         order_func = get_section_order_function("Version", version)
-        section_widths = get_section_widths("Version", self.version, version)
+        section_widths = get_section_widths("Version", self.version, version, order_func)
         for header_item in self.version.values():
             mnemonic = header_item.original_mnemonic
-            logger.debug("LASFile.write " + str(header_item))
+            # logger.debug("LASFile.write " + str(header_item))
             order = order_func(mnemonic)
-            logger.debug("LASFile.write order = %s" % (order, ))
+            # logger.debug("LASFile.write order = %s" % (order, ))
+            logger.debug('LASFile.write %s\norder=%s section_widths=%s' % (header_item, order, section_widths))
             formatter_func = get_formatter_function(order, **section_widths)
             line = formatter_func(header_item)
             lines.append(line)
 
         # ~Well
+        logger.debug('LASFile.write Well section')
         lines.append("~Well ".ljust(60, "-"))
         order_func = get_section_order_function("Well", version)
-        section_widths = get_section_widths("Well", self.well, version)
+        section_widths = get_section_widths("Well", self.well, version, order_func)
+        # logger.debug('LASFile.write well section_widths=%s' % section_widths)
         for header_item in self.well.values():
             mnemonic = header_item.original_mnemonic
             order = order_func(mnemonic)
+            logger.debug('LASFile.write %s\norder=%s section_widths=%s' % (header_item, order, section_widths))
             formatter_func = get_formatter_function(order, **section_widths)
             line = formatter_func(header_item)
             lines.append(line)
 
         # ~Curves
+        logger.debug('LASFile.write Curves section')
         lines.append("~Curves ".ljust(60, "-"))
         order_func = get_section_order_function("Curves", version)
-        section_widths = get_section_widths("Curves", self.curves, version)
+        section_widths = get_section_widths("Curves", self.curves, version, order_func)
         for header_item in self.curves:
             mnemonic = header_item.original_mnemonic
             order = order_func(mnemonic)
@@ -481,7 +525,7 @@ class LASFile(OrderedDict):
         # ~Params
         lines.append("~Params ".ljust(60, "-"))
         order_func = get_section_order_function("Parameter", version)
-        section_widths = get_section_widths("Parameter", self.params, version)
+        section_widths = get_section_widths("Parameter", self.params, version, order_func)
         for header_item in self.params.values():
             mnemonic = header_item.original_mnemonic
             order = order_func(mnemonic)
@@ -1089,12 +1133,12 @@ def get_section_order_function(section, version,
     return lambda mnemonic: orders.get(mnemonic, default_order)
 
 
-def get_section_widths(section_name, section, version, middle_padding=5):
-    '''Find minimum section widths fitting the content in *section*.
+def get_section_widths(section_name, items, version, order_func, middle_padding=5):
+    '''Find minimum section widths fitting the content in *items*.
 
     Arguments:
         section_name (str): either "version", "well", "curves", or "params"
-        section (dict|list): section items
+        items (SectionItems): section items
         version (float): either 1.2 or 2.0
 
     '''
@@ -1102,18 +1146,15 @@ def get_section_widths(section_name, section, version, middle_padding=5):
         "left_width": None,
         "middle_width": None
     }
-    if isinstance(section, dict):
-        items = section.values()
-    elif isinstance(section, list):
-        items = list(section)
     if len(items) > 0:
         section_widths["left_width"] = max([len(i.original_mnemonic) for i in items])
-        if section_name == "well" and version == 1.2:
-            mw = max([len(str(i.unit)) + len(str(i.descr)) for i in items])
-            section_widths["middle_width"] = mw + middle_padding
-        else:
-            mw = max([len(str(i.unit)) + len(str(i.value)) for i in items])
-            section_widths["middle_width"] = mw + middle_padding
+        middle_widths = []
+        for i in items:
+            order = order_func(i.mnemonic)
+            rhs_element = order.split(':')[0]
+            logger.debug('get_section_widths %s\n\torder=%s rhs_element=%s' % (i, order, rhs_element))
+            middle_widths.append(len(str(i.unit)) + 1 + len(str(i[rhs_element])))
+        section_widths['middle_width'] = max(middle_widths)
     return section_widths
 
 
