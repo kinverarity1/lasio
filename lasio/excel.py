@@ -94,7 +94,7 @@ def main_bulk():
     args = get_bulk_parser().parse_args(sys.argv[1:])
     for lasfn in glob.glob(args.glob):
         xlsxfn = lasfn.replace('.las', '.xlsx')
-        print lasfn, '->', xlsxfn
+        print('%s -> %s' % (lasfn, xlsxfn))
         l = las.LASFile(lasfn)
         converter = ExcelConverter(l)
         converter.write(xlsxfn)
