@@ -115,7 +115,7 @@ class HeaderItem(OrderedDict):
         elif key == 'descr':
             return self.descr
         else:
-            super(HeaderItem, self).__getitem__(key)
+            raise KeyError('CurveItem only has restricted items (not %s)' % key)
 
     def __repr__(self):
         return (
@@ -123,6 +123,9 @@ class HeaderItem(OrderedDict):
             "descr=%s, original_mnemonic=%s)" % (
                 self.__class__.__name__, self.mnemonic, self.unit, self.value, 
                 self.descr, self.original_mnemonic))
+
+    def _repr_pretty_(self, p, cycle):
+        return p.text(self.__repr__())
 
 
 class CurveItem(HeaderItem):
@@ -140,6 +143,7 @@ class CurveItem(HeaderItem):
             "descr=%s, original_mnemonic=%s, data.shape=%s)" % (
                 self.__class__.__name__, self.mnemonic, self.unit, self.value, 
                 self.descr, self.original_mnemonic, self.data.shape))
+
 
 class SectionItems(list):
 
@@ -239,13 +243,29 @@ class SectionItems(list):
     def dictview(self):
         return dict(zip(self.keys(), [i.value for i in self.values()]))
 
+    # def __repr__(self):
+    #     return (
+    #         "{cls}({contents})".format(
+    #             cls=self.__class__.__name__,
+    #             contents=', '.join([str(item) for item in self])))
+
 
 class JSONEncoder(json.JSONEncoder):
 
     def default(self, obj):
-        if isinstance(obj, numpy.ndarray):
-            return list(obj)
-        return json.JSONEncoder(self, obj)
+        if isinstance(obj, LASFile):
+            d = {'metadata': {},
+                 'data': {}}
+            for name, section in obj.sections.items():
+                if isinstance(section, basestring):
+                    d['metadata'][name] = section
+                else:
+                    d['metadata'][name] = []
+                    for item in section:
+                        d['metadata'][name].append(item.__dict__)
+            for curve in obj.curves:
+                d['data'][curve.mnemonic] = list(curve.data)
+            return d
 
 
 
@@ -323,7 +343,6 @@ class LASFile(object):
             file for auto-detection of encoding.
 
     '''
-
     def __init__(self, file_ref=None, **kwargs):
 
         self._text = ''
@@ -618,23 +637,25 @@ class LASFile(object):
             if curve.mnemonic == mnemonic:
                 return curve
 
-    def __getattr__(self, key):
-        if key in self.sections['Curves']:
-            return self[key]
-        else:
-            super(LASFile, self).__getattr__(key)
+    # def __getattr__(self, key):
+    #     # if hasattr(self, 'sections'):
+    #     #     if key in self.sections['Curves']:
+    #     #         return self[key]
+    #     # else:
+    #     #     raise AttributeError
+    #     pass
 
     def __getitem__(self, key):
         if isinstance(key, int):
             return self.curves[key].data
         elif isinstance(key, str):
             if key in self.keys():
-                return self.curves[key]
+                return self.curves[key].data
         else:
             super(LASFile, self).__getitem__(key)
 
-    def __setattr__(self, key, value):
-        assert NotImplementedError('not yet')
+    # def __setattr__(self, key, value):
+    #     assert NotImplementedError('not yet')
 
     def __setitem__(self, key, value):
         assert NotImplementedError('not yet')
