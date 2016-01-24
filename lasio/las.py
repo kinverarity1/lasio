@@ -160,6 +160,18 @@ URL_REGEXP = re.compile(
     r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 
+COMMON_NULLS = [
+    999.25, -999.25, 9999.25, -9999.25, 0, -999, 999, 9999, -9999,
+    2147483647, -2147483647,
+    32767, -32767
+    ]
+
+AGGRESSIVE_NULLS = [
+    0,
+    ]
+
+
+
 class LASFile(OrderedDictionary):
 
     '''LAS file object.
@@ -192,7 +204,7 @@ class LASFile(OrderedDictionary):
         if not (file_ref is None):
             self.read(file_ref, **kwargs)
 
-    def read(self, file_ref, use_pandas="auto", null_subs=True, **kwargs):
+    def read(self, file_ref, use_pandas="auto", null_policy='common', **kwargs):
         '''Read a LAS file.
 
         Arguments:
@@ -203,6 +215,8 @@ class LASFile(OrderedDictionary):
             use_pandas (str): bool or "auto" -- use pandas if available -- provide
                 False option for faster loading where pandas functionality is not
                 needed. "auto" becomes True if pandas is installed, and False if not.
+            null_policy (str): either None, 'NULL', 'common' or 'aggressive' --
+                see https://github.com/kinverarity1/lasio/issues/49#issuecomment-127980359
             encoding (str): character encoding to open file_ref with
             encoding_errors (str): "strict", "replace" (default), "ignore" - how to
                 handle errors with encodings (see standard library codecs module or
@@ -252,7 +266,7 @@ class LASFile(OrderedDictionary):
         # Set null value
         reader.null = self.well['NULL'].value
 
-        data = reader.read_data(len(self.curves), null_subs=null_subs)
+        data = reader.read_data(len(self.curves), null_policy=null_policy)
 
         for i, c in enumerate(self.curves):
             d = data[:, i]
@@ -632,7 +646,7 @@ class Reader(object):
                 l.append(parser(**values))
         return l
 
-    def read_data(self, number_of_curves=None, null_subs=True):
+    def read_data(self, number_of_curves=None, null_policy='common'):
         s = self.read_data_string()
         if not self.wrap:
             try:
@@ -657,8 +671,14 @@ class Reader(object):
         else:
             logger.info('LAS file shape = %s' % str(arr.shape))
         logger.debug('checking for nulls (NULL = %s)' % self.null)
-        if null_subs:
+        if null_policy in ['NULL', 'common', 'aggressive']:
             arr[arr == self.null] = numpy.nan
+        if null_policy in ['common', 'aggressive']:
+            for value in COMMON_NULLS:
+                arr[arr == value] = numpy.nan
+        if null_policy in ['aggressive']:
+            for value in AGGRESSIVE_NULLS:
+                arr[arr == value] = numpy.nan
         return arr
 
     def read_data_string(self):
