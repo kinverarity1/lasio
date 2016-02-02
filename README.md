@@ -122,7 +122,7 @@ Note that by default ``autodetect_encoding=False``.
 
 ## Development
 
-[![](https://travis-ci.org/kinverarity1/lasio.svg)](https://travis-ci.org/kinverarity1/lasio)
+[![Build Status](https://travis-ci.org/kinverarity1/lasio.svg?branch=master)](https://travis-ci.org/kinverarity1/lasio)
 [![](https://coveralls.io/repos/kinverarity1/lasio/badge.svg?branch=master&service=github)](https://coveralls.io/github/kinverarity1/lasio?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/252911a940b7476d9d7c4450d4045370)](https://www.codacy.com/app/kinverarity/lasio)
 [![](https://scrutinizer-ci.com/g/kinverarity1/lasio/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/kinverarity1/lasio/#)
