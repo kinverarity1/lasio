@@ -9,7 +9,6 @@ python:
     - "3.5"
 
 install:
-  - sudo apt-get update
   # We do this conditionally because it saves us some downloading if the
   # version is the same.
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
@@ -26,9 +25,11 @@ install:
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy openpyxl pandas chardet
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy pandas chardet pytest
   - source activate test-environment
-  - pip install namedlist ordereddict cchardet argparse
+  - pip install namedlist ordereddict cchardet argparse pytest-cov coveralls
+  - pip install coverage=3.7.1
+  - pip install openpyxl=2.0.3
   - python setup.py install
 
 script:
