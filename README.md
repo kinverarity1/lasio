@@ -144,7 +144,7 @@ And to update:
 $ git pull origin master
 ```
 
-lasio should work on Python 3.2, but note that it isn't tested regularly at the [continuous integration site](https://travis-ci.org/kinverarity1/lasio) because of build problems.
+lasio should work on Python 3.2, but it isn't tested regularly at [Travis CI](https://travis-ci.org/kinverarity1/lasio) because Miniconda is only Python 3.3+.
 
 [![](http://githubbadges.herokuapp.com/kinverarity1/lasio/pulls.svg)](https://github.com/kinverarity1/lasio/pulls)
 [![](http://githubbadges.herokuapp.com/kinverarity1/lasio/issues.svg)](https://github.com/kinverarity1/lasio/issues)
