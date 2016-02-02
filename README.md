@@ -128,7 +128,9 @@ Note that by default ``autodetect_encoding=False``.
 [![](https://scrutinizer-ci.com/g/kinverarity1/lasio/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/kinverarity1/lasio/#)
 [![](https://www.quantifiedcode.com/api/v1/project/82d62106077f4c44a353c311984930d6/badge.svg)](https://www.quantifiedcode.com/app/project/82d62106077f4c44a353c311984930d6)
 
-To use the latest version:
+See the [list of changes](https://github.com/kinverarity1/lasio/blob/master/CHANGELOG.md) for each released version.
+
+To use the latest development version:
 
 ```bash
 $ git clone https://github.com/kinverarity1/lasio.git
@@ -152,3 +154,5 @@ Thanks to the following GitHub users for their help:
 - VelizarVESSELINOV
 - diverdude
 - tomtommahout
+- dagrha
+- oliveirarodolfo
