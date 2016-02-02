@@ -25,11 +25,12 @@ install:
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy pandas chardet pytest
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy pandas chardet pytest requests
   - source activate test-environment
-  - pip install namedlist ordereddict cchardet argparse pytest-cov coveralls
+  - pip install namedlist ordereddict cchardet argparse 
   - pip install coverage=3.7.1
   - pip install openpyxl=2.0.3
+  - pip install pytest-cov coveralls
   - python setup.py install
 
 script:
