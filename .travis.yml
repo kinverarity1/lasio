@@ -3,7 +3,6 @@ language: python
 python:
     - "2.6"
     - "2.7"
-    - "3.2"
     - "3.3"
     - "3.4"
     - "3.5"
@@ -25,7 +24,7 @@ install:
   - conda info -a
 
   # Replace dep1 dep2 ... with your dependencies
-  - conda create -q -n test-environment numpy pandas pytest requests
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION numpy pandas pytest requests
   - source activate test-environment
   - pip install namedlist ordereddict cchardet argparse chardet
   - pip install coverage==3.7.1
