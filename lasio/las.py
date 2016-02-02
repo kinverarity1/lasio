@@ -67,7 +67,55 @@ import numpy
 
 
 logger = logging.getLogger(__name__)
+
 __version__ = '0.10'
+
+
+ORDER_DEFINITIONS = {
+    1.2: OrderedDict([
+        ("Version", ["value:descr"]),
+        ("Well", [
+            "descr:value",
+            ("value:descr", ["STRT", "STOP", "STEP", "NULL"])]),
+        ("Curves", ["value:descr"]),
+        ("Parameter", ["value:descr"]),
+        ]),
+    2.0: OrderedDict([
+        ("Version", ["value:descr"]),
+        ("Well", ["value:descr"]),
+        ("Curves", ["value:descr"]),
+        ("Parameter", ["value:descr"])
+        ])}
+
+URL_REGEXP = re.compile(
+    r'^(?:http|ftp)s?://'  # http:// or https://
+    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}'
+    r'\.?|[A-Z0-9-]{2,}\.?)|'  # (cont.) domain...
+    r'localhost|'  # localhost...
+    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+    r'(?::\d+)?'  # optional port
+    r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+
+NULLS_COMMON_NUMERIC = [999.25, -999.25, 9999.25, -9999.25, 0, -999, 999, 9999, -9999, 2147483647, -2147483647, 32767, -32767]
+
+NULLS_AGGRESSIVE_NUMERIC = [0]
+
+# Expressions for use in re.sub
+
+NULLS_COMMON_ALPHA = [
+    r'(#N/A)[ ]', r'[ ](#N/A)',             # matches   #N/A
+    r'(-?1\.#INF)[ ]', r'[ ](-?1\.#INF)',   # matches   1.#INF -1.#INF
+    r'(-?1\.#IO)[ ]', r'[ ](-?1\.#IO)',     # matches   1.#IO  -1.#IO
+    r'(-?1\.#IND)[ ]', r'[ ](-?1\.#IND)',   # matches   1.#IND -1.#IND
+    ]
+NULLS_AGGRESSIVE_ALPHA = [
+    r'([^0-9.\-+]+)[ ]',      # matches - not a float (trailing space/newline)
+    r'[ ]([^0-9.\-+]+)',      # matches - not a float (leading space/newline)
+    ]                    
+                        # Generally this would be a bad idea because these files
+                        # ought to raise an exception and be manually fixed. 
+                        # But - that's why this mode is called "aggressive".
+
 
 
 class LASDataError(Exception):
@@ -318,32 +366,6 @@ DEFAULT_ITEMS = {
     }
 
 
-ORDER_DEFINITIONS = {
-    1.2: OrderedDict([
-        ("Version", ["value:descr"]),
-        ("Well", [
-            "descr:value",
-            ("value:descr", ["STRT", "STOP", "STEP", "NULL"])]),
-        ("Curves", ["value:descr"]),
-        ("Parameter", ["value:descr"]),
-        ]),
-    2.0: OrderedDict([
-        ("Version", ["value:descr"]),
-        ("Well", ["value:descr"]),
-        ("Curves", ["value:descr"]),
-        ("Parameter", ["value:descr"])
-        ])}
-
-
-URL_REGEXP = re.compile(
-    r'^(?:http|ftp)s?://'  # http:// or https://
-    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}'
-    r'\.?|[A-Z0-9-]{2,}\.?)|'  # (cont.) domain...
-    r'localhost|'  # localhost...
-    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
-    r'(?::\d+)?'  # optional port
-    r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-
 
 class LASFile(object):
 
@@ -377,7 +399,7 @@ class LASFile(object):
         if not (file_ref is None):
             self.read(file_ref, **kwargs)
 
-    def read(self, file_ref, use_pandas="auto", null_subs=True, **kwargs):
+    def read(self, file_ref, use_pandas="auto", null_policy='common', **kwargs):
         '''Read a LAS file.
 
         Arguments:
@@ -388,6 +410,8 @@ class LASFile(object):
             use_pandas (str): bool or "auto" -- use pandas if available -- provide
                 False option for faster loading where pandas functionality is not
                 needed. "auto" becomes True if pandas is installed, and False if not.
+            null_policy (str): either None, 'NULL', 'common' or 'aggressive' --
+                see https://github.com/kinverarity1/lasio/issues/49#issuecomment-127980359
             encoding (str): character encoding to open file_ref with
             encoding_errors (str): "strict", "replace" (default), "ignore" - how to
                 handle errors with encodings (see standard library codecs module or
@@ -438,7 +462,7 @@ class LASFile(object):
         # Set null value
         reader.null = self.well['NULL'].value
 
-        data = reader.read_data(len(self.curves), null_subs=null_subs)
+        data = reader.read_data(len(self.curves), null_policy=null_policy)
 
         for i, c in enumerate(self.curves):
             d = data[:, i]
@@ -863,8 +887,8 @@ class Reader(object):
                 section.append(parser(**values))
         return section
 
-    def read_data(self, number_of_curves=None, null_subs=True):
-        s = self.read_data_string()
+    def read_data(self, number_of_curves=None, null_policy='common'):
+        s = self.read_data_string(null_policy=null_policy)
         if not self.wrap:
             try:
                 arr = numpy.loadtxt(StringIO(s))
@@ -886,13 +910,19 @@ class Reader(object):
             logger.warning('Reader.read_dataN o data present.')
             return None, None
         else:
-            logger.info('Reader.read_data LAS file shape = %s' % str(arr.shape))
-        logger.debug('Reader.read_data checking for nulls (NULL = %s)' % self.null)
-        if null_subs:
+            logger.info('LAS file shape = %s' % str(arr.shape))
+        logger.debug('checking for nulls (NULL = %s)' % self.null)
+        if null_policy in ['NULL', 'common', 'aggressive']:
             arr[arr == self.null] = numpy.nan
+        if null_policy in ['common', 'aggressive']:
+            for value in NULLS_COMMON_NUMERIC:
+                arr[arr == value] = numpy.nan
+        if null_policy in ['aggressive']:
+            for value in NULLS_AGGRESSIVE_NUMERIC:
+                arr[arr == value] = numpy.nan
         return arr
 
-    def read_data_string(self):
+    def read_data_string(self, null_policy):
         start_data = None
         for i, line in enumerate(self.lines):
             line = line.strip().strip('\t').strip()
@@ -903,7 +933,22 @@ class Reader(object):
         s = re.sub(r'(\d)-(\d)', r'\1 -\2', s)
         s = re.sub('-?\d*\.\d*\.\d*', ' NaN NaN ', s)
         s = re.sub('NaN.\d*', ' NaN NaN ', s)
+
+        if null_policy in ['common', 'aggressive']:
+            for pattern in NULLS_COMMON_ALPHA:
+                s = re.sub(pattern, null_alpha_repl, s)
+        if null_policy in ['aggressive']:
+            for pattern in NULLS_AGGRESSIVE_ALPHA:
+                s = re.sub(pattern, null_alpha_repl, s)
         return s
+
+def null_alpha_repl(match):
+    if match.re.pattern.startswith('[ ]'):
+        # return ' ' + 'NaN'.rjust(len(match.group(1)))
+        return ' NaN '
+    elif match.re.pattern.endswith('[ ]'):
+        # n = len(match.group(1))
+        return ' NaN '
 
 
 class SectionParser(object):

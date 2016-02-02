@@ -2,16 +2,18 @@ import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import fnmatch
 
-import numpy
+import numpy as np
 import pytest
 
-from lasio import read
+from lasio import read, las
 
 test_dir = os.path.dirname(__file__)
 
 egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
 stegfn = lambda vers, fn: os.path.join(
     os.path.dirname(__file__), "examples", vers, fn)
+
+NaN = np.nan
 
 def test_read_v12_sample():
     l = read(stegfn("1.2", "sample.las"))
@@ -80,17 +82,83 @@ def test_mnemonic_missing_multiple():
     assert [c.mnemonic for c in l.curves] == [
         "DEPT", "DT", "RHOB", "NPHI", "UNKNOWN:1", "UNKNOWN:2", "ILM", "ILD"]
 
-def test_null_subs_default():
-    l = read(egfn("null_subs.las"))
-    assert numpy.isnan(l['DT'][0])
+# ~A DEPTH     DT  RHOB    NPHI     SFLU   SFLA
+# 1.000   -999.25 -9999    0.450  123.450  1
+# 2.000   -999.25 -9999    0.460  123.460  2
+# 3.000   1       -9999    0.47   123.45   3
+# 4.000   2       3        0.48   123.46   4
+# 5.000   3       4        231.2  123.45   5
+# 6.000   4       5        231.2  1        6
+# 7.000   5       6        231.2  1        7
+# 8.000   6       7        231.2  1        8
+# 9.000   6       32767    231.2  -999.25  9
 
-def test_null_subs_True():
-    l = read(egfn("null_subs.las"), null_subs=True)
-    assert numpy.isnan(l['DT'][0])
+def test_null_policy_numeric_None():
+    l = read(egfn("null_policy_numeric.las"), null_policy=None)
+    assert np.all(l['DT'] == [-999.25, -999.25, 1, 2, 3, 4, 5, 6, 6])
+    assert np.all(l['RHOB'] == [-9999, -9999, -9999, 3, 4, 5, 6, 7, 32767])
+    assert np.all(l['NPHI'] == [.45, .46, .47, .48, 231.2, 231.2, 231.2, 231.2, 231.2])
+    assert np.all(l['SFLU'] == [123.45, 123.46, 123.45, 123.46, 123.45, 1, 1, 1, -999.25])
+    assert np.all(l['SFLA'] == [1, 2, 3, 4, 5, 6, 7, 8, 9])
 
-def test_null_subs_False():
-    l = read(egfn("null_subs.las"), null_subs=False)
-    assert l['DT'][0] == -999.25
+def test_null_policy_numeric_NULL():
+    l = read(egfn("null_policy_numeric.las"), null_policy='NULL')
+    assert np.all(np.isnan(l['DT']) == [True, True, False, False, False, False, False, False, False])
+    assert np.isfinite(l['RHOB']).all()
+    assert np.isfinite(l['NPHI']).all()
+    assert np.all(np.isnan(l['SFLU']) == [False, False, False, False, False, False, False, False, True])
+    assert np.isfinite(l['SFLA']).all()
+
+def test_null_policy_numeric_common():
+    l = read(egfn("null_policy_numeric.las"), null_policy='common')
+    assert np.all(np.isnan(l['DT']) == [True, True, False, False, False, False, False, False, False])
+    assert np.all(np.isnan(l['RHOB']) == [True, True, True, False, False, False, False, False, True])
+    assert np.isfinite(l['NPHI']).all()
+    assert np.all(np.isnan(l['SFLU']) == [False, False, False, False, False, False, False, False, True])
+    assert np.isfinite(l['SFLA']).all()
+
+def test_null_policy_numeric_aggressive():
+    l = read(egfn("null_policy_numeric.las"), null_policy='aggressive')
+    assert np.all(np.isnan(l['DT']) == [True, True, False, False, False, False, False, True, True])
+    assert np.all(np.isnan(l['RHOB']) == [True, True, True, False, False, False, False, False, True])
+    assert np.all(np.isnan(l['NPHI']) == [False, False, False, False, True, True, True, True, True])
+    assert np.all(np.isnan(l['SFLU']) == [False, False, False, False, False, True, True, True, True])
+    assert np.isfinite(l['SFLA']).all()
+
+# ~A DEPTH     DT  RHOB    NPHI     SFLU   SFLA
+# 1.000   -999.25 -9999    0.450  123.450  1
+# 2.000   -999.25 -9999    0.460  123.460  2
+# 3.000   1       -9999    0.47   123.45   3
+# 4.000   2       3        0.48   123.46   4
+# 5.000   #N/A    4        231.2  123.45   5
+# 6.000   4       1.#INF   231.2  1        6
+# 7.000   5       6        231.2  1        7
+# 8.000   6       7        231.2  1        1.#IND
+# 9.000   6       32767    -1.#IO -999.25  9
+
+def test_null_policy_alphanumeric_None():
+    with pytest.raises(las.LASDataError):
+        l = read(egfn("null_policy_alphanumeric.las"), null_policy=None)
+
+def test_null_policy_alphanumeric_NULL():
+    with pytest.raises(las.LASDataError):
+        l = read(egfn("null_policy_alphanumeric.las"), null_policy='NULL')
+
+def test_null_policy_alphanumeric_common():
+    l = read(egfn("null_policy_alphanumeric.las"), null_policy='common')
+    assert np.all(np.isnan(l['DT']) == [True, True, False, False, True, False, False, False, False])
+    assert np.all(np.isnan(l['RHOB']) == [True, True, True, False, False, True, False, False, True])
+    assert np.all(np.isnan(l['NPHI']) == [False, False, False, False, False, False, False, False, True])
+    assert np.all(np.isnan(l['SFLU']) == [False, False, False, False, False, False, False, False, True])
+    assert np.all(np.isnan(l['SFLA']) == [False, False, False, False, False, False, False, True, False])
+
+def test_null_policy_alphanumeric_aggressive():
+    l = read(egfn("null_policy_alphanumeric.las"), null_policy='aggressive')
+    assert np.all(np.isnan(l['DT']) == [True, True, False, False, True, False, False, True, True])
+    assert np.all(np.isnan(l['RHOB']) == [True, True, True, False, False, True, False, False, True])
+    assert np.all(np.isnan(l['NPHI']) == [False, False, False, False, True, True, True, True, True])
+    assert np.all(np.isnan(l['SFLU']) == [False, False, False, False, False, True, True, True, True])
+    assert np.all(np.isnan(l['SFLA']) == [False, False, False, False, False, False, False, True, False])
 
 def test_multi_curve_mnemonics():
     l = read(egfn('sample_issue105_a.las'))
