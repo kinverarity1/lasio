@@ -90,7 +90,8 @@ class LASUnknownUnitError(Exception):
 
 class HeaderItem(OrderedDict):
     def __init__(self, mnemonic, unit="", value="", descr=""):
-        
+        super(HeaderItem, self).__init__()
+
         # The original mnemonic needs to be stored for rewriting a new file.
         # it might be nothing - '' - or a duplicate e.g. two 'RHO' curves,
         # or unique - 'X11124' - or perhaps invalid??
