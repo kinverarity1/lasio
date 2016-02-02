@@ -280,7 +280,7 @@ class JSONEncoder(json.JSONEncoder):
                 else:
                     d['metadata'][name] = []
                     for item in section:
-                        d['metadata'][name].append(item.__dict__)
+                        d['metadata'][name].append(dict(item))
             for curve in obj.curves:
                 d['data'][curve.mnemonic] = list(curve.data)
             return d
