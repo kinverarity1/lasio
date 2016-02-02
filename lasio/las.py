@@ -67,7 +67,55 @@ import numpy
 
 
 logger = logging.getLogger(__name__)
+
 __version__ = '0.10'
+
+
+ORDER_DEFINITIONS = {
+    1.2: OrderedDict([
+        ("Version", ["value:descr"]),
+        ("Well", [
+            "descr:value",
+            ("value:descr", ["STRT", "STOP", "STEP", "NULL"])]),
+        ("Curves", ["value:descr"]),
+        ("Parameter", ["value:descr"]),
+        ]),
+    2.0: OrderedDict([
+        ("Version", ["value:descr"]),
+        ("Well", ["value:descr"]),
+        ("Curves", ["value:descr"]),
+        ("Parameter", ["value:descr"])
+        ])}
+
+URL_REGEXP = re.compile(
+    r'^(?:http|ftp)s?://'  # http:// or https://
+    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}'
+    r'\.?|[A-Z0-9-]{2,}\.?)|'  # (cont.) domain...
+    r'localhost|'  # localhost...
+    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+    r'(?::\d+)?'  # optional port
+    r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+
+NULLS_COMMON_NUMERIC = [999.25, -999.25, 9999.25, -9999.25, 0, -999, 999, 9999, -9999, 2147483647, -2147483647, 32767, -32767]
+
+NULLS_AGGRESSIVE_NUMERIC = [0]
+
+# Expressions for use in re.sub
+
+NULLS_COMMON_ALPHA = [
+    r'(#N/A)[ ]', r'[ ](#N/A)',             # matches   #N/A
+    r'(-?1\.#INF)[ ]', r'[ ](-?1\.#INF)',   # matches   1.#INF -1.#INF
+    r'(-?1\.#IO)[ ]', r'[ ](-?1\.#IO)',     # matches   1.#IO  -1.#IO
+    r'(-?1\.#IND)[ ]', r'[ ](-?1\.#IND)',   # matches   1.#IND -1.#IND
+    ]
+NULLS_AGGRESSIVE_ALPHA = [
+    r'([^0-9.\-+]+)[ ]',      # matches - not a float (trailing space/newline)
+    r'[ ]([^0-9.\-+]+)',      # matches - not a float (leading space/newline)
+    ]                    
+                        # Generally this would be a bad idea because these files
+                        # ought to raise an exception and be manually fixed. 
+                        # But - that's why this mode is called "aggressive".
+
 
 
 class LASDataError(Exception):
@@ -316,44 +364,6 @@ DEFAULT_ITEMS = {
     "Other": "",
     "Data": numpy.zeros(shape=(0, 1)),
     }
-
-
-ORDER_DEFINITIONS = {
-    1.2: OrderedDict([
-        ("Version", ["value:descr"]),
-        ("Well", [
-            "descr:value",
-            ("value:descr", ["STRT", "STOP", "STEP", "NULL"])]),
-        ("Curves", ["value:descr"]),
-        ("Parameter", ["value:descr"]),
-        ]),
-    2.0: OrderedDict([
-        ("Version", ["value:descr"]),
-        ("Well", ["value:descr"]),
-        ("Curves", ["value:descr"]),
-        ("Parameter", ["value:descr"])
-        ])}
-
-
-URL_REGEXP = re.compile(
-    r'^(?:http|ftp)s?://'  # http:// or https://
-    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}'
-    r'\.?|[A-Z0-9-]{2,}\.?)|'  # (cont.) domain...
-    r'localhost|'  # localhost...
-    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
-    r'(?::\d+)?'  # optional port
-    r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-
-
-COMMON_NULLS = [
-    999.25, -999.25, 9999.25, -9999.25, 0, -999, 999, 9999, -9999,
-    2147483647, -2147483647,
-    32767, -32767
-    ]
-
-AGGRESSIVE_NULLS = [
-    0,
-    ]
 
 
 
@@ -878,7 +888,7 @@ class Reader(object):
         return section
 
     def read_data(self, number_of_curves=None, null_policy='common'):
-        s = self.read_data_string()
+        s = self.read_data_string(null_policy=null_policy)
         if not self.wrap:
             try:
                 arr = numpy.loadtxt(StringIO(s))
@@ -905,14 +915,14 @@ class Reader(object):
         if null_policy in ['NULL', 'common', 'aggressive']:
             arr[arr == self.null] = numpy.nan
         if null_policy in ['common', 'aggressive']:
-            for value in COMMON_NULLS:
+            for value in NULLS_COMMON_NUMERIC:
                 arr[arr == value] = numpy.nan
         if null_policy in ['aggressive']:
-            for value in AGGRESSIVE_NULLS:
+            for value in NULLS_AGGRESSIVE_NUMERIC:
                 arr[arr == value] = numpy.nan
         return arr
 
-    def read_data_string(self):
+    def read_data_string(self, null_policy):
         start_data = None
         for i, line in enumerate(self.lines):
             line = line.strip().strip('\t').strip()
@@ -923,7 +933,22 @@ class Reader(object):
         s = re.sub(r'(\d)-(\d)', r'\1 -\2', s)
         s = re.sub('-?\d*\.\d*\.\d*', ' NaN NaN ', s)
         s = re.sub('NaN.\d*', ' NaN NaN ', s)
+
+        if null_policy in ['common', 'aggressive']:
+            for pattern in NULLS_COMMON_ALPHA:
+                s = re.sub(pattern, null_alpha_repl, s)
+        if null_policy in ['aggressive']:
+            for pattern in NULLS_AGGRESSIVE_ALPHA:
+                s = re.sub(pattern, null_alpha_repl, s)
         return s
+
+def null_alpha_repl(match):
+    if match.re.pattern.startswith('[ ]'):
+        # return ' ' + 'NaN'.rjust(len(match.group(1)))
+        return ' NaN '
+    elif match.re.pattern.endswith('[ ]'):
+        # n = len(match.group(1))
+        return ' NaN '
 
 
 class SectionParser(object):
