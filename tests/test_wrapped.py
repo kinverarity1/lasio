@@ -13,7 +13,7 @@ def test_wrapped():
 
 def test_write_wrapped():
     fn = stegfn("1.2", "sample_wrapped.las")
-    l = read(fn)
+    l = read(fn, null_policy='NULL')
     s = StringIO()
     l.write(s, version=2.0, wrap=True, fmt="%.5f")
     s.seek(0)
@@ -108,7 +108,7 @@ LSWB.      : 35 Flag -Limit SWB
 
 def test_write_unwrapped():
     fn = stegfn("1.2", "sample_wrapped.las")
-    l = read(fn)
+    l = read(fn, null_policy='NULL')
     s = StringIO()
     l.write(s, version=2, wrap=False, fmt="%.5f")
     s.seek(0)
