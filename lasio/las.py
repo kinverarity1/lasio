@@ -615,10 +615,13 @@ class LASFile(object):
         nrows, ncols = data_arr.shape
 
         def format_data_section_line(n, fmt, l=10, spacer=" "):
-            if numpy.isnan(n):
-                return spacer + str(self.well["NULL"].value).rjust(l)
-            else:
-                return spacer + (fmt % n).rjust(l)
+            try:
+                if numpy.isnan(n):
+                    return spacer + str(self.well["NULL"].value).rjust(l)
+                else:
+                    return spacer + (fmt % n).rjust(l)
+            except TypeError:
+                return spacer + ('"%s"' % n).rjust(l)
 
         twrapper = textwrap.TextWrapper(width=79)
         for i in range(nrows):
