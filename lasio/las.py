@@ -60,7 +60,7 @@ else:
 # Required third-party packages available on PyPi:
 
 from namedlist import namedlist
-import numpy
+import numpy as np
 
 # Optional third-party packages available on PyPI are mostly
 # imported inline below.
@@ -148,7 +148,7 @@ class HeaderItem(OrderedDict):
 
 class CurveItem(HeaderItem):
     def __init__(self, *args, **kwargs):
-        self.data = numpy.ndarray([])
+        self.data = np.ndarray([])
         super(CurveItem, self).__init__(*args, **kwargs)
 
     @property
@@ -294,9 +294,9 @@ DEFAULT_ITEMS = {
         HeaderItem("DLM", "", "SPACE", "Column Data Section Delimiter"),
         ]),
     "Well": SectionItems([
-        HeaderItem("STRT", "m", numpy.nan, "START DEPTH"),
-        HeaderItem("STOP", "m", numpy.nan, "STOP DEPTH"),
-        HeaderItem("STEP", "m", numpy.nan, "STEP"),
+        HeaderItem("STRT", "m", np.nan, "START DEPTH"),
+        HeaderItem("STOP", "m", np.nan, "STOP DEPTH"),
+        HeaderItem("STEP", "m", np.nan, "STEP"),
         HeaderItem("NULL", "", -9999.25, "NULL VALUE"),
         HeaderItem("COMP", "", "", "COMPANY"),
         HeaderItem("WELL", "", "", "WELL"),
@@ -314,7 +314,7 @@ DEFAULT_ITEMS = {
     "Curves": SectionItems([]),
     "Parameter": SectionItems([]),
     "Other": "",
-    "Data": numpy.zeros(shape=(0, 1)),
+    "Data": np.zeros(shape=(0, 1)),
     }
 
 
@@ -361,10 +361,10 @@ class LASFile(object):
             file for auto-detection of encoding.
 
     '''
-    def __init__(self, file_ref=None, **kwargs):
+    def __init__(self, file_ref=None, use_pandas='auto', **kwargs):
 
         self._text = ''
-        self._use_pandas = "auto"
+        self._use_pandas = use_pandas
         self.index_unit = None
         self.sections = {
             "Version": DEFAULT_ITEMS["Version"],
@@ -459,31 +459,24 @@ class LASFile(object):
 
     def refresh(self, use_pandas=None):
         '''Refresh curve names and indices.'''
-        if not use_pandas is None:
+        if use_pandas is not None:
             self._use_pandas = use_pandas
 
-        # n = len(self.curves)
-        # for i, curve in enumerate(self.curves):
-        #     self[curve.mnemonic] = curve.data
-        #     self[i] = curve.data
-        #     self[i - n] = curve.data
-
-        if not self._use_pandas is False:
+        if self._use_pandas:
             try:
                 import pandas
             except ImportError:
-                logger.info(
-                    "pandas not installed - skipping LASFile.df creation")
                 self._use_pandas = False
 
         if self._use_pandas:
+            logger.debug('_use_pandas=True -> create self.df')
             self.df = pandas.DataFrame(self.data, columns=self.keys())
             self.df.set_index(self.curves[0].mnemonic, inplace=True)
 
     @property
     def data(self):
         '''2D array of data from LAS file.'''
-        return numpy.vstack([c.data for c in self.curves]).T
+        return np.vstack([c.data for c in self.curves]).T
 
     def write(self, file_object, version=None, wrap=None,
               STRT=None, STOP=None, STEP=None, fmt="%10.5g"):
@@ -533,7 +526,7 @@ class LASFile(object):
         if STOP is None:
             STOP = self.index[-1]
         if STEP is None:
-            STEP = self.index[1] - self.index[0]  # Faster than numpy.gradient
+            STEP = self.index[1] - self.index[0]  # Faster than np.gradient
         self.well["STRT"].value = STRT
         self.well["STOP"].value = STOP
         self.well["STEP"].value = STEP
@@ -611,17 +604,17 @@ class LASFile(object):
         file_object.write("\n".join(lines))
         file_object.write("\n")
 
-        data_arr = numpy.column_stack([c.data for c in self.curves])
+        data_arr = np.column_stack([c.data for c in self.curves])
         nrows, ncols = data_arr.shape
 
         def format_data_section_line(n, fmt, l=10, spacer=" "):
             try:
-                if numpy.isnan(n):
+                if np.isnan(n):
                     return spacer + str(self.well["NULL"].value).rjust(l)
                 else:
                     return spacer + (fmt % n).rjust(l)
             except TypeError:
-                return spacer + ('"%s"' % n).rjust(l)
+                return spacer + str(n).rjust(l)
 
         twrapper = textwrap.TextWrapper(width=79)
         for i in range(nrows):
@@ -767,7 +760,7 @@ class LASFile(object):
 
     @property
     def index(self):
-        return self.data[:, 0]
+        return self.curves[0].data
 
     @property
     def depth_m(self):
@@ -790,7 +783,7 @@ class LASFile(object):
     def add_curve(self, mnemonic, data, unit="", descr="", value=""):
         # assert not mnemonic in self.curves
         curve = CurveItem(mnemonic, unit, value, descr)
-        curve.data = data
+        curve.data = np.asarray(data)
         self.curves[mnemonic] = curve
         self.refresh()
 
@@ -814,7 +807,7 @@ class Reader(object):
     def __init__(self, text, version):
         self.lines = text.splitlines()
         self.version = version
-        self.null = numpy.nan
+        self.null = np.nan
         self.wrap = True
 
     @property
@@ -870,7 +863,7 @@ class Reader(object):
         s = self.read_data_string()
         if not self.wrap:
             try:
-                arr = numpy.loadtxt(StringIO(s))
+                arr = np.loadtxt(StringIO(s))
             except:
                 raise LASDataError("Failed to read data:\n%s" % (
                                    traceback.format_exc().splitlines()[-1]))
@@ -878,13 +871,13 @@ class Reader(object):
             eol_chars = r"[\n\t\r]"
             s = re.sub(eol_chars, " ", s)
             try:
-                arr = numpy.loadtxt(StringIO(s))
+                arr = np.loadtxt(StringIO(s))
             except:
                 raise LASDataError("Failed to read wrapped data: %s" % (
                                    traceback.format_exc().splitlines()[-1]))
             logger.debug('Reader.read_data arr shape = %s' % (arr.shape))
             logger.debug('Reader.read_data number of curves = %s' % number_of_curves)
-            arr = numpy.reshape(arr, (-1, number_of_curves))
+            arr = np.reshape(arr, (-1, number_of_curves))
         if not arr.shape or (arr.ndim == 1 and arr.shape[0] == 0):
             logger.warning('Reader.read_dataN o data present.')
             return None, None
@@ -892,7 +885,7 @@ class Reader(object):
             logger.info('Reader.read_data LAS file shape = %s' % str(arr.shape))
         logger.debug('Reader.read_data checking for nulls (NULL = %s)' % self.null)
         if null_subs:
-            arr[arr == self.null] = numpy.nan
+            arr[arr == self.null] = np.nan
         return arr
 
     def read_data_string(self):
@@ -943,10 +936,10 @@ class SectionParser(object):
         if default is None:
             default = x
         try:
-            return numpy.int(x)
+            return np.int(x)
         except:
             try:
-                return numpy.float(x)
+                return np.float(x)
             except:
                 return default
 
