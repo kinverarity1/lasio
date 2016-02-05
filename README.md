@@ -40,6 +40,8 @@ $ pip install --upgrade lasio
 
 Take a look through the [example Jupyter notebooks](http://nbviewer.ipython.org/github/kinverarity1/lasio/tree/master/notebooks) (or if that is down [try here](https://github.com/kinverarity1/lasio/tree/master/notebooks)) for detailed examples of how to use lasio
 
+Thanks to [@oliveirarodolfo](https://github.com/oliveirarodolfo) you can also explore [lasio tutorial notebooks](https://github.com/oliveirarodolfo/lasio-notebooks) live in your browser at [binder](http://mybinder.org/repo/oliveirarodolfo/lasio-notebooks): [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/oliveirarodolfo/lasio-notebooks) 
+
 Or as a quick example:
 
 ```python
