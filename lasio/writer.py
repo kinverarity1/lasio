@@ -156,7 +156,6 @@ def write(las, file_object, version=None, wrap=None, STRT=None, STOP=None, STEP=
             file_object.write(line + '\n')
 
 
-
 def get_formatter_function(order, left_width=None, middle_width=None):
     '''Create function to format a LAS header item.
 

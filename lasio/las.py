@@ -174,7 +174,7 @@ class LASFile(object):
 
         '''
         writer.write(self, file_object, version=version, wrap=wrap,
-            STRT=STRT, STOP=STOP, STEP=STEP, fmt=fmt)
+                     STRT=STRT, STOP=STOP, STEP=STEP, fmt=fmt)
 
     def get_curve(self, mnemonic):
         '''Return Curve object.
@@ -350,7 +350,6 @@ class Las(LASFile):
 
     '''
     pass
-
 
 
 class JSONEncoder(json.JSONEncoder):

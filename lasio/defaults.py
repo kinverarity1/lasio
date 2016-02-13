@@ -6,9 +6,6 @@ from las_items import (
 )
 
 
-
-
-
 DEFAULT_ITEMS = {
     'Version': SectionItems([
         HeaderItem('VERS', '', 2.0, 'CWLS log ASCII Standard -VERSION 2.0'),

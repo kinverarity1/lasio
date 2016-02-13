@@ -12,7 +12,9 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
+
 class HeaderItem(OrderedDict):
+
     def __init__(self, mnemonic, unit='', value='', descr='', **kwargs):
         super(HeaderItem, self).__init__()
 
@@ -57,13 +59,14 @@ class HeaderItem(OrderedDict):
         elif key == 'descr':
             return self.descr
         else:
-            raise KeyError('CurveItem only has restricted items (not %s)' % key)
+            raise KeyError(
+                'CurveItem only has restricted items (not %s)' % key)
 
     def __repr__(self):
         return (
             '%s(mnemonic=%s, unit=%s, value=%s, '
             'descr=%s, original_mnemonic=%s)' % (
-                self.__class__.__name__, self.mnemonic, self.unit, self.value, 
+                self.__class__.__name__, self.mnemonic, self.unit, self.value,
                 self.descr, self.original_mnemonic))
 
     def _repr_pretty_(self, p, cycle):
@@ -71,6 +74,7 @@ class HeaderItem(OrderedDict):
 
 
 class CurveItem(HeaderItem):
+
     def __init__(self, *args, **kwargs):
         self.data = np.ndarray([])
         super(CurveItem, self).__init__(*args, **kwargs)
@@ -78,12 +82,12 @@ class CurveItem(HeaderItem):
     @property
     def API_code(self):
         return self.value
-    
+
     def __repr__(self):
         return (
             '%s(mnemonic=%s, unit=%s, value=%s, '
             'descr=%s, original_mnemonic=%s, data.shape=%s)' % (
-                self.__class__.__name__, self.mnemonic, self.unit, self.value, 
+                self.__class__.__name__, self.mnemonic, self.unit, self.value,
                 self.descr, self.original_mnemonic, self.data.shape))
 
 
@@ -93,7 +97,7 @@ class SectionItems(list):
         '''Allows testing of a mnemonic or an actual item.'''
         for item in self:
             if testitem == item.mnemonic:
-                return True 
+                return True
             elif hasattr(testitem, 'mnemonic'):
                 if testitem.mnemonic == item.mnemonic:
                     return True
@@ -157,7 +161,7 @@ class SectionItems(list):
                 # about and tested more carefully.
 
                 logger.debug('SectionItems.__setitem__ Replaced %s item' % key)
-                return super(SectionItems, self).__setitem__(i, newitem)  
+                return super(SectionItems, self).__setitem__(i, newitem)
         else:
             self.append(newitem)
 
@@ -166,7 +170,8 @@ class SectionItems(list):
 
     def append(self, newitem):
         '''Check to see if the item's mnemonic needs altering.'''
-        logger.debug('SectionItems.append type=%s str=%s' % (type(newitem), newitem))
+        logger.debug('SectionItems.append type=%s str=%s' %
+                     (type(newitem), newitem))
         super(SectionItems, self).append(newitem)
 
         # Check to fix the :n suffixes
