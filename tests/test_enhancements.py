@@ -43,25 +43,20 @@ def test_autodepthindex_ft():
     assert (l.depth_m[-1] / 0.3048 == l.index[-1])
 
 def test_df_indexing():
-    l = read(egfn("6038187_v1.2.las"), use_pandas=True)
+    l = read(egfn("6038187_v1.2.las"))
     metres = 9.05
     spacing = l.well["STEP"].value
     calc_index = (metres / spacing) - (l.well["STRT"].value / spacing)
-    assert l["GAMN"][calc_index] == l.df.GAMN[metres]
-
-def test_use_pandas_False():
-    l = read(egfn("6038187_v1.2.las"), use_pandas=False)
-    l.df
-    assert True
+    assert l["GAMN"][calc_index] == l.df().GAMN[metres]
 
 # TODO: make above test in reverse-ordered LAS (e.g. STRT > STOP)
 def test_df_reverse():
-    l = read(egfn("sample_rev.las"), use_pandas=True)
+    l = read(egfn("sample_rev.las"))
     metres = 1667
     spacing = l.well["STEP"].value
     calc_index = (metres / spacing) - (l.well["STRT"].value / spacing)
-    assert l["DT"][calc_index] == l.df.DT[metres]
+    assert l["DT"][calc_index] == l.df().DT[metres]
 
 def test_df_curve_names():
-    l = read(egfn("sample_rev.las"), use_pandas=True)
-    assert l.keys()[1:] == list(l.df.columns.values)
+    l = read(egfn("sample_rev.las"))
+    assert l.keys()[1:] == list(l.df().columns.values)

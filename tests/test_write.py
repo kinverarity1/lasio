@@ -15,7 +15,7 @@ def test_write_sect_widths_12():
     s = StringIO()
     l.write(s, version=1.2)
     s.seek(0)
-    assert s.read() == """~Version ---------------------------------------------------
+    assert s.read() == '''~Version ---------------------------------------------------
 VERS. 1.2 : CWLS LOG ASCII STANDARD - VERSION 1.2
 WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
@@ -36,6 +36,10 @@ D.M     : 1  DEPTH
 A.US/M  : 2  SONIC TRANSIT TIME
 B.K/M3  : 3  BULK DENSITY
 C.V/V   : 4   NEUTRON POROSITY
+ .      : 
+ .      : 
+ .      : 
+ .      : 
 ~Params ----------------------------------------------------
 BHT .DEGC   35.5 : BOTTOM HOLE TEMPERATURE
 BS  .MM    200.0 : BIT SIZE
@@ -48,10 +52,10 @@ DFD .K/M3 1525.0 : DRILL FLUID DENSITY
 Note: The logging tools became stuck at 625 meters causing the data
 between 625 meters and 615 meters to be invalid.
 ~ASCII -----------------------------------------------------
-       1670     123.45       2550       0.45
-     1669.9     123.45       2550       0.45
-     1669.8     123.45       2550       0.45
-"""
+       1670     123.45       2550       0.45     123.45     123.45      110.2      105.6
+     1669.9     123.45       2550       0.45     123.45     123.45      110.2      105.6
+     1669.8     123.45       2550       0.45     123.45     123.45      110.2      105.6
+'''
 
 
 def test_write_sect_widths_12_curves():
@@ -165,8 +169,10 @@ def test_write_sample_empty_params():
     l.write(StringIO(), version=2)
 
 def test_df_curve_addition_on_export():
-    l = read(egfn("sample.las"), use_pandas=True)
-    l.df["ILD_COND"] = 1000 / l.df.ILD
+    l = read(egfn("sample.las"))
+    df = l.df()
+    df["ILD_COND"] = 1000 / df.ILD
+    l.set_data_from_df(df, truncate=False)
     s = StringIO()
     l.write(s, version=2, wrap=False, fmt="%.5f")
     s.seek(0)
