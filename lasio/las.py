@@ -41,7 +41,7 @@ except NameError:
     str = str
     unicode = str
     bytes = bytes
-    basestring = (str,bytes)
+    basestring = (str, bytes)
 else:
     # 'unicode' exists, must be Python 2
     str = str
@@ -59,68 +59,10 @@ import numpy as np
 import exceptions
 from las_items import (
     HeaderItem, CurveItem, SectionItems, OrderedDict
-    )
-
+)
+import defaults
 
 logger = logging.getLogger(__name__)
-
-
-DEFAULT_ITEMS = {
-    "Version": SectionItems([
-        HeaderItem("VERS", "", 2.0, "CWLS log ASCII Standard -VERSION 2.0"),
-        HeaderItem("WRAP", "", "NO", "One line per depth step"),
-        HeaderItem("DLM", "", "SPACE", "Column Data Section Delimiter"),
-        ]),
-    "Well": SectionItems([
-        HeaderItem("STRT", "m", np.nan, "START DEPTH"),
-        HeaderItem("STOP", "m", np.nan, "STOP DEPTH"),
-        HeaderItem("STEP", "m", np.nan, "STEP"),
-        HeaderItem("NULL", "", -9999.25, "NULL VALUE"),
-        HeaderItem("COMP", "", "", "COMPANY"),
-        HeaderItem("WELL", "", "", "WELL"),
-        HeaderItem("FLD", "", "", "FIELD"),
-        HeaderItem("LOC", "", "", "LOCATION"),
-        HeaderItem("PROV", "", "", "PROVINCE"),
-        HeaderItem("CNTY", "", "", "COUNTY"),
-        HeaderItem("STAT", "", "", "STATE"),
-        HeaderItem("CTRY", "", "", "COUNTRY"),
-        HeaderItem("SRVC", "", "", "SERVICE COMPANY"),
-        HeaderItem("DATE", "", "", "DATE"),
-        HeaderItem("UWI", "", "", "UNIQUE WELL ID"),
-        HeaderItem("API", "", "", "API NUMBER")
-        ]),
-    "Curves": SectionItems([]),
-    "Parameter": SectionItems([]),
-    "Other": "",
-    "Data": np.zeros(shape=(0, 1)),
-    }
-
-
-ORDER_DEFINITIONS = {
-    1.2: OrderedDict([
-        ("Version", ["value:descr"]),
-        ("Well", [
-            "descr:value",
-            ("value:descr", ["STRT", "STOP", "STEP", "NULL"])]),
-        ("Curves", ["value:descr"]),
-        ("Parameter", ["value:descr"]),
-        ]),
-    2.0: OrderedDict([
-        ("Version", ["value:descr"]),
-        ("Well", ["value:descr"]),
-        ("Curves", ["value:descr"]),
-        ("Parameter", ["value:descr"])
-        ])}
-
-
-URL_REGEXP = re.compile(
-    r'^(?:http|ftp)s?://'  # http:// or https://
-    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}'
-    r'\.?|[A-Z0-9-]{2,}\.?)|'  # (cont.) domain...
-    r'localhost|'  # localhost...
-    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
-    r'(?::\d+)?'  # optional port
-    r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 
 class LASFile(object):
@@ -131,7 +73,7 @@ class LASFile(object):
         file_ref: either a filename, an open file object, or a string of
             a LAS file contents.
         encoding (str): character encoding to open file_ref with
-        encoding_errors (str): "strict", "replace" (default), "ignore" - how to
+        encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
             handle errors with encodings (see standard library codecs module or
             Python Unicode HOWTO for more information)
         autodetect_encoding (bool): use chardet/ccharet to detect encoding
@@ -139,17 +81,18 @@ class LASFile(object):
             file for auto-detection of encoding.
 
     '''
+
     def __init__(self, file_ref=None, **kwargs):
 
         self._text = ''
         self.index_unit = None
         self.sections = {
-            "Version": DEFAULT_ITEMS["Version"],
-            "Well": DEFAULT_ITEMS["Well"],
-            "Curves": DEFAULT_ITEMS["Curves"],
-            "Parameter": DEFAULT_ITEMS["Parameter"],
-            "Other": str(DEFAULT_ITEMS["Other"]),
-            }
+            'Version': defaults.DEFAULT_ITEMS['Version'],
+            'Well': defaults.DEFAULT_ITEMS['Well'],
+            'Curves': defaults.DEFAULT_ITEMS['Curves'],
+            'Parameter': defaults.DEFAULT_ITEMS['Parameter'],
+            'Other': str(defaults.DEFAULT_ITEMS['Other']),
+        }
 
         if not (file_ref is None):
             self.read(file_ref, **kwargs)
@@ -163,7 +106,7 @@ class LASFile(object):
 
         Keyword Arguments:
             encoding (str): character encoding to open file_ref with
-            encoding_errors (str): "strict", "replace" (default), "ignore" - how to
+            encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
                 handle errors with encodings (see standard library codecs module or
                 Python Unicode HOWTO for more information)
             autodetect_encoding (bool): use chardet/cchardet to detect encoding
@@ -175,23 +118,23 @@ class LASFile(object):
         f = open_file(file_ref, **kwargs)
 
         self._text = f.read()
-        logger.debug("LASFile.read LAS content is type %s" % type(self._text))
+        logger.debug('LASFile.read LAS content is type %s' % type(self._text))
 
         reader = Reader(self._text, version=1.2)
-        self.sections["Version"] = reader.read_section('~V')
+        self.sections['Version'] = reader.read_section('~V')
 
         # Set version
         try:
-            # raise Exception("%s %s" % (type(self.version['VERS']), self.version["VERS"]))
+            # raise Exception('%s %s' % (type(self.version['VERS']), self.version['VERS']))
             reader.version = self.version['VERS'].value
         except KeyError:
-            raise KeyError("No key VERS in ~V section")
+            raise KeyError('No key VERS in ~V section')
 
         # Validate version
         try:
             assert reader.version in (1.2, 2)
         except AssertionError:
-            logger.warning("LAS spec version is %s -- neither 1.2 nor 2" %
+            logger.warning('LAS spec version is %s -- neither 1.2 nor 2' %
                            reader.version)
             if reader.version < 2:
                 reader.version = 1.2
@@ -199,13 +142,13 @@ class LASFile(object):
                 reader.version = 2
         reader.wrap = self.version['WRAP'].value == 'YES'
 
-        self.sections["Well"] = reader.read_section('~W')
-        self.sections["Curves"] = reader.read_section('~C')
+        self.sections['Well'] = reader.read_section('~W')
+        self.sections['Curves'] = reader.read_section('~C')
         try:
-            self.sections["Parameter"] = reader.read_section('~P')
+            self.sections['Parameter'] = reader.read_section('~P')
         except exceptions.LASHeaderError:
             logger.warning(traceback.format_exc().splitlines()[-1])
-        self.sections["Other"] = reader.read_raw_text('~O')
+        self.sections['Other'] = reader.read_raw_text('~O')
 
         # Set null value
         reader.null = self.well['NULL'].value
@@ -216,20 +159,19 @@ class LASFile(object):
         # for i, curve in enumerate(self.curves):
         #     curve.data = self.data[:, i]    # must be a view into self.data
 
-
-        if (self.well["STRT"].unit.upper() == "M" and
-                self.well["STOP"].unit.upper() == "M" and
-                self.well["STEP"].unit.upper() == "M" and
-                self.curves[0].unit.upper() == "M"):
-            self.index_unit = "M"
-        elif (self.well["STRT"].unit.upper() in ("F", "FT") and
-              self.well["STOP"].unit.upper() in ("F", "FT") and
-              self.well["STEP"].unit.upper() in ("F", "FT") and
-              self.curves[0].unit.upper() in ("F", "FT")):
-            self.index_unit = "FT"
+        if (self.well['STRT'].unit.upper() == 'M' and
+                self.well['STOP'].unit.upper() == 'M' and
+                self.well['STEP'].unit.upper() == 'M' and
+                self.curves[0].unit.upper() == 'M'):
+            self.index_unit = 'M'
+        elif (self.well['STRT'].unit.upper() in ('F', 'FT') and
+              self.well['STOP'].unit.upper() in ('F', 'FT') and
+              self.well['STEP'].unit.upper() in ('F', 'FT') and
+              self.curves[0].unit.upper() in ('F', 'FT')):
+            self.index_unit = 'FT'
 
     def write(self, file_object, version=None, wrap=None,
-              STRT=None, STOP=None, STEP=None, fmt="%10.5g"):
+              STRT=None, STOP=None, STEP=None, fmt='%10.5g'):
         '''Write to a file.
 
         Arguments:
@@ -247,29 +189,29 @@ class LASFile(object):
 
         Examples:
 
-            >>> with open("test_output.las", mode="w") as f:
+            >>> with open('test_output.las', mode='w') as f:
             ...     lasfile_obj.write(f, 2.0)   # <-- this method
 
         '''
         if wrap is None:
-            wrap = self.version["WRAP"] == "YES"
+            wrap = self.version['WRAP'] == 'YES'
         elif wrap is True:
-            self.version["WRAP"] = HeaderItem(
-                "WRAP", "", "YES", "Multiple lines per depth step")
+            self.version['WRAP'] = HeaderItem(
+                'WRAP', '', 'YES', 'Multiple lines per depth step')
         elif wrap is False:
-            self.version["WRAP"] = HeaderItem(
-                "WRAP", "", "NO", "One line per depth step")
+            self.version['WRAP'] = HeaderItem(
+                'WRAP', '', 'NO', 'One line per depth step')
         lines = []
 
         assert version in (1.2, 2, None)
         if version is None:
-            version = self.version["VERS"].value
+            version = self.version['VERS'].value
         if version == 1.2:
-            self.version["VERS"] = HeaderItem(
-                "VERS", "", 1.2, "CWLS LOG ASCII STANDARD - VERSION 1.2")
+            self.version['VERS'] = HeaderItem(
+                'VERS', '', 1.2, 'CWLS LOG ASCII STANDARD - VERSION 1.2')
         elif version == 2:
-            self.version["VERS"] = HeaderItem(
-                "VERS", "", 2.0, "CWLS log ASCII Standard -VERSION 2.0")
+            self.version['VERS'] = HeaderItem(
+                'VERS', '', 2.0, 'CWLS log ASCII Standard -VERSION 2.0')
 
         if STRT is None:
             STRT = self.index[0]
@@ -277,10 +219,9 @@ class LASFile(object):
             STOP = self.index[-1]
         if STEP is None:
             STEP = self.index[1] - self.index[0]  # Faster than np.gradient
-        self.well["STRT"].value = STRT
-        self.well["STOP"].value = STOP
-        self.well["STEP"].value = STEP
-
+        self.well['STRT'].value = STRT
+        self.well['STOP'].value = STOP
+        self.well['STEP'].value = STEP
 
         # Check for any changes in the pandas dataframe and if there are,
         # create new curves so they are reflected in the output LAS file.
@@ -290,43 +231,48 @@ class LASFile(object):
         #     for df_curve_name in list(self.df.columns.values):
         #         if not df_curve_name in curve_names():
         #             self.add_curve(df_curve_name, self.df[df_curve_name])
-        
+
         # Write each section.
 
         # ~Version
         logger.debug('LASFile.write Version section')
-        lines.append("~Version ".ljust(60, "-"))
-        order_func = get_section_order_function("Version", version)
-        section_widths = get_section_widths("Version", self.version, version, order_func)
+        lines.append('~Version '.ljust(60, '-'))
+        order_func = get_section_order_function('Version', version)
+        section_widths = get_section_widths(
+            'Version', self.version, version, order_func)
         for header_item in self.version.values():
             mnemonic = header_item.original_mnemonic
-            # logger.debug("LASFile.write " + str(header_item))
+            # logger.debug('LASFile.write ' + str(header_item))
             order = order_func(mnemonic)
-            # logger.debug("LASFile.write order = %s" % (order, ))
-            logger.debug('LASFile.write %s\norder=%s section_widths=%s' % (header_item, order, section_widths))
+            # logger.debug('LASFile.write order = %s' % (order, ))
+            logger.debug('LASFile.write %s\norder=%s section_widths=%s' % (
+                header_item, order, section_widths))
             formatter_func = get_formatter_function(order, **section_widths)
             line = formatter_func(header_item)
             lines.append(line)
 
         # ~Well
         logger.debug('LASFile.write Well section')
-        lines.append("~Well ".ljust(60, "-"))
-        order_func = get_section_order_function("Well", version)
-        section_widths = get_section_widths("Well", self.well, version, order_func)
+        lines.append('~Well '.ljust(60, '-'))
+        order_func = get_section_order_function('Well', version)
+        section_widths = get_section_widths(
+            'Well', self.well, version, order_func)
         # logger.debug('LASFile.write well section_widths=%s' % section_widths)
         for header_item in self.well.values():
             mnemonic = header_item.original_mnemonic
             order = order_func(mnemonic)
-            logger.debug('LASFile.write %s\norder=%s section_widths=%s' % (header_item, order, section_widths))
+            logger.debug('LASFile.write %s\norder=%s section_widths=%s' % (
+                header_item, order, section_widths))
             formatter_func = get_formatter_function(order, **section_widths)
             line = formatter_func(header_item)
             lines.append(line)
 
         # ~Curves
         logger.debug('LASFile.write Curves section')
-        lines.append("~Curves ".ljust(60, "-"))
-        order_func = get_section_order_function("Curves", version)
-        section_widths = get_section_widths("Curves", self.curves, version, order_func)
+        lines.append('~Curves '.ljust(60, '-'))
+        order_func = get_section_order_function('Curves', version)
+        section_widths = get_section_widths(
+            'Curves', self.curves, version, order_func)
         for header_item in self.curves:
             mnemonic = header_item.original_mnemonic
             order = order_func(mnemonic)
@@ -335,9 +281,10 @@ class LASFile(object):
             lines.append(line)
 
         # ~Params
-        lines.append("~Params ".ljust(60, "-"))
-        order_func = get_section_order_function("Parameter", version)
-        section_widths = get_section_widths("Parameter", self.params, version, order_func)
+        lines.append('~Params '.ljust(60, '-'))
+        order_func = get_section_order_function('Parameter', version)
+        section_widths = get_section_widths(
+            'Parameter', self.params, version, order_func)
         for header_item in self.params.values():
             mnemonic = header_item.original_mnemonic
             order = order_func(mnemonic)
@@ -346,22 +293,22 @@ class LASFile(object):
             lines.append(line)
 
         # ~Other
-        lines.append("~Other ".ljust(60, "-"))
+        lines.append('~Other '.ljust(60, '-'))
         lines += self.other.splitlines()
 
-        lines.append("~ASCII ".ljust(60, "-"))
+        lines.append('~ASCII '.ljust(60, '-'))
 
-        file_object.write("\n".join(lines))
-        file_object.write("\n")
+        file_object.write('\n'.join(lines))
+        file_object.write('\n')
 
         # data_arr = np.column_stack([c.data for c in self.curves])
         data_arr = self.data
         nrows, ncols = data_arr.shape
 
-        def format_data_section_line(n, fmt, l=10, spacer=" "):
+        def format_data_section_line(n, fmt, l=10, spacer=' '):
             try:
                 if np.isnan(n):
-                    return spacer + str(self.well["NULL"].value).rjust(l)
+                    return spacer + str(self.well['NULL'].value).rjust(l)
                 else:
                     return spacer + (fmt % n).rjust(l)
             except TypeError:
@@ -375,18 +322,19 @@ class LASFile(object):
 
             if wrap:
                 lines = twrapper.wrap(depth_slice)
-                logger.debug("LASFile.write Wrapped %d lines out of %s" %
+                logger.debug('LASFile.write Wrapped %d lines out of %s' %
                              (len(lines), depth_slice))
             else:
                 lines = [depth_slice]
 
-            if self.version["VERS"].value == 1.2:
+            if self.version['VERS'].value == 1.2:
                 for line in lines:
                     if len(line) > 255:
-                        logger.warning("LASFile.write Data line > 256 chars: %s" % line)
+                        logger.warning(
+                            'LASFile.write Data line > 256 chars: %s' % line)
 
             for line in lines:
-                file_object.write(line + "\n")
+                file_object.write(line + '\n')
 
     def get_curve(self, mnemonic):
         '''Return Curve object.
@@ -434,44 +382,43 @@ class LASFile(object):
 
     @property
     def version(self):
-        return self.sections["Version"]
-    
+        return self.sections['Version']
+
     @version.setter
     def version(self, section):
-        self.sections["Version"] = section
+        self.sections['Version'] = section
 
     @property
     def well(self):
-        return self.sections["Well"]
-    
+        return self.sections['Well']
+
     @well.setter
     def well(self, section):
-        self.sections["Well"] = section
+        self.sections['Well'] = section
 
     @property
     def curves(self):
-        return self.sections["Curves"]
-    
+        return self.sections['Curves']
+
     @curves.setter
     def curves(self, section):
-        self.sections["Curves"] = section
+        self.sections['Curves'] = section
 
     @property
     def params(self):
-        return self.sections["Parameter"]
-    
+        return self.sections['Parameter']
+
     @params.setter
     def params(self, section):
-        self.sections["Parameter"] = section
+        self.sections['Parameter'] = section
 
     @property
     def other(self):
-        return self.sections["Other"]
-    
+        return self.sections['Other']
+
     @other.setter
     def other(self, section):
-        self.sections["Other"] = section
-    
+        self.sections['Other'] = section
 
     @property
     def metadata(self):
@@ -523,23 +470,25 @@ class LASFile(object):
 
     @property
     def depth_m(self):
-        if self.index_unit == "M":
+        if self.index_unit == 'M':
             return self.index
-        elif self.index_unit == "FT":
+        elif self.index_unit == 'FT':
             return self.index * 0.3048
         else:
-            raise exceptions.LASUnknownUnitError("Unit of depth index not known")
+            raise exceptions.LASUnknownUnitError(
+                'Unit of depth index not known')
 
     @property
     def depth_ft(self):
-        if self.index_unit == "M":
+        if self.index_unit == 'M':
             return self.index / 0.3048
-        elif self.index_unit == "FT":
+        elif self.index_unit == 'FT':
             return self.index
         else:
-            raise exceptions.LASUnknownUnitError("Unit of depth index not known")
+            raise exceptions.LASUnknownUnitError(
+                'Unit of depth index not known')
 
-    def add_curve(self, mnemonic, data, unit="", descr="", value=""):
+    def add_curve(self, mnemonic, data, unit='', descr='', value=''):
         curve = CurveItem(mnemonic, unit, value, descr)
         if hasattr(self, 'data'):
             self.data = np.column_stack([self.data, data])
@@ -613,7 +562,7 @@ class Reader(object):
             try:
                 values = read_line(line)
             except:
-                raise exceptions.LASHeaderError("Failed in %s section on line:\n%s%s" % (
+                raise exceptions.LASHeaderError('Failed in %s section on line:\n%s%s' % (
                     section_name, line,
                     traceback.format_exc().splitlines()[-1]))
             else:
@@ -626,25 +575,28 @@ class Reader(object):
             try:
                 arr = np.loadtxt(StringIO(s))
             except:
-                raise exceptions.LASDataError("Failed to read data:\n%s" % (
-                                   traceback.format_exc().splitlines()[-1]))
+                raise exceptions.LASDataError('Failed to read data:\n%s' % (
+                    traceback.format_exc().splitlines()[-1]))
         else:
-            eol_chars = r"[\n\t\r]"
-            s = re.sub(eol_chars, " ", s)
+            eol_chars = r'[\n\t\r]'
+            s = re.sub(eol_chars, ' ', s)
             try:
                 arr = np.loadtxt(StringIO(s))
             except:
-                raise exceptions.LASDataError("Failed to read wrapped data: %s" % (
-                                   traceback.format_exc().splitlines()[-1]))
+                raise exceptions.LASDataError('Failed to read wrapped data: %s' % (
+                    traceback.format_exc().splitlines()[-1]))
             logger.debug('Reader.read_data arr shape = %s' % (arr.shape))
-            logger.debug('Reader.read_data number of curves = %s' % number_of_curves)
+            logger.debug('Reader.read_data number of curves = %s' %
+                         number_of_curves)
             arr = np.reshape(arr, (-1, number_of_curves))
         if not arr.shape or (arr.ndim == 1 and arr.shape[0] == 0):
             logger.warning('Reader.read_dataN o data present.')
             return None, None
         else:
-            logger.info('Reader.read_data LAS file shape = %s' % str(arr.shape))
-        logger.debug('Reader.read_data checking for nulls (NULL = %s)' % self.null)
+            logger.info('Reader.read_data LAS file shape = %s' %
+                        str(arr.shape))
+        logger.debug(
+            'Reader.read_data checking for nulls (NULL = %s)' % self.null)
         if null_subs:
             arr[arr == self.null] = np.nan
         return arr
@@ -675,12 +627,13 @@ class SectionParser(object):
 
         self.version = version
         self.section_name = section_name
-        self.section_name2 = {"~C": "Curves",
-                              "~W": "Well",
-                              "~V": "Version",
-                              "~P": "Parameter"}[section_name]
+        self.section_name2 = {'~C': 'Curves',
+                              '~W': 'Well',
+                              '~V': 'Version',
+                              '~P': 'Parameter'}[section_name]
 
-        section_orders = ORDER_DEFINITIONS[self.version][self.section_name2]
+        section_orders = defaults.ORDER_DEFINITIONS[
+            self.version][self.section_name2]
         self.default_order = section_orders[0]
         self.orders = {}
         for order, mnemonics in section_orders[1:]:
@@ -689,8 +642,8 @@ class SectionParser(object):
 
     def __call__(self, **keys):
         item = self.func(**keys)
-        # if item.name == "":
-        #     item.mnemonic = "UNKNOWN"
+        # if item.name == '':
+        #     item.mnemonic = 'UNKNOWN'
         return item
 
     def num(self, x, default=None):
@@ -705,21 +658,21 @@ class SectionParser(object):
                 return default
 
     def metadata(self, **keys):
-        key_order = self.orders.get(keys["name"], self.default_order)
-        if key_order == "value:descr":
+        key_order = self.orders.get(keys['name'], self.default_order)
+        if key_order == 'value:descr':
             return HeaderItem(
-                keys["name"],                 # mnemonic
-                keys["unit"],                 # unit
-                self.num(keys["value"]),      # value
-                keys["descr"],                # descr
-                )
-        elif key_order == "descr:value":
+                keys['name'],                 # mnemonic
+                keys['unit'],                 # unit
+                self.num(keys['value']),      # value
+                keys['descr'],                # descr
+            )
+        elif key_order == 'descr:value':
             return HeaderItem(
-                keys["name"],                   # mnemonic
-                keys["unit"],                   # unit
-                keys["descr"],                  # descr
-                self.num(keys["value"]),        # value
-                )
+                keys['name'],                   # mnemonic
+                keys['unit'],                   # unit
+                keys['descr'],                  # descr
+                self.num(keys['value']),        # value
+            )
 
     def curves(self, **keys):
         # logger.debug(str(keys))
@@ -728,7 +681,7 @@ class SectionParser(object):
             keys['unit'],               # unit
             keys['value'],              # value
             keys['descr'],              # descr
-            )
+        )
         return item
 
     def params(self, **keys):
@@ -737,7 +690,7 @@ class SectionParser(object):
             keys['unit'],               # unit
             self.num(keys['value']),    # value
             keys['descr'],              # descr
-            )
+        )
 
 
 def read_line(line, pattern=None):
@@ -752,29 +705,29 @@ def read_line(line, pattern=None):
         line (str): line from a LAS header section
 
     Returns:
-        A dictionary with keys "name", "unit", "value", and "descr", each
+        A dictionary with keys 'name', 'unit', 'value', and 'descr', each
         containing a string as value.
 
     '''
     d = {}
     if pattern is None:
-        pattern = (r"\.?(?P<name>[^.]*)\." +
-                   r"(?P<unit>[^\s:]*)" +
-                   r"(?P<value>[^:]*):" +
-                   r"(?P<descr>.*)")
+        pattern = (r'\.?(?P<name>[^.]*)\.' +
+                   r'(?P<unit>[^\s:]*)' +
+                   r'(?P<value>[^:]*):' +
+                   r'(?P<descr>.*)')
     m = re.match(pattern, line)
     mdict = m.groupdict()
-    # if mdict["name"] == "":
-    #     mdict["name"] = "UNKNOWN"
+    # if mdict['name'] == '':
+    #     mdict['name'] = 'UNKNOWN'
     for key, value in mdict.items():
         d[key] = value.strip()
-        if key == "unit":
-            if d[key].endswith("."):
-                d[key] = d[key].strip(".")  # see issue #36
+        if key == 'unit':
+            if d[key].endswith('.'):
+                d[key] = d[key].strip('.')  # see issue #36
     return d
 
 
-def open_file(file_ref, encoding=None, encoding_errors="replace",
+def open_file(file_ref, encoding=None, encoding_errors='replace',
               autodetect_encoding=False, autodetect_encoding_chars=40e3):
     '''Open a file if necessary.
 
@@ -787,7 +740,7 @@ def open_file(file_ref, encoding=None, encoding_errors="replace",
 
     Keyword Arguments:
         encoding (str): character encoding to open file_ref with
-        encoding_errors (str): "strict", "replace" (default), "ignore" - how to
+        encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
             handle errors with encodings (see standard library codecs module or
             Python Unicode HOWTO for more information)
         autodetect_encoding (bool): use chardet/ccharet to detect encoding
@@ -801,14 +754,14 @@ def open_file(file_ref, encoding=None, encoding_errors="replace",
     if isinstance(file_ref, str):
         lines = file_ref.splitlines()
         if len(lines) == 1:  # File name
-            if URL_REGEXP.match(file_ref):
+            if defaults.URL_REGEXP.match(file_ref):
                 try:
                     import urllib2
                     file_ref = urllib2.urlopen(file_ref)
                 except ImportError:
                     import urllib.request
                     response = urllib.request.urlopen(file_ref)
-                    enc = response.headers.get_content_charset("utf-8")
+                    enc = response.headers.get_content_charset('utf-8')
                     file_ref = StringIO(response.read().decode(enc))
             else:  # filename
                 data = get_unicode_from_filename(
@@ -816,7 +769,7 @@ def open_file(file_ref, encoding=None, encoding_errors="replace",
                     autodetect_encoding_chars)
                 file_ref = StringIO(data)
         else:
-            file_ref = StringIO("\n".join(lines))
+            file_ref = StringIO('\n'.join(lines))
     return file_ref
 
 
@@ -827,9 +780,9 @@ def get_unicode_from_filename(fn, enc, errors, auto, nbytes):
     Arguments:
         fn (str): path to file
         enc (str): encoding - can be None
-        errors (str): unicode error handling - can be "strict", "ignore", "replace"
+        errors (str): unicode error handling - can be 'strict', 'ignore', 'replace'
         auto (str): auto-detection of character encoding - can be either
-            "chardet", "cchardet", or True
+            'chardet', 'cchardet', or True
         nbytes (int): number of characters for read for auto-detection
 
     Returns:
@@ -842,14 +795,14 @@ def get_unicode_from_filename(fn, enc, errors, auto, nbytes):
     # Detect BOM in UTF-8 files
 
     nbytes_test = min(32, os.path.getsize(fn))
-    with open(fn, mode="rb") as test:
+    with open(fn, mode='rb') as test:
         raw = test.read(nbytes_test)
     if raw.startswith(codecs.BOM_UTF8):
-        enc = "utf-8-sig"
+        enc = 'utf-8-sig'
         auto = False
 
     if auto:
-        with open(fn, mode="rb") as test:
+        with open(fn, mode='rb') as test:
             if nbytes is None:
                 raw = test.read()
             else:
@@ -858,7 +811,7 @@ def get_unicode_from_filename(fn, enc, errors, auto, nbytes):
 
     # codecs.open is smarter than cchardet or chardet IME.
 
-    with codecs.open(fn, mode="r", encoding=enc, errors=errors) as f:
+    with codecs.open(fn, mode='r', encoding=enc, errors=errors) as f:
         data = f.read()
 
     return data
@@ -870,7 +823,7 @@ def get_encoding(auto, raw):
 
     Arguments:
         auto (str): auto-detection of character encoding - can be either
-            "chardet", "cchardet", or True
+            'chardet', 'cchardet', or True
         raw (bytes): array of bytes to detect from
 
     Returns:
@@ -885,33 +838,33 @@ def get_encoding(auto, raw):
                 import chardet
             except ImportError:
                 raise ImportError(
-                    "chardet or cchardet is required for automatic"
-                    " detection of character encodings.")
+                    'chardet or cchardet is required for automatic'
+                    ' detection of character encodings.')
             else:
-                logger.debug("get_encoding Using chardet")
-                method = "chardet"
+                logger.debug('get_encoding Using chardet')
+                method = 'chardet'
         else:
-            logger.debug("get_encoding Using cchardet")
-            method = "cchardet"
-    elif auto.lower() == "chardet":
+            logger.debug('get_encoding Using cchardet')
+            method = 'cchardet'
+    elif auto.lower() == 'chardet':
         import chardet
-        logger.debug("get_encoding Using chardet")
-        method = "chardet"
-    elif auto.lower() == "cchardet":
+        logger.debug('get_encoding Using chardet')
+        method = 'chardet'
+    elif auto.lower() == 'cchardet':
         import cchardet as chardet
-        logger.debug("get_encoding Using cchardet")
-        method = "cchardet"
+        logger.debug('get_encoding Using cchardet')
+        method = 'cchardet'
 
     result = chardet.detect(raw)
-    logger.debug("get_encoding %s results=%s" % (method, result))
-    return result["encoding"]
+    logger.debug('get_encoding %s results=%s' % (method, result))
+    return result['encoding']
 
 
 def get_formatter_function(order, left_width=None, middle_width=None):
     '''Create function to format a LAS header item.
 
     Arguments:
-        order: format of item, either "descr:value" or "value:descr" -- see
+        order: format of item, either 'descr:value' or 'value:descr' -- see
             LAS 1.2 and 2.0 specifications for more information.
 
     Keyword Arguments:
@@ -933,17 +886,17 @@ def get_formatter_function(order, left_width=None, middle_width=None):
     mnemonic_func = lambda mnemonic: mnemonic.ljust(left_width)
     middle_func = lambda unit, right_hand_item: (
         unit
-        + " " * (middle_width - len(str(unit)) - len(right_hand_item))
+        + ' ' * (middle_width - len(str(unit)) - len(right_hand_item))
         + right_hand_item
     )
-    if order == "descr:value":
-        return lambda item: "%s.%s : %s" % (
+    if order == 'descr:value':
+        return lambda item: '%s.%s : %s' % (
             mnemonic_func(item.original_mnemonic),
             middle_func(str(item.unit), str(item.descr)),
             item.value
         )
-    elif order == "value:descr":
-        return lambda item: "%s.%s : %s" % (
+    elif order == 'value:descr':
+        return lambda item: '%s.%s : %s' % (
             mnemonic_func(item.original_mnemonic),
             middle_func(str(item.unit), str(item.value)),
             item.descr
@@ -951,11 +904,11 @@ def get_formatter_function(order, left_width=None, middle_width=None):
 
 
 def get_section_order_function(section, version,
-                               order_definitions=ORDER_DEFINITIONS):
+                               order_definitions=defaults.ORDER_DEFINITIONS):
     '''Get a function that returns the order per mnemonic and section.
 
     Arguments:
-        section (str): either "well", "params", "curves", "version"
+        section (str): either 'well', 'params', 'curves', 'version'
         version (float): either 1.2 and 2.0
 
     Keyword Arguments:
@@ -963,7 +916,7 @@ def get_section_order_function(section, version,
 
     Returns:
         A function which takes a mnemonic (str) as its only argument, and 
-        in turn returns the order "value:descr" or "descr:value".
+        in turn returns the order 'value:descr' or 'descr:value'.
 
     '''
     section_orders = order_definitions[version][section]
@@ -979,23 +932,26 @@ def get_section_widths(section_name, items, version, order_func, middle_padding=
     '''Find minimum section widths fitting the content in *items*.
 
     Arguments:
-        section_name (str): either "version", "well", "curves", or "params"
+        section_name (str): either 'version', 'well', 'curves', or 'params'
         items (SectionItems): section items
         version (float): either 1.2 or 2.0
 
     '''
     section_widths = {
-        "left_width": None,
-        "middle_width": None
+        'left_width': None,
+        'middle_width': None
     }
     if len(items) > 0:
-        section_widths["left_width"] = max([len(i.original_mnemonic) for i in items])
+        section_widths['left_width'] = max(
+            [len(i.original_mnemonic) for i in items])
         middle_widths = []
         for i in items:
             order = order_func(i.mnemonic)
             rhs_element = order.split(':')[0]
-            logger.debug('get_section_widths %s\n\torder=%s rhs_element=%s' % (i, order, rhs_element))
-            middle_widths.append(len(str(i.unit)) + 1 + len(str(i[rhs_element])))
+            logger.debug(
+                'get_section_widths %s\n\torder=%s rhs_element=%s' % (i, order, rhs_element))
+            middle_widths.append(
+                len(str(i.unit)) + 1 + len(str(i[rhs_element])))
         section_widths['middle_width'] = max(middle_widths)
     return section_widths
 
@@ -1012,7 +968,7 @@ def read(file_ref, **kwargs):
 
     Keyword Arguments:
         encoding (str): character encoding to open file_ref with
-        encoding_errors (str): "strict", "replace" (default), "ignore" - how to
+        encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
             handle errors with encodings (see standard library codecs module or
             Python Unicode HOWTO for more information)
         autodetect_encoding (bool): use chardet/ccharet to detect encoding

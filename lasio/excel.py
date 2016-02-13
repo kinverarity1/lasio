@@ -35,11 +35,11 @@ class ExcelConverter(object):
             c = sh.cell(row=i + 1, column=j + 1)
             c.value = value
 
-        write_cell(header, 0, 0, "Section")
-        write_cell(header, 0, 1, "Mnemonic")
-        write_cell(header, 0, 2, "Unit")
-        write_cell(header, 0, 3, "Value")
-        write_cell(header, 0, 4, "Description")
+        write_cell(header, 0, 0, 'Section')
+        write_cell(header, 0, 1, 'Mnemonic')
+        write_cell(header, 0, 2, 'Unit')
+        write_cell(header, 0, 3, 'Value')
+        write_cell(header, 0, 4, 'Description')
 
         sections = [
             ('~Version', self.las.version),

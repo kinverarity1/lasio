@@ -61,8 +61,8 @@ class HeaderItem(OrderedDict):
 
     def __repr__(self):
         return (
-            "%s(mnemonic=%s, unit=%s, value=%s, "
-            "descr=%s, original_mnemonic=%s)" % (
+            '%s(mnemonic=%s, unit=%s, value=%s, '
+            'descr=%s, original_mnemonic=%s)' % (
                 self.__class__.__name__, self.mnemonic, self.unit, self.value, 
                 self.descr, self.original_mnemonic))
 
@@ -81,8 +81,8 @@ class CurveItem(HeaderItem):
     
     def __repr__(self):
         return (
-            "%s(mnemonic=%s, unit=%s, value=%s, "
-            "descr=%s, original_mnemonic=%s, data.shape=%s)" % (
+            '%s(mnemonic=%s, unit=%s, value=%s, '
+            'descr=%s, original_mnemonic=%s, data.shape=%s)' % (
                 self.__class__.__name__, self.mnemonic, self.unit, self.value, 
                 self.descr, self.original_mnemonic, self.data.shape))
 
@@ -127,7 +127,7 @@ class SectionItems(list):
         if isinstance(key, int):
             return super(SectionItems, self).__getitem__(key)
         else:
-            raise KeyError("%s not in %s" % (key, self.keys()))
+            raise KeyError('%s not in %s' % (key, self.keys()))
 
     def __setitem__(self, key, newitem):
         if isinstance(newitem, HeaderItem):
@@ -166,7 +166,7 @@ class SectionItems(list):
 
     def append(self, newitem):
         '''Check to see if the item's mnemonic needs altering.'''
-        logger.debug("SectionItems.append type=%s str=%s" % (type(newitem), newitem))
+        logger.debug('SectionItems.append type=%s str=%s' % (type(newitem), newitem))
         super(SectionItems, self).append(newitem)
 
         # Check to fix the :n suffixes
@@ -179,8 +179,8 @@ class SectionItems(list):
             current_count = 1
             for i, loc in enumerate(locations):
                 item = self[loc]
-                # raise Exception("%s" % str(type(item)))
-                item.mnemonic = item.useful_mnemonic + ":%d" % (i + 1)
+                # raise Exception('%s' % str(type(item)))
+                item.mnemonic = item.useful_mnemonic + ':%d' % (i + 1)
 
     def dictview(self):
         return dict(zip(self.keys(), [i.value for i in self.values()]))
