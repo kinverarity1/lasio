@@ -3,7 +3,8 @@ import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import pytest
 
 from lasio import read, ExcelConverter
-from lasio.las import StringIO
+
+from cStringIO import StringIO
 
 test_dir = os.path.dirname(__file__)
 
