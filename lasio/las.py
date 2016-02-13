@@ -89,7 +89,7 @@ class LASUnknownUnitError(Exception):
 
 
 class HeaderItem(OrderedDict):
-    def __init__(self, mnemonic, unit="", value="", descr=""):
+    def __init__(self, mnemonic, unit='', value='', descr='', **kwargs):
         super(HeaderItem, self).__init__()
 
         # The original mnemonic needs to be stored for rewriting a new file.
@@ -361,10 +361,9 @@ class LASFile(object):
             file for auto-detection of encoding.
 
     '''
-    def __init__(self, file_ref=None, use_pandas='auto', **kwargs):
+    def __init__(self, file_ref=None, **kwargs):
 
         self._text = ''
-        self._use_pandas = use_pandas
         self.index_unit = None
         self.sections = {
             "Version": DEFAULT_ITEMS["Version"],
@@ -377,7 +376,7 @@ class LASFile(object):
         if not (file_ref is None):
             self.read(file_ref, **kwargs)
 
-    def read(self, file_ref, use_pandas="auto", null_subs=True, **kwargs):
+    def read(self, file_ref, null_subs=True, **kwargs):
         '''Read a LAS file.
 
         Arguments:
@@ -385,9 +384,6 @@ class LASFile(object):
                 a LAS file contents.
 
         Keyword Arguments:
-            use_pandas (str): bool or "auto" -- use pandas if available -- provide
-                False option for faster loading where pandas functionality is not
-                needed. "auto" becomes True if pandas is installed, and False if not.
             encoding (str): character encoding to open file_ref with
             encoding_errors (str): "strict", "replace" (default), "ignore" - how to
                 handle errors with encodings (see standard library codecs module or
@@ -397,8 +393,6 @@ class LASFile(object):
                 file for auto-detection of encoding.
 
         '''
-        if not use_pandas is None:
-            self._use_pandas = use_pandas
 
         f = open_file(file_ref, **kwargs)
 
@@ -439,10 +433,11 @@ class LASFile(object):
         reader.null = self.well['NULL'].value
 
         data = reader.read_data(len(self.curves), null_subs=null_subs)
+        self.set_data(data, truncate=False)
+        # self.data = data
+        # for i, curve in enumerate(self.curves):
+        #     curve.data = self.data[:, i]    # must be a view into self.data
 
-        for i, c in enumerate(self.curves):
-            d = data[:, i]
-            c.data = d
 
         if (self.well["STRT"].unit.upper() == "M" and
                 self.well["STOP"].unit.upper() == "M" and
@@ -454,29 +449,6 @@ class LASFile(object):
               self.well["STEP"].unit.upper() in ("F", "FT") and
               self.curves[0].unit.upper() in ("F", "FT")):
             self.index_unit = "FT"
-
-        self.refresh()
-
-    def refresh(self, use_pandas=None):
-        '''Refresh curve names and indices.'''
-        if use_pandas is not None:
-            self._use_pandas = use_pandas
-
-        if self._use_pandas:
-            try:
-                import pandas
-            except ImportError:
-                self._use_pandas = False
-
-        if self._use_pandas:
-            logger.debug('_use_pandas=True -> create self.df')
-            self.df = pandas.DataFrame(self.data, columns=self.keys())
-            self.df.set_index(self.curves[0].mnemonic, inplace=True)
-
-    @property
-    def data(self):
-        '''2D array of data from LAS file.'''
-        return np.vstack([c.data for c in self.curves]).T
 
     def write(self, file_object, version=None, wrap=None,
               STRT=None, STOP=None, STEP=None, fmt="%10.5g"):
@@ -535,11 +507,11 @@ class LASFile(object):
         # Check for any changes in the pandas dataframe and if there are,
         # create new curves so they are reflected in the output LAS file.
 
-        if self._use_pandas:
-            curve_names = lambda: [ci.mnemonic for ci in self.curves]
-            for df_curve_name in list(self.df.columns.values):
-                if not df_curve_name in curve_names():
-                    self.add_curve(df_curve_name, self.df[df_curve_name])
+        # if self.use_pandas:
+        #     curve_names = lambda: [ci.mnemonic for ci in self.curves]
+        #     for df_curve_name in list(self.df.columns.values):
+        #         if not df_curve_name in curve_names():
+        #             self.add_curve(df_curve_name, self.df[df_curve_name])
         
         # Write each section.
 
@@ -604,7 +576,8 @@ class LASFile(object):
         file_object.write("\n".join(lines))
         file_object.write("\n")
 
-        data_arr = np.column_stack([c.data for c in self.curves])
+        # data_arr = np.column_stack([c.data for c in self.curves])
+        data_arr = self.data
         nrows, ncols = data_arr.shape
 
         def format_data_section_line(n, fmt, l=10, spacer=" "):
@@ -651,14 +624,6 @@ class LASFile(object):
             if curve.mnemonic == mnemonic:
                 return curve
 
-    # def __getattr__(self, key):
-    #     # if hasattr(self, 'sections'):
-    #     #     if key in self.sections['Curves']:
-    #     #         return self[key]
-    #     # else:
-    #     #     raise AttributeError
-    #     pass
-
     def __getitem__(self, key):
         if isinstance(key, int):
             return self.curves[key].data
@@ -667,9 +632,6 @@ class LASFile(object):
                 return self.curves[key].data
         else:
             super(LASFile, self).__getitem__(key)
-
-    # def __setattr__(self, key, value):
-    #     assert NotImplementedError('not yet')
 
     def __setitem__(self, key, value):
         assert NotImplementedError('not yet')
@@ -745,18 +707,37 @@ class LASFile(object):
     def metadata(self, value):
         raise Warning('Set values in the version/well/params attrs directly')
 
-    @property
     def df(self):
-        if self._use_pandas:
-            return self._df
-        else:
-            logger.warning(
-                "pandas is not installed or use_pandas was set to False")
-            # raise Warning("pandas is not installed or use_pandas was set to False")
+        import pandas as pd
+        df = pd.DataFrame(self.data, columns=[c.mnemonic for c in self.curves])
+        if len(self.curves) > 0:
+            df = df.set_index(self.curves[0].mnemonic)
+        return df
 
-    @df.setter
-    def df(self, value):
-        self._df = value
+    def set_data(self, array_like, names=None, truncate=False):
+        data = np.asarray(array_like)
+        if truncate:
+            data = data[:, len(self.curves)]
+        else:
+            for i in range(data.shape[1]):
+                if i < len(self.curves):
+                    curve = self.curves[i]
+                    if names:
+                        curve.name = names[i]
+                else:
+                    if names:
+                        name = names[i]
+                    else:
+                        name = ''
+                    curve = CurveItem(name)
+                    self.curves.insert(i, curve)
+                curve.data = data[:, i]
+        self.data = data
+
+    def set_data_from_df(self, df, **kwargs):
+        df_values = np.vstack([df.index.values, df.values.T]).T
+        names = [df.index.name] + [str(name) for name in df.columns.values]
+        self.set_data(df_values, names=names, **kwargs)
 
     @property
     def index(self):
@@ -781,11 +762,13 @@ class LASFile(object):
             raise LASUnknownUnitError("Unit of depth index not known")
 
     def add_curve(self, mnemonic, data, unit="", descr="", value=""):
-        # assert not mnemonic in self.curves
         curve = CurveItem(mnemonic, unit, value, descr)
-        curve.data = np.asarray(data)
+        if hasattr(self, 'data'):
+            self.data = np.column_stack([self.data, data])
+        else:
+            self.data = np.column_stack([data])
+        curve.data = self.data[:, -1]
         self.curves[mnemonic] = curve
-        self.refresh()
 
     @property
     def header(self):
