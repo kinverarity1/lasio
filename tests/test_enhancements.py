@@ -5,7 +5,7 @@ import fnmatch
 import numpy
 import pytest
 
-from lasio import las, read
+from lasio import las, read, exceptions
 
 
 test_dir = os.path.dirname(__file__)
@@ -24,7 +24,7 @@ def test_autodepthindex():
 
 def test_autodepthindex_inconsistent():
     err = read(egfn("autodepthindex_M_FT.las"))
-    with pytest.raises(las.LASUnknownUnitError):
+    with pytest.raises(exceptions.LASUnknownUnitError):
         print(err.depth_m)
 
 

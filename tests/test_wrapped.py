@@ -1,7 +1,8 @@
 import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from lasio import read
-from lasio.las import StringIO
+
+from lasio.reader import StringIO
 
 egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
 stegfn = lambda vers, fn: os.path.join(
