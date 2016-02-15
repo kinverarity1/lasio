@@ -4,7 +4,7 @@ import pytest
 
 from lasio import read, ExcelConverter
 
-from cStringIO import StringIO
+from lasio.reader import StringIO
 
 test_dir = os.path.dirname(__file__)
 
