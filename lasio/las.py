@@ -38,12 +38,12 @@ import numpy as np
 
 # internal lasio imports
 
-import exceptions
-from las_items import (
+from . import exceptions
+from .las_items import (
     HeaderItem, CurveItem, SectionItems, OrderedDict)
-import defaults
-import reader
-import writer
+from . import defaults
+from . import reader
+from . import writer
 
 logger = logging.getLogger(__name__)
 

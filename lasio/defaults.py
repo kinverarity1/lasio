@@ -1,7 +1,7 @@
 
 import numpy as np
 
-from las_items import (
+from .las_items import (
     HeaderItem, CurveItem, SectionItems, OrderedDict
 )
 

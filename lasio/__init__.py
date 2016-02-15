@@ -1,6 +1,6 @@
-from las import LASFile, JSONEncoder
-from las_items import CurveItem, HeaderItem, SectionItems
-from reader import open_file
+from .las import LASFile, JSONEncoder
+from .las_items import CurveItem, HeaderItem, SectionItems
+from .reader import open_file
 
 try:
     import openpyxl

@@ -28,9 +28,9 @@ except ImportError:
 else:
     from StringIO import StringIO
 
-import defaults
-import exceptions
-from las_items import HeaderItem, CurveItem, SectionItems, OrderedDict
+from . import defaults
+from . import exceptions
+from .las_items import HeaderItem, CurveItem, SectionItems, OrderedDict
 
 logger = logging.getLogger(__name__)
 
@@ -140,9 +140,10 @@ class Reader(object):
             try:
                 values = read_line(line)
             except:
-                raise exceptions.LASHeaderError('Failed in %s section on line:\n%s%s' % (
-                    section_name, line,
-                    traceback.format_exc().splitlines()[-1]))
+                raise exceptions.LASHeaderError(
+                    'Failed in %s section on line:\n%s%s' % (
+                        section_name, line,
+                        traceback.format_exc().splitlines()[-1]))
             else:
                 section.append(parser(**values))
         return section
@@ -161,8 +162,9 @@ class Reader(object):
             try:
                 arr = np.loadtxt(StringIO(s))
             except:
-                raise exceptions.LASDataError('Failed to read wrapped data: %s' % (
-                    traceback.format_exc().splitlines()[-1]))
+                raise exceptions.LASDataError(
+                    'Failed to read wrapped data: %s' % (
+                        traceback.format_exc().splitlines()[-1]))
             logger.debug('Reader.read_data arr shape = %s' % (arr.shape))
             logger.debug('Reader.read_data number of curves = %s' %
                          number_of_curves)

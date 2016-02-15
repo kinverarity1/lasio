@@ -3,15 +3,16 @@ import textwrap
 
 import numpy as np
 
-from las_items import (
+from .las_items import (
     HeaderItem, CurveItem, SectionItems, OrderedDict)
-import defaults
-import exceptions
+from . import defaults
+from . import exceptions
 
 logger = logging.getLogger(__name__)
 
 
-def write(las, file_object, version=None, wrap=None, STRT=None, STOP=None, STEP=None, fmt='%10.5g'):
+def write(las, file_object, version=None, wrap=None, STRT=None,
+          STOP=None, STEP=None, fmt='%10.5g'):
     if wrap is None:
         wrap = las.version['WRAP'] == 'YES'
     elif wrap is True:
@@ -224,7 +225,8 @@ def get_section_order_function(section, version,
     return lambda mnemonic: orders.get(mnemonic, default_order)
 
 
-def get_section_widths(section_name, items, version, order_func, middle_padding=5):
+def get_section_widths(section_name, items, version, order_func,
+                       middle_padding=5):
     '''Find minimum section widths fitting the content in *items*.
 
     Arguments:
@@ -245,7 +247,8 @@ def get_section_widths(section_name, items, version, order_func, middle_padding=
             order = order_func(i.mnemonic)
             rhs_element = order.split(':')[0]
             logger.debug(
-                'get_section_widths %s\n\torder=%s rhs_element=%s' % (i, order, rhs_element))
+                'get_section_widths %s\n\torder=%s rhs_element=%s' % (
+                    i, order, rhs_element))
             middle_widths.append(
                 len(str(i.unit)) + 1 + len(str(i[rhs_element])))
         section_widths['middle_width'] = max(middle_widths)
