@@ -93,6 +93,21 @@ class CurveItem(HeaderItem):
 
 class SectionItems(list):
 
+    def __str__(self):
+        rstr_lines = []
+        data = [['Mnemonic', 'Unit', 'Value', 'Description'],
+                ['--------', '----', '-----', '-----------']]
+        data += [[str(x) for x in [item.mnemonic, item.unit, item.value, item.descr]] for item in self]
+        col_widths = []
+        for i in range(len(data[0])):
+            col_widths.append(max([len(row[i]) for row in data]))
+        for row in data:
+            line_items = []
+            for i, item in enumerate(row):
+                line_items.append(item.ljust(col_widths[i] + 2))
+            rstr_lines.append(''.join(line_items))
+        return '\n'.join(rstr_lines)
+
     def __contains__(self, testitem):
         '''Allows testing of a mnemonic or an actual item.'''
         for item in self:
