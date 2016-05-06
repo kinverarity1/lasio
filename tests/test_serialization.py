@@ -22,3 +22,4 @@ def test_pickle_default_wb():
         pickle.dump(las, fw)
     with open('binary_serialization', 'rb') as fr:
         las = pickle.load(fr)
+    os.remove('binary_serialization')
