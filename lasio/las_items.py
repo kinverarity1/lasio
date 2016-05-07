@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class HeaderItem(OrderedDict):
 
-    def __init__(self, mnemonic, unit='', value='', descr='', **kwargs):
+    def __init__(self, mnemonic='', unit='', value='', descr='', **kwargs):
         super(HeaderItem, self).__init__()
 
         # The original mnemonic needs to be stored for rewriting a new file.
@@ -72,6 +72,9 @@ class HeaderItem(OrderedDict):
     def _repr_pretty_(self, p, cycle):
         return p.text(self.__repr__())
 
+    def __reduce__(self):
+        return self.__class__, (self.mnemonic, self.unit, self.value, self.descr)
+
 
 class CurveItem(HeaderItem):
 
@@ -92,6 +95,21 @@ class CurveItem(HeaderItem):
 
 
 class SectionItems(list):
+
+    def __str__(self):
+        rstr_lines = []
+        data = [['Mnemonic', 'Unit', 'Value', 'Description'],
+                ['--------', '----', '-----', '-----------']]
+        data += [[str(x) for x in [item.mnemonic, item.unit, item.value, item.descr]] for item in self]
+        col_widths = []
+        for i in range(len(data[0])):
+            col_widths.append(max([len(row[i]) for row in data]))
+        for row in data:
+            line_items = []
+            for i, item in enumerate(row):
+                line_items.append(item.ljust(col_widths[i] + 2))
+            rstr_lines.append(''.join(line_items))
+        return '\n'.join(rstr_lines)
 
     def __contains__(self, testitem):
         '''Allows testing of a mnemonic or an actual item.'''
