@@ -72,6 +72,9 @@ class HeaderItem(OrderedDict):
     def _repr_pretty_(self, p, cycle):
         return p.text(self.__repr__())
 
+    def __reduce__(self):
+        return self.__class__, (self.mnemonic, self.unit, self.value, self.descr)
+
 
 class CurveItem(HeaderItem):
 
