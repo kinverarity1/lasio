@@ -143,6 +143,7 @@ class Reader(object):
 
     def read_raw_text(self, section_name, return_section=False):
 
+        s = None
         lines = []
         for s, l in self.iter_section_lines(section_name,
                                             ignore_comments=False):

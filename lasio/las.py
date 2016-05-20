@@ -138,7 +138,7 @@ class LASFile(object):
         # service companies (eg IHS) insist on adding.
         s, d = read_parser.read_raw_text(r'~[BDEFGHIJKLMNQRSTUXYZ]',
                                                 return_section=True)
-        if d is not None:
+        if s is not None and d is not None:
             logger.warning('Found nonstandard LAS section: ' + s)
             self.sections[s] = d
 
