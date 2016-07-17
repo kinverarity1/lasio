@@ -43,6 +43,16 @@ def write(las, file_object, version=None, wrap=None, STRT=None,
     las.well['STOP'].value = STOP
     las.well['STEP'].value = STEP
 
+    # Check units
+    if las.curves[0].unit:
+        unit = las.curves[0].unit
+    else:
+        unit = las.well['STRT'].unit
+    las.well['STRT'].unit = unit
+    las.well['STOP'].unit = unit
+    las.well['STEP'].unit = unit
+    las.curves[0].unit = unit
+
     # Check for any changes in the pandas dataframe and if there are,
     # create new curves so they are reflected in the output LAS file.
 

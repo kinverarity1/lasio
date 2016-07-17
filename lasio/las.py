@@ -328,7 +328,14 @@ class LASFile(object):
             raise exceptions.LASUnknownUnitError(
                 'Unit of depth index not known')
 
-    def add_curve(self, mnemonic, data, unit='', descr='', value=''):
+    def add_curve(self, *args, **kwargs):
+        if isinstance(args[0], CurveItem):
+            for curve in args:
+                self.curves[curve.mnemonic] = curve
+        else:
+            self.add_curve_raw(*args, **kwargs)
+
+    def add_curve_raw(self, mnemonic, data, unit='', descr='', value=''):
         curve = CurveItem(mnemonic, unit, value, descr)
         if hasattr(self, 'data'):
             self.data = np.column_stack([self.data, data])
