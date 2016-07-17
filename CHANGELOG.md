@@ -10,4 +10,4 @@
 ## version 0.11
 
 - Reorganise code into modules
-- 
+- various 
