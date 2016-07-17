@@ -7,3 +7,7 @@
 - Added examples for using pandas DataFrame (.df attribute)
 - LAS > Excel script refined (las2excel.py)
 
+## version 0.11
+
+- Reorganise code into modules
+- 
