@@ -8,6 +8,8 @@ This is a Python 2/3 package to read and write Log ASCII Standard (LAS) files, u
 
 Depending on your particular application you may also want to check out  [striplog](https://github.com/agile-geoscience/striplog) for stratigraphic/lithological data, or (still in alpha dev) [welly](https://github.com/agile-geoscience/welly) for dealing with data at the well level. lasio is primarily for reading & writing LAS files.
 
+Note this is *not* a package for reading LiDAR data (also called "LAS files").
+
 ## Installation
 
 [![](https://img.shields.io/pypi/pyversions/lasio.svg)](https://www.python.org/downloads/)

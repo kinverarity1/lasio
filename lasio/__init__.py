@@ -9,7 +9,7 @@ except ImportError:
 else:
     from .excel import ExcelConverter
 
-__version__ = '0.10'
+__version__ = '0.11.2'
 
 
 def read(file_ref, **kwargs):
