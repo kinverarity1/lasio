@@ -6,7 +6,7 @@ from os import path
 
 from lasio import __version__
 
-requirements = ['numpy', 'namedlist', 'ordereddict', 'xlwt']
+requirements = ['numpy']
 
 setup(name='lasio',
       version=__version__,

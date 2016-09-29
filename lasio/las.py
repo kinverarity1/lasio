@@ -6,16 +6,11 @@ See README.rst and LICENSE for more information.
 from __future__ import print_function
 
 # Standard library packages
-import codecs
 import json
 import logging
-import os
-import re
-import textwrap
 import traceback
 
 # get basestring in py3
-
 try:
     unicode = unicode
 except NameError:
@@ -32,15 +27,12 @@ else:
     basestring = basestring
 
 # Required third-party packages available on PyPi:
-
-from namedlist import namedlist
 import numpy as np
 
 # internal lasio imports
-
 from . import exceptions
-from .las_items import (
-    HeaderItem, CurveItem, SectionItems, OrderedDict)
+from .las_items import CurveItem
+from .las_items import SectionItems
 from . import defaults
 from . import reader
 from . import writer
