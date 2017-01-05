@@ -331,7 +331,7 @@ class LASFile(object):
     def add_curve(self, *args, **kwargs):
         if isinstance(args[0], CurveItem):
             for curve in args:
-                self.curves[curve.mnemonic] = curve
+                self.curves.append(curve)
         else:
             self.add_curve_raw(*args, **kwargs)
 
@@ -342,7 +342,7 @@ class LASFile(object):
         else:
             self.data = np.column_stack([data])
         curve.data = self.data[:, -1]
-        self.curves[mnemonic] = curve
+        self.curves.append(curve)
 
     @property
     def header(self):
