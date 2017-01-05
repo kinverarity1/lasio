@@ -22,6 +22,7 @@ class ExcelConverter(object):
     def set_las(self, las):
         self.las = las
         self.generate_workbook()
+        return self
 
     def generate_workbook(self):
         wb = openpyxl.Workbook()
@@ -66,6 +67,7 @@ class ExcelConverter(object):
                     write_cell(curves, j + 1, i, value)
 
         self.workbook = wb
+        return self
 
     def write(self, xlsxfn):
         assert xlsxfn.lower().endswith('.xlsx')

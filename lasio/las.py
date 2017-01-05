@@ -348,6 +348,13 @@ class LASFile(object):
     def header(self):
         return self.sections
 
+    @property
+    def curvesdict(self):
+        d = {}
+        for curve in self.curves:
+            d[curve['mnemonic']] = curve
+        return d
+
 
 class Las(LASFile):
 
