@@ -13,7 +13,7 @@ WELL    .       AAAAA_2            :WELL
 FLD     .       WILDCAT                          :FIELD
 LOC     .       12-34-12-34W5M                   :LOCATION
 PROV    .       ALBERTA                          :PROVINCE 
-SRVC    .       ANY LOGGING COMPANY INC.         :SERVICE COMPANY
+SRVC    .       The company that did this logging has a very very long name....:SERVICE COMPANY
 DATE    .       13-DEC-86                        :LOG DATE
 UWI     .       100123401234W500                 :UNIQUE WELL ID
 ~CURVE INFORMATION

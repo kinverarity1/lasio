@@ -8,14 +8,14 @@ STRT    .M              1670.0000                :START DEPTH
 STOP    .M              1660.0000                :STOP DEPTH
 STEP    .M              -0.1250                  :STEP 
 NULL    .               -999.25                  :NULL VALUE
-COMP    .       ANY OIL COMPANY INC.             :COMPANY
+COMP    .       ANY                              :COMPANY
 WELL    .       AAAAA_2            :WELL
 FLD     .       WILDCAT                          :FIELD
-LOC     .       12-34-12-34W5M                   :LOCATION
+LOC     .       12                 :LOCATION
 PROV    .       ALBERTA                          :PROVINCE 
-SRVC    .       ANY LOGGING COMPANY INC.         :SERVICE COMPANY
+SRVC    .       LOGGING:SERVICE COMPANY ARE YOU KIDDING THIS IS A REALLY REALLY LONG STRING
 DATE    .       13-DEC-86                        :LOG DATE
-UWI     .       100123401234W500                 :UNIQUE WELL ID
+UWI     .       10012340              :UNIQUE WELL ID
 ~CURVE INFORMATION
 #MNEM.UNIT              API CODES                   CURVE DESCRIPTION
 #------------------     ------------              -------------------------
