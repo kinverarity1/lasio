@@ -117,12 +117,18 @@ class LASFile(object):
         try:
             assert read_parser.version in (1.2, 2, 3)
         except AssertionError:
-            logger.warning('LAS spec version is %s -- neither 1.2 nor 2' %
+            logger.warning('LAS spec version is %s -- neither 1.2, 2 nor 3' %
                            read_parser.version)
             if read_parser.version < 2:
                 read_parser.version = 1.2
             else:
                 read_parser.version = 2
+
+        if read_parser.version==3:
+            asstructured_dtype = True
+        else:
+            asstructured_dtype = False
+
         read_parser.wrap = self.version['WRAP'].value == 'YES'
 
         self.sections['Well'] = read_parser.read_section('~W')
@@ -136,8 +142,10 @@ class LASFile(object):
         # Set null value
         read_parser.null = self.well['NULL'].value
 
-        data = read_parser.read_data(len(self.curves), null_subs=null_subs)
-        self.set_data(data, truncate=False)
+        strformats = [c["strformat"] for c in self.curves]
+        data = read_parser.read_data(len(self.curves), null_subs=null_subs, strformats=strformats,
+                                     asstructured_dtype=asstructured_dtype)
+        self.set_data(data, truncate=False, asstructured_dtype=asstructured_dtype)
 
         if (self.well['STRT'].unit.upper() == 'M' and
                 self.well['STOP'].unit.upper() == 'M' and
@@ -279,8 +287,11 @@ class LASFile(object):
             df = df.set_index(self.curves[0].mnemonic)
         return df
 
-    def set_data(self, array_like, names=None, truncate=False):
+    def set_data(self, array_like, names=None, truncate=False, asstructured_dtype=False):
         data = np.asarray(array_like)
+        if asstructured_dtype:
+            self.data = data
+            return
         if truncate:
             data = data[:, len(self.curves)]
         else:

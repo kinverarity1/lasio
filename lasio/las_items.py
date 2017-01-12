@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class HeaderItem(OrderedDict):
 
-    def __init__(self, mnemonic='', unit='', value='', descr='', **kwargs):
+    def __init__(self, mnemonic='', unit='', value='', descr='', strformat='', **kwargs):
         super(HeaderItem, self).__init__()
 
         # The original mnemonic needs to be stored for rewriting a new file.
@@ -44,6 +44,7 @@ class HeaderItem(OrderedDict):
         self.unit = unit
         self.value = value
         self.descr = descr
+        self.strformat = strformat
 
     def __getitem__(self, key):
         if key == 'mnemonic':
@@ -58,6 +59,8 @@ class HeaderItem(OrderedDict):
             return self.value
         elif key == 'descr':
             return self.descr
+        elif key == 'strformat':
+            return self.strformat
         else:
             raise KeyError(
                 'CurveItem only has restricted items (not %s)' % key)
@@ -88,9 +91,9 @@ class CurveItem(HeaderItem):
 
     def __repr__(self):
         return (
-            '%s(mnemonic=%s, unit=%s, value=%s, '
+            '%s(mnemonic=%s, unit=%s, value=%s, strformat=%s, '
             'descr=%s, original_mnemonic=%s, data.shape=%s)' % (
-                self.__class__.__name__, self.mnemonic, self.unit, self.value,
+                self.__class__.__name__, self.mnemonic, self.unit, self.value, self.strformat,
                 self.descr, self.original_mnemonic, self.data.shape))
 
 

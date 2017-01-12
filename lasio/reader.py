@@ -1,6 +1,7 @@
 
 # Standard library packages
 import codecs
+from datetime import datetime
 import json
 import logging
 import os
@@ -148,11 +149,66 @@ class Reader(object):
                 section.append(parser(**values))
         return section
 
-    def read_data(self, number_of_curves=None, null_subs=True):
+    @staticmethod
+    def format2dtype(f):
+        "Stupid implementation for now"
+        if f.startswith("F"):
+            return "float64"
+        if f.startswith("I"):
+            return "int64"
+        if f.startswith("S"):
+            return "<U20"
+        if f.startswith("E"):
+            return "float64"
+        if f.startswith("A"):
+            logger.warning("Array not supported (format %s)",f)
+            return "float64"
+        d = {
+            "F13.4": "float64",
+            # "S": "datetime64[ms]",
+            "S": "<U20",
+            "": "float64"
+        }
+        try:
+            c = d[f]
+        except KeyError:
+            logger.error("Key %s missing",f)
+            c = "float64"
+        return c
+
+    @staticmethod
+    def format2converter(f):
+        d = {
+            "F13.4": None,
+            # "S": lambda st: np.datetime64(datetime.strptime(st.decode("utf-8"), "%H:%M:%S/%d-%b-%Y")),
+            "S:": None,
+            "": None
+        }
+        try:
+            c = d[f]
+        except KeyError:
+            c = None
+        return c
+
+    def read_data(self, number_of_curves=None, null_subs=True, strformats=None, asstructured_dtype=False):
         s = self.read_data_string()
+        if strformats is None:
+            dtypes = np.dtype(np.float)
+            converters = None
+        else:
+            dtypelist = list(map(self.format2dtype,strformats))
+            dtypes = ",".join(dtypelist)
+            converters = {}
+            for i,e in enumerate(strformats):
+                conv = self.format2converter(e)
+                if conv is not None:
+                    converters[i]= conv
         if not self.wrap:
             try:
-                arr = np.loadtxt(StringIO(s))
+                if asstructured_dtype:
+                    arr = np.loadtxt(StringIO(s), dtypes, converters=converters)
+                else:
+                    arr = np.loadtxt(StringIO(s))
             except:
                 raise exceptions.LASDataError('Failed to read data:\n%s' % (
                     traceback.format_exc().splitlines()[-1]))
@@ -177,8 +233,8 @@ class Reader(object):
                         str(arr.shape))
         logger.debug(
             'Reader.read_data checking for nulls (NULL = %s)' % self.null)
-        if null_subs:
-            arr[arr == self.null] = np.nan
+#        if null_subs:
+#            arr[arr == self.null] = np.nan
         return arr
 
     def read_data_string(self):
@@ -188,6 +244,8 @@ class Reader(object):
             if line.startswith('~A'):
                 start_data = i + 1
                 break
+        if start_data is None:
+            return ""
         s = '\n'.join(self.lines[start_data:])
         s = re.sub(r'(\d)-(\d)', r'\1 -\2', s)
         s = re.sub('-?\d*\.\d*\.\d*', ' NaN NaN ', s)
@@ -261,6 +319,7 @@ class SectionParser(object):
             keys['unit'],               # unit
             keys['value'],              # value
             keys['descr'],              # descr
+            keys['strformat']
         )
         return item
 
@@ -294,12 +353,15 @@ def read_line(line, pattern=None):
         pattern = (r'\.?(?P<name>[^.]*)\.' +
                    r'(?P<unit>[^\s:]*)' +
                    r'(?P<value>[^:]*):' +
-                   r'(?P<descr>.*)')
+                   r'(?P<descr>[^\{\}]*)' +
+                   r'(\{(?P<strformat>.*)\})?')
     m = re.match(pattern, line)
     mdict = m.groupdict()
     # if mdict['name'] == '':
     #     mdict['name'] = 'UNKNOWN'
     for key, value in mdict.items():
+        if value is None:
+            value = ''
         d[key] = value.strip()
         if key == 'unit':
             if d[key].endswith('.'):
