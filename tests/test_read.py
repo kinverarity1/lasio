@@ -53,6 +53,10 @@ def test_read_v3_sample():
     l = read(stegfn("3.0", "sample_3.0.las"))
 
 
+def test_read_v3_sample2():
+    l = read(stegfn("3.0", "memory_data_shortened_3.0.las"))
+
+
 def test_read_v3_sample_spec():
     l = read(stegfn("3.0", "sample_las3.0_spec.las"))
 
