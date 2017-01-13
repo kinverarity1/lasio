@@ -255,9 +255,13 @@ class SectionParser(object):
             return np.int(x)
         except:
             try:
-                return np.float(x)
+                x_ = np.float(x)
             except:
                 return default
+        if not np.isinf(x_):
+            return x_
+        else:
+            return default
 
     def metadata(self, **keys):
         key_order = self.orders.get(keys['name'], self.default_order)
