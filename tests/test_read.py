@@ -115,3 +115,8 @@ def test_multi_curve_mnemonics_gr():
 # GR[3].gAPI: gamma ray image at angle 180 dega
 # GR[4].gAPI: gamma ray image at angle 240 dega
 # GR[5].gAPI: gamma ray image at angle 300 dega
+
+def test_inf_uwi():
+    l = read(stegfn('2.0', 'sample_2.0_inf_uwi.las'))
+    assert l.well['UWI'].value == '300E074350061450'
+
