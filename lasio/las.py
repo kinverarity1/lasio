@@ -137,7 +137,8 @@ class LASFile(object):
         read_parser.null = self.well['NULL'].value
 
         data = read_parser.read_data(len(self.curves), null_subs=null_subs)
-        self.set_data(data, truncate=False)
+        if data is not None:
+            self.set_data(data, truncate=False)
 
         if (self.well['STRT'].unit.upper() == 'M' and
                 self.well['STOP'].unit.upper() == 'M' and

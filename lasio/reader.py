@@ -171,7 +171,7 @@ class Reader(object):
             arr = np.reshape(arr, (-1, number_of_curves))
         if not arr.shape or (arr.ndim == 1 and arr.shape[0] == 0):
             logger.warning('Reader.read_dataN o data present.')
-            return None, None
+            return None
         else:
             logger.info('Reader.read_data LAS file shape = %s' %
                         str(arr.shape))
@@ -188,6 +188,8 @@ class Reader(object):
             if line.startswith('~A'):
                 start_data = i + 1
                 break
+        if start_data is None:
+            return ""
         s = '\n'.join(self.lines[start_data:])
         s = re.sub(r'(\d)-(\d)', r'\1 -\2', s)
         s = re.sub('-?\d*\.\d*\.\d*', ' NaN NaN ', s)
