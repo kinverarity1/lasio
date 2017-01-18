@@ -147,7 +147,6 @@ class LASFile(object):
             if c.valueformat.__contains__("D"):
                 timecurves.append(i)
                 timeformats.append(c.valueformat)
-        print(timecurves,timeformats)
 
         data = read_parser.read_data(len(self.curves), null_subs=null_subs,
                                      timecurves=timecurves, timeformats=timeformats)
