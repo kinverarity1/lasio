@@ -26,7 +26,7 @@ DATE            .                    01/22/2016            :LOG DATE(Composite D
 #MNEM           .UNIT                  API CODE            :DESCRIPTION
 #----            ------          --------------            -----------------------------
 TIME_1900       .d                                         :                                                        Time Index(OLE Automation date){S}
-TIME            .s                                         :                                (1s)                    Time(hh mm ss/dd-MMM-yyyy){S}
+TIME            .s                                         :                                (1s)                    Time(hh mm ss/dd-MMM-yyyy){hh:mm:ss/DD-MMM-YYYY}
 ROP5            .m/h                                       :(RT)    (DRILLING_SURFACE)                              Rate of penetration averaged over the last 5 ft (1.5 m){F13.4}
 DEPTH           .m                                         :(RT)    (DnMWorkflow)                                   Depth Index{F13.4}
 HDTH            .m                                         :(RT)    (DnMWorkflow)                                   Hole Depth{F13.4}
