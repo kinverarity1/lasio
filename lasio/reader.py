@@ -9,6 +9,7 @@ import textwrap
 import traceback
 
 import numpy as np
+import pandas as pd
 
 # Convoluted import for StringIO in order to support:
 #
@@ -153,6 +154,15 @@ class Reader(object):
         if not self.wrap:
             try:
                 arr = np.loadtxt(StringIO(s))
+            except ValueError as ve:
+                # If parsing with numpy fails, try pandas
+                sepstrings = {
+                    "SPACE": " *",
+                    "TAB": r"\t*",
+                    "COMMA": ","
+                }
+                arr = pd.read_csv(StringIO(s), sep=sepstrings[self.dlm], engine='python', header=None)
+                arr = arr.apply(lambda x: pd.to_numeric(x, errors='ignore'))
             except:
                 raise exceptions.LASDataError('Failed to read data:\n%s' % (
                     traceback.format_exc().splitlines()[-1]))

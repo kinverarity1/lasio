@@ -56,6 +56,18 @@ def test_read_v3_sample():
 def test_read_v3_sample2():
     l = read(stegfn("3.0", "memory_data_shortened_3.0.las"))
 
+def test_read_v3_sample2_depthdtype():
+    l = read(stegfn("3.0", "memory_data_shortened_3.0.las"))
+    assert l["DEPTH"].dtype is numpy.dtype('float'), "Depth dtype should be float, was %s" % l["DEPTH"].dtype
+
+def test_read_v3_sample2_timedtype():
+    l = read(stegfn("3.0", "memory_data_shortened_3.0.las"))
+    assert l["TIME"].dtype is numpy.datetime64, "Time dtype should be datetime64, was %s" % l["DEPTH"].dtype
+
+def test_read_v3_pandas_column():
+    l = read(stegfn("3.0", "memory_data_shortened_3.0.las"))
+    col = l["DEPTH"]
+    assert col.size >= 3
 
 def test_read_v3_sample_spec():
     l = read(stegfn("3.0", "sample_las3.0_spec.las"))

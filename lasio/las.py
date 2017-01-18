@@ -35,6 +35,7 @@ else:
 
 from namedlist import namedlist
 import numpy as np
+import pandas as pd
 
 # internal lasio imports
 
@@ -133,8 +134,12 @@ class LASFile(object):
             logger.warning(traceback.format_exc().splitlines()[-1])
         self.sections['Other'] = read_parser.read_raw_text('~O')
 
-        # Set null value
+        # Set data section parsing parameters
         read_parser.null = self.well['NULL'].value
+        if "DLM" in self.version:
+            read_parser.dlm = self.version['DLM'].value
+        else:
+            read_parser.dlm = "SPACE"
 
         data = read_parser.read_data(len(self.curves), null_subs=null_subs)
         if data is not None:
@@ -281,6 +286,13 @@ class LASFile(object):
         return df
 
     def set_data(self, array_like, names=None, truncate=False):
+        if type(array_like) is pd.DataFrame:
+            curvelist = [c.mnemonic for c in self.curves]
+            self.data = array_like
+            self.data.columns = curvelist
+            for c in self.curves:
+                c.data = self.data[c.mnemonic]
+            return
         data = np.asarray(array_like)
         if truncate:
             data = data[:, len(self.curves)]
