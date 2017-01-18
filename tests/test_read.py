@@ -48,6 +48,18 @@ def test_read_v2_sample_minimal():
 def test_read_v2_sample_wrapped():
     l = read(stegfn("2.0", "sample_2.0_wrapped.las"))
 
+import lasio.reader
+def test_parameter_pattern_with_format():
+    d = lasio.reader.read_line(
+        r"ROP5            .m/h                                       :(RT)    (DRILLING_SURFACE)                              Rate of penetration averaged over the last 5 ft (1.5 m){F13.4}")
+    correct_d = {'format': 'F13.4',
+                 'value': '',
+                 'name': 'ROP5',
+                 'associations': '',
+                 'descr': '(RT)    (DRILLING_SURFACE)                              Rate of penetration averaged over the last 5 ft (1.5 m)',
+                 'unit': 'm/h'}
+    assert d == correct_d
+
 
 def test_read_v3_sample():
     l = read(stegfn("3.0", "sample_3.0.las"))

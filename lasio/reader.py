@@ -308,14 +308,19 @@ def read_line(line, pattern=None):
     if pattern is None:
         pattern = (r'\.?(?P<name>[^.]*)\.' +
                    r'(?P<unit>[^\s:]*)' +
-                   r'(?P<value>[^:]*):' +
-                   r'(?P<descr>.*)')
+                   r'(?P<value>[^:]*):' +    # TODO Handle values quoted in "
+                   r'(?P<descr>[^\{\|]*)' +
+                   r'(\{(?P<format>.*)\})?' +  # TODO Handle multiple sets of {}
+                   r'(\|(?P<associations>.*))?')
     m = re.match(pattern, line)
     mdict = m.groupdict()
     # if mdict['name'] == '':
     #     mdict['name'] = 'UNKNOWN'
     for key, value in mdict.items():
-        d[key] = value.strip()
+        if value is None:
+            d[key] = ''
+        else:
+            d[key] = value.strip()
         if key == 'unit':
             if d[key].endswith('.'):
                 d[key] = d[key].strip('.')  # see issue #36
