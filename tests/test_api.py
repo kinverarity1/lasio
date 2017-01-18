@@ -39,7 +39,7 @@ def test_LASFile_getitem_int_negative():
 
 def test_data_array_slice():
     l = read(egfn("sample.las"))
-    assert np.all(l[1] == l.data[:, 1])
+    assert np.all(l[1] == l.data.iloc[:, 1])
 
 def test_curves_attribute():
     l = read(egfn("sample.las"))

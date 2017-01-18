@@ -289,7 +289,10 @@ class LASFile(object):
         if type(array_like) is pd.DataFrame:
             curvelist = [c.mnemonic for c in self.curves]
             self.data = array_like
-            self.data.columns = curvelist
+            if self.data.empty:
+                self.data = pd.DataFrame(columns=curvelist)
+            else:
+                self.data.columns = curvelist
             for c in self.curves:
                 c.data = self.data[c.mnemonic]
             return

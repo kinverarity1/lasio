@@ -31,17 +31,17 @@ def test_autodepthindex_inconsistent():
 
 def test_autodepthindex_m():
     l = read(egfn("autodepthindex_M.las"))
-    assert (l.depth_ft[-1] * 0.3048 == l.index[-1])
+    assert (l.depth_ft.iloc[-1] * 0.3048 == l.index.iloc[-1])
 
 
 def test_autodepthindex_f():
     l = read(egfn("autodepthindex_F.las"))
-    assert (l.depth_m[-1] / 0.3048 == l.index[-1])
+    assert (l.depth_m.iloc[-1] / 0.3048 == l.index.iloc[-1])
 
 
 def test_autodepthindex_ft():
     l = read(egfn("autodepthindex_FT.las"))
-    assert (l.depth_m[-1] / 0.3048 == l.index[-1])
+    assert (l.depth_m.iloc[-1] / 0.3048 == l.index.iloc[-1])
 
 def test_df_indexing():
     l = read(egfn("6038187_v1.2.las"))
