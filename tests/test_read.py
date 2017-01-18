@@ -4,6 +4,7 @@ import fnmatch
 
 import numpy
 import pytest
+import datetime
 
 from lasio import read
 
@@ -53,12 +54,38 @@ def test_parameter_pattern_with_format():
     d = lasio.reader.read_line(
         r"ROP5            .m/h                                       :(RT)    (DRILLING_SURFACE)                              Rate of penetration averaged over the last 5 ft (1.5 m){F13.4}")
     correct_d = {'format': 'F13.4',
-                 'value': '',
+                 'value': None,
                  'name': 'ROP5',
                  'associations': '',
                  'descr': '(RT)    (DRILLING_SURFACE)                              Rate of penetration averaged over the last 5 ft (1.5 m)',
                  'unit': 'm/h'}
-    assert d == correct_d
+    assert d == correct_d, d
+
+def test_parameter_pattern_with_datestring():
+    d = lasio.reader.read_line(
+        r"DATE            .                    01/22/2016            :LOG DATE(Composite Date for Composite LAP) {MM/DD/YYYY}")
+    assert d == \
+           {'associations': '',
+            'value': datetime.datetime(2016, 1, 22, 0, 0),
+            'descr': 'LOG DATE(Composite Date for Composite LAP)',
+            'unit': '',
+            'name': 'DATE',
+            'format': 'MM/DD/YYYY'}, d
+
+def test_parameter_with_unit():
+    ''' The line in this test case is not conforming to the standard
+    '''
+    d = lasio.reader.read_line(
+        r"HKLA            .1000 kgf                                  :(RT)    (DRILLING_SURFACE)                              Average Hookload{F13.4}")
+    print(d)
+
+def test_value_parsing():
+    v = lasio.reader.parse_value("01/10/2016","MM/DD/YYYY")
+    assert v == datetime.datetime(2016,1,10), '"01/10/2016","MM/DD/YYYY" parsed as %s' % v
+    v = lasio.reader.parse_value("01/10/2016","DD/MM/YYYY")
+    assert v == datetime.datetime(2016,10,1), '"01/10/2016","DD/MM/YYYY" parsed as %s' % v
+    v = lasio.reader.parse_value("DEC-3-2017","MMM-DD-YYYY")
+    assert v == datetime.datetime(2017,12,3)
 
 
 def test_read_v3_sample():

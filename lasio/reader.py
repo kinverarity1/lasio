@@ -287,6 +287,48 @@ class SectionParser(object):
             keys['descr'],              # descr
         )
 
+def parse_value(s, f):
+    '''Parses a value string according to specified format
+
+    Arguments:
+        s: String as in the LAS file
+        f: format specification according to the LAS 3.0 spec
+
+    Returns:
+        Value as a suitable object
+    '''
+
+    def _to_float(thestring):
+        if s is "":
+            return None    # Returns None instead of nan, as nan!=nan.
+        else:
+            try:
+                return float(re.sub(r'\s+','',thestring))
+            except ValueError:
+                return thestring
+
+    if f.startswith("F"):
+        return _to_float(s)
+    if f.startswith("I"):
+        return int(s)
+    if f.startswith("S"):
+        return s
+    if f.startswith("E"):
+        return _to_float(s)
+    if ("D" in f) or ("%d" in f):
+        import dateparser
+        # Substitutions on datestring
+        f = f.replace("DD","%d") \
+             .replace("D","%d") \
+             .replace("MMMM","%B") \
+             .replace("MMM", "%b") \
+             .replace("MM", "%m") \
+             .replace("M", "%m") \
+             .replace("YYYY", "%Y") \
+
+        return dateparser.parse(s,(f,))
+    return s
+
 
 def read_line(line, pattern=None):
     '''Read a line from a LAS header section.
@@ -324,6 +366,8 @@ def read_line(line, pattern=None):
         if key == 'unit':
             if d[key].endswith('.'):
                 d[key] = d[key].strip('.')  # see issue #36
+    if d["format"] is not '':
+        d["value"] = parse_value(d["value"], d["format"])
     return d
 
 
