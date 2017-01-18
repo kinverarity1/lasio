@@ -149,7 +149,8 @@ class Reader(object):
                 section.append(parser(**values))
         return section
 
-    def read_data(self, number_of_curves=None, null_subs=True):
+
+    def read_data(self, number_of_curves=None, null_subs=True, timecurves=[], timeformats=[]):
         s = self.read_data_string()
         if not self.wrap:
             try:
@@ -160,6 +161,8 @@ class Reader(object):
                 }
                 arr = pd.read_csv(StringIO(s), sep=sepstrings[self.dlm], engine='python', header=None)
                 arr = arr.apply(lambda x: pd.to_numeric(x, errors='ignore'))
+                for tc,tf in zip(timecurves,timeformats):
+                    arr[tc] = pd.to_datetime(arr[tc], format=_dateformat_to_strptimeformat(tf))
             except pd.io.common.EmptyDataError:
                 arr = pd.DataFrame()
             except:
@@ -276,6 +279,7 @@ class SectionParser(object):
             keys['unit'],               # unit
             keys['value'],              # value
             keys['descr'],              # descr
+            keys['valueformat']
         )
         return item
 
@@ -286,6 +290,31 @@ class SectionParser(object):
             self.num(keys['value']),    # value
             keys['descr'],              # descr
         )
+
+def _dateformat_to_strptimeformat(f):
+    def multiple_replace(text, adict):
+        rx = re.compile('|'.join(map(re.escape, adict)))
+
+        def one_xlat(match):
+            return adict[match.group(0)]
+
+        return rx.sub(one_xlat, text)
+
+    import collections
+    replacements = collections.OrderedDict((
+        ("hh", "%H"),
+        ("mm", "%M"),
+        ("ss", "%S"),
+        ("DD", "%d"),
+        ("D", "%d"),
+        ("MMMM", "%B"),
+        ("MMM", "%b"),
+        ("MM", "%m"),
+        ("M", "%m"),
+        ("YYYY", "%Y")))
+    # Substitutions on datestring
+    newf = multiple_replace(f, replacements)
+    return newf
 
 def parse_value(s, f):
     '''Parses a value string according to specified format
@@ -317,15 +346,7 @@ def parse_value(s, f):
         return _to_float(s)
     if ("D" in f) or ("%d" in f):
         import dateparser
-        # Substitutions on datestring
-        f = f.replace("DD","%d") \
-             .replace("D","%d") \
-             .replace("MMMM","%B") \
-             .replace("MMM", "%b") \
-             .replace("MM", "%m") \
-             .replace("M", "%m") \
-             .replace("YYYY", "%Y") \
-
+        f = _dateformat_to_strptimeformat(f)
         return dateparser.parse(s,(f,))
     return s
 
@@ -352,7 +373,7 @@ def read_line(line, pattern=None):
                    r'(?P<unit>[^\s:]*)' +
                    r'(?P<value>[^:]*):' +    # TODO Handle values quoted in "
                    r'(?P<descr>[^\{\|]*)' +
-                   r'(\{(?P<format>.*)\})?' +  # TODO Handle multiple sets of {}
+                   r'(\{(?P<valueformat>.*)\})?' +  # TODO Handle multiple sets of {}
                    r'(\|(?P<associations>.*))?')
     m = re.match(pattern, line)
     mdict = m.groupdict()
@@ -366,8 +387,8 @@ def read_line(line, pattern=None):
         if key == 'unit':
             if d[key].endswith('.'):
                 d[key] = d[key].strip('.')  # see issue #36
-    if d["format"] is not '':
-        d["value"] = parse_value(d["value"], d["format"])
+    if d["valueformat"] is not '':
+        d["value"] = parse_value(d["value"], d["valueformat"])
     return d
 
 

@@ -53,7 +53,7 @@ import lasio.reader
 def test_parameter_pattern_with_format():
     d = lasio.reader.read_line(
         r"ROP5            .m/h                                       :(RT)    (DRILLING_SURFACE)                              Rate of penetration averaged over the last 5 ft (1.5 m){F13.4}")
-    correct_d = {'format': 'F13.4',
+    correct_d = {'valueformat': 'F13.4',
                  'value': None,
                  'name': 'ROP5',
                  'associations': '',
@@ -101,7 +101,7 @@ def test_read_v3_sample2_depthdtype():
 
 def test_read_v3_sample2_timedtype():
     l = read(stegfn("3.0", "memory_data_shortened_3.0.las"))
-    assert l["TIME"].dtype is numpy.datetime64, "Time dtype should be datetime64, was %s" % l["DEPTH"].dtype
+    assert l["TIME"].dtype == numpy.dtype('datetime64[ns]'), "Time dtype should be datetime64[ns], was %s" % l["TIME"].dtype
 
 def test_read_v3_pandas_column():
     l = read(stegfn("3.0", "memory_data_shortened_3.0.las"))

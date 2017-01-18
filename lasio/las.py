@@ -141,7 +141,16 @@ class LASFile(object):
         else:
             read_parser.dlm = "SPACE"
 
-        data = read_parser.read_data(len(self.curves), null_subs=null_subs)
+        timecurves = []
+        timeformats = []
+        for i,c in enumerate(self.curves):
+            if c.valueformat.__contains__("D"):
+                timecurves.append(i)
+                timeformats.append(c.valueformat)
+        print(timecurves,timeformats)
+
+        data = read_parser.read_data(len(self.curves), null_subs=null_subs,
+                                     timecurves=timecurves, timeformats=timeformats)
         if data is not None:
             self.set_data(data, truncate=False)
 
