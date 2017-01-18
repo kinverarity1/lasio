@@ -2,3 +2,5 @@ numpy
 namedlist
 ordereddict
 xlwt
+pandas
+dateparser
