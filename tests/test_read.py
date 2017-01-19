@@ -70,7 +70,7 @@ def test_parameter_pattern_with_datestring():
             'descr': 'LOG DATE(Composite Date for Composite LAP)',
             'unit': '',
             'name': 'DATE',
-            'format': 'MM/DD/YYYY'}, d
+            'valueformat': 'MM/DD/YYYY'}, d
 
 def test_parameter_with_unit():
     ''' The line in this test case is not conforming to the standard
@@ -78,6 +78,7 @@ def test_parameter_with_unit():
     d = lasio.reader.read_line(
         r"HKLA            .1000 kgf                                  :(RT)    (DRILLING_SURFACE)                              Average Hookload{F13.4}")
     print(d)
+    assert False, "Not implemented"
 
 def test_value_parsing():
     v = lasio.reader.parse_value("01/10/2016","MM/DD/YYYY")
