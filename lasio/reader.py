@@ -150,7 +150,7 @@ class Reader(object):
         return section
 
 
-    def read_data(self, number_of_curves=None, null_subs=True, timecurves=[], timeformats=[]):
+    def read_data(self, number_of_curves=None, null_subs=True, timecurves=(), timeformats=()):
         s = self.read_data_string()
         if not self.wrap:
             try:
