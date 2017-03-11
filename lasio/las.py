@@ -33,7 +33,6 @@ else:
 
 # Required third-party packages available on PyPi:
 
-from namedlist import namedlist
 import numpy as np
 
 # internal lasio imports
