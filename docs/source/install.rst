@@ -20,7 +20,6 @@ The recommended way to install it is from `PyPI <https://pypi.python.org/pypi/la
 
 If necessary this will download and install the packages which ``lasio`` depends on to run:
 
-- `namedlist <https://pypi.python.org/pypi/namedlist>`__ - simple and small
 - `ordereddict <https://pypi.python.org/pypi/ordereddict>`__ - simple extension to the standard library for Python 2.6 support
 - `numpy <http://numpy.org>`__ - for numerical computing, often pre-installed with scientific Python distributions
 
