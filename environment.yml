@@ -1,0 +1,25 @@
+name: env-lasio
+
+dependencies:
+- chardet=2.3.0=py27_0
+- et_xmlfile=1.0.1=py27_0
+- jdcal=1.2=py27_0
+- msvc_runtime=1.0.1=vc9_0
+- numpy=1.10.1=py27_0
+- openpyxl=2.3.2=py27_0
+- pandas=0.17.1=np110py27_0
+- pip=8.0.1=py27_0
+- python=2.7.11=2
+- python-dateutil=2.4.2=py27_0
+- pytz=2015.7=py27_0
+- setuptools=19.4=py27_0
+- six=1.10.0=py27_0
+- wheel=0.26.0=py27_1
+- xlwt=1.0.0=py27_0
+
+- pip:
+  - et-xmlfile==1.0.1
+  - lasio==0.9.1
+  - namedlist==1.7
+  - ordereddict==1.1
+
