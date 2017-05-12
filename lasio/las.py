@@ -97,13 +97,13 @@ class LASFile(object):
 
         '''
 
-        f = reader.open_file(file_ref, **kwargs)
+        (f, htcc) = reader.open_file(file_ref, **kwargs)
         self._file_ref = str(file_ref)
 
         self._text = f.read()
         logger.debug('LASFile.read LAS content is type %s' % type(self._text))
 
-        read_parser = reader.Reader(self._text, version=1.2)
+        read_parser = reader.Reader(self._text, version=1.2, htcc_str_time=htcc)
         self.sections['Version'] = read_parser.read_section('~V')
 
         # Set version
