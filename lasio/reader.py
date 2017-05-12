@@ -9,6 +9,7 @@ import textwrap
 import traceback
 
 import numpy as np
+from matplotlib.dates import strpdate2num
 
 # Convoluted import for StringIO in order to support:
 #
@@ -45,7 +46,7 @@ URL_REGEXP = re.compile(
 
 
 def open_file(file_ref, encoding=None, encoding_errors='replace',
-              autodetect_encoding=False, autodetect_encoding_chars=40e3):
+              autodetect_encoding=False, autodetect_encoding_chars=40e3, htcc_str_time=False):
     '''Open a file if necessary.
 
     If autodetect_encoding is True then either cchardet or chardet (see PyPi)
@@ -87,16 +88,18 @@ def open_file(file_ref, encoding=None, encoding_errors='replace',
                 file_ref = StringIO(data)
         else:
             file_ref = StringIO('\n'.join(lines))
-    return file_ref
+    return (file_ref, htcc_str_time)
 
 
 class Reader(object):
-
-    def __init__(self, text, version):
+    htcc_str_time = False
+    
+    def __init__(self, text, version, htcc_str_time=False):
         self.lines = text.splitlines()
         self.version = version
         self.null = np.nan
         self.wrap = True
+        self.htcc_str_time = htcc_str_time
 
     @property
     def section_names(self):
@@ -152,7 +155,10 @@ class Reader(object):
         s = self.read_data_string()
         if not self.wrap:
             try:
-                arr = np.loadtxt(StringIO(s))
+                if not self.htcc_str_time:
+                    arr = np.loadtxt(StringIO(s))
+                else:
+                    arr = np.loadtxt(StringIO(s), converters={1:strpdate2num('%H:%M:%S.%f')})             
             except:
                 raise exceptions.LASDataError('Failed to read data:\n%s' % (
                     traceback.format_exc().splitlines()[-1]))
