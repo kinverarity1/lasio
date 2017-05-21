@@ -39,7 +39,7 @@ class HeaderItem(OrderedDict):
         # to them. The result of this will be stored in the below variable,
         # which is what the user should actually see and use 99.5% of the time.
 
-        self.mnemonic = self.useful_mnemonic
+        self.mnemonic = str(self.useful_mnemonic)
 
         self.unit = unit
         self.value = value

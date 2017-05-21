@@ -45,7 +45,8 @@ class ExcelConverter(object):
         sections = [
             ('~Version', self.las.version),
             ('~Well', self.las.well),
-            ('~Parameter', self.las.params)
+            ('~Parameter', self.las.params),
+            ('~Curves', self.las.curves),
         ]
 
         n = 1

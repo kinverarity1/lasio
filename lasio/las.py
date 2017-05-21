@@ -98,6 +98,7 @@ class LASFile(object):
         '''
 
         f = reader.open_file(file_ref, **kwargs)
+        self._file_ref = str(file_ref)
 
         self._text = f.read()
         logger.debug('LASFile.read LAS content is type %s' % type(self._text))
