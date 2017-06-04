@@ -355,6 +355,20 @@ class LASFile(object):
             d[curve['mnemonic']] = curve
         return d
 
+    @property
+    def json(self):
+        obj = OrderedDict()
+        for name, section in self.sections.items():
+            try:
+                obj[name] = section.json
+            except AttributeError:
+                obj[name] = json.dumps(section)
+        return json.dumps(obj)
+
+    @json.setter
+    def json(self, value):
+        raise Exception('Cannot set objects from JSON')
+
 
 class Las(LASFile):
 

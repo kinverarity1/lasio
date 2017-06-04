@@ -47,15 +47,18 @@ def test_df_indexing():
     metres = 9.05
     spacing = l.well["STEP"].value
     calc_index = (metres / spacing) - (l.well["STRT"].value / spacing)
-    assert l["GAMN"][calc_index] == l.df().GAMN[metres]
+    calc_index = int(calc_index)
+    assert l["GAMN"][calc_index] == l.df()["GAMN"][metres]
 
 # TODO: make above test in reverse-ordered LAS (e.g. STRT > STOP)
+
 def test_df_reverse():
     l = read(egfn("sample_rev.las"))
     metres = 1667
     spacing = l.well["STEP"].value
     calc_index = (metres / spacing) - (l.well["STRT"].value / spacing)
-    assert l["DT"][calc_index] == l.df().DT[metres]
+    calc_index = int(calc_index)
+    assert l["DT"][calc_index] == l.df()["DT"][metres]
 
 def test_df_curve_names():
     l = read(egfn("sample_rev.las"))
