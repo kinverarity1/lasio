@@ -158,11 +158,11 @@ class LASFile(object):
             file_object: a file_like object opening for writing.
             version (float): either 1.2 or 2
             wrap (bool): True, False, or None (last uses WRAP item in version)
-            STRT (float): optional override to automatic calculation using 
+            STRT (float): optional override to automatic calculation using
                 the first index curve value.
-            STOP (float): optional override to automatic calculation using 
+            STOP (float): optional override to automatic calculation using
                 the last index curve value.
-            STEP (float): optional override to automatic calculation using 
+            STEP (float): optional override to automatic calculation using
                 the first step size in the index curve.
             fmt (str): format string for numerical data being written to data
                 section.
@@ -182,7 +182,7 @@ class LASFile(object):
         Arguments:
             mnemonic (str): the name of the curve
 
-        Returns: 
+        Returns:
             A Curve object, not just the data array.
 
         '''
@@ -343,6 +343,11 @@ class LASFile(object):
             self.data = np.column_stack([data])
         curve.data = self.data[:, -1]
         self.curves.append(curve)
+
+    def delete_curve(self, mnemonic):
+        ix = self.curves.keys().index(mnemonic)
+        self.curves.pop(ix)
+        self.data = np.delete(self.data, np.s_[ix], axis=1)
 
     @property
     def header(self):
