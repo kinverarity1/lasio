@@ -1,3 +1,4 @@
+import json
 import logging
 
 # The standard library OrderedDict was introduced in Python 2.7 so
@@ -39,7 +40,7 @@ class HeaderItem(OrderedDict):
         # to them. The result of this will be stored in the below variable,
         # which is what the user should actually see and use 99.5% of the time.
 
-        self.mnemonic = self.useful_mnemonic
+        self.mnemonic = str(self.useful_mnemonic)
 
         self.unit = unit
         self.value = value
@@ -75,6 +76,20 @@ class HeaderItem(OrderedDict):
     def __reduce__(self):
         return self.__class__, (self.mnemonic, self.unit, self.value, self.descr)
 
+    @property
+    def json(self):
+        return json.dumps({
+            '_type': self.__class__.__name__,
+            'mnemonic': self.original_mnemonic,
+            'unit': self.unit,
+            'value': self.value,
+            'descr': self.descr
+            })
+
+    @json.setter
+    def json(self, value):
+        raise Exception('Cannot set objects from JSON')
+
 
 class CurveItem(HeaderItem):
 
@@ -92,6 +107,21 @@ class CurveItem(HeaderItem):
             'descr=%s, original_mnemonic=%s, data.shape=%s)' % (
                 self.__class__.__name__, self.mnemonic, self.unit, self.value,
                 self.descr, self.original_mnemonic, self.data.shape))
+
+    @property
+    def json(self):
+        return json.dumps({
+            '_type': self.__class__.__name__,
+            'mnemonic': self.original_mnemonic,
+            'unit': self.unit,
+            'value': self.value,
+            'descr': self.descr,
+            'data': list(self.data),
+            })
+
+    @json.setter
+    def json(self, value):
+        raise Exception('Cannot set objects from JSON')
 
 
 class SectionItems(list):
@@ -207,3 +237,12 @@ class SectionItems(list):
 
     def dictview(self):
         return dict(zip(self.keys(), [i.value for i in self.values()]))
+
+    @property
+    def json(self):
+        return json.dumps(
+            [item.json for item in self.values()])
+
+    @json.setter
+    def json(self, value):
+        raise Exception('Cannot set objects from JSON')

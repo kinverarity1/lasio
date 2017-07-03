@@ -33,7 +33,6 @@ else:
 
 # Required third-party packages available on PyPi:
 
-from namedlist import namedlist
 import numpy as np
 
 # internal lasio imports
@@ -99,6 +98,7 @@ class LASFile(object):
         '''
 
         f = reader.open_file(file_ref, **kwargs)
+        self._file_ref = str(file_ref)
 
         self._text = f.read()
         logger.debug('LASFile.read LAS content is type %s' % type(self._text))
@@ -158,11 +158,11 @@ class LASFile(object):
             file_object: a file_like object opening for writing.
             version (float): either 1.2 or 2
             wrap (bool): True, False, or None (last uses WRAP item in version)
-            STRT (float): optional override to automatic calculation using 
+            STRT (float): optional override to automatic calculation using
                 the first index curve value.
-            STOP (float): optional override to automatic calculation using 
+            STOP (float): optional override to automatic calculation using
                 the last index curve value.
-            STEP (float): optional override to automatic calculation using 
+            STEP (float): optional override to automatic calculation using
                 the first step size in the index curve.
             fmt (str): format string for numerical data being written to data
                 section.
@@ -182,7 +182,7 @@ class LASFile(object):
         Arguments:
             mnemonic (str): the name of the curve
 
-        Returns: 
+        Returns:
             A Curve object, not just the data array.
 
         '''
@@ -344,6 +344,11 @@ class LASFile(object):
         curve.data = self.data[:, -1]
         self.curves.append(curve)
 
+    def delete_curve(self, mnemonic):
+        ix = self.curves.keys().index(mnemonic)
+        self.curves.pop(ix)
+        self.data = np.delete(self.data, np.s_[ix], axis=1)
+
     @property
     def header(self):
         return self.sections
@@ -354,6 +359,20 @@ class LASFile(object):
         for curve in self.curves:
             d[curve['mnemonic']] = curve
         return d
+
+    @property
+    def json(self):
+        obj = OrderedDict()
+        for name, section in self.sections.items():
+            try:
+                obj[name] = section.json
+            except AttributeError:
+                obj[name] = json.dumps(section)
+        return json.dumps(obj)
+
+    @json.setter
+    def json(self, value):
+        raise Exception('Cannot set objects from JSON')
 
 
 class Las(LASFile):

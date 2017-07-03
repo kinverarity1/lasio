@@ -16,6 +16,10 @@ stegfn = lambda vers, fn: os.path.join(
 def test_read_v12_sample():
     l = read(stegfn("1.2", "sample.las"))
 
+def test_read_all():
+    for root, dirs, files in os.walk('examples'):
+        for fn in glob.glob(os.path.join(root, '*.las')):
+            l = read(fn)
 
 def test_read_v12_sample_big():
     l = read(stegfn("1.2", "sample_big.las"))
