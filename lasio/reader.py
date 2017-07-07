@@ -139,6 +139,7 @@ class Reader(object):
         for line in self.iter_section_lines(section_name):
             try:
                 values = read_line(line)
+                if values is None: continue
             except:
                 raise exceptions.LASHeaderError(
                     'Failed in %s section on line:\n%s%s' % (
@@ -300,6 +301,7 @@ def read_line(line, pattern=None):
                    r'(?P<value>[^:]*):' +
                    r'(?P<descr>.*)')
     m = re.match(pattern, line)
+    if not m: return None
     mdict = m.groupdict()
     # if mdict['name'] == '':
     #     mdict['name'] = 'UNKNOWN'
