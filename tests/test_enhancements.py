@@ -4,6 +4,7 @@ import fnmatch
 
 import numpy
 import pytest
+import math
 
 from lasio import las, read, exceptions
 
@@ -46,9 +47,10 @@ def test_df_indexing():
     l = read(egfn("6038187_v1.2.las"))
     metres = 9.05
     spacing = l.well["STEP"].value
-    calc_index = (metres / spacing) - (l.well["STRT"].value / spacing)
+    calc_index = math.floor((metres / spacing) - (l.well["STRT"].value / spacing))
     calc_index = int(calc_index)
     assert l["GAMN"][calc_index] == l.df()["GAMN"][metres]
+
 
 # TODO: make above test in reverse-ordered LAS (e.g. STRT > STOP)
 
@@ -56,7 +58,7 @@ def test_df_reverse():
     l = read(egfn("sample_rev.las"))
     metres = 1667
     spacing = l.well["STEP"].value
-    calc_index = (metres / spacing) - (l.well["STRT"].value / spacing)
+    calc_index = math.floor((metres // spacing) - (l.well["STRT"].value // spacing))
     calc_index = int(calc_index)
     assert l["DT"][calc_index] == l.df()["DT"][metres]
 
