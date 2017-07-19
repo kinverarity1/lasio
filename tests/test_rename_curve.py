@@ -18,7 +18,7 @@ def test_rename_and_write_curve_mnemonic():
         if curve.mnemonic != 'DEPT':
             curve.mnemonic = "New_" + curve.mnemonic
     for curve in l.curves:
-        print('# %s' % curve.mnemonic)
+        print('mnemonic=%s original_mnemonic=%s' % (curve.mnemonic, curve.original_mnemonic))
     s = StringIO()
     l.write(s, version=2)
     s.seek(0)
@@ -39,7 +39,7 @@ SRVC. ANY LOGGING COMPANY LTD. : SERVICE COMPANY
 DATE.              25-DEC-1988 : LOG DATE
 UWI .         100091604920W300 : UNIQUE WELL ID
 ~Curves ----------------------------------------------------
-DEPT.M     : 1  DEPTH
+DEPT    .M     : 1  DEPTH
 New_DT  .US/M  : 2  SONIC TRANSIT TIME
 New_RHOB.K/M3  : 3  BULK DENSITY
 New_NPHI.V/V   : 4   NEUTRON POROSITY
