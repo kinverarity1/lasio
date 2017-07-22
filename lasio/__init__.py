@@ -12,6 +12,10 @@ else:
 __version__ = '0.13'
 
 
+def version():
+    print(__version__)
+
+
 def read(file_ref, **kwargs):
     '''Read a LAS file.
 
