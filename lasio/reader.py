@@ -83,7 +83,27 @@ def open_file(file_ref, encoding=None, encoding_errors='replace'):
     return file_ref
 
 
-def read(file_ref, null_subs, **kwargs):
+def read(file_ref, null_subs=True, **kwargs):
+    '''Read file contents into memory.
+
+    Arguments:
+        file_ref: either a filename, an open file object, or a URI.
+
+    Keyword Arguments:
+        null_subs (bool???): ????
+        encoding (str): character encoding to open file_ref with
+        encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
+            handle errors with encodings (see standard library codecs module or
+            Python Unicode HOWTO for more information)
+
+    Returns: 
+        An ordered dictionary with keys being the first line of each
+        LAS section. The values are either a StringIO file-like object of
+        the section contents (for metadata sections) or a 1D numpy ndarray
+        (for numerical data sections). Obviously the ndarray would need
+        re-shaping.
+
+    '''
     sections = OrderedDict()
     sect_lines = []
     sect_title_line = None
@@ -91,34 +111,51 @@ def read(file_ref, null_subs, **kwargs):
     for line in file_ref:
         line = line.strip()
         if line.startswith('~A'):
+            # HARD CODED FOR VERSION 1.2 and 2.0; needs review for 3.0
+
             # We have finished looking at the metadata and need
             # to start reading numerical data.
+
             sections[sect_title_line] = StringIO('\n'.join(sect_lines))
             sections[line] = read_numerical_data(file_ref, null_subs)
         elif line.startswith('~'):
             if sect_lines:
                 # We have ended a section and need to start the next
+
                 sections[sect_title_line] = StringIO('\n'.join(sect_lines))
                 sect_lines = []
             else:
                 # We are entering into a section for the first time
+
                 pass
             sect_title_line = line # either way... this is the case.
+
         else:
             # We are in the middle of a section.
+
             sect_lines.append(line)
     return sections
 
 
 def read_numerical_data(file_ref, null_subs):
+    '''Read data section into memory.
 
+    Arguments:
+        file_ref: a file-like object.
+
+    Keyword Arguments:
+        null_subs (bool???): ????
+
+    Returns: 
+        A 1D numpy ndarray. Still needs reshaping.
+
+    '''
     def items(f):
         for line in f:
             for item in line.split():
                 yield item
     
     return np.fromiter(items(file_ref), np.float64, -1)
-    # data = data.reshape((-1, num_cols))
 
 
 class Reader(object):
