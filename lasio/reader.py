@@ -93,12 +93,12 @@ def read(file_ref, null_subs, **kwargs):
         if line.startswith('~A'):
             # We have finished looking at the metadata and need
             # to start reading numerical data.
-            sections[sect_title_line] = StringIO(sect_lines)
+            sections[sect_title_line] = StringIO('\n'.join(sect_lines))
             sections[line] = read_numerical_data(file_ref, null_subs)
         elif line.startswith('~'):
             if sect_lines:
                 # We have ended a section and need to start the next
-                sections[sect_title_line] = StringIO(sect_lines)
+                sections[sect_title_line] = StringIO('\n'.join(sect_lines))
                 sect_lines = []
             else:
                 # We are entering into a section for the first time
@@ -117,7 +117,7 @@ def read_numerical_data(file_ref, null_subs):
             for item in line.split():
                 yield item
     
-    data = np.fromiter(items(f), float64, -1)
+    return np.fromiter(items(file_ref), np.float64, -1)
     # data = data.reshape((-1, num_cols))
 
 
