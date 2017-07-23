@@ -44,16 +44,14 @@ URL_REGEXP = re.compile(
     r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 
-def open_file(file_ref, encoding=None, encoding_errors='replace',
-              autodetect_encoding=False, autodetect_encoding_chars=40e3):
+def open_file(file_ref, encoding=None, encoding_errors='replace'):
     '''Open a file if necessary.
 
     If autodetect_encoding is True then either cchardet or chardet (see PyPi)
     needs to be installed, or else an ImportError will be raised.
 
     Arguments:
-        file_ref: either a filename, an open file object, a URL, or a string of
-            a LAS file contents.
+        file_ref: either a filename, an open file object, or a URI.
 
     Keyword Arguments:
         encoding (str): character encoding to open file_ref with
@@ -68,26 +66,59 @@ def open_file(file_ref, encoding=None, encoding_errors='replace',
         An open file-like object ready for reading from.
 
     '''
-    if isinstance(file_ref, str):
-        lines = file_ref.splitlines()
-        if len(lines) == 1:  # File name
-            if URL_REGEXP.match(file_ref):
-                try:
-                    import urllib2
-                    file_ref = urllib2.urlopen(file_ref)
-                except ImportError:
-                    import urllib.request
-                    response = urllib.request.urlopen(file_ref)
-                    enc = response.headers.get_content_charset('utf-8')
-                    file_ref = StringIO(response.read().decode(enc))
-            else:  # filename
-                data = get_unicode_from_filename(
-                    file_ref, encoding, encoding_errors, autodetect_encoding,
-                    autodetect_encoding_chars)
-                file_ref = StringIO(data)
-        else:
-            file_ref = StringIO('\n'.join(lines))
+    if isinstance(file_ref, str): # file_ref != file-like object, so what is it?
+        file_ref = file_ref.splitlines()[0]
+        if URL_REGEXP.match(file_ref): # file_ref == URI
+            try:
+                import urllib2
+                file_ref = urllib2.urlopen(file_ref)
+            except ImportError:
+                import urllib.request
+                response = urllib.request.urlopen(file_ref)
+                enc = response.headers.get_content_charset('utf-8')
+                file_ref = StringIO(response.read().decode(enc))
+        else:  # file_ref == filename
+            file_ref = codecs.open(file_ref, 'r', encoding, encoding_errors)
+    # else: file_ref is already a file-like object.
     return file_ref
+
+
+def read(file_ref, null_subs, **kwargs):
+    sections = OrderedDict()
+    sect_lines = []
+    sect_title_line = None
+    file_ref = open_file(file_ref, **kwargs)
+    for line in file_ref:
+        line = line.strip()
+        if line.startswith('~A'):
+            # We have finished looking at the metadata and need
+            # to start reading numerical data.
+            sections[sect_title_line] = StringIO(sect_lines)
+            sections[line] = read_numerical_data(file_ref, null_subs)
+        elif line.startswith('~'):
+            if sect_lines:
+                # We have ended a section and need to start the next
+                sections[sect_title_line] = StringIO(sect_lines)
+                sect_lines = []
+            else:
+                # We are entering into a section for the first time
+                pass
+            sect_title_line = line # either way... this is the case.
+        else:
+            # We are in the middle of a section.
+            sect_lines.append(line)
+    return sections
+
+
+def read_numerical_data(file_ref, null_subs):
+
+    def items(f):
+        for line in f:
+            for item in line.split():
+                yield item
+    
+    data = np.fromiter(items(f), float64, -1)
+    # data = data.reshape((-1, num_cols))
 
 
 class Reader(object):
@@ -309,50 +340,6 @@ def read_line(line, pattern=None):
             if d[key].endswith('.'):
                 d[key] = d[key].strip('.')  # see issue #36
     return d
-
-
-def get_unicode_from_filename(fn, enc, errors, auto, nbytes):
-    '''
-    Read Unicode data from file.
-
-    Arguments:
-        fn (str): path to file
-        enc (str): encoding - can be None
-        errors (str): unicode error handling - can be 'strict', 'ignore', 'replace'
-        auto (str): auto-detection of character encoding - can be either
-            'chardet', 'cchardet', or True
-        nbytes (int): number of characters for read for auto-detection
-
-    Returns:
-        a unicode or string object
-
-    '''
-    if nbytes:
-        nbytes = int(nbytes)
-
-    # Detect BOM in UTF-8 files
-
-    nbytes_test = min(32, os.path.getsize(fn))
-    with open(fn, mode='rb') as test:
-        raw = test.read(nbytes_test)
-    if raw.startswith(codecs.BOM_UTF8):
-        enc = 'utf-8-sig'
-        auto = False
-
-    if auto:
-        with open(fn, mode='rb') as test:
-            if nbytes is None:
-                raw = test.read()
-            else:
-                raw = test.read(nbytes)
-        enc = get_encoding(auto, raw)
-
-    # codecs.open is smarter than cchardet or chardet IME.
-
-    with codecs.open(fn, mode='r', encoding=enc, errors=errors) as f:
-        data = f.read()
-
-    return data
 
 
 def get_encoding(auto, raw):
