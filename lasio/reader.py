@@ -170,7 +170,7 @@ class Reader(object):
                          number_of_curves)
             arr = np.reshape(arr, (-1, number_of_curves))
         if not arr.shape or (arr.ndim == 1 and arr.shape[0] == 0):
-            logger.warning('Reader.read_dataN o data present.')
+            logger.warning('Reader.read_data No data present.')
             return None, None
         else:
             logger.info('Reader.read_data LAS file shape = %s' %
