@@ -69,10 +69,10 @@ class LASFile(object):
         self._text = ''
         self.index_unit = None
         self.sections = {
-            'Version': defaults.DEFAULT_ITEMS['Version'],
-            'Well': defaults.DEFAULT_ITEMS['Well'],
-            'Curves': defaults.DEFAULT_ITEMS['Curves'],
-            'Parameter': defaults.DEFAULT_ITEMS['Parameter'],
+            'Version': defaults.DEFAULT_ITEMS['Version'].copy(),
+            'Well': defaults.DEFAULT_ITEMS['Well'].copy(),
+            'Curves': defaults.DEFAULT_ITEMS['Curves'].copy(),
+            'Parameter': defaults.DEFAULT_ITEMS['Parameter'].copy(),
             'Other': str(defaults.DEFAULT_ITEMS['Other']),
         }
 
