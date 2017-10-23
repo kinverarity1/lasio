@@ -5,6 +5,8 @@ from .las_items import (
     HeaderItem, CurveItem, SectionItems, OrderedDict
 )
 
+FEET_UNITS = ['F', 'FT', 'FEET']
+
 
 def get_default_items():
     return {

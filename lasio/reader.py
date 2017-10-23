@@ -109,15 +109,27 @@ class Reader(object):
                 names.append(line)
         return names
 
-    def iter_section_lines(self, section_name, ignore_comments=True):
+    def iter_section_lines(self, section_name,
+                           ignore_comments=True):
+        """
+        Iterator for the lines in a section.
+        """
         in_section = False
+
+        # Use regex for the matching so we can make complicated requests.
+        pattern = re.compile(r'^' + section_name, flags=re.IGNORECASE)
+
         for i, line in enumerate(self.lines):
             line = line.strip().strip('\t').strip()
             if not line:
                 continue
             if ignore_comments and line.startswith('#'):
                 continue
-            if line.startswith(section_name):
+            match = pattern.search(line)
+            if match is not None:
+                pattern = re.compile(r'^' + section_name + '.*', flags=re.I)
+                m = pattern.search(line).group()
+                this_section = re.sub(r'~', '', m).title()
                 if in_section:
                     return
                 else:
@@ -127,16 +139,26 @@ class Reader(object):
                 # Start of the next section; we're done here.
                 break
             if in_section:
-                yield line
+                yield this_section, line
 
-    def read_raw_text(self, section_name):
-        return '\n'.join(self.iter_section_lines(section_name,
-                                                 ignore_comments=False))
+    def read_raw_text(self, section_name, return_section=False):
+
+        s = None
+        lines = []
+        for s, l in self.iter_section_lines(section_name,
+                                            ignore_comments=False):
+            lines.append(l)
+        these_lines = '\n'.join(lines)
+
+        if return_section:
+            return s, these_lines
+        else:
+            return these_lines
 
     def read_section(self, section_name):
         parser = SectionParser(section_name, version=self.version)
         section = SectionItems()
-        for line in self.iter_section_lines(section_name):
+        for _, line in self.iter_section_lines(section_name):
             try:
                 values = read_line(line)
             except:

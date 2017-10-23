@@ -6,16 +6,11 @@ See README.rst and LICENSE for more information.
 from __future__ import print_function
 
 # Standard library packages
-import codecs
 import json
 import logging
-import os
-import re
-import textwrap
 import traceback
 
 # get basestring in py3
-
 try:
     unicode = unicode
 except NameError:
@@ -38,8 +33,7 @@ import numpy as np
 # internal lasio imports
 
 from . import exceptions
-from .las_items import (
-    HeaderItem, CurveItem, SectionItems, OrderedDict)
+from .las_items import (CurveItem, SectionItems, OrderedDict)
 from . import defaults
 from . import reader
 from . import writer
@@ -134,6 +128,14 @@ class LASFile(object):
             logger.warning(traceback.format_exc().splitlines()[-1])
         self.sections['Other'] = read_parser.read_raw_text('~O')
 
+        # Deal with nonstandard sections that some operators and/or
+        # service companies (eg IHS) insist on adding.
+        s, d = read_parser.read_raw_text(r'~[BDEFGHIJKLMNQRSTUXYZ]',
+                                                return_section=True)
+        if s is not None and d is not None:
+            logger.warning('Found nonstandard LAS section: ' + s)
+            self.sections[s] = d
+
         # Set null value
         read_parser.null = self.well['NULL'].value
 
@@ -145,10 +147,10 @@ class LASFile(object):
                 self.well['STEP'].unit.upper() == 'M' and
                 self.curves[0].unit.upper() == 'M'):
             self.index_unit = 'M'
-        elif (self.well['STRT'].unit.upper() in ('F', 'FT') and
-              self.well['STOP'].unit.upper() in ('F', 'FT') and
-              self.well['STEP'].unit.upper() in ('F', 'FT') and
-              self.curves[0].unit.upper() in ('F', 'FT')):
+        elif (self.well['STRT'].unit.upper() in defaults.FEET_UNITS and
+              self.well['STOP'].unit.upper() in defaults.FEET_UNITS and
+              self.well['STEP'].unit.upper() in defaults.FEET_UNITS and
+              self.curves[0].unit.upper() in defaults.FEET_UNITS):
             self.index_unit = 'FT'
 
     def write(self, file_object, version=None, wrap=None,
@@ -313,7 +315,7 @@ class LASFile(object):
     def depth_m(self):
         if self.index_unit == 'M':
             return self.index
-        elif self.index_unit == 'FT':
+        elif self.index_unit in defaults.FEET_UNITS:
             return self.index * 0.3048
         else:
             raise exceptions.LASUnknownUnitError(
@@ -323,7 +325,7 @@ class LASFile(object):
     def depth_ft(self):
         if self.index_unit == 'M':
             return self.index / 0.3048
-        elif self.index_unit == 'FT':
+        elif self.index_unit in defaults.FEET_UNITS:
             return self.index
         else:
             raise exceptions.LASUnknownUnitError(
