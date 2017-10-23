@@ -1,3 +1,4 @@
+import json
 import logging
 from collections import OrderedDict
 
@@ -32,11 +33,14 @@ class HeaderItem(OrderedDict):
         # to them. The result of this will be stored in the below variable,
         # which is what the user should actually see and use 99.5% of the time.
 
-        self.mnemonic = self.useful_mnemonic
+        self.set_session_mnemonic_only(str(self.useful_mnemonic))
 
         self.unit = unit
         self.value = value
         self.descr = descr
+
+    def set_session_mnemonic_only(self, value):
+        super(HeaderItem, self).__setattr__('mnemonic', value)
 
     def __getitem__(self, key):
         if key == 'mnemonic':
@@ -55,6 +59,18 @@ class HeaderItem(OrderedDict):
             raise KeyError(
                 'CurveItem only has restricted items (not %s)' % key)
 
+    # def __setitem__(self, key, value):
+    #     # print('.__setitem__ key=%s value=%s' % (key, value))
+    #     if key == 'mnemonic':
+    #         super(HeaderItem, self).__setitem__('original_mnemonic', value)
+    #         super(HeaderItem, self).__setitem__('mnemonic', value)
+
+    def __setattr__(self, key, value):
+        # print('.__setitem__ key=%s value=%s' % (key, value))
+        if key == 'mnemonic':
+            super(HeaderItem, self).__setattr__('original_mnemonic', value)
+        super(HeaderItem, self).__setattr__(key, value)
+
     def __repr__(self):
         return (
             '%s(mnemonic=%s, unit=%s, value=%s, '
@@ -67,6 +83,20 @@ class HeaderItem(OrderedDict):
 
     def __reduce__(self):
         return self.__class__, (self.mnemonic, self.unit, self.value, self.descr)
+
+    @property
+    def json(self):
+        return json.dumps({
+            '_type': self.__class__.__name__,
+            'mnemonic': self.original_mnemonic,
+            'unit': self.unit,
+            'value': self.value,
+            'descr': self.descr
+            })
+
+    @json.setter
+    def json(self, value):
+        raise Exception('Cannot set objects from JSON')
 
 
 class CurveItem(HeaderItem):
@@ -85,6 +115,21 @@ class CurveItem(HeaderItem):
             'descr=%s, original_mnemonic=%s, data.shape=%s)' % (
                 self.__class__.__name__, self.mnemonic, self.unit, self.value,
                 self.descr, self.original_mnemonic, self.data.shape))
+
+    @property
+    def json(self):
+        return json.dumps({
+            '_type': self.__class__.__name__,
+            'mnemonic': self.original_mnemonic,
+            'unit': self.unit,
+            'value': self.value,
+            'descr': self.descr,
+            'data': list(self.data),
+            })
+
+    @json.setter
+    def json(self, value):
+        raise Exception('Cannot set objects from JSON')
 
 
 class SectionItems(list):
@@ -196,7 +241,17 @@ class SectionItems(list):
             for i, loc in enumerate(locations):
                 item = self[loc]
                 # raise Exception('%s' % str(type(item)))
-                item.mnemonic = item.useful_mnemonic + ':%d' % (i + 1)
+                item.set_session_mnemonic_only(item.useful_mnemonic + ':%d' % (i + 1))
+                # item.mnemonic = item.useful_mnemonic + ':%d' % (i + 1)
 
     def dictview(self):
         return dict(zip(self.keys(), [i.value for i in self.values()]))
+
+    @property
+    def json(self):
+        return json.dumps(
+            [item.json for item in self.values()])
+
+    @json.setter
+    def json(self, value):
+        raise Exception('Cannot set objects from JSON')

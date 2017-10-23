@@ -18,3 +18,8 @@
 - Add LASFile.add_curve(CurveItem) method which automatically goes to the old
   method at LASFile.add_curve_raw(mnemonic=, data=, ...) if necessary, so it
   should be transparent to users
+
+## version 0.13
+
+- Other minor bug fixes inc inability to rename mnemonics in written LAS file.
+

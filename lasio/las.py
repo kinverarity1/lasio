@@ -27,12 +27,13 @@ else:
     basestring = basestring
 
 # Required third-party packages available on PyPi:
+
 import numpy as np
 
 # internal lasio imports
+
 from . import exceptions
-from .las_items import CurveItem
-from .las_items import SectionItems
+from .las_items import (CurveItem, SectionItems, OrderedDict)
 from . import defaults
 from . import reader
 from . import writer
@@ -61,12 +62,13 @@ class LASFile(object):
 
         self._text = ''
         self.index_unit = None
+        default_items = defaults.get_default_items()
         self.sections = {
-            'Version': defaults.DEFAULT_ITEMS['Version'],
-            'Well': defaults.DEFAULT_ITEMS['Well'],
-            'Curves': defaults.DEFAULT_ITEMS['Curves'],
-            'Parameter': defaults.DEFAULT_ITEMS['Parameter'],
-            'Other': str(defaults.DEFAULT_ITEMS['Other']),
+            'Version': default_items['Version'],
+            'Well': default_items['Well'],
+            'Curves': default_items['Curves'],
+            'Parameter': default_items['Parameter'],
+            'Other': str(default_items['Other']),
         }
 
         if not (file_ref is None):
@@ -91,6 +93,7 @@ class LASFile(object):
         '''
 
         f = reader.open_file(file_ref, **kwargs)
+        self._file_ref = str(file_ref)
 
         self._text = f.read()
         logger.debug('LASFile.read LAS content is type %s' % type(self._text))
@@ -144,10 +147,10 @@ class LASFile(object):
                 self.well['STEP'].unit.upper() == 'M' and
                 self.curves[0].unit.upper() == 'M'):
             self.index_unit = 'M'
-        elif (self.well['STRT'].unit.upper() in ('F', 'FT') and
-              self.well['STOP'].unit.upper() in ('F', 'FT') and
-              self.well['STEP'].unit.upper() in ('F', 'FT') and
-              self.curves[0].unit.upper() in ('F', 'FT')):
+        elif (self.well['STRT'].unit.upper() in defaults.FEET_UNITS and
+              self.well['STOP'].unit.upper() in defaults.FEET_UNITS and
+              self.well['STEP'].unit.upper() in defaults.FEET_UNITS and
+              self.curves[0].unit.upper() in defaults.FEET_UNITS):
             self.index_unit = 'FT'
 
     def write(self, file_object, version=None, wrap=None,
@@ -158,11 +161,11 @@ class LASFile(object):
             file_object: a file_like object opening for writing.
             version (float): either 1.2 or 2
             wrap (bool): True, False, or None (last uses WRAP item in version)
-            STRT (float): optional override to automatic calculation using 
+            STRT (float): optional override to automatic calculation using
                 the first index curve value.
-            STOP (float): optional override to automatic calculation using 
+            STOP (float): optional override to automatic calculation using
                 the last index curve value.
-            STEP (float): optional override to automatic calculation using 
+            STEP (float): optional override to automatic calculation using
                 the first step size in the index curve.
             fmt (str): format string for numerical data being written to data
                 section.
@@ -182,7 +185,7 @@ class LASFile(object):
         Arguments:
             mnemonic (str): the name of the curve
 
-        Returns: 
+        Returns:
             A Curve object, not just the data array.
 
         '''
@@ -312,7 +315,7 @@ class LASFile(object):
     def depth_m(self):
         if self.index_unit == 'M':
             return self.index
-        elif self.index_unit == 'FT':
+        elif self.index_unit in defaults.FEET_UNITS:
             return self.index * 0.3048
         else:
             raise exceptions.LASUnknownUnitError(
@@ -322,7 +325,7 @@ class LASFile(object):
     def depth_ft(self):
         if self.index_unit == 'M':
             return self.index / 0.3048
-        elif self.index_unit == 'FT':
+        elif self.index_unit in defaults.FEET_UNITS:
             return self.index
         else:
             raise exceptions.LASUnknownUnitError(
@@ -344,6 +347,11 @@ class LASFile(object):
         curve.data = self.data[:, -1]
         self.curves.append(curve)
 
+    def delete_curve(self, mnemonic):
+        ix = self.curves.keys().index(mnemonic)
+        self.curves.pop(ix)
+        self.data = np.delete(self.data, np.s_[ix], axis=1)
+
     @property
     def header(self):
         return self.sections
@@ -354,6 +362,20 @@ class LASFile(object):
         for curve in self.curves:
             d[curve['mnemonic']] = curve
         return d
+
+    @property
+    def json(self):
+        obj = OrderedDict()
+        for name, section in self.sections.items():
+            try:
+                obj[name] = section.json
+            except AttributeError:
+                obj[name] = json.dumps(section)
+        return json.dumps(obj)
+
+    @json.setter
+    def json(self, value):
+        raise Exception('Cannot set objects from JSON')
 
 
 class Las(LASFile):

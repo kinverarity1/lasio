@@ -52,7 +52,8 @@ setup(name='lasio',
       entry_points={
           'console_scripts': [
               'las2excel = lasio.excel:main',
-              'las2excelbulk = lasio.excel:main_bulk'
+              'las2excelbulk = lasio.excel:main_bulk',
+              'lasio = lasio:version',
           ],
       }
       )

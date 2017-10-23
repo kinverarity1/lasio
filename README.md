@@ -14,7 +14,6 @@ Note this is *not* a package for reading LiDAR data (also called "LAS files").
 
 [![](https://img.shields.io/pypi/pyversions/lasio.svg)](https://www.python.org/downloads/)
 [![](http://img.shields.io/pypi/v/lasio.svg)](https://pypi.python.org/pypi/lasio/)
-[![](https://img.shields.io/pypi/dd/lasio.svg)](https://pypi.python.org/pypi/lasio/)
 [![](https://img.shields.io/pypi/format/lasio.svg)](https://pypi.python.org/pypi/lasio/)
 
 lasio is written to be compatible with Python 2.6+, and 3.2+. To install run:
@@ -28,7 +27,6 @@ If necessary this will download and install the requirements ([numpy](http://num
 There are some other packages which lasio will use to provide extra functionality if they are installed, but they are not required:
 
 - [pandas](https://pypi.python.org/pypi/pandas) - data analysis library
-- [chardet](https://pypi.python.org/pypi/chardet) or [cChardet](https://github.com/PyYoshi/cChardet) - automatic detection of character encodings
 
 I'd recommend installing these too with:
 
@@ -46,7 +44,7 @@ $ pip install --upgrade lasio
 
 Take a look through the [example Jupyter notebooks](http://nbviewer.ipython.org/github/kinverarity1/lasio/tree/master/notebooks) (or if that is down [try here](https://github.com/kinverarity1/lasio/tree/master/notebooks)) for detailed examples of how to use lasio
 
-Thanks to [@oliveirarodolfo](https://github.com/oliveirarodolfo) you can also explore [lasio tutorial notebooks](https://github.com/oliveirarodolfo/lasio-notebooks) live in your browser at [binder](http://mybinder.org/repo/oliveirarodolfo/lasio-notebooks): [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/oliveirarodolfo/lasio-notebooks) 
+Thanks to [@roliveira](https://github.com/roliveira) you can also explore [lasio tutorial notebooks](https://github.com/roliveira/lasio-notebooks) live in your browser at [binder](http://mybinder.org/repo/roliveira/lasio-notebooks): [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/roliveira/lasio-notebooks) 
 
 Or as a quick example:
 
@@ -136,6 +134,8 @@ Note that by default ``autodetect_encoding=False``.
 [![](https://scrutinizer-ci.com/g/kinverarity1/lasio/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/kinverarity1/lasio/#)
 [![](https://www.quantifiedcode.com/api/v1/project/82d62106077f4c44a353c311984930d6/badge.svg)](https://www.quantifiedcode.com/app/project/82d62106077f4c44a353c311984930d6)
 
+[![Stories in Ready](https://badge.waffle.io/kinverarity1/lasio.png?label=ready&title=Ready)](http://waffle.io/kinverarity1/lasio)
+
 See the [list of changes](https://github.com/kinverarity1/lasio/blob/master/CHANGELOG.md) for each released version.
 
 To use the latest development version:
@@ -152,17 +152,38 @@ And to update:
 $ git pull origin master
 ```
 
-lasio should work on Python 3.2, but it isn't tested regularly at [Travis CI](https://travis-ci.org/kinverarity1/lasio) because Miniconda is only Python 3.3+.
+### Tests
+
+lasio should work on Python 2.6 and 3.2, but these versions aren't tested regularly at [Travis CI](https://travis-ci.org/kinverarity1/lasio).
+
+First install optional packages:
+
+```bash
+$ pip install -r optional-packages.txt
+```
+
+And then run tests:
+
+```bash
+$ py.test
+```
+
+### Contributions
 
 [![](http://githubbadges.herokuapp.com/kinverarity1/lasio/pulls.svg)](https://github.com/kinverarity1/lasio/pulls)
 [![](http://githubbadges.herokuapp.com/kinverarity1/lasio/issues.svg)](https://github.com/kinverarity1/lasio/issues)
 
-Contributions are very very welcome! Please fork the project on GitHub and submit a pull request (PR) containing any changes you have made. Or anything is welcome as a GitHub issue or an email to kinverarity@hotmail.com - suggestions, criticisms, questions, example files. 
+Help is very welcome! Please fork the project on GitHub and submit a pull request (PR) containing any changes you have made. Or anything is welcome as a GitHub issue or an email to kinverarity@hotmail.com - suggestions, criticisms, questions, example files. 
 
-Thanks to the following GitHub users for their help:
+Thanks to the following GitHub users for their help - my apologies to anyone I have missed.
 
 - VelizarVESSELINOV
 - diverdude
 - tomtommahout
 - dagrha
-- oliveirarodolfo
+- roliveira
+- Dybov
+- jgodwin
+- adamwulf
+- nasedil
+- ahjulstad
