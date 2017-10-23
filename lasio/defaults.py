@@ -16,7 +16,7 @@ DEFAULT_ITEMS = {
         HeaderItem('STRT', 'm', np.nan, 'START DEPTH'),
         HeaderItem('STOP', 'm', np.nan, 'STOP DEPTH'),
         HeaderItem('STEP', 'm', np.nan, 'STEP'),
-        HeaderItem('NULL', '', -9999.25, 'NULL VALUE'),
+        HeaderItem('NULL', '', -999.25, 'NULL VALUE'),
         HeaderItem('COMP', '', '', 'COMPANY'),
         HeaderItem('WELL', '', '', 'WELL'),
         HeaderItem('FLD', '', '', 'FIELD'),
