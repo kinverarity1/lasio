@@ -99,9 +99,7 @@ class LASFile(object):
         '''
 
         file_obj = reader.open_file(file_ref, **kwargs)
-        self._text = file_obj.read()
-
-        # Temporary only
+        self._raw_sections = reader.read_file_contents(file_obj, null_subs=null_subs)
         if hasattr(file_obj, "close"):
             file_obj.close()
 

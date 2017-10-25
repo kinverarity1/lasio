@@ -97,6 +97,90 @@ def open_file(file_ref, encoding=None, encoding_errors='replace',
     return file_ref
 
 
+def read_file_contents(file_obj, null_subs=True):
+    '''Read file contents into memory.
+
+    Arguments:
+        file_obj: an open file-like object.
+
+    Keyword Arguments:
+        null_subs (bool???): ????
+
+    Returns: 
+        An ordered dictionary with keys being the first line of each
+        LAS section. Each value is a dict with either:
+
+            {"section_type": "header",
+             "lines": a list of the lines from the lAS file,
+             "line_nos": a list of ints - line nos from the original file,
+             }
+        
+        or 
+
+            {"section_type": "data",
+             "array": 1D numpy ndarray
+             "line_nos_range": (int, int),
+             }
+
+        the section contents (for metadata sections) or a 1D numpy ndarray
+        (for numerical data sections). Obviously the ndarray would need
+        re-shaping.
+
+    '''
+    sections = OrderedDict()
+    sect_lines = []
+    sect_title_line = None
+    
+    for line in file_obj:
+        line = line.strip()
+        if line.startswith('~A'):
+            # HARD CODED FOR VERSION 1.2 and 2.0; needs review for 3.0
+            # We have finished looking at the metadata and need
+            # to start reading numerical data.
+            sections[sect_title_line] = '\n'.join(sect_lines)
+            data, n_range = read_numerical_file_contents(file_obj, n, null_subs)
+            sections[line] = {
+                "section_types": "data",
+                "array": data,
+                "line_nos_range": n_range}
+
+        elif line.startswith('~'):
+            if sect_lines:
+                # We have ended a section and need to start the next
+                sections[sect_title_line] = '\n'.join(sect_lines)
+                sect_lines = []
+            else:
+                # We are entering into a section for the first time
+                pass
+            sect_title_line = line # either way... this is the case.
+
+        else:
+            # We are in the middle of a section.
+            sect_lines.append(line)
+    return sections
+
+
+def read_numerical_file_contents(file_obj, n, null_subs):
+    '''Read data section into memory.
+
+    Arguments:
+        file_obj: a file-like object.
+
+    Keyword Arguments:
+        null_subs (bool???): ????
+
+    Returns: 
+        A 1D numpy ndarray. Still needs reshaping.
+
+    '''
+    def items(f):
+        for line in f:
+            for item in line.split():
+                yield item
+    
+    return np.fromiter(items(file_obj), np.float64, -1)
+
+
 class Reader(object):
 
     def __init__(self, text, version):
@@ -121,7 +205,6 @@ class Reader(object):
         """
         Iterator for the lines in a section.
         """
-        in_section = False
 
         # Use regex for the matching so we can make complicated requests.
         pattern = re.compile(r'^' + section_name, flags=re.IGNORECASE)
