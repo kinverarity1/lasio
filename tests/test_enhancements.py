@@ -43,6 +43,10 @@ def test_autodepthindex_ft():
     l = read(egfn("autodepthindex_FT.las"))
     assert (l.depth_m[-1] / 0.3048 == l.index[-1])
 
+def test_autodepthindex_feet():
+    l = read(egfn("autodepthindex_FEET.las"))
+    assert (l.depth_m[-1] / 0.3048 == l.index[-1])
+
 def test_df_indexing():
     l = read(egfn("6038187_v1.2.las"))
     metres = 9.05
