@@ -98,10 +98,10 @@ class LASFile(object):
 
         '''
 
-        f = reader.open_file(file_ref, **kwargs)
+        self._file_obj = reader.open_file(file_ref, **kwargs)
         self._file_ref = str(file_ref)
 
-        self._text = f.read()
+        self._text = self._file_obj.read()
         logger.debug('LASFile.read LAS content is type %s' % type(self._text))
 
         read_parser = reader.Reader(self._text, version=1.2)
