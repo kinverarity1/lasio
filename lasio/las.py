@@ -92,14 +92,12 @@ class LASFile(object):
             encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
                 handle errors with encodings (see standard library codecs module or
                 Python Unicode HOWTO for more information)
-            autodetect_encoding (bool): use chardet/cchardet to detect encoding
-            autodetect_encoding_chars (int/None): number of chars to read from LAS
-                file for auto-detection of encoding.
 
         '''
-
-        f = reader.open_file(file_ref, **kwargs)
         self._file_ref = str(file_ref)
+        sections = reader.read(file_ref, null_subs=null_subs, **kwargs)
+
+        
 
         self._text = f.read()
         logger.debug('LASFile.read LAS content is type %s' % type(self._text))
