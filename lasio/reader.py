@@ -129,7 +129,7 @@ class Reader(object):
             if match is not None:
                 pattern = re.compile(r'^' + section_name + '.*', flags=re.I)
                 m = pattern.search(line).group()
-                this_section = re.sub(r'~', '', m).title()
+                this_section = re.sub(r'~', '', m)
                 if in_section:
                     return
                 else:
