@@ -223,7 +223,6 @@ class SectionItems(list):
                 # or original_mnemonic. Is this correct? Needs to thought
                 # about and tested more carefully.
 
-                logger.debug('SectionItems.__setitem__ Replaced %s item' % key)
                 return super(SectionItems, self).__setitem__(i, newitem)
         else:
             self.append(newitem)
@@ -233,8 +232,6 @@ class SectionItems(list):
 
     def append(self, newitem):
         '''Check to see if the item's mnemonic needs altering.'''
-        logger.debug('SectionItems.append type=%s str=%s' %
-                     (type(newitem), newitem))
         super(SectionItems, self).append(newitem)
 
         # Check to fix the :n suffixes
