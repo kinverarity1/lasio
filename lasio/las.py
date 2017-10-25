@@ -98,11 +98,12 @@ class LASFile(object):
 
         '''
 
-        self._file_obj = reader.open_file(file_ref, **kwargs)
-        self._file_ref = str(file_ref)
+        file_obj = reader.open_file(file_ref, **kwargs)
+        self._text = file_obj.read()
 
-        self._text = self._file_obj.read()
-        logger.debug('LASFile.read LAS content is type %s' % type(self._text))
+        # Temporary only
+        if hasattr(file_obj, "close"):
+            file_obj.close()
 
         read_parser = reader.Reader(self._text, version=1.2)
         self.sections['Version'] = read_parser.read_section('~V')

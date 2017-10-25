@@ -68,25 +68,32 @@ def open_file(file_ref, encoding=None, encoding_errors='replace',
         An open file-like object ready for reading from.
 
     '''
-    if isinstance(file_ref, str):
+    if isinstance(file_ref, str): # file_ref != file-like object, so what is it?
         lines = file_ref.splitlines()
-        if len(lines) == 1:  # File name
-            if URL_REGEXP.match(file_ref):
-                try:
-                    import urllib2
-                    file_ref = urllib2.urlopen(file_ref)
-                except ImportError:
-                    import urllib.request
-                    response = urllib.request.urlopen(file_ref)
-                    enc = response.headers.get_content_charset('utf-8')
-                    file_ref = StringIO(response.read().decode(enc))
-            else:  # filename
-                data = get_unicode_from_filename(
-                    file_ref, encoding, encoding_errors, autodetect_encoding,
-                    autodetect_encoding_chars)
-                file_ref = StringIO(data)
-        else:
-            file_ref = StringIO('\n'.join(lines))
+        first_line = lines[0]
+        if URL_REGEXP.match(first_line): # it's a URL
+            try:
+                import urllib2
+                file_ref = urllib2.urlopen(first_line)
+            except ImportError:
+                import urllib.request
+                response = urllib.request.urlopen(file_ref)
+                enc = response.headers.get_content_charset('utf-8')
+                file_ref = StringIO(response.read().decode(enc))
+        elif len(lines) > 1: # it's LAS data as a string.
+            file_ref = StringIO(file_ref)
+        else:  # it must be a filename
+            file_ref = open_with_codecs(first_line, encoding, encoding_errors, 
+                                        autodetect_encoding, autodetect_encoding_chars)
+        
+    # If file_ref was:
+    #  - a file-like object, nothing happens and it is returned
+    #    directly by this function.
+    #  - a filename, the encoding is detected and the file opened and returned
+    #  - a URI, a request is made and the content read and returned as a file-like
+    #    object using cStringIO
+    #  - a string, the string is returned as a file-like object using cStringIO
+
     return file_ref
 
 
@@ -333,15 +340,16 @@ def read_line(line, pattern=None):
     return d
 
 
-def get_unicode_from_filename(fn, enc, errors, auto, nbytes):
+def open_with_codecs(filename, encoding, encoding_errors, 
+                     autodetect_encoding, nbytes):
     '''
     Read Unicode data from file.
 
     Arguments:
-        fn (str): path to file
-        enc (str): encoding - can be None
-        errors (str): unicode error handling - can be 'strict', 'ignore', 'replace'
-        auto (str): auto-detection of character encoding - can be either
+        filename (str): path to file
+        encoding (str): encoding - can be None
+        encoding_errors (str): unicode error handling - can be 'strict', 'ignore', 'replace'
+        autodetect_encoding (str): auto-detection of character encoding - can be either
             'chardet', 'cchardet', or True
         nbytes (int): number of characters for read for auto-detection
 
@@ -352,29 +360,25 @@ def get_unicode_from_filename(fn, enc, errors, auto, nbytes):
     if nbytes:
         nbytes = int(nbytes)
 
-    # Detect BOM in UTF-8 files
-
-    nbytes_test = min(32, os.path.getsize(fn))
-    with open(fn, mode='rb') as test:
+    # Forget chardet - if we can locate the BOM we just assume that's correct.
+    nbytes_test = min(32, os.path.getsize(filename))
+    with open(filename, mode='rb') as test:
         raw = test.read(nbytes_test)
     if raw.startswith(codecs.BOM_UTF8):
-        enc = 'utf-8-sig'
-        auto = False
+        encoding = 'utf-8-sig'
+        autodetect_encoding = False
 
-    if auto:
-        with open(fn, mode='rb') as test:
+    # Otherwise...
+    if autodetect_encoding:
+        with open(filename, mode='rb') as test:
             if nbytes is None:
                 raw = test.read()
             else:
                 raw = test.read(nbytes)
-        enc = get_encoding(auto, raw)
+        encoding = get_encoding(autodetect_encoding, raw)
 
-    # codecs.open is smarter than cchardet or chardet IME.
-
-    with codecs.open(fn, mode='r', encoding=enc, errors=errors) as f:
-        data = f.read()
-
-    return data
+    # Now open and return the file-like object
+    return codecs.open(filename, mode='r', encoding=encoding, errors=encoding_errors)
 
 
 def get_encoding(auto, raw):
