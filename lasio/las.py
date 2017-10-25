@@ -140,15 +140,15 @@ class LASFile(object):
         data = read_parser.read_data(len(self.curves), null_subs=null_subs)
         self.set_data(data, truncate=False)
 
-        if (self.well['STRT'].unit.upper() == 'M' and
-                self.well['STOP'].unit.upper() == 'M' and
-                self.well['STEP'].unit.upper() == 'M' and
-                self.curves[0].unit.upper() == 'M'):
+        if (self.well['STRT'].unit.upper() in defaults.METRE_UNITS and
+                self.well['STOP'].unit.upper() in defaults.METRE_UNITS and
+                self.well['STEP'].unit.upper() in defaults.METRE_UNITS and
+                self.curves[0].unit.upper() in defaults.METRE_UNITS):
             self.index_unit = 'M'
-        elif (self.well['STRT'].unit.upper() in ('F', 'FT') and
-              self.well['STOP'].unit.upper() in ('F', 'FT') and
-              self.well['STEP'].unit.upper() in ('F', 'FT') and
-              self.curves[0].unit.upper() in ('F', 'FT')):
+        elif (self.well['STRT'].unit.upper() in defaults.FEET_UNITS and
+              self.well['STOP'].unit.upper() in defaults.FEET_UNITS and
+              self.well['STEP'].unit.upper() in defaults.FEET_UNITS and
+              self.curves[0].unit.upper() in defaults.FEET_UNITS):
             self.index_unit = 'FT'
 
     def write(self, file_object, version=None, wrap=None,

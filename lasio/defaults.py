@@ -53,3 +53,6 @@ ORDER_DEFINITIONS = {
         ('Curves', ['value:descr']),
         ('Parameter', ['value:descr'])
     ])}
+
+FEET_UNITS = ("FT", "F", "FEET", "FOOT")
+METRE_UNITS = ("M", "METER", "METERS", "METRE", "METRES")
