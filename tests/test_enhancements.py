@@ -72,4 +72,4 @@ def test_df_curve_names():
 
 def test_non_standard_section():
     l = read(egfn("non-standard-header-section.las"))
-    assert "SPECIAL" in l.sections.keys()
+    assert "SPECIAL INFORMATION" in l.sections.keys()
