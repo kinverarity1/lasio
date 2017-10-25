@@ -134,6 +134,14 @@ class LASFile(object):
             logger.warning(traceback.format_exc().splitlines()[-1])
         self.sections['Other'] = read_parser.read_raw_text('~O')
 
+        # Deal with nonstandard sections that some operators and/or
+        # service companies (eg IHS) insist on adding.
+        for char in "BDEFGHIJKLMNQRSTUXYZ":
+            s, d = read_parser.read_raw_text(r'~[%s]' % char, return_section=True)
+            if s is not None and d is not None:
+                logger.warning('Found nonstandard LAS section: ' + s)
+                self.sections[s] = d
+
         # Set null value
         read_parser.null = self.well['NULL'].value
 
