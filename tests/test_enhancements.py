@@ -77,4 +77,4 @@ def test_non_standard_section():
 def test_non_standard_sections():
     l = read(egfn("non-standard-header-sections.las"))
     assert "SPECIAL INFORMATION" in l.sections.keys()
-    assert "EXTRA SPECIAL INFORMATION" in l.sections.keys()
+    assert "extra special information" in l.sections.keys()
