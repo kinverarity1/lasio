@@ -69,3 +69,12 @@ def test_df_reverse():
 def test_df_curve_names():
     l = read(egfn("sample_rev.las"))
     assert l.keys()[1:] == list(l.df().columns.values)
+
+def test_non_standard_section():
+    l = read(egfn("non-standard-header-section.las"))
+    assert "SPECIAL INFORMATION" in l.sections.keys()
+
+def test_non_standard_sections():
+    l = read(egfn("non-standard-header-sections.las"))
+    assert "SPECIAL INFORMATION" in l.sections.keys()
+    assert "extra special information" in l.sections.keys()
