@@ -128,7 +128,6 @@ Note that by default ``autodetect_encoding=False``.
 
 ## Development
 
-[![Build Status](https://travis-ci.org/kinverarity1/lasio.svg?branch=master)](https://travis-ci.org/kinverarity1/lasio)
 [![](https://coveralls.io/repos/kinverarity1/lasio/badge.svg?branch=master&service=github)](https://coveralls.io/github/kinverarity1/lasio?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/252911a940b7476d9d7c4450d4045370)](https://www.codacy.com/app/kinverarity/lasio)
 [![](https://scrutinizer-ci.com/g/kinverarity1/lasio/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/kinverarity1/lasio/#)
@@ -154,11 +153,14 @@ $ git pull origin master
 
 ### Tests
 
-lasio should work on Python 2.6 and 3.2, but these versions aren't tested regularly at [Travis CI](https://travis-ci.org/kinverarity1/lasio).
+[![Build Status](https://travis-ci.org/kinverarity1/lasio.svg?branch=master)](https://travis-ci.org/kinverarity1/lasio)
 
-First install optional packages:
+lasio is tested regularly at [Travis CI](https://travis-ci.org/kinverarity1/lasio) against Python versions 2.7, 3.3, 3.4, 3.5, and 3.6. lasio should work on Python 2.6 and 3.2, but these are tested only occassionally.
+
+To run tests yourself, first install the testing framework and all the optional packages:
 
 ```bash
+$ pip install pytest
 $ pip install -r optional-packages.txt
 ```
 
