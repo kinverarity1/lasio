@@ -115,10 +115,10 @@ class LASFile(object):
             if raw_section:
                 self.sections[name] = reader.parse_header_section(raw_section, **sect_kws)
                 drop.append(raw_section["title"])
-            for key in drop:
-                self.raw_sections.pop(key)
             else:
                 logger.warning("Header section %s regexp=%s was not found." % (name, pattern))
+            for key in drop:
+                self.raw_sections.pop(key)
 
         add_section("~V", "Version", version=1.2, ignore_header_errors=ignore_header_errors)
 
