@@ -44,7 +44,8 @@ URL_REGEXP = re.compile(
     r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 
-def open_file(file_ref, encoding=None, encoding_errors='replace',
+def open_file(file_ref,
+              encoding=None, encoding_errors='replace',
               autodetect_encoding=False, autodetect_encoding_chars=40e3):
     '''Open a file if necessary.
 
@@ -148,7 +149,7 @@ def read_file_contents(file_obj, null_subs=True, ignore_data=False):
                 "line_nos": sect_line_nos,
                 }
             if not ignore_data:
-                data, n_range = read_numerical_file_contents(file_obj, i, null_subs)
+                data, n_range = read_numerical_file_contents(file_obj, i + 1, null_subs)
                 sections[line] = {
                     "section_types": "data",
                     "title": line,
@@ -174,8 +175,9 @@ def read_file_contents(file_obj, null_subs=True, ignore_data=False):
 
         else:
             # We are in the middle of a section.
-            sect_lines.append(line)
-            sect_line_nos.append(i)
+            if not line.startswith("#"):       # ignore commented-out lines.. for now.
+                sect_lines.append(line)
+                sect_line_nos.append(i + 1)
     return sections
 
 
@@ -202,7 +204,7 @@ def read_numerical_file_contents(file_obj, i, null_subs):
     return np.fromiter(items(file_obj), np.float64, -1), (i0, i)
 
 
-def parse_header_section(sectdict, version):
+def parse_header_section(sectdict, version, ignore_header_errors=False):
     '''Parse a header section dictionary into Header/CurveItems.
 
     Arguments:
@@ -216,168 +218,122 @@ def parse_header_section(sectdict, version):
     for i in range(len(sectdict["lines"])):
         line = sectdict["lines"][i]
         j = sectdict["line_nos"][i]
+        # if line.start
         try:
             values = read_line(line)
         except:
-            raise exceptions.LASHeaderError(
-                "Line #%d - failed in %s section on line:\n%s%s" % (
-                    j, title, line,
-                    traceback.format_exc().splitlines()[-1]))
+            message = "Line #%d - failed in %s section on line:\n%s%s" % (
+                j, title, line,
+                traceback.format_exc().splitlines()[-1])
+            
+            if ignore_header_errors:
+                logger.warning(message)
+            else:
+                raise exceptions.LASHeaderError(message)
         else:
             section.append(parser(**values))
     return section
 
 
 
+    # def read_raw_text(self, section_name, return_section=False):
 
+    #     s = None
+    #     lines = []
+    #     for s, l in self.iter_section_lines(section_name,
+    #                                         ignore_comments=False):
+    #         lines.append(l)
+    #     these_lines = '\n'.join(lines)
 
+    #     if return_section:
+    #         return s, these_lines
+    #     else:
+    #         return these_lines
 
-class Reader(object):
+    # def read_section(self, section_name):
+    #     parser = SectionParser(section_name, version=self.version)
+    #     section = SectionItems()
+    #     for _, line in self.iter_section_lines(section_name):
+    #         try:
+    #             values = read_line(line)
+    #         except:
+    #             raise exceptions.LASHeaderError(
+    #                 'Failed in %s section on line:\n%s%s' % (
+    #                     section_name, line,
+    #                     traceback.format_exc().splitlines()[-1]))
+    #         else:
+    #             section.append(parser(**values))
+    #     return section
 
-    def __init__(self, text, version):
-        self.lines = text.splitlines()
-        self.version = version
-        self.null = np.nan
-        self.wrap = True
+    # def read_data(self, number_of_curves=None, null_subs=True):
+    #     s = self.read_data_string()
+    #     if not self.wrap:
+    #         try:
+    #             arr = np.loadtxt(StringIO(s))
+    #         except:
+    #             raise exceptions.LASDataError('Failed to read data:\n%s' % (
+    #                 traceback.format_exc().splitlines()[-1]))
+    #     else:
+    #         eol_chars = r'[\n\t\r]'
+    #         s = re.sub(eol_chars, ' ', s)
+    #         try:
+    #             arr = np.loadtxt(StringIO(s))
+    #         except:
+    #             raise exceptions.LASDataError(
+    #                 'Failed to read wrapped data: %s' % (
+    #                     traceback.format_exc().splitlines()[-1]))
+    #         logger.debug('Reader.read_data arr shape = %s' % (arr.shape))
+    #         logger.debug('Reader.read_data number of curves = %s' %
+    #                      number_of_curves)
+    #         arr = np.reshape(arr, (-1, number_of_curves))
+    #     if not arr.shape or (arr.ndim == 1 and arr.shape[0] == 0):
+    #         logger.warning('Reader.read_data No data present.')
+    #         return None, None
+    #     else:
+    #         logger.info('Reader.read_data LAS file shape = %s' %
+    #                     str(arr.shape))
+    #     logger.debug(
+    #         'Reader.read_data checking for nulls (NULL = %s)' % self.null)
+    #     if null_subs:
+    #         arr[arr == self.null] = np.nan
+    #     return arr
 
-    @property
-    def section_names(self):
-        names = []
-        for line in self.lines:
-            line = line.strip().strip('\t').strip()
-            if not line or line.startswith('#'):
-                continue
-            if line.startswith('~'):
-                names.append(line)
-        return names
-
-    def iter_section_lines(self, section_name,
-                           ignore_comments=True):
-        """
-        Iterator for the lines in a section.
-        """
-
-        # Use regex for the matching so we can make complicated requests.
-        pattern = re.compile(r'^' + section_name, flags=re.IGNORECASE)
-
-        for i, line in enumerate(self.lines):
-            line = line.strip().strip('\t').strip()
-            if not line:
-                continue
-            if ignore_comments and line.startswith('#'):
-                continue
-            match = pattern.search(line)
-            if match is not None:
-                pattern = re.compile(r'^' + section_name + '.*', flags=re.I)
-                m = pattern.search(line).group()
-                this_section = re.sub(r'~', '', m)
-                if in_section:
-                    return
-                else:
-                    in_section = True
-                    continue
-            if line.lower().startswith('~') and in_section:
-                # Start of the next section; we're done here.
-                break
-            if in_section:
-                yield this_section, line
-
-    def read_raw_text(self, section_name, return_section=False):
-
-        s = None
-        lines = []
-        for s, l in self.iter_section_lines(section_name,
-                                            ignore_comments=False):
-            lines.append(l)
-        these_lines = '\n'.join(lines)
-
-        if return_section:
-            return s, these_lines
-        else:
-            return these_lines
-
-    def read_section(self, section_name):
-        parser = SectionParser(section_name, version=self.version)
-        section = SectionItems()
-        for _, line in self.iter_section_lines(section_name):
-            try:
-                values = read_line(line)
-            except:
-                raise exceptions.LASHeaderError(
-                    'Failed in %s section on line:\n%s%s' % (
-                        section_name, line,
-                        traceback.format_exc().splitlines()[-1]))
-            else:
-                section.append(parser(**values))
-        return section
-
-    def read_data(self, number_of_curves=None, null_subs=True):
-        s = self.read_data_string()
-        if not self.wrap:
-            try:
-                arr = np.loadtxt(StringIO(s))
-            except:
-                raise exceptions.LASDataError('Failed to read data:\n%s' % (
-                    traceback.format_exc().splitlines()[-1]))
-        else:
-            eol_chars = r'[\n\t\r]'
-            s = re.sub(eol_chars, ' ', s)
-            try:
-                arr = np.loadtxt(StringIO(s))
-            except:
-                raise exceptions.LASDataError(
-                    'Failed to read wrapped data: %s' % (
-                        traceback.format_exc().splitlines()[-1]))
-            logger.debug('Reader.read_data arr shape = %s' % (arr.shape))
-            logger.debug('Reader.read_data number of curves = %s' %
-                         number_of_curves)
-            arr = np.reshape(arr, (-1, number_of_curves))
-        if not arr.shape or (arr.ndim == 1 and arr.shape[0] == 0):
-            logger.warning('Reader.read_data No data present.')
-            return None, None
-        else:
-            logger.info('Reader.read_data LAS file shape = %s' %
-                        str(arr.shape))
-        logger.debug(
-            'Reader.read_data checking for nulls (NULL = %s)' % self.null)
-        if null_subs:
-            arr[arr == self.null] = np.nan
-        return arr
-
-    def read_data_string(self):
-        start_data = None
-        for i, line in enumerate(self.lines):
-            line = line.strip().strip('\t').strip()
-            if line.startswith('~A'):
-                start_data = i + 1
-                break
-        s = '\n'.join(self.lines[start_data:])
-        s = re.sub(r'(\d)-(\d)', r'\1 -\2', s)
-        s = re.sub('-?\d*\.\d*\.\d*', ' NaN NaN ', s)
-        s = re.sub('NaN.\d*', ' NaN NaN ', s)
-        return s
+    # def read_data_string(self):
+    #     start_data = None
+    #     for i, line in enumerate(self.lines):
+    #         line = line.strip().strip('\t').strip()
+    #         if line.startswith('~A'):
+    #             start_data = i + 1
+    #             break
+    #     s = '\n'.join(self.lines[start_data:])
+    #     s = re.sub(r'(\d)-(\d)', r'\1 -\2', s)
+    #     s = re.sub('-?\d*\.\d*\.\d*', ' NaN NaN ', s)
+    #     s = re.sub('NaN.\d*', ' NaN NaN ', s)
+    #     return s
 
 
 class SectionParser(object):
 
-    def __init__(self, section_name, version=1.2):
-        if section_name.startswith('~C'):
+    def __init__(self, title, version=1.2):
+        if title.upper().startswith('~C'):
             self.func = self.curves
-        elif section_name.startswith('~P'):
+            self.section_name2 = "Curves"
+        elif title.upper().startswith('~P'):
             self.func = self.params
-        else:
+            self.section_name2 = "Parameter"
+        elif title.upper().startswith('~W'):
             self.func = self.metadata
+            self.section_name2 = "Well"
+        elif title.upper().startswith('~V'):
+            self.func = self.metadata
+            self.section_name2 = "Version"
+            
 
         self.version = version
-        self.section_name = section_name
-        self.section_name2 = {'~C': 'Curves',
-                              '~W': 'Well',
-                              '~V': 'Version',
-                              '~P': 'Parameter'}[section_name]
+        self.section_name = title
 
-        section_orders = defaults.ORDER_DEFINITIONS[
-            self.version][self.section_name2]
-        self.default_order = section_orders[0]
+        section_orders = defaults.ORDER_DEFINITIONS[self.version][self.section_name2]
+        self.default_order = section_orders[0]#
         self.orders = {}
         for order, mnemonics in section_orders[1:]:
             for mnemonic in mnemonics:

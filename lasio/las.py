@@ -83,7 +83,7 @@ class LASFile(object):
         if not (file_ref is None):
             self.read(file_ref, **kwargs)
 
-    def read(self, file_ref, null_subs=True, **kwargs):
+    def read(self, file_ref, null_subs=True, ignore_data=False, ignore_header_errors=False, **kwargs):
         '''Read a LAS file.
 
         Arguments:
@@ -110,14 +110,14 @@ class LASFile(object):
             file_obj.close()
 
         def add_section(pattern, name, **sect_kws):
-            raw_section = self.match_section("~V")
+            raw_section = self.match_section(pattern)
             if raw_section:
                 self.sections[name] = reader.parse_header_section(raw_section, **sect_kws)
                 del self.raw_sections[raw_section["title"]]
             else:
                 logger.warning("Header section %s regexp=%s was not found." % (name, pattern))
 
-        add_section("~V", "Version", version=1.2, ignore_header_errors=kwargs["ignore_header_errors"])
+        add_section("~V", "Version", version=1.2, ignore_header_errors=ignore_header_errors)
 
         # Set version
         try:
@@ -135,9 +135,9 @@ class LASFile(object):
             else:
                 version = 2
 
-        add_section("~W", "Well", version=version, ignore_header_errors=kwargs["ignore_header_errors"])
-        add_section("~C", "Curves", version=version, ignore_header_errors=kwargs["ignore_header_errors"])
-        add_section("~P", "Parameter", version=version, ignore_header_errors=kwargs["ignore_header_errors"])
+        add_section("~W", "Well", version=version, ignore_header_errors=ignore_header_errors)
+        add_section("~C", "Curves", version=version, ignore_header_errors=ignore_header_errors)
+        add_section("~P", "Parameter", version=version, ignore_header_errors=ignore_header_errors)
         s = self.match_section("~O")
         if s:
             self.sections["Other"] = "\n".join(s["lines"])
@@ -145,17 +145,17 @@ class LASFile(object):
 
         # Deal with nonstandard sections that some operators and/or
         # service companies (eg IHS) insist on adding.
-        for s in self.raw_sections:
+        for s in self.raw_sections.values():
             logger.warning('Found nonstandard LAS section: ' + s["title"])
             self.sections[s["title"][1:]] = "\n".join(s["lines"])
             del self.raw_sections[s["title"]]
 
         # Set null value
-        wrap = self.version['WRAP'].value == 'YES'
-        null = self.well['NULL'].value
-
-        data = read_parser.read_data(len(self.curves), null_subs=null_subs)
-        self.set_data(data, truncate=False)
+        if not ignore_data:
+            wrap = self.version['WRAP'].value == 'YES'
+            null = self.well['NULL'].value
+            data = read_parser.read_data(len(self.curves), null_subs=null_subs)
+            self.set_data(data, truncate=False)
 
         if (self.well['STRT'].unit.upper() in defaults.METRE_UNITS and
                 self.well['STOP'].unit.upper() in defaults.METRE_UNITS and
@@ -196,6 +196,7 @@ class LASFile(object):
 
     def match_section(self, pattern, re_func="match", flags=re.IGNORECASE):
         for title in self.raw_sections.keys():
+            title = title.strip()
             p = re.compile(pattern, flags=flags)
             if re_func == "match":
                 re_func = re.match
