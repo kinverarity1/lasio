@@ -32,6 +32,7 @@ from . import defaults
 from . import exceptions
 from .las_items import HeaderItem, CurveItem, SectionItems, OrderedDict
 
+
 logger = logging.getLogger(__name__)
 
 URL_REGEXP = re.compile(
@@ -98,6 +99,90 @@ def open_file(file_ref,
     return file_ref
 
 
+def open_with_codecs(filename, encoding, encoding_errors, 
+                     autodetect_encoding, nbytes):
+    '''
+    Read Unicode data from file.
+
+    Arguments:
+        filename (str): path to file
+        encoding (str): encoding - can be None
+        encoding_errors (str): unicode error handling - can be 'strict', 'ignore', 'replace'
+        autodetect_encoding (str): auto-detection of character encoding - can be either
+            'chardet', 'cchardet', or True
+        nbytes (int): number of characters for read for auto-detection
+
+    Returns:
+        a unicode or string object
+
+    '''
+    if nbytes:
+        nbytes = int(nbytes)
+
+    # Forget chardet - if we can locate the BOM we just assume that's correct.
+    nbytes_test = min(32, os.path.getsize(filename))
+    with open(filename, mode='rb') as test:
+        raw = test.read(nbytes_test)
+    if raw.startswith(codecs.BOM_UTF8):
+        encoding = 'utf-8-sig'
+        autodetect_encoding = False
+
+    # Otherwise...
+    if autodetect_encoding:
+        with open(filename, mode='rb') as test:
+            if nbytes is None:
+                raw = test.read()
+            else:
+                raw = test.read(nbytes)
+        encoding = get_encoding(autodetect_encoding, raw)
+
+    # Now open and return the file-like object
+    return codecs.open(filename, mode='r', encoding=encoding, errors=encoding_errors)
+
+
+def get_encoding(auto, raw):
+    '''
+    Automatically detect character encoding.
+
+    Arguments:
+        auto (str): auto-detection of character encoding - can be either
+            'chardet', 'cchardet', or True
+        raw (bytes): array of bytes to detect from
+
+    Returns:
+        A string specifying the character encoding.
+
+    '''
+    if auto is True:
+        try:
+            import cchardet as chardet
+        except ImportError:
+            try:
+                import chardet
+            except ImportError:
+                raise ImportError(
+                    'chardet or cchardet is required for automatic'
+                    ' detection of character encodings.')
+            else:
+                logger.debug('get_encoding Using chardet')
+                method = 'chardet'
+        else:
+            logger.debug('get_encoding Using cchardet')
+            method = 'cchardet'
+    elif auto.lower() == 'chardet':
+        import chardet
+        logger.debug('get_encoding Using chardet')
+        method = 'chardet'
+    elif auto.lower() == 'cchardet':
+        import cchardet as chardet
+        logger.debug('get_encoding Using cchardet')
+        method = 'cchardet'
+
+    result = chardet.detect(raw)
+    logger.debug('get_encoding %s results=%s' % (method, result))
+    return result['encoding']
+
+
 def read_file_contents(file_obj, null_subs=True, ignore_data=False):
     '''Read file contents into memory.
 
@@ -151,7 +236,7 @@ def read_file_contents(file_obj, null_subs=True, ignore_data=False):
             if not ignore_data:
                 data, n_range = read_numerical_file_contents(file_obj, i + 1, null_subs)
                 sections[line] = {
-                    "section_types": "data",
+                    "section_type": "data",
                     "title": line,
                     "array": data,
                     "line_nos_range": n_range}
@@ -194,14 +279,27 @@ def read_numerical_file_contents(file_obj, i, null_subs):
         Numpy array still needs reshaping.
 
     '''
+
+    sub_patterns = [
+        (re.compile(r'(\d)-(\d)'), r'\1 -\2'),
+        (re.compile('-?\d*\.\d*\.\d*'), ' NaN NaN '),
+        (re.compile('NaN.\d*'), ' NaN NaN '),
+        ]
+
     i0 = i
+    ic = i
     def items(f):
         for line in f:
+            for pattern, sub_str in sub_patterns:
+                line = re.sub(pattern, sub_str, line)
             for item in line.split():
                 yield item
-            i += 1
+            # ic += 1
     
-    return np.fromiter(items(file_obj), np.float64, -1), (i0, i)
+    arr = np.fromiter(items(file_obj), np.float64, -1)
+
+    line_nos = (i0, ic)
+    return arr, line_nos
 
 
 def parse_header_section(sectdict, version, ignore_header_errors=False):
@@ -234,82 +332,6 @@ def parse_header_section(sectdict, version, ignore_header_errors=False):
             section.append(parser(**values))
     return section
 
-
-
-    # def read_raw_text(self, section_name, return_section=False):
-
-    #     s = None
-    #     lines = []
-    #     for s, l in self.iter_section_lines(section_name,
-    #                                         ignore_comments=False):
-    #         lines.append(l)
-    #     these_lines = '\n'.join(lines)
-
-    #     if return_section:
-    #         return s, these_lines
-    #     else:
-    #         return these_lines
-
-    # def read_section(self, section_name):
-    #     parser = SectionParser(section_name, version=self.version)
-    #     section = SectionItems()
-    #     for _, line in self.iter_section_lines(section_name):
-    #         try:
-    #             values = read_line(line)
-    #         except:
-    #             raise exceptions.LASHeaderError(
-    #                 'Failed in %s section on line:\n%s%s' % (
-    #                     section_name, line,
-    #                     traceback.format_exc().splitlines()[-1]))
-    #         else:
-    #             section.append(parser(**values))
-    #     return section
-
-    # def read_data(self, number_of_curves=None, null_subs=True):
-    #     s = self.read_data_string()
-    #     if not self.wrap:
-    #         try:
-    #             arr = np.loadtxt(StringIO(s))
-    #         except:
-    #             raise exceptions.LASDataError('Failed to read data:\n%s' % (
-    #                 traceback.format_exc().splitlines()[-1]))
-    #     else:
-    #         eol_chars = r'[\n\t\r]'
-    #         s = re.sub(eol_chars, ' ', s)
-    #         try:
-    #             arr = np.loadtxt(StringIO(s))
-    #         except:
-    #             raise exceptions.LASDataError(
-    #                 'Failed to read wrapped data: %s' % (
-    #                     traceback.format_exc().splitlines()[-1]))
-    #         logger.debug('Reader.read_data arr shape = %s' % (arr.shape))
-    #         logger.debug('Reader.read_data number of curves = %s' %
-    #                      number_of_curves)
-    #         arr = np.reshape(arr, (-1, number_of_curves))
-    #     if not arr.shape or (arr.ndim == 1 and arr.shape[0] == 0):
-    #         logger.warning('Reader.read_data No data present.')
-    #         return None, None
-    #     else:
-    #         logger.info('Reader.read_data LAS file shape = %s' %
-    #                     str(arr.shape))
-    #     logger.debug(
-    #         'Reader.read_data checking for nulls (NULL = %s)' % self.null)
-    #     if null_subs:
-    #         arr[arr == self.null] = np.nan
-    #     return arr
-
-    # def read_data_string(self):
-    #     start_data = None
-    #     for i, line in enumerate(self.lines):
-    #         line = line.strip().strip('\t').strip()
-    #         if line.startswith('~A'):
-    #             start_data = i + 1
-    #             break
-    #     s = '\n'.join(self.lines[start_data:])
-    #     s = re.sub(r'(\d)-(\d)', r'\1 -\2', s)
-    #     s = re.sub('-?\d*\.\d*\.\d*', ' NaN NaN ', s)
-    #     s = re.sub('NaN.\d*', ' NaN NaN ', s)
-    #     return s
 
 
 class SectionParser(object):
@@ -396,6 +418,7 @@ class SectionParser(object):
         )
 
 
+
 def read_line(line, pattern=None):
     '''Read a line from a LAS header section.
 
@@ -429,86 +452,3 @@ def read_line(line, pattern=None):
                 d[key] = d[key].strip('.')  # see issue #36
     return d
 
-
-def open_with_codecs(filename, encoding, encoding_errors, 
-                     autodetect_encoding, nbytes):
-    '''
-    Read Unicode data from file.
-
-    Arguments:
-        filename (str): path to file
-        encoding (str): encoding - can be None
-        encoding_errors (str): unicode error handling - can be 'strict', 'ignore', 'replace'
-        autodetect_encoding (str): auto-detection of character encoding - can be either
-            'chardet', 'cchardet', or True
-        nbytes (int): number of characters for read for auto-detection
-
-    Returns:
-        a unicode or string object
-
-    '''
-    if nbytes:
-        nbytes = int(nbytes)
-
-    # Forget chardet - if we can locate the BOM we just assume that's correct.
-    nbytes_test = min(32, os.path.getsize(filename))
-    with open(filename, mode='rb') as test:
-        raw = test.read(nbytes_test)
-    if raw.startswith(codecs.BOM_UTF8):
-        encoding = 'utf-8-sig'
-        autodetect_encoding = False
-
-    # Otherwise...
-    if autodetect_encoding:
-        with open(filename, mode='rb') as test:
-            if nbytes is None:
-                raw = test.read()
-            else:
-                raw = test.read(nbytes)
-        encoding = get_encoding(autodetect_encoding, raw)
-
-    # Now open and return the file-like object
-    return codecs.open(filename, mode='r', encoding=encoding, errors=encoding_errors)
-
-
-def get_encoding(auto, raw):
-    '''
-    Automatically detect character encoding.
-
-    Arguments:
-        auto (str): auto-detection of character encoding - can be either
-            'chardet', 'cchardet', or True
-        raw (bytes): array of bytes to detect from
-
-    Returns:
-        A string specifying the character encoding.
-
-    '''
-    if auto is True:
-        try:
-            import cchardet as chardet
-        except ImportError:
-            try:
-                import chardet
-            except ImportError:
-                raise ImportError(
-                    'chardet or cchardet is required for automatic'
-                    ' detection of character encodings.')
-            else:
-                logger.debug('get_encoding Using chardet')
-                method = 'chardet'
-        else:
-            logger.debug('get_encoding Using cchardet')
-            method = 'cchardet'
-    elif auto.lower() == 'chardet':
-        import chardet
-        logger.debug('get_encoding Using chardet')
-        method = 'chardet'
-    elif auto.lower() == 'cchardet':
-        import cchardet as chardet
-        logger.debug('get_encoding Using cchardet')
-        method = 'cchardet'
-
-    result = chardet.detect(raw)
-    logger.debug('get_encoding %s results=%s' % (method, result))
-    return result['encoding']

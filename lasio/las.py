@@ -111,9 +111,12 @@ class LASFile(object):
 
         def add_section(pattern, name, **sect_kws):
             raw_section = self.match_section(pattern)
+            drop = []
             if raw_section:
                 self.sections[name] = reader.parse_header_section(raw_section, **sect_kws)
-                del self.raw_sections[raw_section["title"]]
+                drop.append(raw_section["title"])
+            for key in drop:
+                self.raw_sections.pop(key)
             else:
                 logger.warning("Header section %s regexp=%s was not found." % (name, pattern))
 
@@ -139,23 +142,41 @@ class LASFile(object):
         add_section("~C", "Curves", version=version, ignore_header_errors=ignore_header_errors)
         add_section("~P", "Parameter", version=version, ignore_header_errors=ignore_header_errors)
         s = self.match_section("~O")
+
+        drop = []
         if s:
             self.sections["Other"] = "\n".join(s["lines"])
-            del self.raw_sections[s["title"]]
+            drop.append(s["title"])
+        for key in drop:
+            self.raw_sections.pop(key)
 
         # Deal with nonstandard sections that some operators and/or
         # service companies (eg IHS) insist on adding.
+        drop = []
         for s in self.raw_sections.values():
-            logger.warning('Found nonstandard LAS section: ' + s["title"])
-            self.sections[s["title"][1:]] = "\n".join(s["lines"])
-            del self.raw_sections[s["title"]]
+            if s["section_type"] == "header":
+                logger.warning('Found nonstandard LAS section: ' + s["title"])
+                self.sections[s["title"][1:]] = "\n".join(s["lines"])
+                drop.append(s["title"])
+        for key in drop:
+            self.raw_sections.pop(key)
 
-        # Set null value
         if not ignore_data:
-            wrap = self.version['WRAP'].value == 'YES'
             null = self.well['NULL'].value
-            data = read_parser.read_data(len(self.curves), null_subs=null_subs)
-            self.set_data(data, truncate=False)
+
+            drop = []
+            s = self.match_section("~A")
+            if s:
+                arr = s["array"]
+                if null_subs:
+                    arr[arr == null] = np.nan
+                data = np.reshape(arr, (-1, len(self.curves)))
+                self.set_data(data, truncate=False)
+                drop.append(s["title"])
+            else:
+                logger.warning("No data section (regexp='~A') found")
+            for key in drop:
+                self.raw_sections.pop(key)
 
         if (self.well['STRT'].unit.upper() in defaults.METRE_UNITS and
                 self.well['STOP'].unit.upper() in defaults.METRE_UNITS and
