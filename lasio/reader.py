@@ -111,6 +111,7 @@ def read_file_contents(file_obj, null_subs=True):
         LAS section. Each value is a dict with either:
 
             {"section_type": "header",
+             "title": title of section (including the ~),
              "lines": a list of the lines from the lAS file,
              "line_nos": a list of ints - line nos from the original file,
              }
@@ -118,6 +119,7 @@ def read_file_contents(file_obj, null_subs=True):
         or 
 
             {"section_type": "data",
+             "title": title of section (including the ~),
              "array": 1D numpy ndarray
              "line_nos_range": (int, int),
              }
@@ -129,26 +131,39 @@ def read_file_contents(file_obj, null_subs=True):
     '''
     sections = OrderedDict()
     sect_lines = []
+    sect_line_nos = []
     sect_title_line = None
     
-    for line in file_obj:
+    for i, line in enumerate(file_obj):
         line = line.strip()
         if line.startswith('~A'):
             # HARD CODED FOR VERSION 1.2 and 2.0; needs review for 3.0
             # We have finished looking at the metadata and need
             # to start reading numerical data.
-            sections[sect_title_line] = '\n'.join(sect_lines)
-            data, n_range = read_numerical_file_contents(file_obj, n, null_subs)
+            sections[sect_title_line] = {
+                "section_type": "header",
+                "title": sect_title_line,
+                "lines": sect_lines,
+                "line_nos": sect_line_nos,
+                }
+            data, n_range = read_numerical_file_contents(file_obj, i, null_subs)
             sections[line] = {
                 "section_types": "data",
+                "title": line,
                 "array": data,
                 "line_nos_range": n_range}
 
         elif line.startswith('~'):
             if sect_lines:
                 # We have ended a section and need to start the next
-                sections[sect_title_line] = '\n'.join(sect_lines)
+                sections[sect_title_line] = {
+                    "section_type": "header",
+                    "title": sect_title_line,
+                    "lines": sect_lines,
+                    "line_nos": sect_line_nos,
+                    }
                 sect_lines = []
+                sect_line_nos = []
             else:
                 # We are entering into a section for the first time
                 pass
@@ -157,28 +172,56 @@ def read_file_contents(file_obj, null_subs=True):
         else:
             # We are in the middle of a section.
             sect_lines.append(line)
+            sect_line_nos.append(i)
     return sections
 
 
-def read_numerical_file_contents(file_obj, n, null_subs):
+def read_numerical_file_contents(file_obj, i, null_subs):
     '''Read data section into memory.
 
     Arguments:
         file_obj: a file-like object.
-
-    Keyword Arguments:
-        null_subs (bool???): ????
+        i: current line number in file_obj
+        null_subs: what to do with NaN values.
 
     Returns: 
-        A 1D numpy ndarray. Still needs reshaping.
+        A 1D numpy ndarray and tuple (range of line numbers). 
+        Numpy array still needs reshaping.
 
     '''
+    i0 = i
     def items(f):
         for line in f:
             for item in line.split():
                 yield item
+            i += 1
     
-    return np.fromiter(items(file_obj), np.float64, -1)
+    return np.fromiter(items(file_obj), np.float64, -1), (i0, i)
+
+
+def parse_header_section(sectdict, version):
+    '''Parse a header section dictionary into Header/CurveItems.
+
+    Arguments:
+        sect (dict): object returned from reader.read_file_contents()
+
+    '''
+    title = sectdict["title"]
+    assert len(sectdict["lines"]) == len(sectdict["line_nos"])
+    parser = SectionParser(title, version=version)
+    section = SectionItems()
+    for i in range(len(sectdict["lines"])):
+        line = sectdict["lines"][i]
+        j = sectdict["line_nos"][i]
+        try:
+            values = read_line(line)
+        except:
+            raise exceptions.LASHeaderError(
+                "Line #%d - failed in %s section on line:\n%s%s" % (
+                    j, title, line,
+                    traceback.format_exc().splitlines()[-1]))
+        else:
+            section.append(parser(**values))
 
 
 class Reader(object):
