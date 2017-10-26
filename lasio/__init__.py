@@ -27,6 +27,9 @@ def read(file_ref, **kwargs):
             a LAS file contents.
 
     Keyword Arguments:
+        ignore_data (bool): if True, do not read in any of the actual data, just
+            the header metadata. False by default.
+        ignore_header_errors (bool): ignore lASHeaderErrors: False by default
         encoding (str): character encoding to open file_ref with
         encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
             handle errors with encodings (see standard library codecs module or

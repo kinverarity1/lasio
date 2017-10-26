@@ -97,7 +97,7 @@ def open_file(file_ref, encoding=None, encoding_errors='replace',
     return file_ref
 
 
-def read_file_contents(file_obj, null_subs=True):
+def read_file_contents(file_obj, null_subs=True, ignore_data=False):
     '''Read file contents into memory.
 
     Arguments:
@@ -105,6 +105,7 @@ def read_file_contents(file_obj, null_subs=True):
 
     Keyword Arguments:
         null_subs (bool???): ????
+        ignore_data (bool): do not read in the numerical data in the ~ASCII section
 
     Returns: 
         An ordered dictionary with keys being the first line of each
@@ -146,12 +147,14 @@ def read_file_contents(file_obj, null_subs=True):
                 "lines": sect_lines,
                 "line_nos": sect_line_nos,
                 }
-            data, n_range = read_numerical_file_contents(file_obj, i, null_subs)
-            sections[line] = {
-                "section_types": "data",
-                "title": line,
-                "array": data,
-                "line_nos_range": n_range}
+            if not ignore_data:
+                data, n_range = read_numerical_file_contents(file_obj, i, null_subs)
+                sections[line] = {
+                    "section_types": "data",
+                    "title": line,
+                    "array": data,
+                    "line_nos_range": n_range}
+            break
 
         elif line.startswith('~'):
             if sect_lines:
@@ -222,6 +225,11 @@ def parse_header_section(sectdict, version):
                     traceback.format_exc().splitlines()[-1]))
         else:
             section.append(parser(**values))
+    return section
+
+
+
+
 
 
 class Reader(object):
