@@ -54,7 +54,7 @@ lasio\.excel module
 
 .. automodule:: lasio.excel
     :members:
-    :undoc-members:
+    :undoc-members: main get_parser main_bulk get_bulk_parser
     :show-inheritance:
     :member-order: bysource
 
