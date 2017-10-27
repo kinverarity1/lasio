@@ -114,7 +114,7 @@ class LASFile(object):
         try:
             version = self.version['VERS'].value
         except KeyError:
-            logger.warning('VERS item not found in the ~V section')
+            logger.warning('VERS item not found in the ~V section.')
             version = None
 
         try:
@@ -123,14 +123,24 @@ class LASFile(object):
             logger.warning('WRAP item not found in the ~V section')
             wrap = None
 
-        # Validate version
+        # Validate version.
+        #
+        # If VERS was missing and version = None, then the file will be read in
+        # as if version were 2.0. But there will be no VERS HeaderItem, meaning
+        # that las.write(..., version=None) will fail with a KeyError. But
+        # las.write(..., version=1.2) will work because a new VERS HeaderItem
+        # will be created.
+
         try:
-            assert version in (1.2, 2)
+            assert version in (1.2, 2, None)
         except AssertionError:
-            logger.warning('LAS version is %s -- neither 1.2 nor 2' % version)
             if version < 2:
                 version = 1.2
             else:
+                version = 2
+        else:
+            if version is None:
+                logger.info('Assuming that LAS VERS is 2.0')
                 version = 2
 
         add_section("~W", "Well", version=version, 
