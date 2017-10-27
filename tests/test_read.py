@@ -66,7 +66,6 @@ def test_mnemonic_good():
     assert [c.mnemonic for c in l.curves] == [
         "DEPT", "DT", "RHOB", "NPHI", "SFLU", "SFLA", "ILM", "ILD"]
 
-
 def test_mnemonic_duplicate():
     l = read(egfn("mnemonic_duplicate.las"))
     assert [c.mnemonic for c in l.curves] == [
