@@ -212,6 +212,20 @@ class LASFile(object):
         if opened_file:
             file_ref.close()
 
+    def to_excel(self, filename):
+        '''Export LAS file to a Microsoft Excel workbook.
+
+        This function will raise an :exc:`ImportError` if ``openpyxl`` is not
+        installed.
+
+        Arguments:
+            filename (str)
+
+        '''
+        from . import excel
+        converter = excel.ExcelConverter(self)
+        converter.write(filename)
+
     def match_raw_section(self, pattern, re_func="match", flags=re.IGNORECASE):
         '''Find raw section with a regular expression.
 

@@ -10,9 +10,10 @@ from . import las
 
 class ExcelConverter(object):
 
-    '''
+    '''Provide ability to export LAS data into an Excel spreadsheet.
+
     Arguments:
-        las: LASFile object
+        las (:class:`lasio.las.LASFile` object)
 
     '''
 
@@ -20,14 +21,27 @@ class ExcelConverter(object):
         self.set_las(las)
 
     def set_las(self, las):
+        '''Set LASFile object.
+
+        Arguments:
+            las (:class:`lasio.las.LASFile` object)
+
+        '''
         self.las = las
         self.generate_workbook()
         return self
 
     def generate_workbook(self):
+        '''Generate the Excel workbook object.
+
+        Two sheets are created:
+
+        * Header: contains all the header sections and metadata
+        * Curves: contains the data 
+
+        '''
         wb = openpyxl.Workbook()
         header = wb['Sheet']
-        # header = wb.create_sheet()
         header.title = 'Header'
         curves = wb.create_sheet()
         curves.title = 'Curves'
@@ -71,6 +85,12 @@ class ExcelConverter(object):
         return self
 
     def write(self, xlsxfn):
+        '''Write the Excel workbook to an ``.xlsx`` file.
+
+        Arguments:
+            xlsxfn (str): filename (will be overwritten without warning)
+
+        '''
         assert xlsxfn.lower().endswith('.xlsx')
 
         self.workbook.save(xlsxfn)
