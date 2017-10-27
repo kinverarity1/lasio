@@ -159,3 +159,9 @@ def test_missing_wrap_write_wrap_specified_works():
     l = read(egfn("missing_wrap.las"))
     l.write(sys.stdout, wrap=True)
         
+def test_missing_null_loads():
+    l = read(egfn("missing_null.las"))
+
+def test_missing_null_missing_headeritem():
+    l = read(egfn("missing_null.las"))
+    assert not 'NULL' in l.well
