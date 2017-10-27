@@ -25,8 +25,8 @@ lasio\.las\_items module
 
 .. automodule:: lasio.las_items
     :members:
-    :undoc-members:
     :show-inheritance:
+    :special-members:
 
 lasio\.reader module
 --------------------

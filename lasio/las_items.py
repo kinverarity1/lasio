@@ -61,8 +61,8 @@ class HeaderItem(OrderedDict):
     def set_session_mnemonic_only(self, value):
         '''Set the mnemonic for session use.
 
-        See source comments for :class:`lasio.las_items.HeaderItem` for more
-        in-depth explanation.
+        See source comments for :class:`lasio.las_items.HeaderItem.__init__` 
+        for a more in-depth explanation.
 
         '''
         super(HeaderItem, self).__setattr__('mnemonic', value)
@@ -148,6 +148,7 @@ class CurveItem(HeaderItem):
 
     @property
     def API_code(self):
+        '''Equivalent to the ``value`` attribute.'''
         return self.value
 
     def __repr__(self):
@@ -175,6 +176,10 @@ class CurveItem(HeaderItem):
 
 class SectionItems(list):
 
+    '''Variant of a ``list`` which is used to represent a LAS section.
+
+    '''
+
     def __str__(self):
         rstr_lines = []
         data = [['Mnemonic', 'Unit', 'Value', 'Description'],
@@ -192,7 +197,15 @@ class SectionItems(list):
         return '\n'.join(rstr_lines)
 
     def __contains__(self, testitem):
-        '''Allows testing of a mnemonic or an actual item.'''
+        '''Check whether a header item or mnemonic is in the section.
+
+        Arguments:
+            testitem (HeaderItem, CurveItem, str): either an item or a mnemonic
+
+        Returns:
+            bool
+
+        '''
         for item in self:
             if testitem == item.mnemonic:
                 return True
@@ -205,12 +218,15 @@ class SectionItems(list):
             return False
 
     def keys(self):
+        '''Return mnemonics of all the HeaderItems in the section.'''
         return [item.mnemonic for item in self]
 
     def values(self):
+        '''Return HeaderItems in the section.'''
         return self
 
     def items(self):
+        '''Return pairs of (mnemonic, HeaderItem) from the section.'''
         return [(item.mnemonic, item) for item in self]
 
     def iterkeys(self):
@@ -223,6 +239,15 @@ class SectionItems(list):
         return iter(self.items())
 
     def __getitem__(self, key):
+        '''Item-style access by either mnemonic or index.
+
+        Arguments:
+            key (str, int): either a mnemonic or the index to the list.
+
+        Returns:
+            item from the list (either HeaderItem or CurveItem)
+
+        '''
         for item in self:
             if item.mnemonic == key:
                 return item
@@ -232,6 +257,28 @@ class SectionItems(list):
             raise KeyError('%s not in %s' % (key, self.keys()))
 
     def __setitem__(self, key, newitem):
+        '''Either replace the item or its value.
+
+        Arguments:
+            key (int, str): either the mnemonic or the index.
+            newitem (HeaderItem or str/float/int): the thing to be set.
+
+        If ``newitem`` is a :class:`lasio.las_items.HeaderItem` then the
+        existing item will be replaced. Otherwise the existing item's ``value``
+        attribute will be replaced.
+
+        i.e. this allows us to do
+
+            >>> section.OPERATOR
+            HeaderItem(mnemonic='OPERATOR', value='John')
+            >>> section.OPERATOR = 'Kent'
+            >>> section.OPERATOR
+            HeaderItem(mnemonic='OPERATOR', value='Kent')
+
+        See :meth:`lasio.las_items.SectionItems.set_item` and 
+        :meth:`lasio.las_items.SectionItems.set_item_value`.
+
+        '''
         if isinstance(newitem, HeaderItem):
             self.set_item(key, newitem)
         else:
