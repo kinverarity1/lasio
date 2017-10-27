@@ -143,3 +143,19 @@ def test_missing_vers_write_version_specified_works():
     l = read(egfn("missing_vers.las"))
     l.write(sys.stdout, version=1.2)
         
+def test_missing_wrap_loads():
+    l = read(egfn("missing_wrap.las"))
+
+def test_missing_wrap_missing_headeritem():
+    l = read(egfn("missing_wrap.las"))
+    assert not 'WRAP' in l.version
+
+def test_missing_wrap_write_wrap_none_fails():
+    l = read(egfn("missing_wrap.las"))
+    with pytest.raises(KeyError):
+        l.write(sys.stdout, wrap=None)
+
+def test_missing_wrap_write_wrap_specified_works():
+    l = read(egfn("missing_wrap.las"))
+    l.write(sys.stdout, wrap=True)
+        
