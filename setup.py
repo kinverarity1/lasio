@@ -1,25 +1,24 @@
 '''Setup script for lasio'''
 
 from setuptools import setup
-
 from os import path
+
+try:
+    from pypandoc import convert
+    read_md = lambda f: convert(f, 'rst')
+except ImportError:
+    print("warning: pypandoc module not found, could not convert Markdown to RST")
+    read_md = lambda f: open(f, 'r').read()
 
 from lasio import __version__
 
-requirements = ['numpy', 'namedlist', 'ordereddict', 'xlwt']
+with open("requirements.txt") as f:
+    requirements = f.read().splitlines()
 
 setup(name='lasio',
       version=__version__,
       description="Read/write well data from Log ASCII Standard (LAS) files",
-      long_description=(
-          'This is a Python 2/3 package to read and write Log ASCII Standard '
-          '(LAS) files, used for borehole data such as geophysical, geological, '
-          'or petrophysical logs. It\'s compatible with versions 1.2 and 2.0 of '
-          'the LAS file specification, published by the Canadian Well Logging '
-          'Society (http://www.cwls.org/las). In principle it is designed to read '
-          'as many types of LAS files as possible, including ones containing '
-          'common errors or non-compliant formatting.\n\n'
-          'See http://github.com/kinverarity1/lasio for more details.'),
+      long_description=read_md('README.md'),
       url="https://github.com/kinverarity1/lasio",
       author="Kent Inverarity",
       author_email="kinverarity@hotmail.com",

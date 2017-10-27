@@ -38,3 +38,9 @@ docs/test*
 .mr.developer.cfg
 .project
 .pydevproject
+
+README.rst
+CONTRIBUTING.rst
+LICENSE.rst
+CHANGELOG.rst
+CODE_OF_CONDUCT.rst

@@ -1,7 +1,7 @@
 # lasio
 
-![](https://img.shields.io/badge/status-beta-yellow.svg)
-[![](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/kinverarity1/lasio/blob/master/LICENSE)
+![Status](https://img.shields.io/badge/status-beta-yellow.svg)
+[![License](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/kinverarity1/lasio/blob/master/LICENSE)
 [![Research software impact](http://depsy.org/api/package/pypi/lasio/badge.svg)](http://depsy.org/package/python/lasio)
 
 This is a Python 2/3 package to read and write Log ASCII Standard (LAS) files, used for borehole data such as geophysical, geological, or petrophysical logs. It's compatible with versions 1.2 and 2.0 of the LAS file specification, published by the [Canadian Well Logging Society](http://www.cwls.org/las). In principle it is designed to read as many types of LAS files as possible, including ones containing common errors or non-compliant formatting.
@@ -10,11 +10,13 @@ Depending on your particular application you may also want to check out  [stripl
 
 Note this is *not* a package for reading LiDAR data (also called "LAS files").
 
+- Docstring documentation is available at [Read The Docs](https://lasio.readthedocs.io/en/latest/)
+
 ## Installation
 
-[![](https://img.shields.io/pypi/pyversions/lasio.svg)](https://www.python.org/downloads/)
-[![](http://img.shields.io/pypi/v/lasio.svg)](https://pypi.python.org/pypi/lasio/)
-[![](https://img.shields.io/pypi/format/lasio.svg)](https://pypi.python.org/pypi/lasio/)
+[![Python versions](https://img.shields.io/pypi/pyversions/lasio.svg)](https://www.python.org/downloads/)
+[![PyPI version](http://img.shields.io/pypi/v/lasio.svg)](https://pypi.python.org/pypi/lasio/)
+[![PyPI format](https://img.shields.io/pypi/format/lasio.svg)](https://pypi.python.org/pypi/lasio/)
 
 lasio is written to be compatible with Python 2.6+, and 3.2+. To install run:
 
@@ -116,10 +118,11 @@ Note that by default ``autodetect_encoding=False``.
 
 ## Development
 
-[![](https://coveralls.io/repos/kinverarity1/lasio/badge.svg?branch=master&service=github)](https://coveralls.io/github/kinverarity1/lasio?branch=master)
+[![Coverage](https://coveralls.io/repos/kinverarity1/lasio/badge.svg?branch=master&service=github)](https://coveralls.io/github/kinverarity1/lasio?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/252911a940b7476d9d7c4450d4045370)](https://www.codacy.com/app/kinverarity/lasio)
-[![](https://scrutinizer-ci.com/g/kinverarity1/lasio/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/kinverarity1/lasio/#)
-[![](https://www.quantifiedcode.com/api/v1/project/82d62106077f4c44a353c311984930d6/badge.svg)](https://www.quantifiedcode.com/app/project/82d62106077f4c44a353c311984930d6) [![Stories in Ready](https://badge.waffle.io/kinverarity1/lasio.png?label=ready&title=Ready)](http://waffle.io/kinverarity1/lasio)
+[![Scrutinizer](https://scrutinizer-ci.com/g/kinverarity1/lasio/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/kinverarity1/lasio/#)
+[![Quantified Code](https://www.quantifiedcode.com/api/v1/project/82d62106077f4c44a353c311984930d6/badge.svg)](https://www.quantifiedcode.com/app/project/82d62106077f4c44a353c311984930d6)
+[![Waffle Stories in Ready](https://badge.waffle.io/kinverarity1/lasio.png?label=ready&title=Ready)](http://waffle.io/kinverarity1/lasio)
 
 Any help is welcome and appreciated! Please see the [contribution guide](https://github.com/kinverarity1/lasio/blob/master/CONTRIBUTING.md) for more information.
 

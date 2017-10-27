@@ -4,13 +4,13 @@ Any help is very welcome! This project is only maintained as a side-project by @
 
 ## Issues
 
-[![](http://githubbadges.herokuapp.com/kinverarity1/lasio/issues.svg)](https://github.com/kinverarity1/lasio/issues)
+[![GitHub Issues](http://githubbadges.herokuapp.com/kinverarity1/lasio/issues.svg)](https://github.com/kinverarity1/lasio/issues)
 
 Please don't hesitate to open a [GitHub issue](https://github.com/kinverarity1/lasio/issues/new) for any problems you are having with lasio, or any ideas for improvements. The large backlog of issues is partly due to time pressure but also a recognition of the fact improvements are always possible.
 
 ## Pull requests
 
-[![](http://githubbadges.herokuapp.com/kinverarity1/lasio/pulls.svg)](https://github.com/kinverarity1/lasio/pulls)
+[![GitHub pull requests](http://githubbadges.herokuapp.com/kinverarity1/lasio/pulls.svg)](https://github.com/kinverarity1/lasio/pulls)
 
 I will be very happy to review or incorporate changes or additions to code in any form. The easiest method is to fork lasio on GitHub and submit a pull request against ``master``. Don't worry about getting all the details right, either way it's still the most convenient way for me or other maintainers to see your changes in context. 
 
