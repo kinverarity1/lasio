@@ -109,24 +109,51 @@ class LASFile(object):
         add_section("~V", "Version", version=1.2, 
                     ignore_header_errors=ignore_header_errors)
 
-        # Set version
+        # Establish version and wrap values if possible.
+
         try:
             version = self.version['VERS'].value
         except KeyError:
-            logger.warning('VERS item not found in the ~V section')
+            logger.warning('VERS item not found in the ~V section.')
+            version = None
 
-        # Validate version
         try:
-            assert version in (1.2, 2)
+            wrap = self.version['WRAP'].value
+        except KeyError:
+            logger.warning('WRAP item not found in the ~V section')
+            wrap = None
+
+        # Validate version.
+        #
+        # If VERS was missing and version = None, then the file will be read in
+        # as if version were 2.0. But there will be no VERS HeaderItem, meaning
+        # that las.write(..., version=None) will fail with a KeyError. But
+        # las.write(..., version=1.2) will work because a new VERS HeaderItem
+        # will be created.
+
+        try:
+            assert version in (1.2, 2, None)
         except AssertionError:
-            logger.warning('LAS version is %s -- neither 1.2 nor 2' % version)
             if version < 2:
                 version = 1.2
             else:
                 version = 2
+        else:
+            if version is None:
+                logger.info('Assuming that LAS VERS is 2.0')
+                version = 2
 
         add_section("~W", "Well", version=version, 
                     ignore_header_errors=ignore_header_errors)
+
+        # Establish NULL value if possible.
+
+        try:
+            null = self.well['NULL'].value
+        except KeyError:
+            logger.warning('NULL item not found in the ~W section')
+            null = None
+
         add_section("~C", "Curves", version=version, 
                     ignore_header_errors=ignore_header_errors)
         add_section("~P", "Parameter", version=version, 
@@ -152,8 +179,6 @@ class LASFile(object):
             self.raw_sections.pop(key)
 
         if not ignore_data:
-            null = self.well['NULL'].value
-
             drop = []
             s = self.match_raw_section("~A")
             if s:
@@ -164,7 +189,7 @@ class LASFile(object):
                 n_curves = len(self.curves)
                 n_arr_cols = len(self.curves) # provisional pending below check
                 logger.debug("n_curves=%d ncols=%d" % (n_curves, s["ncols"]))
-                if self.version["WRAP"].value == "NO":
+                if wrap == "NO":
                     if s["ncols"] > n_curves:
                         n_arr_cols = s["ncols"]
                 data = np.reshape(arr, (-1, n_arr_cols))
