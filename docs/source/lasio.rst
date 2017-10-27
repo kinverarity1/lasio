@@ -1,32 +1,16 @@
 lasio package
 =============
 
+Module contents
+---------------
+
+.. automodule:: lasio
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 Submodules
 ----------
-
-lasio\.defaults module
-----------------------
-
-.. automodule:: lasio.defaults
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-lasio\.excel module
--------------------
-
-.. automodule:: lasio.excel
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-lasio\.exceptions module
-------------------------
-
-.. automodule:: lasio.exceptions
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 lasio\.las module
 -----------------
@@ -60,11 +44,26 @@ lasio\.writer module
     :undoc-members:
     :show-inheritance:
 
+lasio\.excel module
+-------------------
 
-Module contents
----------------
+.. automodule:: lasio.excel
+    :members:
+    :undoc-members:
+    :show-inheritance:
 
-.. automodule:: lasio
+lasio\.defaults module
+----------------------
+
+.. automodule:: lasio.defaults
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+lasio\.exceptions module
+------------------------
+
+.. automodule:: lasio.exceptions
     :members:
     :undoc-members:
     :show-inheritance:

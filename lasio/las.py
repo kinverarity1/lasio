@@ -20,14 +20,10 @@ try:
     unicode = unicode
 except NameError:
     # 'unicode' is undefined, must be Python 3
-    str = str
     unicode = str
-    bytes = bytes
     basestring = (str, bytes)
 else:
     # 'unicode' exists, must be Python 2
-    str = str
-    unicode = unicode
     bytes = str
     basestring = basestring
 
@@ -52,18 +48,11 @@ class LASFile(object):
     '''LAS file object.
 
     Keyword Arguments:
-        file_ref: either a filename, an open file object, or a string of
-            a LAS file contents.
-        ignore_data (bool): if True, do not read in any of the actual data, just
-            the header metadata. False by default.
-        ignore_header_errors (bool): ignore lASHeaderErrors: False by default
-        encoding (str): character encoding to open file_ref with
-        encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
-            handle errors with encodings (see standard library codecs module or
-            Python Unicode HOWTO for more information)
-        autodetect_encoding (bool): use chardet/ccharet to detect encoding
-        autodetect_encoding_chars (int/None): number of chars to read from LAS
-            file for auto-detection of encoding.
+        file_ref (file-like object, str): either a filename, an open file 
+            object, or a string containing the contents of a file.
+
+    See :meth:`lasio.las.LASFile.read` and :func:`lasio.reader.open_file` for
+    additional keyword arguments you can use here.
 
     '''
 
@@ -83,29 +72,29 @@ class LASFile(object):
         if not (file_ref is None):
             self.read(file_ref, **kwargs)
 
-    def read(self, file_ref, null_subs=True, ignore_data=False, ignore_header_errors=False, **kwargs):
+    def read(self, file_ref, null_subs=True, ignore_data=False, 
+             ignore_header_errors=False, **kwargs):
         '''Read a LAS file.
 
         Arguments:
-            file_ref: either a filename, an open file object, or a string of
-                a LAS file contents.
+            file_ref (file-like object, str): either a filename, an open file 
+                object, or a string containing the contents of a file.
 
         Keyword Arguments:
-            ignore_data (bool): if True, do not read in any of the actual data, just
-                the header metadata. False by default.
-            ignore_header_errors (bool): ignore lASHeaderErrors: False by default
-            encoding (str): character encoding to open file_ref with
-            encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
-                handle errors with encodings (see standard library codecs module or
-                Python Unicode HOWTO for more information)
-            autodetect_encoding (bool): use chardet/cchardet to detect encoding
-            autodetect_encoding_chars (int/None): number of chars to read from LAS
-                file for auto-detection of encoding.
+            null_subs (bool): if True, replace invalid values with np.nan
+            ignore_data (bool): if True, do not read in any of the actual data, 
+                just the header metadata. False by default.
+            ignore_header_errors (bool): ignore LASHeaderErrors (False by 
+                default)
+
+        See :func:`lasio.reader.open_file` for additional keyword arguments you
+        can use here.
 
         '''
 
         file_obj = reader.open_file(file_ref, **kwargs)
-        self.raw_sections = reader.read_file_contents(file_obj, ignore_data=ignore_data)
+        self.raw_sections = reader.read_file_contents(
+            file_obj, ignore_data=ignore_data)
         if hasattr(file_obj, "close"):
             file_obj.close()
 
@@ -113,14 +102,17 @@ class LASFile(object):
             raw_section = self.match_section(pattern)
             drop = []
             if raw_section:
-                self.sections[name] = reader.parse_header_section(raw_section, **sect_kws)
+                self.sections[name] = reader.parse_header_section(raw_section, 
+                                                                  **sect_kws)
                 drop.append(raw_section["title"])
             else:
-                logger.warning("Header section %s regexp=%s was not found." % (name, pattern))
+                logger.warning("Header section %s regexp=%s was not found."
+                               % (name, pattern))
             for key in drop:
                 self.raw_sections.pop(key)
 
-        add_section("~V", "Version", version=1.2, ignore_header_errors=ignore_header_errors)
+        add_section("~V", "Version", version=1.2, 
+                    ignore_header_errors=ignore_header_errors)
 
         # Set version
         try:
@@ -138,9 +130,12 @@ class LASFile(object):
             else:
                 version = 2
 
-        add_section("~W", "Well", version=version, ignore_header_errors=ignore_header_errors)
-        add_section("~C", "Curves", version=version, ignore_header_errors=ignore_header_errors)
-        add_section("~P", "Parameter", version=version, ignore_header_errors=ignore_header_errors)
+        add_section("~W", "Well", version=version, 
+                    ignore_header_errors=ignore_header_errors)
+        add_section("~C", "Curves", version=version, 
+                    ignore_header_errors=ignore_header_errors)
+        add_section("~P", "Parameter", version=version, 
+                    ignore_header_errors=ignore_header_errors)
         s = self.match_section("~O")
 
         drop = []
@@ -433,6 +428,7 @@ class LASFile(object):
     @json.setter
     def json(self, value):
         raise Exception('Cannot set objects from JSON')
+
 
 
 class Las(LASFile):

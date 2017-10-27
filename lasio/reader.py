@@ -1,7 +1,6 @@
 
 # Standard library packages
 import codecs
-import json
 import logging
 import os
 import re
@@ -71,6 +70,21 @@ def open_file(file_ref,
     Returns: 
         An open file-like object ready for reading from.
 
+    Arguments:
+            file_ref (file-like object, str): either a filename, an open file 
+                object, or a string containing
+                the contents of a file.
+
+        Keyword Arguments:
+            null_subs (bool): if True, replace invalid values with np.nan
+            ignore_data (bool): if True, do not read in any of the actual data, 
+                just the header metadata. False by default.
+            ignore_header_errors (bool): ignore LASHeaderErrors (False by 
+                default)
+
+    See :meth:`lasio.las.LASFile.read` for additional keyword arguments you
+    can use here.
+
     '''
     if isinstance(file_ref, str): # file_ref != file-like object, so what is it?
         lines = file_ref.splitlines()
@@ -89,15 +103,16 @@ def open_file(file_ref,
             file_ref = StringIO(file_ref)
         else:  # it must be a filename
             file_ref = open_with_codecs(first_line, encoding, encoding_errors, 
-                                        autodetect_encoding, autodetect_encoding_chars)
+                                        autodetect_encoding, 
+                                        autodetect_encoding_chars)
         
     # If file_ref was:
     #  - a file-like object, nothing happens and it is returned
     #    directly by this function.
     #  - a filename, the encoding is detected and the file opened and returned
-    #  - a URI, a request is made and the content read and returned as a file-like
-    #    object using cStringIO
-    #  - a string, the string is returned as a file-like object using cStringIO
+    #  - a URI, a request is made and the content read and returned as a 
+    #    file-like object using cStringIO
+    #  - a string, the string is returned as a file-like object using StringIO
 
     return file_ref
 
@@ -110,9 +125,10 @@ def open_with_codecs(filename, encoding, encoding_errors,
     Arguments:
         filename (str): path to file
         encoding (str): encoding - can be None
-        encoding_errors (str): unicode error handling - can be 'strict', 'ignore', 'replace'
-        autodetect_encoding (str): auto-detection of character encoding - can be either
-            'chardet', 'cchardet', or True
+        encoding_errors (str): unicode error handling - can be 'strict', 
+            'ignore', 'replace'
+        autodetect_encoding (str): auto-detection of character encoding - can
+            be either 'chardet', 'cchardet', or True
         nbytes (int): number of characters for read for auto-detection
 
     Returns:
@@ -140,7 +156,8 @@ def open_with_codecs(filename, encoding, encoding_errors,
         encoding = get_encoding(autodetect_encoding, raw)
 
     # Now open and return the file-like object
-    return codecs.open(filename, mode='r', encoding=encoding, errors=encoding_errors)
+    return codecs.open(filename, mode='r', encoding=encoding, 
+                       errors=encoding_errors)
 
 
 def get_encoding(auto, raw):
@@ -193,33 +210,30 @@ def read_file_contents(file_obj, ignore_data=False):
         file_obj: an open file-like object.
 
     Keyword Arguments:
-        null_subs (bool???): ????
-        ignore_data (bool): do not read in the numerical data in the ~ASCII section
+        null_subs (bool): substitute NaN for null values
+        ignore_data (bool): do not read in the numerical data in the ~ASCII 
+            section
 
-    Returns: 
-        An ordered dictionary with keys being the first line of each
-        LAS section. Each value is a dict with either:
+    Returns: an ordered dictionary
 
-            {"section_type": "header",
-             "title": title of section (including the ~),
-             "lines": a list of the lines from the lAS file,
-             "line_nos": a list of ints - line nos from the original file,
-             }
+    The returned dictionary is thought of as a "raw section". The keys are
+    the first line of the LAS section, including the tilde. Each value is
+    a dict with either:
+
+        {"section_type": "header",
+         "title": title of section (including the ~),
+         "lines": a list of the lines from the lAS file,
+         "line_nos": a list of ints - line nos from the original file,
+         }
         
-        or 
+    or: 
 
-            {"section_type": "data",
-             "start_seek": location of data section from file_obj.tell(),
-             "ncols": number of columns on the first line (obviously irrelevant
-                 for wrapped files),
-             "title": title of section (including the ~),
-             "array": 1D numpy ndarray
-             "line_nos_range": (int, int),
-             }
-
-        the section contents (for metadata sections) or a 1D numpy ndarray
-        (for numerical data sections). Obviously the ndarray would need
-        re-shaping.
+        {"section_type": "data",
+         "title": title of section (including the ~),
+         "start_line": location of data section (the title line),
+         "ncols": number of columns on the first line of the data,
+         "array": 1D numpy ndarray,
+         }
 
     '''
     sections = OrderedDict()
@@ -268,7 +282,7 @@ def read_file_contents(file_obj, ignore_data=False):
 
         else:
             # We are in the middle of a section.
-            if not line.startswith("#"):       # ignore commented-out lines.. for now.
+            if not line.startswith("#"): # ignore commented-out lines.. for now.
                 sect_lines.append(line)
                 sect_line_nos.append(i + 1)
 
@@ -360,7 +374,8 @@ class SectionParser(object):
         self.version = version
         self.section_name = title
 
-        section_orders = defaults.ORDER_DEFINITIONS[self.version][self.section_name2]
+        defs = defaults.ORDER_DEFINITIONS
+        section_orders = defs[self.version][self.section_name2]
         self.default_order = section_orders[0]#
         self.orders = {}
         for order, mnemonics in section_orders[1:]:

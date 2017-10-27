@@ -13,6 +13,7 @@ __version__ = '0.13'
 
 
 def version():
+    '''Print version number.'''
     print(__version__)
 
 
@@ -23,23 +24,14 @@ def read(file_ref, **kwargs):
     are currently supported.
 
     Arguments:
-        file_ref: either a filename, an open file object, or a string of
-            a LAS file contents.
-
-    Keyword Arguments:
-        ignore_data (bool): if True, do not read in any of the actual data, just
-            the header metadata. False by default.
-        ignore_header_errors (bool): ignore lASHeaderErrors: False by default
-        encoding (str): character encoding to open file_ref with
-        encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
-            handle errors with encodings (see standard library codecs module or
-            Python Unicode HOWTO for more information)
-        autodetect_encoding (bool): use chardet/ccharet to detect encoding
-        autodetect_encoding_chars (int/None): number of chars to read from LAS
-            file for auto-detection of encoding.
+        file_ref (file-like object, str): either a filename, an open file 
+            object, or a string containing the contents of a file.
 
     Returns: 
         A LASFile object representing the file -- see above
+
+    See :meth:`lasio.las.LASFile.read` and :meth:`lasio.reader.open_file` for
+    keyword arguments you can use here.
 
     '''
     return LASFile(file_ref, **kwargs)

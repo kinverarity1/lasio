@@ -89,7 +89,8 @@ class HeaderItem(OrderedDict):
         return p.text(self.__repr__())
 
     def __reduce__(self):
-        return self.__class__, (self.mnemonic, self.unit, self.value, self.descr)
+        return self.__class__, (self.mnemonic, self.unit, self.value, 
+                                self.descr)
 
     @property
     def json(self):
@@ -145,7 +146,8 @@ class SectionItems(list):
         rstr_lines = []
         data = [['Mnemonic', 'Unit', 'Value', 'Description'],
                 ['--------', '----', '-----', '-----------']]
-        data += [[str(x) for x in [item.mnemonic, item.unit, item.value, item.descr]] for item in self]
+        data += [[str(x) for x in [item.mnemonic, item.unit, item.value, 
+                                   item.descr]] for item in self]
         col_widths = []
         for i in range(len(data[0])):
             col_widths.append(max([len(row[i]) for row in data]))
@@ -245,7 +247,8 @@ class SectionItems(list):
             for i, loc in enumerate(locations):
                 item = self[loc]
                 # raise Exception('%s' % str(type(item)))
-                item.set_session_mnemonic_only(item.useful_mnemonic + ':%d' % (i + 1))
+                item.set_session_mnemonic_only(item.useful_mnemonic + ':%d'
+                                               % (i + 1))
                 # item.mnemonic = item.useful_mnemonic + ':%d' % (i + 1)
 
     def dictview(self):

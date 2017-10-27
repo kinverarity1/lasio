@@ -24,7 +24,7 @@ lasio is written to be compatible with Python 2.6+, and 3.2+. To install run:
 $ pip install lasio
 ```
 
-This will download and install lasio's dependencies ([numpy](http://numpy.org/), [ordereddict](https://pypi.python.org/pypi/ordereddict), and [xlwt](https://github.com/python-excel/xlwt)). There are some other packages which lasio will use to provide extra functionality if they are installed ([pandas](https://pypi.python.org/pypi/pandas), [cChardet](https://github.com/PyYoshi/cChardet) and/or [chardet](https://github.com/chardet/chardet), [openpyxl](https://openpyxl.readthedocs.io/en/default/), and [argparse](https://github.com/ThomasWaldmann/argparse/)). I recommend installing these too with:
+This will download and install lasio's dependencies ([numpy](http://numpy.org/) and [ordereddict](https://pypi.python.org/pypi/ordereddict)). There are some other packages which lasio will use to provide extra functionality if they are installed ([pandas](https://pypi.python.org/pypi/pandas), [cChardet](https://github.com/PyYoshi/cChardet) and/or [chardet](https://github.com/chardet/chardet), [openpyxl](https://openpyxl.readthedocs.io/en/default/), and [argparse](https://github.com/ThomasWaldmann/argparse/)). I recommend installing these too with:
 
 ```bash
 $ pip install -r optional-packages.txt
