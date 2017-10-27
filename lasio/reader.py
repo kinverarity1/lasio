@@ -78,7 +78,8 @@ def open_file(file_ref,
         if URL_REGEXP.match(first_line): # it's a URL
             try:
                 import urllib2
-                file_ref = urllib2.urlopen(first_line)
+                url_ref = urllib2.urlopen(first_line)
+                file_ref = StringIO(url_ref.read())
             except ImportError:
                 import urllib.request
                 response = urllib.request.urlopen(file_ref)
