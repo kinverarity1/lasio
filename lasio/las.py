@@ -187,38 +187,30 @@ class LASFile(object):
               self.curves[0].unit.upper() in defaults.FEET_UNITS):
             self.index_unit = 'FT'
 
-    def write(self, file_obj, version=None, wrap=None,
-              STRT=None, STOP=None, STEP=None, fmt='%10.5g'):
+    def write(self, file_ref, **kwargs):
         '''Write LAS file to disk.
 
         Arguments:
-            file_obj (open file-like obj, str): a file-like object opening for
-                writing, or a filename.
-            version (float): either 1.2 or 2
-            wrap (bool): True, False, or None (last uses WRAP item in version)
-            STRT (float): optional override to automatic calculation using
-                the first index curve value.
-            STOP (float): optional override to automatic calculation using
-                the last index curve value.
-            STEP (float): optional override to automatic calculation using
-                the first step size in the index curve.
-            fmt (str): format string for numerical data being written to data
-                section.
+            file_ref (open file-like object or str): a file-like object opening
+                for writing, or a filename.
+    
+        All ``**kwargs`` are passed to :func:`lasio.writer.write` -- please
+        check the docstring of that function for more keyword arguments you can
+        use here!
 
         Examples:
 
             >>> with open('test_output.las', mode='w') as f:
-            ...     lasfile_obj.write(f, 2.0)   # <-- this method
+            ...     lasfile_obj.write(f, version=2.0)   # <-- this method
 
         '''
         opened_file = False
-        if isinstance(file_obj, basestring) and not hasattr(file_obj, "write"):
+        if isinstance(file_ref, basestring) and not hasattr(file_ref, "write"):
             opened_file = True
-            file_obj = open(file_obj, "w")
-        writer.write(self, file_obj, version=version, wrap=wrap,
-                     STRT=STRT, STOP=STOP, STEP=STEP, fmt=fmt)
+            file_ref = open(file_ref, "w")
+        writer.write(self, file_ref, **kwargs)
         if opened_file:
-            file_obj.close()
+            file_ref.close()
 
     def match_raw_section(self, pattern, re_func="match", flags=re.IGNORECASE):
         '''Find raw section with a regular expression.

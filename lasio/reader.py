@@ -242,7 +242,7 @@ def read_file_contents(file_obj, ignore_data=False):
                 "line_nos": sect_line_nos,
                 }
             if not ignore_data:
-                data = read_numerical_file_contents(file_obj, i + 1)
+                data = read_data_section_iterative(file_obj, i + 1)
                 sections[line] = {
                     "section_type": "data",
                     "start_line": i,
@@ -290,7 +290,7 @@ def read_file_contents(file_obj, ignore_data=False):
     return sections
 
 
-def read_numerical_file_contents(file_obj, i):
+def read_data_section_iterative(file_obj, i):
     '''Read data section into memory.
 
     Arguments:
