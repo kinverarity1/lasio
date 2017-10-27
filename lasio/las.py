@@ -99,7 +99,7 @@ class LASFile(object):
             file_obj.close()
 
         def add_section(pattern, name, **sect_kws):
-            raw_section = self.match_section(pattern)
+            raw_section = self.match_raw_section(pattern)
             drop = []
             if raw_section:
                 self.sections[name] = reader.parse_header_section(raw_section, 
@@ -136,7 +136,7 @@ class LASFile(object):
                     ignore_header_errors=ignore_header_errors)
         add_section("~P", "Parameter", version=version, 
                     ignore_header_errors=ignore_header_errors)
-        s = self.match_section("~O")
+        s = self.match_raw_section("~O")
 
         drop = []
         if s:
@@ -160,7 +160,7 @@ class LASFile(object):
             null = self.well['NULL'].value
 
             drop = []
-            s = self.match_section("~A")
+            s = self.match_raw_section("~A")
             if s:
                 arr = s["array"]
                 if null_subs:
@@ -192,12 +192,13 @@ class LASFile(object):
               self.curves[0].unit.upper() in defaults.FEET_UNITS):
             self.index_unit = 'FT'
 
-    def write(self, file_object, version=None, wrap=None,
+    def write(self, file_obj, version=None, wrap=None,
               STRT=None, STOP=None, STEP=None, fmt='%10.5g'):
-        '''Write to a file.
+        '''Write LAS file to disk.
 
         Arguments:
-            file_object: a file_like object opening for writing.
+            file_obj (open file-like obj, str): a file-like object opening for
+                writing, or a filename.
             version (float): either 1.2 or 2
             wrap (bool): True, False, or None (last uses WRAP item in version)
             STRT (float): optional override to automatic calculation using
@@ -215,10 +216,31 @@ class LASFile(object):
             ...     lasfile_obj.write(f, 2.0)   # <-- this method
 
         '''
-        writer.write(self, file_object, version=version, wrap=wrap,
+        opened_file = False
+        if isinstance(file_obj, basestring) and not hasattr(file_obj, "write"):
+            opened_file = True
+            file_obj = open(file_obj, "w")
+        writer.write(self, file_obj, version=version, wrap=wrap,
                      STRT=STRT, STOP=STOP, STEP=STEP, fmt=fmt)
+        if opened_file:
+            file_obj.close()
 
-    def match_section(self, pattern, re_func="match", flags=re.IGNORECASE):
+    def match_raw_section(self, pattern, re_func="match", flags=re.IGNORECASE):
+        '''Find raw section with a regular expression.
+
+        Arguments:
+            pattern (str): regular expression (you need to include the tilde)
+
+        Keyword Arguments:
+            re_func (str): either "match" or "search", see python ``re`` module.
+            flags (int): flags for :py:`re.compile`
+
+        Returns:
+            dict
+
+        Intended for internal use only.
+
+        '''
         for title in self.raw_sections.keys():
             title = title.strip()
             p = re.compile(pattern, flags=flags)
@@ -229,16 +251,15 @@ class LASFile(object):
             m = re_func(p, title)
             if m:
                 return self.raw_sections[title]
-        return False
 
     def get_curve(self, mnemonic):
-        '''Return Curve object.
+        '''Return CurveItem object.
 
         Arguments:
             mnemonic (str): the name of the curve
 
         Returns:
-            A Curve object, not just the data array.
+            :class:`lasio.las_items.CurveItem` (not just the data array)
 
         '''
         for curve in self.curves:
@@ -246,6 +267,15 @@ class LASFile(object):
                 return curve
 
     def __getitem__(self, key):
+        '''Provide access to curve data.
+
+        Arguments:
+            key (str, int): either a curve mnemonic or the column index.
+
+        Returns:
+            1D :class:`numpy.ndarray` (the data for the curve)
+
+        '''
         if isinstance(key, int):
             return self.curves[key].data
         elif isinstance(key, str):
@@ -255,15 +285,24 @@ class LASFile(object):
             super(LASFile, self).__getitem__(key)
 
     def __setitem__(self, key, value):
+        '''Not implemented.
+
+        It is not possible yet to set curve data via the LASFile's item
+        access shortcut.
+
+        '''
         assert NotImplementedError('not yet')
 
     def keys(self):
+        '''Return curve mnemonics.'''
         return [c.mnemonic for c in self.curves]
 
     def values(self):
+        '''Return data for each curve.'''
         return [c.data for c in self.curves]
 
     def items(self):
+        '''Return mnemonics and data for all curves.'''
         return [(c.mnemonic, c.data) for c in self.curves]
 
     def iterkeys(self):
@@ -277,6 +316,7 @@ class LASFile(object):
 
     @property
     def version(self):
+        '''LAS file Version (~V) section'''
         return self.sections['Version']
 
     @version.setter
@@ -285,6 +325,7 @@ class LASFile(object):
 
     @property
     def well(self):
+        '''LAS file Well (~W) section'''
         return self.sections['Well']
 
     @well.setter
@@ -293,6 +334,7 @@ class LASFile(object):
 
     @property
     def curves(self):
+        '''LAS file Curves (~C) section'''
         return self.sections['Curves']
 
     @curves.setter
@@ -301,6 +343,7 @@ class LASFile(object):
 
     @property
     def params(self):
+        '''LAS file Parameter (~P) section'''
         return self.sections['Parameter']
 
     @params.setter
@@ -309,6 +352,7 @@ class LASFile(object):
 
     @property
     def other(self):
+        '''LAS file Other (~O) section'''
         return self.sections['Other']
 
     @other.setter
@@ -317,6 +361,7 @@ class LASFile(object):
 
     @property
     def metadata(self):
+        '''Shortcut to access all header items in one data structure.'''
         s = SectionItems()
         for section in self.sections:
             for item in section:
@@ -325,9 +370,15 @@ class LASFile(object):
 
     @metadata.setter
     def metadata(self, value):
-        raise Warning('Set values in the version/well/params attrs directly')
+        raise NotImplementedError('Set values in the section directly')
+
+    @property
+    def header(self):
+        '''Synonym for "sections".'''
+        return self.sections
 
     def df(self):
+        '''Return data as a :class:`pandas.DataFrame` structure.'''
         import pandas as pd
         df = pd.DataFrame(self.data, columns=[c.mnemonic for c in self.curves])
         if len(self.curves) > 0:
@@ -335,6 +386,18 @@ class LASFile(object):
         return df
 
     def set_data(self, array_like, names=None, truncate=False):
+        '''Set the LAS file data array.
+
+        Arguments:
+            array_like (array_like): 2-D data array
+
+        Keyword Arguments:
+            names (list, optional): used to replace the names of the existing
+                :class:`lasio.las_items.CurveItem` objects.
+            truncate (bool): remove any columns which are not included in the
+                Curves (~C) section.
+
+        '''
         data = np.asarray(array_like)
         if truncate:
             data = data[:, len(self.curves)]
@@ -355,16 +418,28 @@ class LASFile(object):
         self.data = data
 
     def set_data_from_df(self, df, **kwargs):
+        '''Set the LAS file data from a :class:`pandas.DataFrame`.
+
+        Arguments:
+            df (pandas.DataFrame): curve mnemonics are the column names.
+
+        Keyword arguments are passed to :meth:`lasio.las.LASFile.set_data`.
+
+        '''
         df_values = np.vstack([df.index.values, df.values.T]).T
         names = [df.index.name] + [str(name) for name in df.columns.values]
         self.set_data(df_values, names=names, **kwargs)
 
     @property
     def index(self):
+        '''Return data from the first column of the LAS file data (depth/time).
+
+        '''
         return self.curves[0].data
 
     @property
     def depth_m(self):
+        '''Return the index as metres.'''
         if self.index_unit == 'M':
             return self.index
         elif self.index_unit == 'FT':
@@ -375,6 +450,7 @@ class LASFile(object):
 
     @property
     def depth_ft(self):
+        '''Return the index as feet.'''
         if self.index_unit == 'M':
             return self.index / 0.3048
         elif self.index_unit == 'FT':
@@ -384,6 +460,16 @@ class LASFile(object):
                 'Unit of depth index not known')
 
     def add_curve(self, *args, **kwargs):
+        '''Add curve(s) to the LAS file.
+
+        If the first argument is a :class:`lasio.las_items.CurveItem` object,
+        then this method will assume all the arguments are CurveItem objects
+        and add them all.
+
+        Otherwise, the arguments will all be passed to
+        :meth:`lasio.las.LASFile.add_curve_raw`.
+
+        '''
         if isinstance(args[0], CurveItem):
             for curve in args:
                 self.curves.append(curve)
@@ -391,6 +477,18 @@ class LASFile(object):
             self.add_curve_raw(*args, **kwargs)
 
     def add_curve_raw(self, mnemonic, data, unit='', descr='', value=''):
+        '''Add data to the LAS file as a curve.
+
+        Arguments:
+            mnemonic (str): the curve's mnemonic
+            data (array-like, 1-D): the curve's data.
+
+        Keyword Arguments:
+            unit (str, optional): the unit for the curve
+            descr (str, optional): short description (keep it to a single line!)
+            value (float, str, int): value (e.g. API code??)
+
+        '''
         curve = CurveItem(mnemonic, unit, value, descr)
         if hasattr(self, 'data'):
             self.data = np.column_stack([self.data, data])
@@ -400,16 +498,19 @@ class LASFile(object):
         self.curves.append(curve)
 
     def delete_curve(self, mnemonic):
+        '''Remove curve by its mnemonic.
+
+        Argument:
+            mnemonic (str): curve mnemonic (must exist in the file)
+
+        '''
         ix = self.curves.keys().index(mnemonic)
         self.curves.pop(ix)
         self.data = np.delete(self.data, np.s_[ix], axis=1)
 
     @property
-    def header(self):
-        return self.sections
-
-    @property
     def curvesdict(self):
+        '''Return curves in a dict, organised by their mnemonics.'''
         d = {}
         for curve in self.curves:
             d[curve['mnemonic']] = curve
@@ -417,6 +518,7 @@ class LASFile(object):
 
     @property
     def json(self):
+        '''Return object contents as a JSON string.'''
         obj = OrderedDict()
         for name, section in self.sections.items():
             try:
