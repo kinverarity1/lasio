@@ -46,17 +46,16 @@ URL_REGEXP = re.compile(
     r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 
-def open_file(file_ref,
-              encoding=None, encoding_errors='replace',
+def open_file(file_ref, encoding=None, encoding_errors='replace',
               autodetect_encoding=False, autodetect_encoding_chars=40e3):
     '''Open a file if necessary.
 
-    If autodetect_encoding is True then either cchardet or chardet (see PyPi)
-    needs to be installed, or else an ImportError will be raised.
+    If ``autodetect_encoding=True`` then either ``cchardet`` or ``chardet``
+    needs to be installed, or else an ``ImportError`` will be raised.
 
     Arguments:
-        file_ref: either a filename, an open file object, a URL, or a string of
-            a LAS file contents.
+        file_ref (file-like object, str): either a filename, an open file 
+            object, or a string containing the contents of a file.
 
     Keyword Arguments:
         encoding (str): character encoding to open file_ref with
@@ -69,18 +68,6 @@ def open_file(file_ref,
 
     Returns: 
         An open file-like object ready for reading from.
-
-    Arguments:
-            file_ref (file-like object, str): either a filename, an open file 
-                object, or a string containing
-                the contents of a file.
-
-        Keyword Arguments:
-            null_subs (bool): if True, replace invalid values with np.nan
-            ignore_data (bool): if True, do not read in any of the actual data, 
-                just the header metadata. False by default.
-            ignore_header_errors (bool): ignore LASHeaderErrors (False by 
-                default)
 
     See :meth:`lasio.las.LASFile.read` for additional keyword arguments you
     can use here.

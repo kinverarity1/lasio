@@ -233,7 +233,7 @@ class LASFile(object):
 
         Keyword Arguments:
             re_func (str): either "match" or "search", see python ``re`` module.
-            flags (int): flags for :py:`re.compile`
+            flags (int): flags for :func:`re.compile`
 
         Returns:
             dict
