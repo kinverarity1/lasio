@@ -6,6 +6,7 @@ import numpy
 import pytest
 
 from lasio import read
+from lasio import exceptions
 
 test_dir = os.path.dirname(__file__)
 
@@ -54,14 +55,16 @@ def test_read_v2_sample_wrapped():
 
 
 def test_dodgy_param_sect():
-    l = read(egfn("dodgy_param_sect.las"))
+    with pytest.raises(exceptions.LASHeaderError):
+        l = read(egfn("dodgy_param_sect.las"))
 
+def test_ignore_header_errors():
+    l = read(egfn("dodgy_param_sect.las"), ignore_header_errors=True)
 
 def test_mnemonic_good():
     l = read(egfn("mnemonic_good.las"))
     assert [c.mnemonic for c in l.curves] == [
         "DEPT", "DT", "RHOB", "NPHI", "SFLU", "SFLA", "ILM", "ILD"]
-
 
 def test_mnemonic_duplicate():
     l = read(egfn("mnemonic_duplicate.las"))

@@ -1,3 +1,4 @@
+import re
 
 import numpy as np
 
@@ -56,3 +57,9 @@ ORDER_DEFINITIONS = {
 
 FEET_UNITS = ("FT", "F", "FEET", "FOOT")
 METRE_UNITS = ("M", "METER", "METERS", "METRE", "METRES")
+
+SUB_PATTERNS = [
+    (re.compile(r'(\d)-(\d)'), r'\1 -\2'),
+    (re.compile('-?\d*\.\d*\.\d*'), ' NaN NaN '),
+    (re.compile('NaN.\d*'), ' NaN NaN '),
+    ]

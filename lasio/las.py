@@ -54,6 +54,9 @@ class LASFile(object):
     Keyword Arguments:
         file_ref: either a filename, an open file object, or a string of
             a LAS file contents.
+        ignore_data (bool): if True, do not read in any of the actual data, just
+            the header metadata. False by default.
+        ignore_header_errors (bool): ignore lASHeaderErrors: False by default
         encoding (str): character encoding to open file_ref with
         encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
             handle errors with encodings (see standard library codecs module or
@@ -80,7 +83,7 @@ class LASFile(object):
         if not (file_ref is None):
             self.read(file_ref, **kwargs)
 
-    def read(self, file_ref, null_subs=True, **kwargs):
+    def read(self, file_ref, null_subs=True, ignore_data=False, ignore_header_errors=False, **kwargs):
         '''Read a LAS file.
 
         Arguments:
@@ -88,6 +91,9 @@ class LASFile(object):
                 a LAS file contents.
 
         Keyword Arguments:
+            ignore_data (bool): if True, do not read in any of the actual data, just
+                the header metadata. False by default.
+            ignore_header_errors (bool): ignore lASHeaderErrors: False by default
             encoding (str): character encoding to open file_ref with
             encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
                 handle errors with encodings (see standard library codecs module or
@@ -98,55 +104,87 @@ class LASFile(object):
 
         '''
 
-        self._file_obj = reader.open_file(file_ref, **kwargs)
-        self._file_ref = str(file_ref)
+        file_obj = reader.open_file(file_ref, **kwargs)
+        self.raw_sections = reader.read_file_contents(file_obj, ignore_data=ignore_data)
+        if hasattr(file_obj, "close"):
+            file_obj.close()
 
-        self._text = self._file_obj.read()
-        logger.debug('LASFile.read LAS content is type %s' % type(self._text))
+        def add_section(pattern, name, **sect_kws):
+            raw_section = self.match_section(pattern)
+            drop = []
+            if raw_section:
+                self.sections[name] = reader.parse_header_section(raw_section, **sect_kws)
+                drop.append(raw_section["title"])
+            else:
+                logger.warning("Header section %s regexp=%s was not found." % (name, pattern))
+            for key in drop:
+                self.raw_sections.pop(key)
 
-        read_parser = reader.Reader(self._text, version=1.2)
-        self.sections['Version'] = read_parser.read_section('~V')
+        add_section("~V", "Version", version=1.2, ignore_header_errors=ignore_header_errors)
 
         # Set version
         try:
-            # raise Exception('%s %s' % (type(self.version['VERS']), self.version['VERS']))
-            read_parser.version = self.version['VERS'].value
+            version = self.version['VERS'].value
         except KeyError:
-            raise KeyError('No key VERS in ~V section')
+            logger.warning('VERS item not found in the ~V section')
 
         # Validate version
         try:
-            assert read_parser.version in (1.2, 2)
+            assert version in (1.2, 2)
         except AssertionError:
-            logger.warning('LAS spec version is %s -- neither 1.2 nor 2' %
-                           read_parser.version)
-            if read_parser.version < 2:
-                read_parser.version = 1.2
+            logger.warning('LAS version is %s -- neither 1.2 nor 2' % version)
+            if version < 2:
+                version = 1.2
             else:
-                read_parser.version = 2
-        read_parser.wrap = self.version['WRAP'].value == 'YES'
+                version = 2
 
-        self.sections['Well'] = read_parser.read_section('~W')
-        self.sections['Curves'] = read_parser.read_section('~C')
-        try:
-            self.sections['Parameter'] = read_parser.read_section('~P')
-        except exceptions.LASHeaderError:
-            logger.warning(traceback.format_exc().splitlines()[-1])
-        self.sections['Other'] = read_parser.read_raw_text('~O')
+        add_section("~W", "Well", version=version, ignore_header_errors=ignore_header_errors)
+        add_section("~C", "Curves", version=version, ignore_header_errors=ignore_header_errors)
+        add_section("~P", "Parameter", version=version, ignore_header_errors=ignore_header_errors)
+        s = self.match_section("~O")
+
+        drop = []
+        if s:
+            self.sections["Other"] = "\n".join(s["lines"])
+            drop.append(s["title"])
+        for key in drop:
+            self.raw_sections.pop(key)
 
         # Deal with nonstandard sections that some operators and/or
         # service companies (eg IHS) insist on adding.
-        for char in "BDEFGHIJKLMNQRSTUXYZ":
-            s, d = read_parser.read_raw_text(r'~[%s]' % char, return_section=True)
-            if s is not None and d is not None:
-                logger.warning('Found nonstandard LAS section: ' + s)
-                self.sections[s] = d
+        drop = []
+        for s in self.raw_sections.values():
+            if s["section_type"] == "header":
+                logger.warning('Found nonstandard LAS section: ' + s["title"])
+                self.sections[s["title"][1:]] = "\n".join(s["lines"])
+                drop.append(s["title"])
+        for key in drop:
+            self.raw_sections.pop(key)
 
-        # Set null value
-        read_parser.null = self.well['NULL'].value
+        if not ignore_data:
+            null = self.well['NULL'].value
 
-        data = read_parser.read_data(len(self.curves), null_subs=null_subs)
-        self.set_data(data, truncate=False)
+            drop = []
+            s = self.match_section("~A")
+            if s:
+                arr = s["array"]
+                if null_subs:
+                    arr[arr == null] = np.nan
+
+                n_curves = len(self.curves)
+                n_arr_cols = len(self.curves) # provisional pending below check
+                logger.debug("n_curves=%d ncols=%d" % (n_curves, s["ncols"]))
+                if self.version["WRAP"].value == "NO":
+                    if s["ncols"] > n_curves:
+                        n_arr_cols = s["ncols"]
+                data = np.reshape(arr, (-1, n_arr_cols))
+
+                self.set_data(data, truncate=False)
+                drop.append(s["title"])
+            else:
+                logger.warning("No data section (regexp='~A') found")
+            for key in drop:
+                self.raw_sections.pop(key)
 
         if (self.well['STRT'].unit.upper() in defaults.METRE_UNITS and
                 self.well['STOP'].unit.upper() in defaults.METRE_UNITS and
@@ -184,6 +222,19 @@ class LASFile(object):
         '''
         writer.write(self, file_object, version=version, wrap=wrap,
                      STRT=STRT, STOP=STOP, STEP=STEP, fmt=fmt)
+
+    def match_section(self, pattern, re_func="match", flags=re.IGNORECASE):
+        for title in self.raw_sections.keys():
+            title = title.strip()
+            p = re.compile(pattern, flags=flags)
+            if re_func == "match":
+                re_func = re.match
+            elif re_func == "search":
+                re_func == re.search
+            m = re_func(p, title)
+            if m:
+                return self.raw_sections[title]
+        return False
 
     def get_curve(self, mnemonic):
         '''Return Curve object.
