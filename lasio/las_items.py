@@ -285,35 +285,66 @@ class SectionItems(list):
             self.set_item_value(key, newitem)
 
     def __getattr__(self, key):
+        '''Provide attribute access via __contains__ e.g.
+
+            >>> section['VERS']
+            HeaderItem(mnemonic='VERS', ...)
+            >>> 'VERS' in section
+            True
+            >>> section.VERS
+            HeaderItem(mnemonic='VERS', ...)
+
+        '''
         if key in self:
             return self[key]
         else:
             super(SectionItems, self).__getattr__(key)
 
     def __setattr__(self, key, value):
+        '''Allow access to :meth:`lasio.las_items.SectionItems.__setitem__`
+        via attribute access.
+
+        '''
         if key in self:
             self[key] = value
         else:
             super(SectionItems, self).__setattr__(key, value)
 
     def set_item(self, key, newitem):
+        '''Replace an item by comparison of session mnemonics.
+
+        Arguments:
+            key (str): the item mnemonic (or HeaderItem with mnemonic) 
+                you want to replace.
+            newitem (HeaderItem): the new item
+
+        If **key** is not present, it appends **newitem**.
+
+        '''
         for i, item in enumerate(self):
             if key == item.mnemonic:
 
                 # This is very important. We replace items where
-                # 'mnemonic' is equal - i.e. we do not check useful_mnemonic
-                # or original_mnemonic. Is this correct? Needs to thought
-                # about and tested more carefully.
+                # 'mnemonic' is equal - i.e. we do not check 
+                # against original_mnemonic.
 
                 return super(SectionItems, self).__setitem__(i, newitem)
         else:
             self.append(newitem)
 
     def set_item_value(self, key, value):
+        '''Set the ``value`` attribute of an item.
+
+        Arguments:
+            key (str): the mnemonic of the item (or HeaderItem with the
+                mnemonic) you want to edit
+            value (str, int, float): the new value.
+
+        '''
         self[key].value = value
 
     def append(self, newitem):
-        '''Check to see if the item's mnemonic needs altering.'''
+        '''Append a new HeaderItem to the object.'''
         super(SectionItems, self).append(newitem)
 
         # Check to fix the :n suffixes
@@ -326,12 +357,16 @@ class SectionItems(list):
             current_count = 1
             for i, loc in enumerate(locations):
                 item = self[loc]
-                # raise Exception('%s' % str(type(item)))
                 item.set_session_mnemonic_only(item.useful_mnemonic + ':%d'
                                                % (i + 1))
-                # item.mnemonic = item.useful_mnemonic + ':%d' % (i + 1)
 
     def dictview(self):
+        '''View of mnemonics and values as a dict.
+
+        Returns:
+            dict - keys are the mnemonics and the values are the ``value``
+            attributes.
+        '''
         return dict(zip(self.keys(), [i.value for i in self.values()]))
 
     @property
