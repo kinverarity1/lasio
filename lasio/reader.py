@@ -10,6 +10,8 @@ import traceback
 
 import numpy as np
 
+from . import defaults
+
 # Convoluted import for StringIO in order to support:
 #
 # - Python 3 - io.StringIO
@@ -183,7 +185,7 @@ def get_encoding(auto, raw):
     return result['encoding']
 
 
-def read_file_contents(file_obj, null_subs=True, ignore_data=False):
+def read_file_contents(file_obj, ignore_data=False):
     '''Read file contents into memory.
 
     Arguments:
@@ -206,6 +208,9 @@ def read_file_contents(file_obj, null_subs=True, ignore_data=False):
         or 
 
             {"section_type": "data",
+             "start_seek": location of data section from file_obj.tell(),
+             "ncols": number of columns on the first line (obviously irrelevant
+                 for wrapped files),
              "title": title of section (including the ~),
              "array": 1D numpy ndarray
              "line_nos_range": (int, int),
@@ -234,12 +239,22 @@ def read_file_contents(file_obj, null_subs=True, ignore_data=False):
                 "line_nos": sect_line_nos,
                 }
             if not ignore_data:
-                data, n_range = read_numerical_file_contents(file_obj, i + 1, null_subs)
+                data = read_numerical_file_contents(file_obj, i + 1)
+                # file_obj.seek(0)
+                # for j, line in enumerate(file_obj):
+                #     if j == (i + 1):
+                #         for pattern, sub_str in defaults.SUB_PATTERNS:
+                #             line = re.sub(pattern, sub_str, line)
+                #         ncols = len(line.split())
+                #         break
+
                 sections[line] = {
                     "section_type": "data",
+                    # "start_line": j,
+                    # "ncols": ncols,
                     "title": line,
                     "array": data,
-                    "line_nos_range": n_range}
+                    }
             break
 
         elif line.startswith('~'):
@@ -266,40 +281,25 @@ def read_file_contents(file_obj, null_subs=True, ignore_data=False):
     return sections
 
 
-def read_numerical_file_contents(file_obj, i, null_subs):
+def read_numerical_file_contents(file_obj, i):
     '''Read data section into memory.
 
     Arguments:
         file_obj: a file-like object.
         i: current line number in file_obj
-        null_subs: what to do with NaN values.
 
     Returns: 
-        A 1D numpy ndarray and tuple (range of line numbers). 
-        Numpy array still needs reshaping.
+        A 1D numpy ndarray.
 
     '''
-
-    sub_patterns = [
-        (re.compile(r'(\d)-(\d)'), r'\1 -\2'),
-        (re.compile('-?\d*\.\d*\.\d*'), ' NaN NaN '),
-        (re.compile('NaN.\d*'), ' NaN NaN '),
-        ]
-
-    i0 = i
-    ic = i
     def items(f):
         for line in f:
-            for pattern, sub_str in sub_patterns:
+            for pattern, sub_str in defaults.SUB_PATTERNS:
                 line = re.sub(pattern, sub_str, line)
             for item in line.split():
                 yield item
-            # ic += 1
-    
-    arr = np.fromiter(items(file_obj), np.float64, -1)
 
-    line_nos = (i0, ic)
-    return arr, line_nos
+    return np.fromiter(items(file_obj), np.float64, -1)
 
 
 def parse_header_section(sectdict, version, ignore_header_errors=False):
