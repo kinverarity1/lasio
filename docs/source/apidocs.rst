@@ -1,29 +1,51 @@
 API documentation
 =================
 
-``lasio`` - main interface
---------------------------
-
-Although all the code lies in the two modules described in detail below, all the objects that you will need to use are available here:
-
-.. code:: python
-   
-    >>> from lasio import (
-    ...     __version__,       # version string for lasio
-    ...     read,              # use for reading existing LAS data
-    ...     LASFile, Curve, HeaderItem  # use for creating new LAS files
-    ...     )
-
-``lasio.las`` - main module
----------------------------
+``lasio.las`` - LAS file handling
+---------------------------------
 
 .. automodule:: lasio.las
    :members:
    :undoc-members:
 
-``lasio.las2excel`` - LAS -> Excel conversion
----------------------------------------------
+``lasio.las_items`` - parsing header items
+------------------------------------------
+
+.. automodule:: lasio.las_items
+   :members:
+   :undoc-members:
+
+``lasio.reader`` - reading module
+---------------------------------
+
+.. automodule:: lasio.reader
+   :members:
+   :undoc-members:
+
+``lasio.reader`` - writing module
+---------------------------------
+
+.. automodule:: lasio.writer
+   :members:
+   :undoc-members:
+
+``lasio.excel`` - LAS -> Excel 
+------------------------------
 
 .. automodule:: lasio.las2excel
+   :members:
+   :undoc-members:
+
+``lasio.defaults``
+------------------------------
+
+.. automodule:: lasio.defaults
+   :members:
+   :undoc-members:
+
+``lasio.exceptions``
+------------------------------
+
+.. automodule:: lasio.exceptions
    :members:
    :undoc-members:
