@@ -127,3 +127,19 @@ def test_inf_uwi():
     l = read(stegfn('2.0', 'sample_2.0_inf_uwi.las'))
     assert l.well['UWI'].value == '300E074350061450'
 
+def test_missing_vers_loads():
+    l = read(egfn("missing_vers.las"))
+
+def test_missing_vers_missing_headeritem():
+    l = read(egfn("missing_vers.las"))
+    assert not 'VERS' in l.version
+
+def test_missing_vers_write_version_none_fails():
+    l = read(egfn("missing_vers.las"))
+    with pytest.raises(KeyError):
+        l.write(sys.stdout, version=None)
+
+def test_missing_vers_write_version_specified_works():
+    l = read(egfn("missing_vers.las"))
+    l.write(sys.stdout, version=1.2)
+        
