@@ -1,5 +1,3 @@
-
-# Standard library packages
 import codecs
 import logging
 import os

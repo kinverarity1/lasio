@@ -16,6 +16,15 @@ logger = logging.getLogger(__name__)
 
 class HeaderItem(OrderedDict):
 
+    '''Dictionary/namedtuple-style object for a LAS header line.
+
+    Arguments:
+        mnemonic (str): the mnemonic
+        unit (str): the unit (no whitespace!)
+        value (str): value
+        descr (str): description
+
+    '''
     def __init__(self, mnemonic='', unit='', value='', descr='', **kwargs):
         super(HeaderItem, self).__init__()
 
@@ -28,7 +37,7 @@ class HeaderItem(OrderedDict):
         # We also need to store a more useful mnemonic, which will be used
         # (technically not, but read on) for people to access the curve while
         # the LASFile object exists. For example, a curve which is unnamed
-        # and has the mnemonic '' will be accessed via 'UNKNOWN'.
+        # and has an original_mnemonic of '' will be accessed as 'UNKNOWN'.
 
         if mnemonic.strip() == '':
             self.useful_mnemonic = 'UNKNOWN'
@@ -37,8 +46,8 @@ class HeaderItem(OrderedDict):
 
         # But note that we need to (later) check (repeatedly) for duplicate
         # mnemonics. Any duplicates will have ':1', ':2', ':3', etc., appended
-        # to them. The result of this will be stored in the below variable,
-        # which is what the user should actually see and use 99.5% of the time.
+        # to them. The result of this will be stored as the
+        # HeaderItem.mnemonic attribute through the below method.
 
         self.set_session_mnemonic_only(str(self.useful_mnemonic))
 
@@ -47,9 +56,16 @@ class HeaderItem(OrderedDict):
         self.descr = descr
 
     def set_session_mnemonic_only(self, value):
+        '''Set the mnemonic for session use.
+
+        See source comments for :class:`lasio.las_items.HeaderItem` for more
+        in-depth explanation.
+
+        '''
         super(HeaderItem, self).__setattr__('mnemonic', value)
 
     def __getitem__(self, key):
+        '''Provide item dictionary-like access.'''
         if key == 'mnemonic':
             return self.mnemonic
         elif key == 'original_mnemonic':
@@ -66,16 +82,17 @@ class HeaderItem(OrderedDict):
             raise KeyError(
                 'CurveItem only has restricted items (not %s)' % key)
 
-    # def __setitem__(self, key, value):
-    #     # print('.__setitem__ key=%s value=%s' % (key, value))
-    #     if key == 'mnemonic':
-    #         super(HeaderItem, self).__setitem__('original_mnemonic', value)
-    #         super(HeaderItem, self).__setitem__('mnemonic', value)
-
     def __setattr__(self, key, value):
-        # print('.__setitem__ key=%s value=%s' % (key, value))
+        
+        # The user wants to rename the item! This means we must send their
+        # new mnemonic to the original_mnemonic attribute. Remember that the
+        # mnemonic attribute is for session use only.
+
         if key == 'mnemonic':
             super(HeaderItem, self).__setattr__('original_mnemonic', value)
+
+        # Otherwise it's fine.
+
         super(HeaderItem, self).__setattr__(key, value)
 
     def __repr__(self):
@@ -109,8 +126,21 @@ class HeaderItem(OrderedDict):
 
 class CurveItem(HeaderItem):
 
+    '''Dictionary/namedtuple-style object for a LAS curve.
+
+    See :class:`lasio.las_items.HeaderItem`` for the (keyword) arguments.
+
+    Keyword Arguments:
+        data (array-like, 1-D): the curve's data.
+
+    '''
+
     def __init__(self, *args, **kwargs):
-        self.data = np.ndarray([])
+        if "data" in kwargs:
+            self.data = np.asarray(kwargs["data"])
+            del kwargs["data"]
+        else:
+            self.data = np.ndarray([])
         super(CurveItem, self).__init__(*args, **kwargs)
 
     @property

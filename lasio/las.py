@@ -1,8 +1,3 @@
-'''las.py - read Log ASCII Standard files
-
-See README.rst and LICENSE for more information.
-
-'''
 from __future__ import print_function
 
 # Standard library packages
@@ -316,7 +311,12 @@ class LASFile(object):
 
     @property
     def version(self):
-        '''LAS file Version (~V) section'''
+        '''Header information from the Version (~V) section.
+
+        Returns:
+            :class:`lasio.las_items.SectionItems` object.
+
+        '''
         return self.sections['Version']
 
     @version.setter
@@ -325,7 +325,12 @@ class LASFile(object):
 
     @property
     def well(self):
-        '''LAS file Well (~W) section'''
+        '''Header information from the Well (~W) section.
+
+        Returns:
+            :class:`lasio.las_items.SectionItems` object.
+
+        '''
         return self.sections['Well']
 
     @well.setter
@@ -334,7 +339,12 @@ class LASFile(object):
 
     @property
     def curves(self):
-        '''LAS file Curves (~C) section'''
+        '''Curve information and data from the Curves (~C) and data section..
+
+        Returns:
+            :class:`lasio.las_items.SectionItems` object.
+
+        '''
         return self.sections['Curves']
 
     @curves.setter
@@ -342,8 +352,26 @@ class LASFile(object):
         self.sections['Curves'] = section
 
     @property
+    def curvesdict(self):
+        '''Curve information and data from the Curves (~C) and data section..
+
+        Returns:
+            dict
+
+        '''
+        d = {}
+        for curve in self.curves:
+            d[curve['mnemonic']] = curve
+        return d
+
+    @property
     def params(self):
-        '''LAS file Parameter (~P) section'''
+        '''Header information from the Parameter (~P) section.
+
+        Returns:
+            :class:`lasio.las_items.SectionItems` object.
+
+        '''
         return self.sections['Parameter']
 
     @params.setter
@@ -352,7 +380,12 @@ class LASFile(object):
 
     @property
     def other(self):
-        '''LAS file Other (~O) section'''
+        '''Header information from the Other (~O) section.
+
+        Returns:
+            str
+
+        '''
         return self.sections['Other']
 
     @other.setter
@@ -361,7 +394,12 @@ class LASFile(object):
 
     @property
     def metadata(self):
-        '''Shortcut to access all header items in one data structure.'''
+        '''All header information joined together.
+
+        Returns:
+            :class:`lasio.las_items.SectionItems` object.
+
+        '''
         s = SectionItems()
         for section in self.sections:
             for item in section:
@@ -374,7 +412,12 @@ class LASFile(object):
 
     @property
     def header(self):
-        '''Synonym for "sections".'''
+        '''All header information
+
+        Returns:
+            dict
+
+        '''
         return self.sections
 
     def df(self):
@@ -467,7 +510,8 @@ class LASFile(object):
         and add them all.
 
         Otherwise, the arguments will all be passed to
-        :meth:`lasio.las.LASFile.add_curve_raw`.
+        :meth:`lasio.las.LASFile.add_curve_raw` and a single curve will be
+        created and added.
 
         '''
         if isinstance(args[0], CurveItem):
@@ -500,21 +544,13 @@ class LASFile(object):
     def delete_curve(self, mnemonic):
         '''Remove curve by its mnemonic.
 
-        Argument:
+        Arguments:
             mnemonic (str): curve mnemonic (must exist in the file)
 
         '''
         ix = self.curves.keys().index(mnemonic)
         self.curves.pop(ix)
         self.data = np.delete(self.data, np.s_[ix], axis=1)
-
-    @property
-    def curvesdict(self):
-        '''Return curves in a dict, organised by their mnemonics.'''
-        d = {}
-        for curve in self.curves:
-            d[curve['mnemonic']] = curve
-        return d
 
     @property
     def json(self):
