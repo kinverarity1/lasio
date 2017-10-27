@@ -27,9 +27,8 @@
 .. toctree::
    :maxdepth: 2
 
-   install
-   usage
-   apidocs
+   lasio
+   modules
 
 * :ref:`genindex`
 * :ref:`search`
