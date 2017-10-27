@@ -58,6 +58,9 @@ def test_dodgy_param_sect():
     with pytest.raises(exceptions.LASHeaderError):
         l = read(egfn("dodgy_param_sect.las"))
 
+def test_ignore_header_errors():
+    l = read(egfn("dodgy_param_sect.las"), ignore_header_errors=True)
+
 def test_mnemonic_good():
     l = read(egfn("mnemonic_good.las"))
     assert [c.mnemonic for c in l.curves] == [
