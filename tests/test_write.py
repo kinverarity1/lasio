@@ -228,6 +228,12 @@ def test_write_xlsx():
     e.write(xlsxfn)
     os.remove(xlsxfn)
 
+def test_export_xlsx():
+    l = read(egfn("sample.las"))
+    xlsxfn = "test2.xlsx"
+    l.to_excel(xlsxfn)
+    os.remove(xlsxfn)
+
 def test_multi_curve_mnemonics_rewrite():
     l = read(egfn('sample_issue105_a.las'))
     s = StringIO()
