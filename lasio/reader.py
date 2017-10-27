@@ -52,7 +52,7 @@ def open_file(file_ref, encoding=None, encoding_errors='replace',
     needs to be installed, or else an ``ImportError`` will be raised.
 
     Arguments:
-        file_ref (file-like object, str): either a filename, an open file 
+        file_ref (file-like object, str): either a filename, an open file
             object, or a string containing the contents of a file.
 
     Keyword Arguments:
@@ -64,7 +64,7 @@ def open_file(file_ref, encoding=None, encoding_errors='replace',
         autodetect_encoding_chars (int/None): number of chars to read from LAS
             file for auto-detection of encoding.
 
-    Returns: 
+    Returns:
         An open file-like object ready for reading from.
 
     See :meth:`lasio.las.LASFile.read` for additional keyword arguments you
@@ -87,22 +87,22 @@ def open_file(file_ref, encoding=None, encoding_errors='replace',
         elif len(lines) > 1: # it's LAS data as a string.
             file_ref = StringIO(file_ref)
         else:  # it must be a filename
-            file_ref = open_with_codecs(first_line, encoding, encoding_errors, 
-                                        autodetect_encoding, 
+            file_ref = open_with_codecs(first_line, encoding, encoding_errors,
+                                        autodetect_encoding,
                                         autodetect_encoding_chars)
-        
+
     # If file_ref was:
     #  - a file-like object, nothing happens and it is returned
     #    directly by this function.
     #  - a filename, the encoding is detected and the file opened and returned
-    #  - a URI, a request is made and the content read and returned as a 
+    #  - a URI, a request is made and the content read and returned as a
     #    file-like object using cStringIO
     #  - a string, the string is returned as a file-like object using StringIO
 
     return file_ref
 
 
-def open_with_codecs(filename, encoding, encoding_errors, 
+def open_with_codecs(filename, encoding, encoding_errors,
                      autodetect_encoding, nbytes):
     '''
     Read Unicode data from file.
@@ -110,7 +110,7 @@ def open_with_codecs(filename, encoding, encoding_errors,
     Arguments:
         filename (str): path to file
         encoding (str): encoding - can be None
-        encoding_errors (str): unicode error handling - can be 'strict', 
+        encoding_errors (str): unicode error handling - can be 'strict',
             'ignore', 'replace'
         autodetect_encoding (str): auto-detection of character encoding - can
             be either 'chardet', 'cchardet', or True
@@ -131,6 +131,23 @@ def open_with_codecs(filename, encoding, encoding_errors,
         encoding = 'utf-8-sig'
         autodetect_encoding = False
 
+    # And if no BOM & autodetect_encoding=False
+    if (not encoding) and (not autodetect_encoding):
+        test_encodings = ['windows-1252', 'latin-1',  'ascii']
+        for i in test_encodings:
+            encoding = i
+            with open(filename, mode='r', encoding=encoding) as f:
+                try:
+                    if nbytes:
+                        f.read(nbytes)
+                    else:
+                        f.readline()
+                    break
+                except UnicodeDecodeError:
+                    logger.debug('{} tested, raised UnicodeDecodeError'.format(encoding))
+                    pass
+                encoding = None
+
     # Otherwise...
     if autodetect_encoding:
         with open(filename, mode='rb') as test:
@@ -141,7 +158,7 @@ def open_with_codecs(filename, encoding, encoding_errors,
         encoding = get_encoding(autodetect_encoding, raw)
 
     # Now open and return the file-like object
-    return codecs.open(filename, mode='r', encoding=encoding, 
+    return codecs.open(filename, mode='r', encoding=encoding,
                        errors=encoding_errors)
 
 
@@ -196,7 +213,7 @@ def read_file_contents(file_obj, ignore_data=False):
 
     Keyword Arguments:
         null_subs (bool): substitute NaN for null values
-        ignore_data (bool): do not read in the numerical data in the ~ASCII 
+        ignore_data (bool): do not read in the numerical data in the ~ASCII
             section
 
     Returns: an ordered dictionary
@@ -210,8 +227,8 @@ def read_file_contents(file_obj, ignore_data=False):
          "lines": a list of the lines from the lAS file,
          "line_nos": a list of ints - line nos from the original file,
          }
-        
-    or: 
+
+    or:
 
         {"section_type": "data",
          "title": title of section (including the ~),
@@ -225,7 +242,7 @@ def read_file_contents(file_obj, ignore_data=False):
     sect_lines = []
     sect_line_nos = []
     sect_title_line = None
-    
+
     for i, line in enumerate(file_obj):
         line = line.strip()
         if line.startswith('~A'):
@@ -271,7 +288,7 @@ def read_file_contents(file_obj, ignore_data=False):
                 sect_lines.append(line)
                 sect_line_nos.append(i + 1)
 
-    # Find the number of columns in the data section(s). This is only 
+    # Find the number of columns in the data section(s). This is only
     # useful is WRAP = NO, but we do it for all since we don't yet know
     # what the wrap setting is.
     for section in sections.values():
@@ -293,7 +310,7 @@ def read_numerical_file_contents(file_obj, i):
         file_obj: a file-like object.
         i: current line number in file_obj
 
-    Returns: 
+    Returns:
         A 1D numpy ndarray.
 
     '''
@@ -328,7 +345,7 @@ def parse_header_section(sectdict, version, ignore_header_errors=False):
             message = "Line #%d - failed in %s section on line:\n%s%s" % (
                 j, title, line,
                 traceback.format_exc().splitlines()[-1])
-            
+
             if ignore_header_errors:
                 logger.warning(message)
             else:
@@ -354,7 +371,7 @@ class SectionParser(object):
         elif title.upper().startswith('~V'):
             self.func = self.metadata
             self.section_name2 = "Version"
-            
+
 
         self.version = version
         self.section_name = title
@@ -457,4 +474,3 @@ def read_line(line, pattern=None):
             if d[key].endswith('.'):
                 d[key] = d[key].strip('.')  # see issue #36
     return d
-
