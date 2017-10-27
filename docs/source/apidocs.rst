@@ -22,7 +22,7 @@ API documentation
    :members:
    :undoc-members:
 
-``lasio.reader`` - writing module
+``lasio.writer`` - writing module
 ---------------------------------
 
 .. automodule:: lasio.writer
@@ -32,7 +32,7 @@ API documentation
 ``lasio.excel`` - LAS -> Excel 
 ------------------------------
 
-.. automodule:: lasio.las2excel
+.. automodule:: lasio.excel
    :members:
    :undoc-members:
 
