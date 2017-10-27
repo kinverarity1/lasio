@@ -6,6 +6,7 @@ import numpy
 import pytest
 
 from lasio import read
+from lasio import exceptions
 
 test_dir = os.path.dirname(__file__)
 
@@ -54,8 +55,8 @@ def test_read_v2_sample_wrapped():
 
 
 def test_dodgy_param_sect():
-    l = read(egfn("dodgy_param_sect.las"))
-
+    with pytest.raises(exceptions.LASHeaderError):
+        l = read(egfn("dodgy_param_sect.las"))
 
 def test_mnemonic_good():
     l = read(egfn("mnemonic_good.las"))
