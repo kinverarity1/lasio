@@ -22,22 +22,10 @@ lasio is written to be compatible with Python 2.6+, and 3.2+. To install run:
 $ pip install lasio
 ```
 
-If necessary this will download and install the requirements ([numpy](http://numpy.org/) and a few other small ones).
-
-There are some other packages which lasio will use to provide extra functionality if they are installed, but they are not required:
-
-- [pandas](https://pypi.python.org/pypi/pandas) - data analysis library
-
-I'd recommend installing these too with:
+This will download and install lasio's dependencies ([numpy](http://numpy.org/), [ordereddict](https://pypi.python.org/pypi/ordereddict), and [xlwt](https://github.com/python-excel/xlwt)). There are some other packages which lasio will use to provide extra functionality if they are installed ([pandas](https://pypi.python.org/pypi/pandas), [cChardet](https://github.com/PyYoshi/cChardet) and/or [chardet](https://github.com/chardet/chardet), [openpyxl](https://openpyxl.readthedocs.io/en/default/), and [argparse](https://github.com/ThomasWaldmann/argparse/)). I recommend installing these too with:
 
 ```bash
 $ pip install -r optional-packages.txt
-```
-
-New releases are frequently sent to [PyPI](https://pypi.python.org/pypi/lasio), so if you want to stay updated:
-
-```bash
-$ pip install --upgrade lasio
 ```
 
 ## Usage
@@ -131,13 +119,17 @@ Note that by default ``autodetect_encoding=False``.
 [![](https://coveralls.io/repos/kinverarity1/lasio/badge.svg?branch=master&service=github)](https://coveralls.io/github/kinverarity1/lasio?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/grade/252911a940b7476d9d7c4450d4045370)](https://www.codacy.com/app/kinverarity/lasio)
 [![](https://scrutinizer-ci.com/g/kinverarity1/lasio/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/kinverarity1/lasio/#)
-[![](https://www.quantifiedcode.com/api/v1/project/82d62106077f4c44a353c311984930d6/badge.svg)](https://www.quantifiedcode.com/app/project/82d62106077f4c44a353c311984930d6)
+[![](https://www.quantifiedcode.com/api/v1/project/82d62106077f4c44a353c311984930d6/badge.svg)](https://www.quantifiedcode.com/app/project/82d62106077f4c44a353c311984930d6) [![Stories in Ready](https://badge.waffle.io/kinverarity1/lasio.png?label=ready&title=Ready)](http://waffle.io/kinverarity1/lasio)
 
-[![Stories in Ready](https://badge.waffle.io/kinverarity1/lasio.png?label=ready&title=Ready)](http://waffle.io/kinverarity1/lasio)
+Any help is welcome and appreciated! Please see the [contribution guide](https://github.com/kinverarity1/lasio/blob/master/CONTRIBUTING.md) for more information.
 
-See the [list of changes](https://github.com/kinverarity1/lasio/blob/master/CHANGELOG.md) for each released version.
+New releases are frequently sent to [PyPI](https://pypi.python.org/pypi/lasio). See the [list of changes](https://github.com/kinverarity1/lasio/blob/master/CHANGELOG.md) for each released version. If you want to stay updated:
 
-To use the latest development version:
+```bash
+$ pip install --upgrade lasio
+```
+
+The latest development version is also "safe" to use, as it is continuously tested. To install the development version use:
 
 ```bash
 $ git clone https://github.com/kinverarity1/lasio.git
@@ -145,17 +137,17 @@ $ cd lasio
 $ python setup.py develop
 ```
 
-And to update:
+And to update to the latest version:
 
 ```bash
 $ git pull origin master
 ```
 
-### Tests
+### Testing
 
 [![Build Status](https://travis-ci.org/kinverarity1/lasio.svg?branch=master)](https://travis-ci.org/kinverarity1/lasio)
 
-lasio is tested regularly at [Travis CI](https://travis-ci.org/kinverarity1/lasio) against Python versions 2.7, 3.3, 3.4, 3.5, and 3.6. lasio should work on Python 2.6 and 3.2, but these are tested only occassionally.
+Every time lasio is updated, all the automated tests are run at [Travis CI](https://travis-ci.org/kinverarity1/lasio) against Python versions 2.7, 3.3, 3.4, 3.5, and 3.6. lasio should also work on Python 2.6 and 3.2, but these are tested only occassionally.
 
 To run tests yourself, first install the testing framework and all the optional packages:
 
@@ -170,22 +162,3 @@ And then run tests:
 $ py.test
 ```
 
-### Contributions
-
-[![](http://githubbadges.herokuapp.com/kinverarity1/lasio/pulls.svg)](https://github.com/kinverarity1/lasio/pulls)
-[![](http://githubbadges.herokuapp.com/kinverarity1/lasio/issues.svg)](https://github.com/kinverarity1/lasio/issues)
-
-Help is very welcome! Please fork the project on GitHub and submit a pull request (PR) containing any changes you have made. Or anything is welcome as a GitHub issue or an email to kinverarity@hotmail.com - suggestions, criticisms, questions, example files. 
-
-Thanks to the following GitHub users for their help - my apologies to anyone I have missed.
-
-- VelizarVESSELINOV
-- diverdude
-- tomtommahout
-- dagrha
-- roliveira
-- Dybov
-- jgodwin
-- adamwulf
-- nasedil
-- ahjulstad
