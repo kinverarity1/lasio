@@ -124,7 +124,13 @@ class LASFile(object):
                 read_parser.version = 1.2
             else:
                 read_parser.version = 2
-        read_parser.wrap = self.version['WRAP'].value == 'YES'
+
+        for key in self.version.keys():
+            if key.lower() == 'wrap':
+                read_parser.wrap = self.version[key].value == 'YES'
+                break
+        else:
+            raise KeyError('No key WRAP in ~V section')
 
         self.sections['Well'] = read_parser.read_section('~W')
         self.sections['Curves'] = read_parser.read_section('~C')
