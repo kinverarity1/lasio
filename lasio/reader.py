@@ -240,17 +240,9 @@ def read_file_contents(file_obj, ignore_data=False):
                 }
             if not ignore_data:
                 data = read_numerical_file_contents(file_obj, i + 1)
-                # file_obj.seek(0)
-                # for j, line in enumerate(file_obj):
-                #     if j == (i + 1):
-                #         for pattern, sub_str in defaults.SUB_PATTERNS:
-                #             line = re.sub(pattern, sub_str, line)
-                #         ncols = len(line.split())
-                #         break
-
                 sections[line] = {
                     "section_type": "data",
-                    # "start_line": j,
+                    "start_line": i,
                     # "ncols": ncols,
                     "title": line,
                     "array": data,
@@ -278,6 +270,19 @@ def read_file_contents(file_obj, ignore_data=False):
             if not line.startswith("#"):       # ignore commented-out lines.. for now.
                 sect_lines.append(line)
                 sect_line_nos.append(i + 1)
+
+    # Find the number of columns in the data section(s). This is only 
+    # useful is WRAP = NO, but we do it for all since we don't yet know
+    # what the wrap setting is.
+    for section in sections.values():
+        if section["section_type"] == "data":
+            file_obj.seek(0)
+            for i, line in enumerate(file_obj):
+                if i == section["start_line"] + 1:
+                    for pattern, sub_str in defaults.SUB_PATTERNS:
+                        line = re.sub(pattern, sub_str, line)
+                    section["ncols"] = len(line.split())
+                    break
     return sections
 
 

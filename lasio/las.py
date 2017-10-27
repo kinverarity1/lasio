@@ -170,7 +170,15 @@ class LASFile(object):
                 arr = s["array"]
                 if null_subs:
                     arr[arr == null] = np.nan
-                data = np.reshape(arr, (-1, len(self.curves)))
+
+                n_curves = len(self.curves)
+                n_arr_cols = len(self.curves) # provisional pending below check
+                logger.debug("n_curves=%d ncols=%d" % (n_curves, s["ncols"]))
+                if self.version["WRAP"].value == "NO":
+                    if s["ncols"] > n_curves:
+                        n_arr_cols = s["ncols"]
+                data = np.reshape(arr, (-1, n_arr_cols))
+
                 self.set_data(data, truncate=False)
                 drop.append(s["title"])
             else:
