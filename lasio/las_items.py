@@ -24,8 +24,11 @@ class HeaderItem(OrderedDict):
         value (str): value
         descr (str): description
 
+    These arguments are available for use as either items or attributes of the
+    object.
+
     '''
-    def __init__(self, mnemonic='', unit='', value='', descr='', **kwargs):
+    def __init__(self, mnemonic='', unit='', value='', descr=''):
         super(HeaderItem, self).__init__()
 
         # The original mnemonic needs to be stored for rewriting a new file.
