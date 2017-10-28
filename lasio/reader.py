@@ -136,7 +136,7 @@ def open_with_codecs(filename, encoding, encoding_errors,
         autodetect_encoding = False
 
     # If BOM wasn't found...
-    if autodetect_encoding:
+    if (autodetect_encoding) and (not encoding):
         with open(filename, mode='rb') as test:
             if nbytes is None:
                 raw = test.read()
@@ -300,13 +300,8 @@ def read_file_contents(file_obj, ignore_data=False):
                 sect_lines.append(line)
                 sect_line_nos.append(i + 1)
 
-<<<<<<< HEAD
-    # Find the number of columns in the data section(s). This is only
-    # useful is WRAP = NO, but we do it for all since we don't yet know
-=======
     # Find the number of columns in the data section(s). This is only
     # useful if WRAP = NO, but we do it for all since we don't yet know
->>>>>>> 07a666b64388b2ef7de53837c9d9b2d44c4da8bd
     # what the wrap setting is.
 
     for section in sections.values():
