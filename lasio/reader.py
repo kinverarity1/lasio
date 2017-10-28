@@ -58,19 +58,18 @@ def open_file(file_ref, encoding=None, encoding_errors='replace',
     Keyword Arguments:
         encoding (str): character encoding to open file_ref with
         encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
-            handle errors with encodings (see standard library codecs module or
+            handle errors with encodings (see :py:mod:`codecs` module or
             Python Unicode HOWTO for more information)
         autodetect_encoding (str or bool): default True to use chardet/ccharet
             to detect encoding. Note if set to False several common encodings
             will be tried but chardet won't be used.
+        autodetect_encoding (str, bool): auto-detection of character encoding - can
+            be either 'chardet', 'cchardet', or True
         autodetect_encoding_chars (int/None): number of chars to read from LAS
             file for auto-detection of encoding.
 
     Returns:
         An open file-like object ready for reading from.
-
-    See :meth:`lasio.las.LASFile.read` for additional keyword arguments you
-    can use here.
 
     '''
     if isinstance(file_ref, str): # file_ref != file-like object, so what is it?
@@ -111,7 +110,7 @@ def open_with_codecs(filename, encoding, encoding_errors,
 
     Arguments:
         filename (str): path to file
-        encoding (str): encoding - can be None
+        encoding (str): encoding for :py:func:`codecs.open` - can be ``None``
         encoding_errors (str): unicode error handling - can be 'strict',
             'ignore', 'replace'
         autodetect_encoding (str or bool): auto-detection of character encoding
@@ -120,6 +119,9 @@ def open_with_codecs(filename, encoding, encoding_errors,
 
     Returns:
         a unicode or string object
+
+    See :func:`lasio.reader.open_file` for more explanation, as most users will
+    be using that function, not this one.
 
     '''
     if nbytes:
@@ -176,7 +178,8 @@ def get_encoding(auto, raw):
 
     Arguments:
         auto (str): auto-detection of character encoding - can be either
-            'chardet', 'cchardet', True, or False
+            'chardet', 'cchardet', False, or True (the latter will pick the
+            fastest available option)
         raw (bytes): array of bytes to detect from
 
     Returns:
@@ -217,32 +220,33 @@ def read_file_contents(file_obj, ignore_data=False):
     '''Read file contents into memory.
 
     Arguments:
-        file_obj: an open file-like object.
+        file_obj (open file-like object)
 
     Keyword Arguments:
-        null_subs (bool): substitute NaN for null values
-        ignore_data (bool): do not read in the numerical data in the ~ASCII
-            section
+        null_subs (bool): True will substitute ``numpy.nan`` for invalid values
+        ignore_data (bool): if True, do not read in the numerical data in the
+            ~ASCII section
 
-    Returns: an ordered dictionary
+    Returns:
+        OrderedDict
 
-    The returned dictionary is thought of as a "raw section". The keys are
+    I think of the returned dictionary as a "raw section". The keys are
     the first line of the LAS section, including the tilde. Each value is
-    a dict with either:
+    a dict with either::
 
         {"section_type": "header",
-         "title": title of section (including the ~),
-         "lines": a list of the lines from the lAS file,
-         "line_nos": a list of ints - line nos from the original file,
+         "title": str,               # title of section (including the ~)
+         "lines": [str, ],           # a list of the lines from the lAS file
+         "line_nos": [int, ]         # line nos from the original file
          }
 
-    or:
+    or::
 
         {"section_type": "data",
-         "title": title of section (including the ~),
-         "start_line": location of data section (the title line),
-         "ncols": number of columns on the first line of the data,
-         "array": 1D numpy ndarray,
+         "title": str,              # title of section (including the ~)
+         "start_line": int,         # location of data section (the title line)
+         "ncols": int,              # no. of columns on first line of data,
+         "array": ndarray           # 1-D numpy.ndarray,
          }
 
     '''
@@ -264,7 +268,7 @@ def read_file_contents(file_obj, ignore_data=False):
                 "line_nos": sect_line_nos,
                 }
             if not ignore_data:
-                data = read_numerical_file_contents(file_obj, i + 1)
+                data = read_data_section_iterative(file_obj, i + 1)
                 sections[line] = {
                     "section_type": "data",
                     "start_line": i,
@@ -296,9 +300,15 @@ def read_file_contents(file_obj, ignore_data=False):
                 sect_lines.append(line)
                 sect_line_nos.append(i + 1)
 
+<<<<<<< HEAD
     # Find the number of columns in the data section(s). This is only
     # useful is WRAP = NO, but we do it for all since we don't yet know
+=======
+    # Find the number of columns in the data section(s). This is only
+    # useful if WRAP = NO, but we do it for all since we don't yet know
+>>>>>>> 07a666b64388b2ef7de53837c9d9b2d44c4da8bd
     # what the wrap setting is.
+
     for section in sections.values():
         if section["section_type"] == "data":
             file_obj.seek(0)
@@ -311,15 +321,16 @@ def read_file_contents(file_obj, ignore_data=False):
     return sections
 
 
-def read_numerical_file_contents(file_obj, i):
+def read_data_section_iterative(file_obj, i):
     '''Read data section into memory.
 
     Arguments:
-        file_obj: a file-like object.
-        i: current line number in file_obj
+        file_obj (open file-like object): should be positioned in line-by-line
+            reading mode, with the last line read being the title of the
+            ~ASCII data section.
 
     Returns:
-        A 1D numpy ndarray.
+        A 1-D numpy ndarray.
 
     '''
     def items(f):
@@ -333,10 +344,20 @@ def read_numerical_file_contents(file_obj, i):
 
 
 def parse_header_section(sectdict, version, ignore_header_errors=False):
-    '''Parse a header section dictionary into Header/CurveItems.
+    '''Parse a header section dict into a SectionItems containing HeaderItems.
 
     Arguments:
-        sect (dict): object returned from reader.read_file_contents()
+        sectdict (dict): object returned from
+            :func:`lasio.reader.read_file_contents`
+        version (float): either 1.2 or 2.0
+
+    Keyword Arguments:
+        ignore_header_errors (bool): if True, issue HeaderItem parse errors
+            as :func:`logging.warning` calls instead of a
+            :exc:`lasio.exceptions.LASHeaderError` exception.
+
+    Returns:
+        :class:`lasio.las_items.SectionItems`
 
     '''
     title = sectdict["title"]
@@ -366,6 +387,18 @@ def parse_header_section(sectdict, version, ignore_header_errors=False):
 
 class SectionParser(object):
 
+    '''Parse lines from header sections.
+
+    Arguments:
+        title (str): title line of section. Used to understand different
+            order formatting across the special sections ~C, ~P, ~W, and ~V,
+            depending on version 1.2 or 2.0.
+
+    Keyword Arguments:
+        version (float): version to parse according to. Default is 1.2.
+
+    '''
+
     def __init__(self, title, version=1.2):
         if title.upper().startswith('~C'):
             self.func = self.curves
@@ -393,12 +426,31 @@ class SectionParser(object):
                 self.orders[mnemonic] = order
 
     def __call__(self, **keys):
+        '''Return the correct object for this type of section.
+
+        Refer to :meth:`lasio.reader.SectionParser.metadata`,
+        :meth:`lasio.reader.SectionParser.params`, and
+        :meth:`lasio.reader.SectionParser.curves` for the methods actually
+        used by this routine.
+
+        Keyword arguments should be the key:value pairs returned by
+        :func:`lasio.reader.read_header_line`.
+
+        '''
         item = self.func(**keys)
-        # if item.name == '':
-        #     item.mnemonic = 'UNKNOWN'
         return item
 
     def num(self, x, default=None):
+        '''Attempt to parse a number.
+
+        Arguments:
+            x (str, int, float): potential number
+            default (int, float, None): fall-back option
+
+        Returns:
+            int, float, or **default** - from most to least preferred types.
+
+        '''
         if default is None:
             default = x
         try:
@@ -414,6 +466,13 @@ class SectionParser(object):
             return default
 
     def metadata(self, **keys):
+        '''Return HeaderItem correctly formatted according to the order
+        prescribed for LAS v 1.2 or 2.0 for the ~W section.
+
+        Keyword arguments should be the key:value pairs returned by
+        :func:`lasio.reader.read_header_line`.
+
+        '''
         key_order = self.orders.get(keys['name'], self.default_order)
         if key_order == 'value:descr':
             return HeaderItem(
@@ -431,7 +490,12 @@ class SectionParser(object):
             )
 
     def curves(self, **keys):
-        # logger.debug(str(keys))
+        '''Return CurveItem.
+
+        Keyword arguments should be the key:value pairs returned by
+        :func:`lasio.reader.read_header_line`.
+
+        '''
         item = CurveItem(
             keys['name'],               # mnemonic
             keys['unit'],               # unit
@@ -441,6 +505,12 @@ class SectionParser(object):
         return item
 
     def params(self, **keys):
+        '''Return HeaderItem for ~P section (the same between 1.2 and 2.0 specs)
+
+        Keyword arguments should be the key:value pairs returned by
+        :func:`lasio.reader.read_header_line`.
+
+        '''
         return HeaderItem(
             keys['name'],               # mnemonic
             keys['unit'],               # unit
@@ -449,8 +519,16 @@ class SectionParser(object):
         )
 
 
+def read_line(*args, **kwargs):
+    '''Retained for backwards-compatibility.
 
-def read_line(line, pattern=None):
+    See :func:`lasio.reader.read_header_line`.
+
+    '''
+    return read_header_line(*args, **kwargs)
+
+
+def read_header_line(line, pattern=None):
     '''Read a line from a LAS header section.
 
     The line is parsed with a regular expression -- see LAS file specs for
@@ -474,8 +552,6 @@ def read_line(line, pattern=None):
                    r'(?P<descr>.*)')
     m = re.match(pattern, line)
     mdict = m.groupdict()
-    # if mdict['name'] == '':
-    #     mdict['name'] = 'UNKNOWN'
     for key, value in mdict.items():
         d[key] = value.strip()
         if key == 'unit':

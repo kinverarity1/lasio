@@ -13,6 +13,33 @@ logger = logging.getLogger(__name__)
 
 def write(las, file_object, version=None, wrap=None, STRT=None,
           STOP=None, STEP=None, fmt='%10.5g'):
+    '''Write a LAS files.
+
+    Arguments:
+        las (:class:`lasio.las.LASFile`)
+        file_object (file-like object open for writing): output
+
+    Keyword Arguments:
+        version (float or None): version of written file, either 1.2 or 2. 
+            If this is None, ``las.version.VERS.value`` will be used.
+        wrap (bool or None): whether to wrap the output data section.
+            If this is None, ``las.version.WRAP.value`` will be used.
+        STRT (float or None): value to use as STRT (note the data will not
+            be clipped). If this is None, the data value in the first column,
+            first row will be used.
+        STOP (float or None): value to use as STOP (note the data will not
+            be clipped). If this is None, the data value in the first column,
+            last row will be used.
+        STEP (float or None): value to use as STEP (note the data will not
+            be resampled and/or interpolated). If this is None, the STEP will
+            be estimated from the first two rows of the first column.
+        fmt (str): Python string formatting operator for numeric data to be
+            used.
+
+    You should avoid calling this function directly - instead use the 
+    :meth:`lasio.las.LASFile.write` method.
+
+    '''
     if wrap is None:
         wrap = las.version['WRAP'] == 'YES'
     elif wrap is True:
@@ -168,11 +195,10 @@ def write(las, file_object, version=None, wrap=None, STRT=None,
 
 
 def get_formatter_function(order, left_width=None, middle_width=None):
-    '''Create function to format a LAS header item.
+    '''Create function to format a LAS header item for output.
 
     Arguments:
-        order: format of item, either 'descr:value' or 'value:descr' -- see
-            LAS 1.2 and 2.0 specifications for more information.
+        order: format of item, either 'descr:value' or 'value:descr'
 
     Keyword Arguments:
         left_width (int): number of characters to the left hand side of the
@@ -181,9 +207,10 @@ def get_formatter_function(order, left_width=None, middle_width=None):
             first period from the left and the first colon from the left.
 
     Returns:
-        A function which takes a header item (e.g. LASHeaderItem or Curve)
-        as its single argument and which in turn returns a string which is
-        the correctly formatted LAS header line.
+        A function which takes a header item 
+        (e.g. :class:`lasio.las_items.HeaderItem`) as its single argument and 
+        which in turn returns a string which is the correctly formatted LAS
+        header line.
 
     '''
     if left_width is None:
@@ -212,14 +239,14 @@ def get_formatter_function(order, left_width=None, middle_width=None):
 
 def get_section_order_function(section, version,
                                order_definitions=defaults.ORDER_DEFINITIONS):
-    '''Get a function that returns the order per mnemonic and section.
+    '''Get a function that returns the order per the mnemonic and section.
 
     Arguments:
         section (str): either 'well', 'params', 'curves', 'version'
         version (float): either 1.2 and 2.0
 
     Keyword Arguments:
-        order_definitions (dict): ...
+        order_definitions (dict): see source of defaults.py for more information
 
     Returns:
         A function which takes a mnemonic (str) as its only argument, and 
@@ -235,14 +262,14 @@ def get_section_order_function(section, version,
     return lambda mnemonic: orders.get(mnemonic, default_order)
 
 
-def get_section_widths(section_name, items, version, order_func,
-                       middle_padding=5):
+def get_section_widths(section_name, items, version, order_func):
     '''Find minimum section widths fitting the content in *items*.
 
     Arguments:
         section_name (str): either 'version', 'well', 'curves', or 'params'
         items (SectionItems): section items
         version (float): either 1.2 or 2.0
+        order_func (func): see :func:`lasio.writer.get_section_order_function`
 
     '''
     section_widths = {

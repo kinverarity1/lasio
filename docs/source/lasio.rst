@@ -8,6 +8,7 @@ Module contents
     :members:
     :undoc-members:
     :show-inheritance:
+    :member-order: bysource
 
 Submodules
 ----------
@@ -19,6 +20,7 @@ lasio\.las module
     :members:
     :undoc-members:
     :show-inheritance:
+    :member-order: bysource
 
 lasio\.las\_items module
 ------------------------
@@ -27,6 +29,7 @@ lasio\.las\_items module
     :members:
     :show-inheritance:
     :special-members:
+    :member-order: bysource
 
 lasio\.reader module
 --------------------
@@ -35,6 +38,7 @@ lasio\.reader module
     :members:
     :undoc-members:
     :show-inheritance:
+    :member-order: bysource
 
 lasio\.writer module
 --------------------
@@ -43,14 +47,16 @@ lasio\.writer module
     :members:
     :undoc-members:
     :show-inheritance:
+    :member-order: bysource
 
 lasio\.excel module
 -------------------
 
 .. automodule:: lasio.excel
     :members:
-    :undoc-members:
+    :undoc-members: main get_parser main_bulk get_bulk_parser
     :show-inheritance:
+    :member-order: bysource
 
 lasio\.defaults module
 ----------------------
@@ -59,6 +65,7 @@ lasio\.defaults module
     :members:
     :undoc-members:
     :show-inheritance:
+    :member-order: bysource
 
 lasio\.exceptions module
 ------------------------
@@ -67,3 +74,4 @@ lasio\.exceptions module
     :members:
     :undoc-members:
     :show-inheritance:
+    :member-order: bysource

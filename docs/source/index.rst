@@ -6,6 +6,7 @@
 .. toctree::
    :maxdepth: 2
 
+   basic-example
    lasio
 
 * :ref:`genindex`

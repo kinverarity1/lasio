@@ -109,24 +109,51 @@ class LASFile(object):
         add_section("~V", "Version", version=1.2, 
                     ignore_header_errors=ignore_header_errors)
 
-        # Set version
+        # Establish version and wrap values if possible.
+
         try:
             version = self.version['VERS'].value
         except KeyError:
-            logger.warning('VERS item not found in the ~V section')
+            logger.warning('VERS item not found in the ~V section.')
+            version = None
 
-        # Validate version
         try:
-            assert version in (1.2, 2)
+            wrap = self.version['WRAP'].value
+        except KeyError:
+            logger.warning('WRAP item not found in the ~V section')
+            wrap = None
+
+        # Validate version.
+        #
+        # If VERS was missing and version = None, then the file will be read in
+        # as if version were 2.0. But there will be no VERS HeaderItem, meaning
+        # that las.write(..., version=None) will fail with a KeyError. But
+        # las.write(..., version=1.2) will work because a new VERS HeaderItem
+        # will be created.
+
+        try:
+            assert version in (1.2, 2, None)
         except AssertionError:
-            logger.warning('LAS version is %s -- neither 1.2 nor 2' % version)
             if version < 2:
                 version = 1.2
             else:
                 version = 2
+        else:
+            if version is None:
+                logger.info('Assuming that LAS VERS is 2.0')
+                version = 2
 
         add_section("~W", "Well", version=version, 
                     ignore_header_errors=ignore_header_errors)
+
+        # Establish NULL value if possible.
+
+        try:
+            null = self.well['NULL'].value
+        except KeyError:
+            logger.warning('NULL item not found in the ~W section')
+            null = None
+
         add_section("~C", "Curves", version=version, 
                     ignore_header_errors=ignore_header_errors)
         add_section("~P", "Parameter", version=version, 
@@ -152,8 +179,6 @@ class LASFile(object):
             self.raw_sections.pop(key)
 
         if not ignore_data:
-            null = self.well['NULL'].value
-
             drop = []
             s = self.match_raw_section("~A")
             if s:
@@ -164,7 +189,7 @@ class LASFile(object):
                 n_curves = len(self.curves)
                 n_arr_cols = len(self.curves) # provisional pending below check
                 logger.debug("n_curves=%d ncols=%d" % (n_curves, s["ncols"]))
-                if self.version["WRAP"].value == "NO":
+                if wrap == "NO":
                     if s["ncols"] > n_curves:
                         n_arr_cols = s["ncols"]
                 data = np.reshape(arr, (-1, n_arr_cols))
@@ -187,38 +212,44 @@ class LASFile(object):
               self.curves[0].unit.upper() in defaults.FEET_UNITS):
             self.index_unit = 'FT'
 
-    def write(self, file_obj, version=None, wrap=None,
-              STRT=None, STOP=None, STEP=None, fmt='%10.5g'):
+    def write(self, file_ref, **kwargs):
         '''Write LAS file to disk.
 
         Arguments:
-            file_obj (open file-like obj, str): a file-like object opening for
-                writing, or a filename.
-            version (float): either 1.2 or 2
-            wrap (bool): True, False, or None (last uses WRAP item in version)
-            STRT (float): optional override to automatic calculation using
-                the first index curve value.
-            STOP (float): optional override to automatic calculation using
-                the last index curve value.
-            STEP (float): optional override to automatic calculation using
-                the first step size in the index curve.
-            fmt (str): format string for numerical data being written to data
-                section.
+            file_ref (open file-like object or str): a file-like object opening
+                for writing, or a filename.
+    
+        All ``**kwargs`` are passed to :func:`lasio.writer.write` -- please
+        check the docstring of that function for more keyword arguments you can
+        use here!
 
         Examples:
 
             >>> with open('test_output.las', mode='w') as f:
-            ...     lasfile_obj.write(f, 2.0)   # <-- this method
+            ...     lasfile_obj.write(f, version=2.0)   # <-- this method
 
         '''
         opened_file = False
-        if isinstance(file_obj, basestring) and not hasattr(file_obj, "write"):
+        if isinstance(file_ref, basestring) and not hasattr(file_ref, "write"):
             opened_file = True
-            file_obj = open(file_obj, "w")
-        writer.write(self, file_obj, version=version, wrap=wrap,
-                     STRT=STRT, STOP=STOP, STEP=STEP, fmt=fmt)
+            file_ref = open(file_ref, "w")
+        writer.write(self, file_ref, **kwargs)
         if opened_file:
-            file_obj.close()
+            file_ref.close()
+
+    def to_excel(self, filename):
+        '''Export LAS file to a Microsoft Excel workbook.
+
+        This function will raise an :exc:`ImportError` if ``openpyxl`` is not
+        installed.
+
+        Arguments:
+            filename (str)
+
+        '''
+        from . import excel
+        converter = excel.ExcelConverter(self)
+        converter.write(filename)
 
     def match_raw_section(self, pattern, re_func="match", flags=re.IGNORECASE):
         '''Find raw section with a regular expression.
