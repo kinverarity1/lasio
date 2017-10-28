@@ -45,7 +45,7 @@ URL_REGEXP = re.compile(
 
 
 def open_file(file_ref, encoding=None, encoding_errors='replace',
-              autodetect_encoding=False, autodetect_encoding_chars=40e3):
+              autodetect_encoding=True, autodetect_encoding_chars=40e3):
     '''Open a file if necessary.
 
     If ``autodetect_encoding=True`` then either ``cchardet`` or ``chardet``
@@ -60,7 +60,9 @@ def open_file(file_ref, encoding=None, encoding_errors='replace',
         encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
             handle errors with encodings (see standard library codecs module or
             Python Unicode HOWTO for more information)
-        autodetect_encoding (bool): use chardet/ccharet to detect encoding
+        autodetect_encoding (str or bool): default True to use chardet/ccharet
+            to detect encoding. Note if set to False several common encodings
+            will be tried but chardet won't be used.
         autodetect_encoding_chars (int/None): number of chars to read from LAS
             file for auto-detection of encoding.
 
@@ -112,8 +114,8 @@ def open_with_codecs(filename, encoding, encoding_errors,
         encoding (str): encoding - can be None
         encoding_errors (str): unicode error handling - can be 'strict',
             'ignore', 'replace'
-        autodetect_encoding (str): auto-detection of character encoding - can
-            be either 'chardet', 'cchardet', or True
+        autodetect_encoding (str or bool): auto-detection of character encoding
+            - can be 'chardet', 'cchardet', True, or False
         nbytes (int): number of characters for read for auto-detection
 
     Returns:
@@ -131,24 +133,7 @@ def open_with_codecs(filename, encoding, encoding_errors,
         encoding = 'utf-8-sig'
         autodetect_encoding = False
 
-    # And if no BOM & autodetect_encoding=False
-    if (not encoding) and (not autodetect_encoding):
-        test_encodings = ['windows-1252', 'latin-1',  'ascii']
-        for i in test_encodings:
-            encoding = i
-            with open(filename, mode='r', encoding=encoding) as f:
-                try:
-                    if nbytes:
-                        f.read(nbytes)
-                    else:
-                        f.readline()
-                    break
-                except UnicodeDecodeError:
-                    logger.debug('{} tested, raised UnicodeDecodeError'.format(encoding))
-                    pass
-                encoding = None
-
-    # Otherwise...
+    # If BOM wasn't found...
     if autodetect_encoding:
         with open(filename, mode='rb') as test:
             if nbytes is None:
@@ -156,10 +141,33 @@ def open_with_codecs(filename, encoding, encoding_errors,
             else:
                 raw = test.read(nbytes)
         encoding = get_encoding(autodetect_encoding, raw)
+        autodetect_encoding = False
+
+    # Or if no BOM found & chardet not installed
+    if (not encoding) and (not autodetect_encoding):
+        encoding = adhoc_test_encoding(filename)
+        if encoding:
+            logger.info('{} was found by ad hoc to work but note it might not'
+                       ' be the correct encoding'.format(encoding))
 
     # Now open and return the file-like object
     return codecs.open(filename, mode='r', encoding=encoding,
                        errors=encoding_errors)
+
+
+def adhoc_test_encoding(filename):
+    test_encodings = ['ascii', 'windows-1252', 'latin-1']
+    for i in test_encodings:
+        encoding = i
+        with open(filename, mode='r', encoding=encoding) as f:
+            try:
+                f.readline()
+                break
+            except UnicodeDecodeError:
+                logger.debug('{} tested, raised UnicodeDecodeError'.format(i))
+                pass
+            encoding = None
+    return encoding
 
 
 def get_encoding(auto, raw):
@@ -168,7 +176,7 @@ def get_encoding(auto, raw):
 
     Arguments:
         auto (str): auto-detection of character encoding - can be either
-            'chardet', 'cchardet', or True
+            'chardet', 'cchardet', True, or False
         raw (bytes): array of bytes to detect from
 
     Returns:
@@ -182,9 +190,10 @@ def get_encoding(auto, raw):
             try:
                 import chardet
             except ImportError:
-                raise ImportError(
-                    'chardet or cchardet is required for automatic'
-                    ' detection of character encodings.')
+                logger.debug('chardet or cchardet is recommended for automatic'
+                    ' detection of character encodings. Instead trying some'
+                    ' common encodings.')
+                return None
             else:
                 logger.debug('get_encoding Using chardet')
                 method = 'chardet'
@@ -199,7 +208,6 @@ def get_encoding(auto, raw):
         import cchardet as chardet
         logger.debug('get_encoding Using cchardet')
         method = 'cchardet'
-
     result = chardet.detect(raw)
     logger.debug('get_encoding %s results=%s' % (method, result))
     return result['encoding']
