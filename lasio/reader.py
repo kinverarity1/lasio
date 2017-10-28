@@ -44,8 +44,7 @@ URL_REGEXP = re.compile(
     r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 
-def open_file(file_ref, encoding=None, encoding_errors='replace',
-              autodetect_encoding=True, autodetect_encoding_chars=40e3):
+def open_file(file_ref, **encoding_kwargs):
     '''Open a file if necessary.
 
     If ``autodetect_encoding=True`` then either ``cchardet`` or ``chardet``
@@ -55,16 +54,8 @@ def open_file(file_ref, encoding=None, encoding_errors='replace',
         file_ref (file-like object, str): either a filename, an open file
             object, or a string containing the contents of a file.
 
-    Keyword Arguments:
-        encoding (str): character encoding to open file_ref with
-        encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
-            handle errors with encodings (see :py:mod:`codecs` module or
-            Python Unicode HOWTO for more information)
-        autodetect_encoding (str or bool): default True to use chardet/ccharet
-            to detect encoding. Note if set to False several common encodings
-            will be tried but chardet won't be used.
-        autodetect_encoding_chars (int/None): number of chars to read from LAS
-            file for auto-detection of encoding.
+    See :func:`lasio.reader.open_with_codecs` for keyword arguments that can be
+    used here.
 
     Returns:
         An open file-like object ready for reading from.
@@ -86,9 +77,7 @@ def open_file(file_ref, encoding=None, encoding_errors='replace',
         elif len(lines) > 1: # it's LAS data as a string.
             file_ref = StringIO(file_ref)
         else:  # it must be a filename
-            file_ref = open_with_codecs(first_line, encoding, encoding_errors,
-                                        autodetect_encoding,
-                                        autodetect_encoding_chars)
+            file_ref = open_with_codecs(first_line, **encoding_kwargs)
 
     # If file_ref was:
     #  - a file-like object, nothing happens and it is returned
@@ -101,32 +90,42 @@ def open_file(file_ref, encoding=None, encoding_errors='replace',
     return file_ref
 
 
-def open_with_codecs(filename, encoding, encoding_errors,
-                     autodetect_encoding, nbytes):
+def open_with_codecs(filename, encoding=None, encoding_errors='replace',
+              autodetect_encoding=True, autodetect_encoding_chars=4000):
     '''
     Read Unicode data from file.
 
     Arguments:
         filename (str): path to file
-        encoding (str): encoding for :py:func:`codecs.open` - can be ``None``
-        encoding_errors (str): unicode error handling - can be 'strict',
-            'ignore', 'replace'
-        autodetect_encoding (str or bool): default True to use chardet/ccharet
-            to detect encoding. Note if set to False several common encodings
-            will be tried but chardet won't be used.
-        nbytes (int): number of characters for read for auto-detection
+
+    Keyword Arguments:
+        encoding (str): character encoding to open file_ref with, using
+            :func:`codecs.open`.
+        encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
+            handle errors with encodings (see
+            `this section 
+            <https://docs.python.org/3/library/codecs.html#codec-base-classes>`__
+            of the standard library's :mod:`codecs` module for more information)
+        autodetect_encoding (str or bool): default True to use 
+            `chardet <https://github.com/chardet/chardet>`__/`cchardet 
+            <https://github.com/PyYoshi/cChardet>`__ to detect encoding. 
+            Note if set to False several common encodings will be tried but 
+            chardet won't be used.
+        autodetect_encoding_chars (int/None): number of chars to read from LAS
+            file for auto-detection of encoding.
 
     Returns:
         a unicode or string object
 
-    See :func:`lasio.reader.open_file` for more explanation, as most users will
-    be using that function, not this one.
+    This function is used exclusively by :func:`lasio.reader.open_file`.
 
     '''
-    if nbytes:
-        nbytes = int(nbytes)
+    if autodetect_encoding_chars:
+        nbytes = int(autodetect_encoding_chars)
+    else:
+        nbytes = None
 
-    # Forget chardet - if we can locate the BOM we just assume that's correct.
+    # Forget [c]chardet - if we can locate the BOM we just assume that's correct.
     nbytes_test = min(32, os.path.getsize(filename))
     with open(filename, mode='rb') as test:
         raw = test.read(nbytes_test)
