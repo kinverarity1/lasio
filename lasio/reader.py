@@ -63,8 +63,6 @@ def open_file(file_ref, encoding=None, encoding_errors='replace',
         autodetect_encoding (str or bool): default True to use chardet/ccharet
             to detect encoding. Note if set to False several common encodings
             will be tried but chardet won't be used.
-        autodetect_encoding (str, bool): auto-detection of character encoding - can
-            be either 'chardet', 'cchardet', or True
         autodetect_encoding_chars (int/None): number of chars to read from LAS
             file for auto-detection of encoding.
 
