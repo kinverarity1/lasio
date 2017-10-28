@@ -111,8 +111,9 @@ def open_with_codecs(filename, encoding, encoding_errors,
         encoding (str): encoding for :py:func:`codecs.open` - can be ``None``
         encoding_errors (str): unicode error handling - can be 'strict',
             'ignore', 'replace'
-        autodetect_encoding (str or bool): auto-detection of character encoding
-            - can be 'chardet', 'cchardet', True, or False
+        autodetect_encoding (str or bool): default True to use chardet/ccharet
+            to detect encoding. Note if set to False several common encodings
+            will be tried but chardet won't be used.
         nbytes (int): number of characters for read for auto-detection
 
     Returns:
