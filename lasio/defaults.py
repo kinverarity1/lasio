@@ -55,8 +55,10 @@ ORDER_DEFINITIONS = {
         ('Parameter', ['value:descr'])
     ])}
 
-FEET_UNITS = ("FT", "F", "FEET", "FOOT")
-METRE_UNITS = ("M", "METER", "METERS", "METRE", "METRES")
+DEPTH_UNITS = {
+    'FT': ("FT", "F", "FEET", "FOOT"),
+    'M': ("M", "METER", "METERS", "METRE", "METRES"),
+    }
 
 SUB_PATTERNS = [
     (re.compile(r'(\d)-(\d)'), r'\1 -\2'),
