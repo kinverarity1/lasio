@@ -57,37 +57,34 @@ def open_file(file_ref, **encoding_kwargs):
     See :func:`lasio.reader.open_with_codecs` for keyword arguments that can be
     used here.
 
-    Returns:
-        An open file-like object ready for reading from.
+    Returns: 
+        tuple of an open file-like object, and the encoding that
+        was used to decode it (if it were read from disk).
 
     '''
+    encoding = None
     if isinstance(file_ref, str): # file_ref != file-like object, so what is it?
         lines = file_ref.splitlines()
         first_line = lines[0]
         if URL_REGEXP.match(first_line): # it's a URL
+            logger.info('Loading URL {}'.format(first_line))
             try:
                 import urllib2
-                url_ref = urllib2.urlopen(first_line)
-                file_ref = StringIO(url_ref.read())
+                response = urllib2.urlopen(first_line)
+                encoding = response.headers.getparam('charset')
+                file_ref = StringIO(response.read())
+                logger.debug('Retrieved data had encoding {}'.format(encoding))
             except ImportError:
                 import urllib.request
                 response = urllib.request.urlopen(file_ref)
-                enc = response.headers.get_content_charset('utf-8')
+                encoding = response.headers.get_content_charset()
                 file_ref = StringIO(response.read().decode(enc))
+                logger.debug('Retrieved data decoded via {}'.format(encoding))
         elif len(lines) > 1: # it's LAS data as a string.
             file_ref = StringIO(file_ref)
         else:  # it must be a filename
-            file_ref = open_with_codecs(first_line, **encoding_kwargs)
-
-    # If file_ref was:
-    #  - a file-like object, nothing happens and it is returned
-    #    directly by this function.
-    #  - a filename, the encoding is detected and the file opened and returned
-    #  - a URI, a request is made and the content read and returned as a
-    #    file-like object using cStringIO
-    #  - a string, the string is returned as a file-like object using StringIO
-
-    return file_ref
+            file_ref, encoding = open_with_codecs(first_line, **encoding_kwargs)
+    return file_ref, encoding
 
 
 def open_with_codecs(filename, encoding=None, encoding_errors='replace',
@@ -142,24 +139,26 @@ def open_with_codecs(filename, encoding=None, encoding_errors='replace',
                 raw = test.read(nbytes)
         encoding = get_encoding(autodetect_encoding, raw)
         autodetect_encoding = False
-
     # Or if no BOM found & chardet not installed
-    if (not encoding) and (not autodetect_encoding):
+    elif (not encoding) and (not autodetect_encoding):
         encoding = adhoc_test_encoding(filename)
         if encoding:
             logger.info('{} was found by ad hoc to work but note it might not'
                        ' be the correct encoding'.format(encoding))
 
     # Now open and return the file-like object
-    return codecs.open(filename, mode='r', encoding=encoding,
-                       errors=encoding_errors)
+    logger.info('Opening {} as {} and treating errors with "{}"'.format(
+        filename, encoding, encoding_errors))
+    file_obj = codecs.open(filename, mode='r', encoding=encoding,
+        errors=encoding_errors)
+    return file_obj, encoding
 
 
 def adhoc_test_encoding(filename):
     test_encodings = ['ascii', 'windows-1252', 'latin-1']
     for i in test_encodings:
         encoding = i
-        with open(filename, mode='r', encoding=encoding) as f:
+        with codecs.open(filename, mode='r', encoding=encoding) as f:
             try:
                 f.readline()
                 break
@@ -210,7 +209,8 @@ def get_encoding(auto, raw):
         logger.debug('get_encoding Using cchardet')
         method = 'cchardet'
     result = chardet.detect(raw)
-    logger.debug('get_encoding %s results=%s' % (method, result))
+    logger.debug('{} method detected encoding of {} at confidence {}'.format(
+        method, result['encoding'], result['confidence']))
     return result['encoding']
 
 

@@ -54,6 +54,10 @@ class LASFile(object):
     * :meth:`lasio.las.LASFile.read` - control how NULL values and errors are
       handled during parsing
 
+    Attributes:
+        encoding (str or None): the character encoding used when reading the
+            file in from disk
+
     '''
 
     def __init__(self, file_ref=None, **read_kwargs):
@@ -92,7 +96,7 @@ class LASFile(object):
 
         '''
 
-        file_obj = reader.open_file(file_ref, **kwargs)
+        file_obj, self.encoding = reader.open_file(file_ref, **kwargs)
         self.raw_sections = reader.read_file_contents(
             file_obj, ignore_data=ignore_data)
         if hasattr(file_obj, "close"):
