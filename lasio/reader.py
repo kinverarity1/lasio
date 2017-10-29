@@ -117,7 +117,7 @@ def open_with_codecs(filename, encoding=None, encoding_errors='replace',
     Returns:
         a unicode or string object
 
-    This function is used exclusively by :func:`lasio.reader.open_file`.
+    This function is called by :func:`lasio.reader.open_file`.
 
     '''
     if autodetect_encoding_chars:
