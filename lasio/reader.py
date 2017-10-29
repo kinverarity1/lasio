@@ -78,7 +78,7 @@ def open_file(file_ref, **encoding_kwargs):
                 import urllib.request
                 response = urllib.request.urlopen(file_ref)
                 encoding = response.headers.get_content_charset()
-                file_ref = StringIO(response.read().decode(enc))
+                file_ref = StringIO(response.read().decode(encoding))
                 logger.debug('Retrieved data decoded via {}'.format(encoding))
         elif len(lines) > 1: # it's LAS data as a string.
             file_ref = StringIO(file_ref)
