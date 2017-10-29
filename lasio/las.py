@@ -201,16 +201,11 @@ class LASFile(object):
             for key in drop:
                 self.raw_sections.pop(key)
 
-        if (self.well['STRT'].unit.upper() in defaults.METRE_UNITS and
-                self.well['STOP'].unit.upper() in defaults.METRE_UNITS and
-                self.well['STEP'].unit.upper() in defaults.METRE_UNITS and
-                self.curves[0].unit.upper() in defaults.METRE_UNITS):
-            self.index_unit = 'M'
-        elif (self.well['STRT'].unit.upper() in defaults.FEET_UNITS and
-              self.well['STOP'].unit.upper() in defaults.FEET_UNITS and
-              self.well['STEP'].unit.upper() in defaults.FEET_UNITS and
-              self.curves[0].unit.upper() in defaults.FEET_UNITS):
-            self.index_unit = 'FT'
+        check_units_on = (self.well['STRT'], self.well['STOP'], 
+            self.well['STEP'], self.curves[0])
+        for index_unit, possibilities in defaults.DEPTH_UNITS.items():
+            if all(i.unit.upper() in possibilities for i in check_units_on):
+                self.index_unit = index_unit
 
     def write(self, file_ref, **kwargs):
         '''Write LAS file to disk.
