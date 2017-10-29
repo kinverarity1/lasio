@@ -52,7 +52,7 @@ class HeaderItem(OrderedDict):
         # to them. The result of this will be stored as the
         # HeaderItem.mnemonic attribute through the below method.
 
-        self.set_session_mnemonic_only(str(self.useful_mnemonic))
+        self.set_session_mnemonic_only(self.useful_mnemonic)
 
         self.unit = unit
         self.value = value

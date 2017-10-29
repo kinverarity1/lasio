@@ -44,87 +44,85 @@ URL_REGEXP = re.compile(
     r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
 
-def open_file(file_ref, encoding=None, encoding_errors='replace',
-              autodetect_encoding=False, autodetect_encoding_chars=40e3):
+def open_file(file_ref, **encoding_kwargs):
     '''Open a file if necessary.
 
     If ``autodetect_encoding=True`` then either ``cchardet`` or ``chardet``
     needs to be installed, or else an ``ImportError`` will be raised.
 
     Arguments:
-        file_ref (file-like object, str): either a filename, an open file 
+        file_ref (file-like object, str): either a filename, an open file
             object, or a string containing the contents of a file.
 
-    Keyword Arguments:
-        encoding (str): character encoding to open file_ref with
-        encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
-            handle errors with encodings (see :py:mod:`codecs` module or
-            Python Unicode HOWTO for more information)
-        autodetect_encoding (str, bool): auto-detection of character encoding - can
-            be either 'chardet', 'cchardet', or True
-        autodetect_encoding_chars (int/None): number of chars to read from LAS
-            file for auto-detection of encoding.
+    See :func:`lasio.reader.open_with_codecs` for keyword arguments that can be
+    used here.
 
     Returns: 
-        An open file-like object ready for reading from.
+        tuple of an open file-like object, and the encoding that
+        was used to decode it (if it were read from disk).
 
     '''
+    encoding = None
     if isinstance(file_ref, str): # file_ref != file-like object, so what is it?
         lines = file_ref.splitlines()
         first_line = lines[0]
         if URL_REGEXP.match(first_line): # it's a URL
+            logger.info('Loading URL {}'.format(first_line))
             try:
                 import urllib2
-                url_ref = urllib2.urlopen(first_line)
-                file_ref = StringIO(url_ref.read())
+                response = urllib2.urlopen(first_line)
+                encoding = response.headers.getparam('charset')
+                file_ref = StringIO(response.read())
+                logger.debug('Retrieved data had encoding {}'.format(encoding))
             except ImportError:
                 import urllib.request
                 response = urllib.request.urlopen(file_ref)
-                enc = response.headers.get_content_charset('utf-8')
-                file_ref = StringIO(response.read().decode(enc))
+                encoding = response.headers.get_content_charset()
+                file_ref = StringIO(response.read().decode(encoding))
+                logger.debug('Retrieved data decoded via {}'.format(encoding))
         elif len(lines) > 1: # it's LAS data as a string.
             file_ref = StringIO(file_ref)
         else:  # it must be a filename
-            file_ref = open_with_codecs(first_line, encoding, encoding_errors, 
-                                        autodetect_encoding, 
-                                        autodetect_encoding_chars)
-        
-    # If file_ref was:
-    #  - a file-like object, nothing happens and it is returned
-    #    directly by this function.
-    #  - a filename, the encoding is detected and the file opened and returned
-    #  - a URI, a request is made and the content read and returned as a 
-    #    file-like object using cStringIO
-    #  - a string, the string is returned as a file-like object using StringIO
-
-    return file_ref
+            file_ref, encoding = open_with_codecs(first_line, **encoding_kwargs)
+    return file_ref, encoding
 
 
-def open_with_codecs(filename, encoding, encoding_errors, 
-                     autodetect_encoding, nbytes):
+def open_with_codecs(filename, encoding=None, encoding_errors='replace',
+              autodetect_encoding=True, autodetect_encoding_chars=4000):
     '''
     Read Unicode data from file.
 
     Arguments:
         filename (str): path to file
-        encoding (str): encoding for :py:func:`codecs.open` - can be ``None``
-        encoding_errors (str): unicode error handling - can be 'strict', 
-            'ignore', 'replace'
-        autodetect_encoding (str): auto-detection of character encoding - can
-            be either 'chardet', 'cchardet', or True
-        nbytes (int): number of characters for read for auto-detection
+
+    Keyword Arguments:
+        encoding (str): character encoding to open file_ref with, using
+            :func:`codecs.open`.
+        encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
+            handle errors with encodings (see
+            `this section 
+            <https://docs.python.org/3/library/codecs.html#codec-base-classes>`__
+            of the standard library's :mod:`codecs` module for more information)
+        autodetect_encoding (str or bool): default True to use 
+            `chardet <https://github.com/chardet/chardet>`__/`cchardet 
+            <https://github.com/PyYoshi/cChardet>`__ to detect encoding. 
+            Note if set to False several common encodings will be tried but 
+            chardet won't be used.
+        autodetect_encoding_chars (int/None): number of chars to read from LAS
+            file for auto-detection of encoding.
 
     Returns:
         a unicode or string object
 
-    See :func:`lasio.reader.open_file` for more explanation, as most users will
-    be using that function, not this one.
+    This function is called by :func:`lasio.reader.open_file`.
 
     '''
-    if nbytes:
-        nbytes = int(nbytes)
+    if autodetect_encoding_chars:
+        nbytes = int(autodetect_encoding_chars)
+    else:
+        nbytes = None
 
-    # Forget chardet - if we can locate the BOM we just assume that's correct.
+    # Forget [c]chardet - if we can locate the BOM we just assume that's correct.
     nbytes_test = min(32, os.path.getsize(filename))
     with open(filename, mode='rb') as test:
         raw = test.read(nbytes_test)
@@ -132,18 +130,43 @@ def open_with_codecs(filename, encoding, encoding_errors,
         encoding = 'utf-8-sig'
         autodetect_encoding = False
 
-    # Otherwise...
-    if autodetect_encoding:
+    # If BOM wasn't found...
+    if (autodetect_encoding) and (not encoding):
         with open(filename, mode='rb') as test:
             if nbytes is None:
                 raw = test.read()
             else:
                 raw = test.read(nbytes)
         encoding = get_encoding(autodetect_encoding, raw)
+        autodetect_encoding = False
+    # Or if no BOM found & chardet not installed
+    elif (not encoding) and (not autodetect_encoding):
+        encoding = adhoc_test_encoding(filename)
+        if encoding:
+            logger.info('{} was found by ad hoc to work but note it might not'
+                       ' be the correct encoding'.format(encoding))
 
     # Now open and return the file-like object
-    return codecs.open(filename, mode='r', encoding=encoding, 
-                       errors=encoding_errors)
+    logger.info('Opening {} as {} and treating errors with "{}"'.format(
+        filename, encoding, encoding_errors))
+    file_obj = codecs.open(filename, mode='r', encoding=encoding,
+        errors=encoding_errors)
+    return file_obj, encoding
+
+
+def adhoc_test_encoding(filename):
+    test_encodings = ['ascii', 'windows-1252', 'latin-1']
+    for i in test_encodings:
+        encoding = i
+        with codecs.open(filename, mode='r', encoding=encoding) as f:
+            try:
+                f.readline()
+                break
+            except UnicodeDecodeError:
+                logger.debug('{} tested, raised UnicodeDecodeError'.format(i))
+                pass
+            encoding = None
+    return encoding
 
 
 def get_encoding(auto, raw):
@@ -152,8 +175,8 @@ def get_encoding(auto, raw):
 
     Arguments:
         auto (str): auto-detection of character encoding - can be either
-            'chardet', 'cchardet', or True (the latter will pick the fastest
-            available option)
+            'chardet', 'cchardet', False, or True (the latter will pick the
+            fastest available option)
         raw (bytes): array of bytes to detect from
 
     Returns:
@@ -167,9 +190,10 @@ def get_encoding(auto, raw):
             try:
                 import chardet
             except ImportError:
-                raise ImportError(
-                    'chardet or cchardet is required for automatic'
-                    ' detection of character encodings.')
+                logger.debug('chardet or cchardet is recommended for automatic'
+                    ' detection of character encodings. Instead trying some'
+                    ' common encodings.')
+                return None
             else:
                 logger.debug('get_encoding Using chardet')
                 method = 'chardet'
@@ -184,9 +208,9 @@ def get_encoding(auto, raw):
         import cchardet as chardet
         logger.debug('get_encoding Using cchardet')
         method = 'cchardet'
-
     result = chardet.detect(raw)
-    logger.debug('get_encoding %s results=%s' % (method, result))
+    logger.debug('{} method detected encoding of {} at confidence {}'.format(
+        method, result['encoding'], result['confidence']))
     return result['encoding']
 
 
@@ -213,7 +237,7 @@ def read_file_contents(file_obj, ignore_data=False):
          "lines": [str, ],           # a list of the lines from the lAS file
          "line_nos": [int, ]         # line nos from the original file
          }
-        
+
     or::
 
         {"section_type": "data",
@@ -228,7 +252,7 @@ def read_file_contents(file_obj, ignore_data=False):
     sect_lines = []
     sect_line_nos = []
     sect_title_line = None
-    
+
     for i, line in enumerate(file_obj):
         line = line.strip()
         if line.startswith('~A'):
@@ -274,7 +298,7 @@ def read_file_contents(file_obj, ignore_data=False):
                 sect_lines.append(line)
                 sect_line_nos.append(i + 1)
 
-    # Find the number of columns in the data section(s). This is only 
+    # Find the number of columns in the data section(s). This is only
     # useful if WRAP = NO, but we do it for all since we don't yet know
     # what the wrap setting is.
 
@@ -298,7 +322,7 @@ def read_data_section_iterative(file_obj, i):
             reading mode, with the last line read being the title of the
             ~ASCII data section.
 
-    Returns: 
+    Returns:
         A 1-D numpy ndarray.
 
     '''
@@ -316,7 +340,7 @@ def parse_header_section(sectdict, version, ignore_header_errors=False):
     '''Parse a header section dict into a SectionItems containing HeaderItems.
 
     Arguments:
-        sectdict (dict): object returned from 
+        sectdict (dict): object returned from
             :func:`lasio.reader.read_file_contents`
         version (float): either 1.2 or 2.0
 
@@ -343,7 +367,7 @@ def parse_header_section(sectdict, version, ignore_header_errors=False):
             message = "Line #%d - failed in %s section on line:\n%s%s" % (
                 j, title, line,
                 traceback.format_exc().splitlines()[-1])
-            
+
             if ignore_header_errors:
                 logger.warning(message)
             else:
@@ -381,7 +405,7 @@ class SectionParser(object):
         elif title.upper().startswith('~V'):
             self.func = self.metadata
             self.section_name2 = "Version"
-            
+
 
         self.version = version
         self.section_name = title
@@ -402,7 +426,7 @@ class SectionParser(object):
         :meth:`lasio.reader.SectionParser.curves` for the methods actually
         used by this routine.
 
-        Keyword arguments should be the key:value pairs returned by 
+        Keyword arguments should be the key:value pairs returned by
         :func:`lasio.reader.read_header_line`.
 
         '''
@@ -438,7 +462,7 @@ class SectionParser(object):
         '''Return HeaderItem correctly formatted according to the order
         prescribed for LAS v 1.2 or 2.0 for the ~W section.
 
-        Keyword arguments should be the key:value pairs returned by 
+        Keyword arguments should be the key:value pairs returned by
         :func:`lasio.reader.read_header_line`.
 
         '''
@@ -461,7 +485,7 @@ class SectionParser(object):
     def curves(self, **keys):
         '''Return CurveItem.
 
-        Keyword arguments should be the key:value pairs returned by 
+        Keyword arguments should be the key:value pairs returned by
         :func:`lasio.reader.read_header_line`.
 
         '''
@@ -476,7 +500,7 @@ class SectionParser(object):
     def params(self, **keys):
         '''Return HeaderItem for ~P section (the same between 1.2 and 2.0 specs)
 
-        Keyword arguments should be the key:value pairs returned by 
+        Keyword arguments should be the key:value pairs returned by
         :func:`lasio.reader.read_header_line`.
 
         '''
@@ -527,4 +551,3 @@ def read_header_line(line, pattern=None):
             if d[key].endswith('.'):
                 d[key] = d[key].strip('.')  # see issue #36
     return d
-

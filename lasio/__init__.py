@@ -30,8 +30,14 @@ def read(file_ref, **kwargs):
     Returns: 
         A LASFile object representing the file -- see above
 
-    See :meth:`lasio.las.LASFile.read` and :meth:`lasio.reader.open_file` for
-    keyword arguments you can use here.
+    There are a number of optional keyword arguments that can be passed to this
+    function that control how the LAS file is opened and parsed. Any of the
+    keyword arguments from the below functions can be used here:
+
+    * :func:`lasio.reader.open_with_codecs` - manage issues relate to character
+      encodings
+    * :meth:`lasio.las.LASFile.read` - control how NULL values and errors are
+      handled during parsing
 
     '''
     return LASFile(file_ref, **kwargs)

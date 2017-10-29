@@ -46,12 +46,21 @@ class LASFile(object):
         file_ref (file-like object, str): either a filename, an open file 
             object, or a string containing the contents of a file.
 
-    See :meth:`lasio.las.LASFile.read` and :func:`lasio.reader.open_file` for
-    additional keyword arguments you can use here.
+    See these routines for additional keyword arguments you can use when
+    reading in a LAS file:
+
+    * :func:`lasio.reader.open_with_codecs` - manage issues relate to character
+      encodings
+    * :meth:`lasio.las.LASFile.read` - control how NULL values and errors are
+      handled during parsing
+
+    Attributes:
+        encoding (str or None): the character encoding used when reading the
+            file in from disk
 
     '''
 
-    def __init__(self, file_ref=None, **kwargs):
+    def __init__(self, file_ref=None, **read_kwargs):
 
         self._text = ''
         self.index_unit = None
@@ -65,7 +74,7 @@ class LASFile(object):
         }
 
         if not (file_ref is None):
-            self.read(file_ref, **kwargs)
+            self.read(file_ref, **read_kwargs)
 
     def read(self, file_ref, null_subs=True, ignore_data=False, 
              ignore_header_errors=False, **kwargs):
@@ -82,12 +91,12 @@ class LASFile(object):
             ignore_header_errors (bool): ignore LASHeaderErrors (False by 
                 default)
 
-        See :func:`lasio.reader.open_file` for additional keyword arguments you
-        can use here.
+        See :func:`lasio.reader.open_with_codecs` for additional keyword
+        arguments which help to manage issues relate to character encodings.
 
         '''
 
-        file_obj = reader.open_file(file_ref, **kwargs)
+        file_obj, self.encoding = reader.open_file(file_ref, **kwargs)
         self.raw_sections = reader.read_file_contents(
             file_obj, ignore_data=ignore_data)
         if hasattr(file_obj, "close"):
