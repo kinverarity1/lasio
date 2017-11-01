@@ -109,7 +109,8 @@ def main():
 
 
 def get_parser():
-    parser = argparse.ArgumentParser('Convert LAS file to XLSX')
+    parser = argparse.ArgumentParser('Convert LAS file to XLSX', 
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('LAS_filename')
     parser.add_argument('XLSX_filename')
     return parser
@@ -138,9 +139,10 @@ def main_bulk():
 
 
 def get_bulk_parser():
-    parser = argparse.ArgumentParser('Convert LAS files')
-    parser.add_argument('-g', '--glob', default='*.las')
-    parser.add_argument('-r', '--recursive', action='store_true')
+    parser = argparse.ArgumentParser('Convert LAS files to XLSX', 
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-g', '--glob', default='*.las', help='Match LAS files with this pattern')
+    parser.add_argument('-r', '--recursive', action='store_true', help='Recurse through subfolders.')
     parser.add_argument('path')
     return parser
 
