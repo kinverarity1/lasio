@@ -1,6 +1,8 @@
 import argparse
 import glob
+import os
 import sys
+import traceback
 
 import numpy
 import openpyxl
@@ -115,17 +117,31 @@ def get_parser():
 
 def main_bulk():
     args = get_bulk_parser().parse_args(sys.argv[1:])
-    for lasfn in glob.glob(args.glob):
-        xlsxfn = lasfn.replace('.las', '.xlsx')
-        print('%s -> %s' % (lasfn, xlsxfn))
-        l = las.LASFile(lasfn)
-        converter = ExcelConverter(l)
-        converter.write(xlsxfn)
+    paths = []
+    if args.recursive:
+        for dirpath, dirnames, filenames in os.walk(args.path):
+            paths.append(dirpath)
+    else:
+        paths.append(args.path)
+
+    for path in paths:
+        for lasfn in glob.glob(os.path.join(path, args.glob)):
+            xlsxfn = lasfn.lower().replace('.las', '.xlsx')
+            print('Converting %s -> %s' % (lasfn, xlsxfn))
+            try:
+                l = las.LASFile(lasfn)
+                converter = ExcelConverter(l)
+                converter.write(xlsxfn)
+            except:
+                print('Failed to convert file. Error message:\n'
+                    + traceback.format_exc())
 
 
 def get_bulk_parser():
     parser = argparse.ArgumentParser('Convert LAS files')
-    parser.add_argument('--glob', default='*.las')
+    parser.add_argument('-g', '--glob', default='*.las')
+    parser.add_argument('-r', '--recursive', action='store_true')
+    parser.add_argument('path')
     return parser
 
 if __name__ == '__main__':
