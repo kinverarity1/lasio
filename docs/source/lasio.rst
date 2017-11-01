@@ -1,5 +1,5 @@
-lasio package
-=============
+``lasio`` docstrings
+====================
 
 Module contents
 ---------------

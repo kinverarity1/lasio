@@ -7,6 +7,7 @@
    :maxdepth: 2
 
    basic-example
+   excel
    lasio
 
 * :ref:`genindex`
