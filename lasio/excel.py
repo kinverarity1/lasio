@@ -130,7 +130,7 @@ def main_bulk():
             xlsxfn = lasfn.lower().replace('.las', '.xlsx')
             print('Converting %s -> %s' % (lasfn, xlsxfn))
             try:
-                l = las.LASFile(lasfn)
+                l = las.LASFile(lasfn, ignore_header_errors=args.ignore_header_errors)
                 converter = ExcelConverter(l)
                 converter.write(xlsxfn)
             except:
@@ -142,7 +142,8 @@ def get_bulk_parser():
     parser = argparse.ArgumentParser('Convert LAS files to XLSX', 
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-g', '--glob', default='*.las', help='Match LAS files with this pattern')
-    parser.add_argument('-r', '--recursive', action='store_true', help='Recurse through subfolders.')
+    parser.add_argument('-r', '--recursive', action='store_true', help='Recurse through subfolders.', default=False)
+    parser.add_argument('-i', '--ignore-header-errors', action='store_true', help='Ignore header section errors.', default=False)
     parser.add_argument('path')
     return parser
 

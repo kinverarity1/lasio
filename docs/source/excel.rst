@@ -44,8 +44,8 @@ The better script to use is ``las2excelbulk``:
 
 .. code-block:: doscon
 
-    (py36) C:\Users\kinverarity\Documents\scratch2017\November>las2excelbulk --help
-    usage: Convert LAS files to XLSX [-h] [-g GLOB] [-r] path
+    (py36) C:\Windows\System32>las2excelbulk --help
+    usage: Convert LAS files to XLSX [-h] [-g GLOB] [-r] [-i] path
 
     positional arguments:
       path
@@ -54,10 +54,11 @@ The better script to use is ``las2excelbulk``:
       -h, --help            show this help message and exit
       -g GLOB, --glob GLOB  Match LAS files with this pattern (default: *.las)
       -r, --recursive       Recurse through subfolders. (default: False)
+      -i, --ignore-header-errors
+                            Ignore header section errors. (default: False)
 
 Here is the command to create Excel versions of all the LAS files contained within the folder
-``test_folder``, and any sub-folders. Any errors encountered in reading a LAS file are reported 
-but then skipped over.
+``test_folder``, and any sub-folders:
 
 .. code-block:: doscon
 
@@ -146,3 +147,54 @@ but then skipped over.
     Converting test_folder\-3068\6812\3068HYD.LAS -> test_folder\-3068\6812\3068hyd.xlsx
     Converting test_folder\-3068\6812\66303068.LAS -> test_folder\-3068\6812\66303068.xlsx
 
+Notice that some LAS files raised exceptions (in this case, ``ValueError``) and were not converted. In some cases these will relate to errors in the header sections:
+
+.. code-block:: doscon
+
+    (py36) Q:\>las2excelbulk.exe -r .
+    Converting .\4424\PN31769.LAS -> .\4424\pn31769.xlsx
+    Converting .\4424\PN31769L.LAS -> .\4424\pn31769l.xlsx
+    Converting .\4424\PN31769R.LAS -> .\4424\pn31769r.xlsx
+    Converting .\4428\pn31769.las -> .\4428\pn31769.xlsx
+    Failed to convert file. Error message:
+    Traceback (most recent call last):
+      File "c:\program files (x86)\misc\kentcode\lasio\lasio\reader.py", line 366, in parse_header_section
+        values = read_line(line)
+      File "c:\program files (x86)\misc\kentcode\lasio\lasio\reader.py", line 522, in read_line
+        return read_header_line(*args, **kwargs)
+      File "c:\program files (x86)\misc\kentcode\lasio\lasio\reader.py", line 548, in read_header_line
+        mdict = m.groupdict()
+    AttributeError: 'NoneType' object has no attribute 'groupdict'
+
+    During handling of the above exception, another exception occurred:
+
+    Traceback (most recent call last):
+      File "c:\program files (x86)\misc\kentcode\lasio\lasio\excel.py", line 133, in main_bulk
+        l = las.LASFile(lasfn, ignore_header_errors=args.ignore_header_errors)
+      File "c:\program files (x86)\misc\kentcode\lasio\lasio\las.py", line 77, in __init__
+        self.read(file_ref, **read_kwargs)
+      File "c:\program files (x86)\misc\kentcode\lasio\lasio\las.py", line 156, in read
+        ignore_header_errors=ignore_header_errors)
+      File "c:\program files (x86)\misc\kentcode\lasio\lasio\las.py", line 110, in add_section
+        **sect_kws)
+      File "c:\program files (x86)\misc\kentcode\lasio\lasio\reader.py", line 375, in parse_header_section
+        raise exceptions.LASHeaderError(message)
+    lasio.exceptions.LASHeaderError: Line #21 - failed in ~Well Information section on line:
+    PN        PERMIT NUMBER: 31769AttributeError: 'NoneType' object has no attribute 'groupdict'
+
+    Converting .\4526\PENRICE.LAS -> .\4526\penrice.xlsx
+
+But in this case I'm happy to lose that single corrupted line in the header in the conversion. In order to force lasio to ignore the error and continue to convert the file, use the ``--ignore-header-errors`` flag (``-i`` for short):
+
+.. code-block:: doscon
+
+    (py36) Q:\>las2excelbulk.exe -r -i .
+    Converting .\4424\PN31769.LAS -> .\4424\pn31769.xlsx
+    Converting .\4424\PN31769L.LAS -> .\4424\pn31769l.xlsx
+    Converting .\4424\PN31769R.LAS -> .\4424\pn31769r.xlsx
+    Converting .\4428\pn31769.las -> .\4428\pn31769.xlsx
+    Line #21 - failed in ~Well Information section on line:
+    PN        PERMIT NUMBER: 31769AttributeError: 'NoneType' object has no attribute 'groupdict'
+    Converting .\4526\PENRICE.LAS -> .\4526\penrice.xlsx
+
+lasio still reports the problem, but ignores it and continues the conversion of the file.
