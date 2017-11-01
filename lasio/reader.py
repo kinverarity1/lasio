@@ -139,8 +139,9 @@ def open_with_codecs(filename, encoding=None, encoding_errors='replace',
                 raw = test.read(nbytes)
         encoding = get_encoding(autodetect_encoding, raw)
         autodetect_encoding = False
+        
     # Or if no BOM found & chardet not installed
-    elif (not encoding) and (not autodetect_encoding):
+    if (not autodetect_encoding) and (not encoding):
         encoding = adhoc_test_encoding(filename)
         if encoding:
             logger.info('{} was found by ad hoc to work but note it might not'
