@@ -4,11 +4,12 @@
 `Project home page with tutorials <https://github.com/kinverarity1/lasio>`__
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 5
 
    basic-example
-   excel
+   pandas
    writing
+   excel
    lasio
 
 * :ref:`genindex`

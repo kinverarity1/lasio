@@ -1,5 +1,5 @@
-``lasio`` docstrings
-====================
+Docstrings for the lasio package
+================================
 
 Module contents
 ---------------

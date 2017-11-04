@@ -4,7 +4,7 @@ Writing LAS files
 Any LASFile object can be written to a new LAS file using the
 :meth:`lasio.LASFile.write` method.
 
-Converting between v1.2 and v2.0 
+Converting between v1.2 and v2.0
 --------------------------------
 
 Take this sample LAS 2.0 file:
@@ -15,18 +15,18 @@ Take this sample LAS 2.0 file:
     ~VERSION INFORMATION
      VERS.                          2.0 :   CWLS LOG ASCII STANDARD -VERSION 2.0
      WRAP.                          NO  :   ONE LINE PER DEPTH STEP
-    ~WELL INFORMATION 
+    ~WELL INFORMATION
     #MNEM.UNIT              DATA                       DESCRIPTION
     #----- -----            ----------               -------------------------
     STRT    .M              1670.0000                :START DEPTH
     STOP    .M              1660.0000                :STOP DEPTH
-    STEP    .M              -0.1250                  :STEP 
+    STEP    .M              -0.1250                  :STEP
     NULL    .               -999.25                  :NULL VALUE
     COMP    .       ANY OIL COMPANY INC.             :COMPANY
     WELL    .       AAAAA_2            :WELL
     FLD     .       WILDCAT                          :FIELD
     LOC     .       12-34-12-34W5M                   :LOCATION
-    PROV    .       ALBERTA                          :PROVINCE 
+    PROV    .       ALBERTA                          :PROVINCE
     SRVC    .       ANY LOGGING COMPANY INC.         :SERVICE COMPANY
     DATE    .       13-DEC-86                        :LOG DATE
     UWI     .       100123401234W500                 :UNIQUE WELL ID
@@ -53,7 +53,7 @@ Take this sample LAS 2.0 file:
      RMF    .OHMM           0.2160          :   MUD FILTRATE RESISTIVITY
      DFD    .K/M3           1525.0000       :   DRILL FLUID DENSITY
     ~OTHER
-         Note: The logging tools became stuck at 625 metres causing the data 
+         Note: The logging tools became stuck at 625 metres causing the data
          between 625 metres and 615 metres to be invalid.
     ~A  DEPTH     DT    RHOB        NPHI   SFLU    SFLA      ILM      ILD
     1670.000   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
@@ -116,7 +116,7 @@ And we can use ``lasio`` to convert it to LAS 1.2:
 Converting between wrapped/unwrapped
 ------------------------------------
 
-Here is an example using this file to convert a wrapped data section to 
+Here is an example using this file to convert a wrapped data section to
 unwrapped.
 
 .. code-block:: none
@@ -245,9 +245,9 @@ lines:
     VERS. 1.2 : CWLS LOG ASCII STANDARD - VERSION 1.2
     WRAP.  NO : Multiple lines per depth step
     ~Well ------------------------------------------------------
-    STRT.M          910.0 : 
-    STOP.M          909.5 : 
-    STEP.M         -0.125 : 
+    STRT.M          910.0 :
+    STOP.M          909.5 :
+    STEP.M         -0.125 :
     NULL.         -999.25 : Null value
     COMP.         COMPANY : ANY OIL COMPANY INC.
     WELL.            WELL : ANY ET AL XX-XX-XX-XX
@@ -257,7 +257,7 @@ lines:
     SRVC. SERVICE COMPANY : ANY LOGGING COMPANY INC.
     SON .   SERVICE ORDER : 142085
     DATE.        LOG DATE : 13-DEC-86
-    UWI .  UNIQUE WELL ID : 
+    UWI .  UNIQUE WELL ID :
     ~Curves ----------------------------------------------------
     DEPT.M     : Depth
     DT  .US/M  : 1 Sonic Travel Time
@@ -310,7 +310,7 @@ If we decide to write the file in LAS 2.0 format, the warnings will go away:
 
     In [23]: las.write('example-version-2.0.las', version=2.0)
 
-    In [24]: 
+    In [24]:
 
 .. code-block:: none
     :linenos:
@@ -319,9 +319,9 @@ If we decide to write the file in LAS 2.0 format, the warnings will go away:
     VERS. 2.0 : CWLS log ASCII Standard -VERSION 2.0
     WRAP.  NO : Multiple lines per depth step
     ~Well ------------------------------------------------------
-    STRT.M                   910.0 : 
-    STOP.M                   909.5 : 
-    STEP.M                  -0.125 : 
+    STRT.M                   910.0 :
+    STOP.M                   909.5 :
+    STEP.M                  -0.125 :
     NULL.                  -999.25 : Null value
     COMP.     ANY OIL COMPANY INC. : COMPANY
     WELL.    ANY ET AL XX-XX-XX-XX : WELL

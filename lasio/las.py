@@ -467,7 +467,7 @@ class LASFile(object):
         '''Set the LAS file data array.
 
         Arguments:
-            array_like (array_like): 2-D data array
+            array_like (array_like or :class:`pandas.DataFrame`): 2-D data array
 
         Keyword Arguments:
             names (list, optional): used to replace the names of the existing
@@ -475,8 +475,20 @@ class LASFile(object):
             truncate (bool): remove any columns which are not included in the
                 Curves (~C) section.
 
+        Note: you can pass a :class:`pandas.DataFrame` to this method.
+
         '''
+        try:
+            import pandas as pd
+        except ImportError:
+            pass
+        else:
+            if isinstance(array_like, pd.DataFrame):
+                return self.set_data_from_df(
+                    array_like, **dict(names=names, truncate=False))
+
         data = np.asarray(array_like)
+        logger.debug('set_data data.shape = {}'.format(data.shape))
         if truncate:
             data = data[:, len(self.curves)]
         else:
@@ -494,6 +506,7 @@ class LASFile(object):
                     self.curves.insert(i, curve)
                 curve.data = data[:, i]
         self.data = data
+        logger.debug('set_data self.data.shape = {}'.format(self.data.shape))
 
     def set_data_from_df(self, df, **kwargs):
         '''Set the LAS file data from a :class:`pandas.DataFrame`.
@@ -505,8 +518,9 @@ class LASFile(object):
 
         '''
         df_values = np.vstack([df.index.values, df.values.T]).T
-        names = [df.index.name] + [str(name) for name in df.columns.values]
-        self.set_data(df_values, names=names, **kwargs)
+        if (not 'names' in kwargs) or (not kwargs['names']):
+            kwargs['names'] = [df.index.name] + [str(name) for name in df.columns.values]
+        self.set_data(df_values, **kwargs)
 
     @property
     def index(self):

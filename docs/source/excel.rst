@@ -3,15 +3,94 @@ Exporting LAS files to Excel
 
 You can easily convert LAS files into Excel, retaining the header information.
 
-There are two scripts:
+Export
+------
 
-1. ``las2excel`` - very simple conversion of one file
-2. ``las2excelbulk`` - with options for pattern matching and recursing into subfolders.
+Take this example LAS file:
 
-Basic example
--------------
+.. code-block:: none
+    :linenos:
 
-For a simple `example LAS file <https://raw.githubusercontent.com/kinverarity1/lasio/master/tests/examples/sample.las>`__:
+    ~VERSION INFORMATION
+     VERS.                  1.2:   CWLS LOG ASCII STANDARD -VERSION 1.2
+     WRAP.                  NO:   ONE LINE PER DEPTH STEP
+    ~WELL INFORMATION BLOCK
+    #MNEM.UNIT       DATA TYPE    INFORMATION
+    #---------    -------------   ------------------------------
+     STRT.M        1670.000000:
+     STOP.M        1660.000000:
+     STEP.M            -0.1250:
+     NULL.           -999.2500:
+     COMP.             COMPANY:   # ANY OIL COMPANY LTD.
+     WELL.                WELL:   ANY ET AL OIL WELL #12
+     FLD .               FIELD:   EDAM
+     LOC .            LOCATION:   A9-16-49-20W3M
+     PROV.            PROVINCE:   SASKATCHEWAN
+     SRVC.     SERVICE COMPANY:   ANY LOGGING COMPANY LTD.
+     DATE.            LOG DATE:   25-DEC-1988
+     UWI .      UNIQUE WELL ID:   100091604920W300
+    ~CURVE INFORMATION
+    #MNEM.UNIT      API CODE      CURVE DESCRIPTION
+    #---------    -------------   ------------------------------
+     DEPT.M                      :  1  DEPTH
+     DT  .US/M             :  2  SONIC TRANSIT TIME
+     RHOB.K/M3                   :  3  BULK DENSITY
+     NPHI.V/V                    :  4   NEUTRON POROSITY
+     SFLU.OHMM                   :  5  RXO RESISTIVITY
+     SFLA.OHMM                   :  6  SHALLOW RESISTIVITY
+     ILM .OHMM                   :  7  MEDIUM RESISTIVITY
+     ILD .OHMM                   :  8  DEEP RESISTIVITY
+    ~PARAMETER INFORMATION
+    #MNEM.UNIT        VALUE       DESCRIPTION
+    #---------    -------------   ------------------------------
+     BHT .DEGC         35.5000:   BOTTOM HOLE TEMPERATURE
+     BS  .MM          200.0000:   BIT SIZE
+     FD  .K/M3       1000.0000:   FLUID DENSITY
+     MATR.              0.0000:   NEUTRON MATRIX(0=LIME,1=SAND,2=DOLO)
+     MDEN.           2710.0000:   LOGGING MATRIX DENSITY
+     RMF .OHMM          0.2160:   MUD FILTRATE RESISTIVITY
+     DFD .K/M3       1525.0000:   DRILL FLUID DENSITY
+    ~Other
+         Note: The logging tools became stuck at 625 meters causing the data
+         between 625 meters and 615 meters to be invalid.
+    ~A  DEPTH     DT       RHOB     NPHI     SFLU     SFLA      ILM      ILD
+    1670.000   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
+    1669.875   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
+    1669.750   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
+
+If we are working in Python, you export like this:
+
+.. code-block:: ipython
+
+    In [56]: import lasio
+
+    In [58]: las = lasio.read('tests/examples/sample.las')
+
+    In [59]: las.to_excel('sample.xlsx')
+
+You will need to have `openpyxl <https://openpyxl.readthedocs.io/en/default/>`__
+installed (``$ pip install openpyxl``).
+
+Format of exported Excel file
+-----------------------------
+
+The exported spreadsheet has two sheets named "Header" and "Curves". The
+"Header" sheet has five columns named "Section", "Mnemonic", "Unit", "Value",
+and "Description", containing the information from all the sections in the
+header.
+
+.. image:: figures/excel_header.png
+
+The "Curves" sheet contains the data as a table, with the curve mnemonics as a
+header row.
+
+.. image:: figures/excel_curves.png
+
+Script interfaces
+-----------------
+
+Single file
+~~~~~~~~~~~
 
 .. code-block:: doscon
 
@@ -27,18 +106,8 @@ For a simple `example LAS file <https://raw.githubusercontent.com/kinverarity1/l
 
     (py36) C:\Program Files (x86)\Misc\kentcode\lasio>las2excel tests\examples\sample.las c:\users\kinverarity\Desktop\sample.xlsx
 
-The spreadsheet written to disk has two sheets named "Header" and "Curves". The "Header" sheet
-has five columns named "Section", "Mnemonic", "Unit", "Value", and "Description", containing
-the information from all the sections in the header.
-
-.. image:: figures/excel_header.png
-
-The "Curves" sheet contains the data as a table, with the curve mnemonics as a header row.
-
-.. image:: figures/excel_curves.png
-
 Multiple files (``las2excelbulk``)
-----------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The better script to use is ``las2excelbulk``:
 
