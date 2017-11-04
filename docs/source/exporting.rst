@@ -1,10 +1,67 @@
-Exporting LAS files to Excel
-============================
+Exporting LAS files
+===================
+
+The following examples all use ``sample.las``:
+
+.. code-block:: none
+    :linenos:
+
+CSV
+---
+
+LASFile objects can be converted to CSV files with a few options for how
+mnemonics and units are included (or not):
+
+.. code-block:: ipython
+
+    In [3]: import lasio
+
+    In [4]: las = lasio.read('tests/examples/sample.las')
+
+    In [6]: las.to_csv('sample.csv')
+
+.. code-block:: none
+    :linenos:
+
+    DEPT,DT,RHOB,NPHI,SFLU,SFLA,ILM,ILD
+    M,US/M,K/M3,V/V,OHMM,OHMM,OHMM,OHMM
+    1670.0,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
+    1669.875,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
+    1669.75,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
+
+There are options for putting the units together with mnemonics:
+
+.. code-block:: ipython
+
+    In [7]: las.to_csv('sample.csv', units_loc='[]')
+
+.. code-block:: none
+    :linenos:
+
+    DEPT [M],DT [US/M],RHOB [K/M3],NPHI [V/V],SFLU [OHMM],SFLA [OHMM],ILM [OHMM],ILD [OHMM]
+    1670.0,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
+    1669.875,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
+    1669.75,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
+
+Or leaving things out altogether:
+
+.. code-block:: ipython
+
+    In [11]: las.to_csv('sample.csv', mnemonics=False, units_loc=None)
+
+.. code-block:: none
+    :linenos:
+
+    1670.0,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
+    1669.875,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
+    1669.75,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
+    
+
+
+Excel
+-----
 
 You can easily convert LAS files into Excel, retaining the header information.
-
-Export
-------
 
 Take this example LAS file:
 
@@ -72,7 +129,7 @@ You will need to have `openpyxl <https://openpyxl.readthedocs.io/en/default/>`__
 installed (``$ pip install openpyxl``).
 
 Format of exported Excel file
------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
 The exported spreadsheet has two sheets named "Header" and "Curves". The
 "Header" sheet has five columns named "Section", "Mnemonic", "Unit", "Value",
@@ -87,10 +144,10 @@ header row.
 .. image:: figures/excel_curves.png
 
 Script interfaces
------------------
+~~~~~~~~~~~~~~~~~
 
 Single file
-~~~~~~~~~~~
+___________
 
 .. code-block:: doscon
 
@@ -107,7 +164,7 @@ Single file
     (py36) C:\Program Files (x86)\Misc\kentcode\lasio>las2excel tests\examples\sample.las c:\users\kinverarity\Desktop\sample.xlsx
 
 Multiple files (``las2excelbulk``)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+__________________________________
 
 The better script to use is ``las2excelbulk``:
 

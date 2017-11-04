@@ -37,7 +37,7 @@ files”).
    pandas
    header
    writing
-   excel
+   exporting
    building
    encodings
    contributing

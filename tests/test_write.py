@@ -379,7 +379,7 @@ between 625 meters and 615 meters to be invalid.
 
 def test_to_csv_units_None():
     las = read(egfn("sample.las"))
-    las.to_csv('test.csv', units=None)
+    las.to_csv('test.csv', units_loc=None)
     csv_output = open('test.csv', 'r').read()
     proof_output = open(egfn('sample.las_units-none.csv'), 'r').read()
     os.remove('test.csv')
@@ -387,7 +387,7 @@ def test_to_csv_units_None():
 
 def test_to_csv_units_line():
     las = read(egfn("sample.las"))
-    las.to_csv('test.csv', units='line')
+    las.to_csv('test.csv', units_loc='line')
     csv_output = open('test.csv', 'r').read()
     proof_output = open(egfn('sample.las_units-line.csv'), 'r').read()
     os.remove('test.csv')
@@ -395,7 +395,7 @@ def test_to_csv_units_line():
 
 def test_to_csv_units_parentheses():
     las = read(egfn("sample.las"))
-    las.to_csv('test.csv', units='()')
+    las.to_csv('test.csv', units_loc='()')
     csv_output = open('test.csv', 'r').read()
     proof_output = open(egfn('sample.las_units-parentheses.csv'), 'r').read()
     os.remove('test.csv')
@@ -403,7 +403,7 @@ def test_to_csv_units_parentheses():
 
 def test_to_csv_units_brackets():
     las = read(egfn("sample.las"))
-    las.to_csv('test.csv', units='[]')
+    las.to_csv('test.csv', units_loc='[]')
     csv_output = open('test.csv', 'r').read()
     proof_output = open(egfn('sample.las_units-brackets.csv'), 'r').read()
     os.remove('test.csv')
