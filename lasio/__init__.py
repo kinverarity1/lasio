@@ -9,7 +9,7 @@ except ImportError:
 else:
     from .excel import ExcelConverter
 
-__version__ = '0.14'
+__version__ = '0.15'
 
 
 def version():
