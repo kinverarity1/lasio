@@ -61,7 +61,7 @@ class LASFile(object):
     '''
 
     def __init__(self, file_ref=None, **read_kwargs):
-
+        super(LASFile, self).__init__()
         self._text = ''
         self.index_unit = None
         default_items = defaults.get_default_items()
