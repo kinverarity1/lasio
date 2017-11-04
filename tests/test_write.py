@@ -381,15 +381,31 @@ def test_to_csv_units_None():
     las = read(egfn("sample.las"))
     las.to_csv('test.csv', units=None)
     csv_output = open('test.csv', 'r').read()
-    proof_output = open('sample.las_units-none.csv', 'r').read()
+    proof_output = open(egfn('sample.las_units-none.csv'), 'r').read()
+    os.remove('test.csv')
     assert csv_output == proof_output
 
-def test_to_csv_units_none():
+def test_to_csv_units_line():
     las = read(egfn("sample.las"))
-    las.to_csv('test.csv', units='none')
+    las.to_csv('test.csv', units='line')
     csv_output = open('test.csv', 'r').read()
-    proof_output = open('sample.las_units-none.csv', 'r').read()
+    proof_output = open(egfn('sample.las_units-line.csv'), 'r').read()
+    os.remove('test.csv')
     assert csv_output == proof_output
 
+def test_to_csv_units_parentheses():
+    las = read(egfn("sample.las"))
+    las.to_csv('test.csv', units='()')
+    csv_output = open('test.csv', 'r').read()
+    proof_output = open(egfn('sample.las_units-parentheses.csv'), 'r').read()
+    os.remove('test.csv')
+    assert csv_output == proof_output
 
+def test_to_csv_units_brackets():
+    las = read(egfn("sample.las"))
+    las.to_csv('test.csv', units='[]')
+    csv_output = open('test.csv', 'r').read()
+    proof_output = open(egfn('sample.las_units-brackets.csv'), 'r').read()
+    os.remove('test.csv')
+    assert csv_output == proof_output
 
