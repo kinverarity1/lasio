@@ -2,7 +2,8 @@
 
 ![Status](https://img.shields.io/badge/status-beta-yellow.svg)
 [![License](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/kinverarity1/lasio/blob/master/LICENSE)
-[![Research software impact](http://depsy.org/api/package/pypi/lasio/badge.svg)](http://depsy.org/package/python/lasio)
+[![Python versions](https://img.shields.io/pypi/pyversions/lasio.svg)](https://www.python.org/downloads/)
+[![Build Status](https://travis-ci.org/kinverarity1/lasio.svg?branch=master)](https://travis-ci.org/kinverarity1/lasio)
 
 This is a Python 2/3 package to read and write Log ASCII Standard (LAS) files, used for borehole data such as geophysical, geological, or petrophysical logs. It's compatible with versions 1.2 and 2.0 of the LAS file specification, published by the [Canadian Well Logging Society](http://www.cwls.org/las). In principle it is designed to read as many types of LAS files as possible, including ones containing common errors or non-compliant formatting.
 
@@ -10,158 +11,98 @@ Depending on your particular application you may also want to check out  [stripl
 
 Note this is *not* a package for reading LiDAR data (also called "LAS files").
 
-- Docstring documentation is available at [Read The Docs](https://lasio.readthedocs.io/en/latest/)
+## Documentation
 
-## Installation
+See here for [complete lasio package documentation](https://lasio.readthedocs.io/en/latest/).
 
-[![Python versions](https://img.shields.io/pypi/pyversions/lasio.svg)](https://www.python.org/downloads/)
-[![PyPI version](http://img.shields.io/pypi/v/lasio.svg)](https://pypi.python.org/pypi/lasio/)
-[![PyPI format](https://img.shields.io/pypi/format/lasio.svg)](https://pypi.python.org/pypi/lasio/)
+## Quick start
 
-lasio is written to be compatible with Python 2.6+, and 3.2+. To install run:
+Install the usual way:
 
 ```bash
 $ pip install lasio
 ```
 
-This will download and install lasio's dependencies ([numpy](http://numpy.org/) and [ordereddict](https://pypi.python.org/pypi/ordereddict)). There are some other packages which lasio will use to provide extra functionality if they are installed ([pandas](https://pypi.python.org/pypi/pandas), [cChardet](https://github.com/PyYoshi/cChardet) and/or [chardet](https://github.com/chardet/chardet), [openpyxl](https://openpyxl.readthedocs.io/en/default/), and [argparse](https://github.com/ThomasWaldmann/argparse/)). I recommend installing these too with:
-
-```bash
-$ pip install -r optional-packages.txt
-```
-
-## Usage
-
-Take a look through the [example Jupyter notebooks](http://nbviewer.ipython.org/github/kinverarity1/lasio/tree/master/notebooks) (or if that is down [try here](https://github.com/kinverarity1/lasio/tree/master/notebooks)) for detailed examples of how to use lasio
-
-Thanks to [@roliveira](https://github.com/roliveira) you can also explore [lasio tutorial notebooks](https://github.com/roliveira/lasio-notebooks) live in your browser at [binder](http://mybinder.org/repo/roliveira/lasio-notebooks): [![Binder](http://mybinder.org/badge.svg)](http://mybinder.org/repo/roliveira/lasio-notebooks) 
-
-Or as a quick example:
+Very quick example session:
 
 ```python
 >>> import lasio
->>> l = lasio.read("sample_big.las")
+>>> las = lasio.read("sample_big.las")
 ```
 
 Data is accessible both directly as numpy arrays
 
 ```python
->>> l["SFLU"]
+>>> las.keys()
+['DEPT', 'DT', 'RHOB', 'NPHI', 'SFLU', 'SFLA', 'ILM', 'ILD']
+>>> las['SFLU']
 array([ 123.45,  123.45,  123.45, ...,  123.45,  123.45,  123.45])
->>> l["DEPT"]
-array([ 1670.   ,  1669.875,  1669.75 , ...,  1669.75 ,  1670.   , 1669.875])
+>>> las['DEPT']
+array([ 1670.   ,  1669.875,  1669.75 , ...,  1669.75 ,  1670.   ,
+        1669.875])
 ```
 
-and as ``Curve`` objects with their associated metadata:
+and as ``CurveItem`` objects with associated metadata:
 
 ```python
->>> l.curves
-[Curve(mnemonic=u'DEPT', unit=u'M', value=u'', descr=u'1  DEPTH', data=array([ 1670.   ,  1669.875,  1669.75 , ...,  1669.75 ,  1670.   , 1669.875])),
- Curve(mnemonic=u'DT', unit=u'US/M', value=u'', descr=u'2  SONIC TRANSIT TIME', data=array([ 123.45,  123.45,  123.45, ...,  123.45,  123.45,  123.45])),
- Curve(mnemonic=u'RHOB', unit=u'K/M3', value=u'', descr=u'3  BULK DENSITY', data=array([ 2550.,  2550.,  2550., ...,  2550.,  2550.,  2550.])),
- Curve(mnemonic=u'NPHI', unit=u'V/V', value=u'', descr=u'4   NEUTRON POROSITY', data=array([ 0.45,  0.45,  0.45, ...,  0.45,  0.45,  0.45])),
- Curve(mnemonic=u'SFLU', unit=u'OHMM', value=u'', descr=u'5  RXO RESISTIVITY', data=array([ 123.45,  123.45,  123.45, ...,  123.45,  123.45,  123.45])),
- Curve(mnemonic=u'SFLA', unit=u'OHMM', value=u'', descr=u'6  SHALLOW RESISTIVITY', data=array([ 123.45,  123.45,  123.45, ...,  123.45,  123.45,  123.45])),
- Curve(mnemonic=u'ILM', unit=u'OHMM', value=u'', descr=u'7  MEDIUM RESISTIVITY', data=array([ 110.2,  110.2,  110.2, ...,  110.2,  110.2,  110.2])),
- Curve(mnemonic=u'ILD', unit=u'OHMM', value=u'', descr=u'8  DEEP RESISTIVITY', data=array([ 105.6,  105.6,  105.6, ...,  105.6,  105.6,  105.6]))]
+>>> las.curves
+[CurveItem(mnemonic=DEPT, unit=M, value=, descr=1  DEPTH, original_mnemonic=DEPT, data.shape=(29897,)), 
+CurveItem(mnemonic=DT, unit=US/M, value=, descr=2  SONIC TRANSIT TIME, original_mnemonic=DT, data.shape=(29897,)), 
+CurveItem(mnemonic=RHOB, unit=K/M3, value=, descr=3  BULK DENSITY, original_mnemonic=RHOB, data.shape=(29897,)), 
+CurveItem(mnemonic=NPHI, unit=V/V, value=, descr=4   NEUTRON POROSITY, original_mnemonic=NPHI, data.shape=(29897,)), 
+CurveItem(mnemonic=SFLU, unit=OHMM, value=, descr=5  RXO RESISTIVITY, original_mnemonic=SFLU, data.shape=(29897,)), 
+CurveItem(mnemonic=SFLA, unit=OHMM, value=, descr=6  SHALLOW RESISTIVITY, original_mnemonic=SFLA, data.shape=(29897,)), 
+CurveItem(mnemonic=ILM, unit=OHMM, value=, descr=7  MEDIUM RESISTIVITY, original_mnemonic=ILM, data.shape=(29897,)), 
+CurveItem(mnemonic=ILD, unit=OHMM, value=, descr=8  DEEP RESISTIVITY, original_mnemonic=ILD, data.shape=(29897,))]
 ```
 
 Header information is parsed into simple HeaderItem objects, and stored in a dictionary for each section of the header:
 
 ```python
->>> l.version
-{'VERS': HeaderItem(mnemonic=u'VERS', unit=u'', value=1.2, descr=u'CWLS LOG ASCII STANDARD -VERSION 1.2'),
- 'WRAP': HeaderItem(mnemonic=u'WRAP', unit=u'', value=u'NO', descr=u'ONE LINE PER DEPTH STEP')}
->>> l.well
-{'STRT': HeaderItem(mnemonic=u'STRT', unit=u'M', value=1670.0, descr=u''),
- 'STOP': HeaderItem(mnemonic=u'STOP', unit=u'M', value=1660.0, descr=u''),
- 'STEP': HeaderItem(mnemonic=u'STEP', unit=u'M', value=-0.125, descr=u''),
- 'NULL': HeaderItem(mnemonic=u'NULL', unit=u'', value=-999.25, descr=u''),
- 'COMP': HeaderItem(mnemonic=u'COMP', unit=u'', value=u'ANY OIL COMPANY LTD.', descr=u'COMPANY'),
- 'WELL': HeaderItem(mnemonic=u'WELL', unit=u'', value=u'ANY ET AL OIL WELL #12', descr=u'WELL'),
- 'FLD': HeaderItem(mnemonic=u'FLD', unit=u'', value=u'EDAM', descr=u'FIELD'),
- 'LOC': HeaderItem(mnemonic=u'LOC', unit=u'', value=u'A9-16-49-20W3M', descr=u'LOCATION'),
- 'PROV': HeaderItem(mnemonic=u'PROV', unit=u'', value=u'SASKATCHEWAN', descr=u'PROVINCE'),
- 'SRVC': HeaderItem(mnemonic=u'SRVC', unit=u'', value=u'ANY LOGGING COMPANY LTD.', descr=u'SERVICE COMPANY'),
- 'DATE': HeaderItem(mnemonic=u'DATE', unit=u'', value=u'25-DEC-1988', descr=u'LOG DATE'),
- 'UWI': HeaderItem(mnemonic=u'UWI', unit=u'', value=u'100091604920W300', descr=u'UNIQUE WELL ID')}
->>> l.params
-{'BHT': HeaderItem(mnemonic=u'BHT', unit=u'DEGC', value=35.5, descr=u'BOTTOM HOLE TEMPERATURE'),
- 'BS': HeaderItem(mnemonic=u'BS', unit=u'MM', value=200.0, descr=u'BIT SIZE'),
- 'FD': HeaderItem(mnemonic=u'FD', unit=u'K/M3', value=1000.0, descr=u'FLUID DENSITY'),
- 'MATR': HeaderItem(mnemonic=u'MATR', unit=u'', value=0.0, descr=u'NEUTRON MATRIX(0=LIME,1=SAND,2=DOLO)'),
- 'MDEN': HeaderItem(mnemonic=u'MDEN', unit=u'', value=2710.0, descr=u'LOGGING MATRIX DENSITY'),
- 'RMF': HeaderItem(mnemonic=u'RMF', unit=u'OHMM', value=0.216, descr=u'MUD FILTRATE RESISTIVITY'),
- 'DFD': HeaderItem(mnemonic=u'DFD', unit=u'K/M3', value=1525.0, descr=u'DRILL FLUID DENSITY')}
+>>> las.version
+[HeaderItem(mnemonic=VERS, unit=, value=1.2, descr=CWLS LOG ASCII STANDARD -VERSION 1.2, original_mnemonic=VERS), 
+HeaderItem(mnemonic=WRAP, unit=, value=NO, descr=ONE LINE PER DEPTH STEP, original_mnemonic=WRAP)]
+>>> las.well
+[HeaderItem(mnemonic=STRT, unit=M, value=1670.0, descr=, original_mnemonic=STRT), 
+HeaderItem(mnemonic=STOP, unit=M, value=1660.0, descr=, original_mnemonic=STOP), 
+HeaderItem(mnemonic=STEP, unit=M, value=-0.125, descr=, original_mnemonic=STEP), 
+HeaderItem(mnemonic=NULL, unit=, value=-999.25, descr=, original_mnemonic=NULL), 
+HeaderItem(mnemonic=COMP, unit=, value=ANY OIL COMPANY LTD., descr=COMPANY, original_mnemonic=COMP), 
+HeaderItem(mnemonic=WELL, unit=, value=ANY ET AL OIL WELL #12, descr=WELL, original_mnemonic=WELL), 
+HeaderItem(mnemonic=FLD, unit=, value=EDAM, descr=FIELD, original_mnemonic=FLD), 
+HeaderItem(mnemonic=LOC, unit=, value=A9-16-49-20W3M, descr=LOCATION, original_mnemonic=LOC), 
+HeaderItem(mnemonic=PROV, unit=, value=SASKATCHEWAN, descr=PROVINCE, original_mnemonic=PROV), 
+HeaderItem(mnemonic=SRVC, unit=, value=ANY LOGGING COMPANY LTD., descr=SERVICE COMPANY, original_mnemonic=SRVC), 
+HeaderItem(mnemonic=DATE, unit=, value=25-DEC-1988, descr=LOG DATE, original_mnemonic=DATE), 
+HeaderItem(mnemonic=UWI, unit=, value=100091604920W300, descr=UNIQUE WELL ID, original_mnemonic=UWI)]
+>>> las.params
+[HeaderItem(mnemonic=BHT, unit=DEGC, value=35.5, descr=BOTTOM HOLE TEMPERATURE, original_mnemonic=BHT), 
+HeaderItem(mnemonic=BS, unit=MM, value=200.0, descr=BIT SIZE, original_mnemonic=BS), 
+HeaderItem(mnemonic=FD, unit=K/M3, value=1000.0, descr=FLUID DENSITY, original_mnemonic=FD), 
+HeaderItem(mnemonic=MATR, unit=, value=0.0, descr=NEUTRON MATRIX(0=LIME,1=SAND,2=DOLO), original_mnemonic=MATR), 
+HeaderItem(mnemonic=MDEN, unit=, value=2710.0, descr=LOGGING MATRIX DENSITY, original_mnemonic=MDEN), 
+HeaderItem(mnemonic=RMF, unit=OHMM, value=0.216, descr=MUD FILTRATE RESISTIVITY, original_mnemonic=RMF), 
+HeaderItem(mnemonic=DFD, unit=K/M3, value=1525.0, descr=DRILL FLUID DENSITY, original_mnemonic=DFD)]
 ```
 
-You can also [build LAS files from scratch](https://github.com/kinverarity1/lasio/blob/master/notebooks/build%20LAS%20file%20from%20scratch.ipynb).
-
-### Character encodings
-
-Three options:
-
-- Do nothing and hope for no errors.
-- Specify the encoding (internally lasio uses the [open function from codecs](https://docs.python.org/2/library/codecs.html#codecs.open) which is part of the standard library):
+The data is stored as 2D numpy array:
 
 ```python
->>> l = lasio.read("example.las", encoding="windows-1252")
+>>> las.data
+array([[ 1670.   ,   123.45 ,  2550.   , ...,   123.45 ,   110.2  ,   105.6  ],
+       [ 1669.875,   123.45 ,  2550.   , ...,   123.45 ,   110.2  ,   105.6  ],
+       [ 1669.75 ,   123.45 ,  2550.   , ...,   123.45 ,   110.2  ,   105.6  ],
+       ...,
+       [ 1669.75 ,   123.45 ,  2550.   , ...,   123.45 ,   110.2  ,   105.6  ],
+       [ 1670.   ,   123.45 ,  2550.   , ...,   123.45 ,   110.2  ,   105.6  ],
+       [ 1669.875,   123.45 ,  2550.   , ...,   123.45 ,   110.2  ,   105.6  ]])
 ```
 
-- Install a third-party package like [cChardet](https://github.com/PyYoshi/cChardet) (faster) or [chardet](https://pypi.python.org/pypi/chardet) (slower) to automatically detect the character encoding. If these packages are installed this code will use whichever is faster:
+You can also retrieve and load data as a ``pandas`` DataFrame, build LAS files from scratch, 
+write them back to disc, and export to Excel, amongst other things.
 
-```python
->>> l = lasio.read("example.las", autodetect_encoding=True)
-```
+See the [documentation](https://lasio.readthedocs.io/en/latest/) for more details.
 
-Note that by default ``autodetect_encoding=False``.
+## License
 
-## Development
-
-[![Coverage](https://coveralls.io/repos/kinverarity1/lasio/badge.svg?branch=master&service=github)](https://coveralls.io/github/kinverarity1/lasio?branch=master)
-[![Codacy Badge](https://api.codacy.com/project/badge/grade/252911a940b7476d9d7c4450d4045370)](https://www.codacy.com/app/kinverarity/lasio)
-[![Scrutinizer](https://scrutinizer-ci.com/g/kinverarity1/lasio/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/kinverarity1/lasio/#)
-[![Quantified Code](https://www.quantifiedcode.com/api/v1/project/82d62106077f4c44a353c311984930d6/badge.svg)](https://www.quantifiedcode.com/app/project/82d62106077f4c44a353c311984930d6)
-[![Waffle Stories in Ready](https://badge.waffle.io/kinverarity1/lasio.png?label=ready&title=Ready)](http://waffle.io/kinverarity1/lasio)
-
-Any help is welcome and appreciated! Please see the [contribution guide](https://github.com/kinverarity1/lasio/blob/master/CONTRIBUTING.md) for more information.
-
-New releases are frequently sent to [PyPI](https://pypi.python.org/pypi/lasio). See the [list of changes](https://github.com/kinverarity1/lasio/blob/master/CHANGELOG.md) for each released version. If you want to stay updated:
-
-```bash
-$ pip install --upgrade lasio
-```
-
-The latest development version is also "safe" to use, as it is continuously tested. To install the development version use:
-
-```bash
-$ git clone https://github.com/kinverarity1/lasio.git
-$ cd lasio
-$ python setup.py develop
-```
-
-And to update to the latest version:
-
-```bash
-$ git pull origin master
-```
-
-### Testing
-
-[![Build Status](https://travis-ci.org/kinverarity1/lasio.svg?branch=master)](https://travis-ci.org/kinverarity1/lasio)
-
-Every time lasio is updated, all the automated tests are run at [Travis CI](https://travis-ci.org/kinverarity1/lasio) against Python versions 2.7, 3.3, 3.4, 3.5, and 3.6. lasio should also work on Python 2.6 and 3.2, but these are tested only occassionally.
-
-To run tests yourself, first install the testing framework and all the optional packages:
-
-```bash
-$ pip install pytest
-$ pip install -r optional-packages.txt
-```
-
-And then run tests:
-
-```bash
-$ py.test
-```
-
+MIT
