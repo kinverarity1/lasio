@@ -376,3 +376,52 @@ between 625 meters and 615 meters to be invalid.
  1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
  1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
 '''
+
+def test_to_csv_units_None():
+    las = read(egfn("sample.las"))
+    las.to_csv('test.csv', units_loc=None)
+    csv_output = open('test.csv', 'r').readlines()
+    proof_output = open(egfn('sample.las_units-none.csv'), 'r').readlines()
+    os.remove('test.csv')
+    assert csv_output[0] == proof_output[0]
+    # assert csv_output[1] == proof_output[1]
+
+def test_to_csv_units_line():
+    las = read(egfn("sample.las"))
+    las.to_csv('test.csv', units_loc='line')
+    csv_output = open('test.csv', 'r').readlines()
+    proof_output = open(egfn('sample.las_units-line.csv'), 'r').readlines()
+    os.remove('test.csv')
+    assert csv_output[0] == proof_output[0]
+    assert csv_output[1] == proof_output[1]
+
+def test_to_csv_units_parentheses():
+    las = read(egfn("sample.las"))
+    las.to_csv('test.csv', units_loc='()')
+    csv_output = open('test.csv', 'r').readlines()
+    proof_output = open(egfn('sample.las_units-parentheses.csv'), 'r').readlines()
+    os.remove('test.csv')
+    assert csv_output[0] == proof_output[0]
+
+def test_to_csv_units_brackets():
+    las = read(egfn("sample.las"))
+    las.to_csv('test.csv', units_loc='[]')
+    csv_output = open('test.csv', 'r').readlines()
+    proof_output = open(egfn('sample.las_units-brackets.csv'), 'r').readlines()
+    os.remove('test.csv')
+    assert csv_output[0] == proof_output[0]
+    # assert csv_output[1] == proof_output[1]
+
+def test_to_csv_specify_mnemonics():
+    las = read(egfn("sample.las"))
+    las.to_csv('test.csv', mnemonics=[str(i) for i in range(len(las.curves))])
+    csv_output = open('test.csv', 'r').readlines()
+    assert csv_output[0] == '0,1,2,3,4,5,6,7\n'
+    os.remove('test.csv')
+
+def test_to_csv_specify_units():
+    las = read(egfn("sample.las"))
+    las.to_csv('test.csv', units=[str(i) for i in range(len(las.curves))])
+    csv_output = open('test.csv', 'r').readlines()
+    assert csv_output[1] == '0,1,2,3,4,5,6,7\n'
+    os.remove('test.csv')

@@ -1,10 +1,115 @@
-Exporting LAS files to Excel
-============================
+Exporting to other formats
+======================================
+
+The following examples all use ``sample.las``:
+
+.. code-block:: none
+    :linenos:
+
+    ~VERSION INFORMATION
+     VERS.                  1.2:   CWLS LOG ASCII STANDARD -VERSION 1.2
+     WRAP.                  NO:   ONE LINE PER DEPTH STEP
+    ~WELL INFORMATION BLOCK
+    #MNEM.UNIT       DATA TYPE    INFORMATION
+    #---------    -------------   ------------------------------
+     STRT.M        1670.000000:
+     STOP.M        1660.000000:
+     STEP.M            -0.1250:
+     NULL.           -999.2500:
+     COMP.             COMPANY:   # ANY OIL COMPANY LTD.
+     WELL.                WELL:   ANY ET AL OIL WELL #12
+     FLD .               FIELD:   EDAM
+     LOC .            LOCATION:   A9-16-49-20W3M
+     PROV.            PROVINCE:   SASKATCHEWAN
+     SRVC.     SERVICE COMPANY:   ANY LOGGING COMPANY LTD.
+     DATE.            LOG DATE:   25-DEC-1988
+     UWI .      UNIQUE WELL ID:   100091604920W300
+    ~CURVE INFORMATION
+    #MNEM.UNIT      API CODE      CURVE DESCRIPTION
+    #---------    -------------   ------------------------------
+     DEPT.M                      :  1  DEPTH
+     DT  .US/M               :  2  SONIC TRANSIT TIME
+     RHOB.K/M3                   :  3  BULK DENSITY
+     NPHI.V/V                    :  4   NEUTRON POROSITY
+     SFLU.OHMM                   :  5  RXO RESISTIVITY
+     SFLA.OHMM                   :  6  SHALLOW RESISTIVITY
+     ILM .OHMM                   :  7  MEDIUM RESISTIVITY
+     ILD .OHMM                   :  8  DEEP RESISTIVITY
+    ~PARAMETER INFORMATION
+    #MNEM.UNIT        VALUE       DESCRIPTION
+    #---------    -------------   ------------------------------
+     BHT .DEGC         35.5000:   BOTTOM HOLE TEMPERATURE
+     BS  .MM          200.0000:   BIT SIZE
+     FD  .K/M3       1000.0000:   FLUID DENSITY
+     MATR.              0.0000:   NEUTRON MATRIX(0=LIME,1=SAND,2=DOLO)
+     MDEN.           2710.0000:   LOGGING MATRIX DENSITY
+     RMF .OHMM          0.2160:   MUD FILTRATE RESISTIVITY
+     DFD .K/M3       1525.0000:   DRILL FLUID DENSITY
+    ~Other
+         Note: The logging tools became stuck at 625 meters causing the data
+           between 625 meters and 615 meters to be invalid.
+    ~A  DEPTH     DT       RHOB     NPHI     SFLU     SFLA      ILM      ILD
+    1670.000   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
+    1669.875   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
+    1669.750   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
+
+
+Comma-separated values (CSV)
+----------------------------
+
+LASFile objects can be converted to CSV files with a few options for how
+mnemonics and units are included (or not). It uses the
+:meth:`lasio.LASFile.to_csv` method.
+
+.. code-block:: ipython
+
+    In [3]: import lasio
+
+    In [4]: las = lasio.read('tests/examples/sample.las')
+
+    In [6]: las.to_csv('sample.csv')
+
+.. code-block:: none
+    :linenos:
+
+    DEPT,DT,RHOB,NPHI,SFLU,SFLA,ILM,ILD
+    M,US/M,K/M3,V/V,OHMM,OHMM,OHMM,OHMM
+    1670.0,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
+    1669.875,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
+    1669.75,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
+
+There are options for putting the units together with mnemonics:
+
+.. code-block:: ipython
+
+    In [7]: las.to_csv('sample.csv', units_loc='[]')
+
+.. code-block:: none
+    :linenos:
+
+    DEPT [M],DT [US/M],RHOB [K/M3],NPHI [V/V],SFLU [OHMM],SFLA [OHMM],ILM [OHMM],ILD [OHMM]
+    1670.0,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
+    1669.875,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
+    1669.75,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
+
+Or leaving things out altogether:
+
+.. code-block:: ipython
+
+    In [11]: las.to_csv('sample.csv', mnemonics=False, units=False)
+
+.. code-block:: none
+    :linenos:
+
+    1670.0,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
+    1669.875,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
+    1669.75,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
+    
+
+Excel spreadsheet (XLSX)
+------------------------
 
 You can easily convert LAS files into Excel, retaining the header information.
-
-Export
-------
 
 Take this example LAS file:
 
@@ -72,7 +177,7 @@ You will need to have `openpyxl <https://openpyxl.readthedocs.io/en/default/>`__
 installed (``$ pip install openpyxl``).
 
 Format of exported Excel file
------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
 
 The exported spreadsheet has two sheets named "Header" and "Curves". The
 "Header" sheet has five columns named "Section", "Mnemonic", "Unit", "Value",
@@ -87,10 +192,10 @@ header row.
 .. image:: figures/excel_curves.png
 
 Script interfaces
------------------
+~~~~~~~~~~~~~~~~~
 
 Single file
-~~~~~~~~~~~
+___________
 
 .. code-block:: doscon
 
@@ -107,7 +212,7 @@ Single file
     (py36) C:\Program Files (x86)\Misc\kentcode\lasio>las2excel tests\examples\sample.las c:\users\kinverarity\Desktop\sample.xlsx
 
 Multiple files (``las2excelbulk``)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+__________________________________
 
 The better script to use is ``las2excelbulk``:
 

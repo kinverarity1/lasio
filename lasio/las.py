@@ -2,6 +2,7 @@ from __future__ import print_function
 
 # Standard library packages
 import codecs
+import csv
 import json
 import logging
 import os
@@ -254,6 +255,58 @@ class LASFile(object):
         from . import excel
         converter = excel.ExcelConverter(self)
         converter.write(filename)
+
+    def to_csv(self, file_ref, mnemonics=True, units=True, units_loc='line', **kwargs):
+        '''Export to a CSV file.
+
+        Arguments:
+            file_ref (open file-like object or str): a file-like object opening
+                for writing, or a filename.
+
+        Keyword Arguments:
+            mnemonics (list, True, False): write mnemonics as a header line at the
+                start. If list, use the supplied items as mnemonics. If True,
+                use the curve mnemonics.
+            units (list, True, False): as for mnemonics.
+            units_loc (str or None): either 'line', '[]' or '()'. 'line' will put
+                units on the line following the mnemonics (good for WellCAD). 
+                '[]' and '()' will put the units in either brackets or 
+                parentheses following the mnemonics, on the single header line
+                (better for Excel)
+            **kwargs: passed to :class:`csv.writer`. Note that if
+                ``lineterminator`` is **not** specified here, then it will be
+                sent to :class:`csv.writer` as ``lineterminator='\\n'``.
+
+        '''
+        opened_file = False
+        if isinstance(file_ref, basestring) and not hasattr(file_ref, "write"):
+            opened_file = True
+            file_ref = open(file_ref, "w")
+
+        if not 'lineterminator' in kwargs:
+            kwargs['lineterminator'] = '\n'
+        writer = csv.writer(file_ref, **kwargs)
+        
+        if mnemonics is True:
+            mnemonics = [c.original_mnemonic for c in self.curves]
+        if units is True:
+            units = [c.unit for c in self.curves]
+
+        if mnemonics:
+            if units_loc in ('()', '[]') and units:
+                mnemonics = [
+                    m + ' ' + units_loc[0] + u + units_loc[1] 
+                    for m, u in zip(mnemonics, units)]
+            writer.writerow(mnemonics)
+        if units:
+            if units_loc == 'line':
+                writer.writerow(units)
+
+        for i in range(self.data.shape[0]):
+            writer.writerow(self.data[i, :])
+        
+        if opened_file:
+            file_ref.close()
 
     def match_raw_section(self, pattern, re_func="match", flags=re.IGNORECASE):
         '''Find raw section with a regular expression.
