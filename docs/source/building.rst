@@ -1,7 +1,7 @@
 Building a LAS file from scratch
 ================================
 
-When you create LASFile from scratch, it comes with some default metadata:
+When you create a LASFile from scratch, it comes with some default metadata:
 
 .. code-block:: ipython
 
@@ -81,6 +81,9 @@ And write the result to files:
     In [15]: las.write('scratch_v2.las', version=2)
 
 Here is the resulting scratch_v1.2.las:
+
+.. code-block:: none
+    :linenos:
 
     ~Version ---------------------------------------------------
     VERS.   1.2 : CWLS LOG ASCII STANDARD - VERSION 1.2
@@ -194,6 +197,9 @@ Here is the resulting scratch_v1.2.las:
            49.5     8.6143
 
 and scratch_v2.las:
+
+.. code-block:: none
+    :linenos:
 
     ~Version ---------------------------------------------------
     VERS.   2.0 : CWLS log ASCII Standard -VERSION 2.0
