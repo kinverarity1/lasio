@@ -265,16 +265,14 @@ class LASFile(object):
 
         Keyword Arguments:
             mnemonics (bool): write mnemonics as a header line at the start.
-            units (str or None): if 'line', units will be written on the
-                line following the header. If '[]' or '()', units will be written
-                in brackets/parentheses after the mnemonics e.g.
-
-                    DEPT [m],TEMP [degC]
-                    0.05,17.35
-                    0.10,17.35
-
-        Further ``kwargs`` will be sent to :func:`csv.writer`. If it is not
-        specified here, ``lineterminator='\n'`` will be included.
+            units (str or None): either 'line', '[]' or '()'. 'line' will put
+                units on the line following the mnemonics (good for WellCAD). 
+                '[]' and '()' will put the units in either brackets or 
+                parentheses following the mnemonics, on the single header line
+                (better for Excel)
+            **kwargs: passed to :class:`csv.writer`. Note that if
+                ``lineterminator`` is **not** specified here, then it will be
+                sent to :class:`csv.writer` as ``lineterminator='\\n'``.
 
         '''
         opened_file = False
