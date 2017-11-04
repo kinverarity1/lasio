@@ -157,6 +157,7 @@ def write(las, file_object, version=None, wrap=None, STRT=None,
 
     file_object.write('\n'.join(lines))
     file_object.write('\n')
+    line_counter = len(lines)
 
     # data_arr = np.column_stack([c.data for c in las.curves])
     data_arr = las.data
@@ -172,6 +173,7 @@ def write(las, file_object, version=None, wrap=None, STRT=None,
             return spacer + str(n).rjust(l)
 
     twrapper = textwrap.TextWrapper(width=79)
+
     for i in range(nrows):
         depth_slice = ''
         for j in range(ncols):
@@ -183,15 +185,13 @@ def write(las, file_object, version=None, wrap=None, STRT=None,
                          (len(lines), depth_slice))
         else:
             lines = [depth_slice]
-
-        if las.version['VERS'].value == 1.2:
-            for line in lines:
-                if len(line) > 255:
-                    logger.warning(
-                        'LASFile.write Data line > 256 chars: %s' % line)
-
+                    
         for line in lines:
+            if las.version['VERS'].value == 1.2 and len(line) > 255:
+                logger.warning('[v1.2] line #{} has {} chars (>256)'.format(
+                    line_counter + 1, len(line)))
             file_object.write(line + '\n')
+            line_counter += 1
 
 
 def get_formatter_function(order, left_width=None, middle_width=None):

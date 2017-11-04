@@ -60,6 +60,13 @@ between 625 meters and 615 meters to be invalid.
 '''
 
 
+def test_write_to_filename():
+    las = read(egfn("sample_write_sect_widths_12.las"))
+    las.write('test.las', version=1.2)
+    assert os.path.isfile('test.las')
+    os.remove('test.las')
+
+
 def test_write_sect_widths_12_curves():
     l = read(egfn("sample_write_sect_widths_12.las"))
     s = StringIO()
