@@ -1,5 +1,21 @@
 # List of changes
 
+## Version 0.14
+
+- Major performance improvements with both memory and speed
+- Major improvement to read parser, now using iteration
+- Add ``LASFile.to_excel()`` and ``LASFile.to_csv()`` export methods
+- Improve ``las2excelbulk.py`` script
+- Published new and updated Sphinx documentation
+- Improved character encoding handling when ``chardet`` not installed
+- ``autodetect_encoding=True`` by default
+- Allow reading of multiple non-standard header sections (#167, #168)
+- Add flexibility in reading corrupted headers (``ignore_header_errors=True``)
+- Remove excessive debugging messages
+- Fix bug #164 where ``FEET`` was not recognised as ``FT``
+- Fix major globals() bug #141 affecting LASFile.add_curve
+- Add command-line version script ``$ lasio`` to show version number.
+
 ## Version 0.13
 
 - Other minor bug fixes inc inability to rename mnemonics in written LAS file.
