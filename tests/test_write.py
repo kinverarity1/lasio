@@ -409,3 +409,16 @@ def test_to_csv_units_brackets():
     os.remove('test.csv')
     assert csv_output == proof_output
 
+def test_to_csv_specify_mnemonics():
+    las = read(egfn("sample.las"))
+    las.to_csv('test.csv', mnemonics=[str(i) for i in range(len(las.curves))])
+    csv_output = open('test.csv', 'r').readlines()
+    assert csv_output[0] == '0,1,2,3,4,5,6,7\n'
+    os.remove('test.csv')
+
+def test_to_csv_specify_units():
+    las = read(egfn("sample.las"))
+    las.to_csv('test.csv', units=[str(i) for i in range(len(las.curves))])
+    csv_output = open('test.csv', 'r').readlines()
+    assert csv_output[1] == '0,1,2,3,4,5,6,7\n'
+    os.remove('test.csv')
