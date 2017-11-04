@@ -376,3 +376,20 @@ between 625 meters and 615 meters to be invalid.
  1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
  1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
 '''
+
+def test_to_csv_units_None():
+    las = read(egfn("sample.las"))
+    las.to_csv('test.csv', units=None)
+    csv_output = open('test.csv', 'r').read()
+    proof_output = open('sample.las_units-none.csv', 'r').read()
+    assert csv_output == proof_output
+
+def test_to_csv_units_none():
+    las = read(egfn("sample.las"))
+    las.to_csv('test.csv', units='none')
+    csv_output = open('test.csv', 'r').read()
+    proof_output = open('sample.las_units-none.csv', 'r').read()
+    assert csv_output == proof_output
+
+
+
