@@ -1,6 +1,6 @@
 # List of changes
 
-## Version 0.15
+## Version 0.15.1
 
 - Major performance improvements with both memory and speed
 - Major improvement to read parser, now using iteration
@@ -16,7 +16,7 @@
 - Fix major globals() bug #141 affecting LASFile.add_curve
 - Add command-line version script ``$ lasio`` to show version number.
 
-Version 0.14 skipped due to broken PyPI upload.
+Version 0.14 and 0.15 skipped due to broken PyPI upload.
 
 ## Version 0.13
 
