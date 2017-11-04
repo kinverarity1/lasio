@@ -13,7 +13,7 @@ Note this is *not* a package for reading LiDAR data (also called "LAS files").
 
 ## Documentation
 
-See here for [complete lasio package documentation](https://lasio.readthedocs.io/en/latest/).
+See here for the [complete lasio package documentation](https://lasio.readthedocs.io/en/latest/).
 
 ## Quick start
 
@@ -70,11 +70,11 @@ HeaderItem(mnemonic=NULL, unit=, value=-999.25, descr=, original_mnemonic=NULL),
 HeaderItem(mnemonic=COMP, unit=, value=ANY OIL COMPANY LTD., descr=COMPANY, original_mnemonic=COMP), 
 HeaderItem(mnemonic=WELL, unit=, value=ANY ET AL OIL WELL #12, descr=WELL, original_mnemonic=WELL), 
 HeaderItem(mnemonic=FLD, unit=, value=EDAM, descr=FIELD, original_mnemonic=FLD), 
-HeaderItem(mnemonic=LOC, unit=, value=A9-16-49-20W3M, descr=LOCATION, original_mnemonic=LOC), 
+HeaderItem(mnemonic=LOC, unit=, value=A9-16-49, descr=LOCATION, original_mnemonic=LOC), 
 HeaderItem(mnemonic=PROV, unit=, value=SASKATCHEWAN, descr=PROVINCE, original_mnemonic=PROV), 
 HeaderItem(mnemonic=SRVC, unit=, value=ANY LOGGING COMPANY LTD., descr=SERVICE COMPANY, original_mnemonic=SRVC), 
 HeaderItem(mnemonic=DATE, unit=, value=25-DEC-1988, descr=LOG DATE, original_mnemonic=DATE), 
-HeaderItem(mnemonic=UWI, unit=, value=100091604920W300, descr=UNIQUE WELL ID, original_mnemonic=UWI)]
+HeaderItem(mnemonic=UWI, unit=, value=100091604920, descr=UNIQUE WELL ID, original_mnemonic=UWI)]
 >>> las.params
 [HeaderItem(mnemonic=BHT, unit=DEGC, value=35.5, descr=BOTTOM HOLE TEMPERATURE, original_mnemonic=BHT), 
 HeaderItem(mnemonic=BS, unit=MM, value=200.0, descr=BIT SIZE, original_mnemonic=BS), 
@@ -85,7 +85,7 @@ HeaderItem(mnemonic=RMF, unit=OHMM, value=0.216, descr=MUD FILTRATE RESISTIVITY,
 HeaderItem(mnemonic=DFD, unit=K/M3, value=1525.0, descr=DRILL FLUID DENSITY, original_mnemonic=DFD)]
 ```
 
-The data is stored as 2D numpy array:
+The data is stored as a 2D numpy array:
 
 ```python
 >>> las.data

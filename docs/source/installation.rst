@@ -91,7 +91,7 @@ Installing via pip gets the latest release which has been published on `PyPI <ht
 
 The source code for lasio is kept at:
 
-`https://github.com/kinverarity/lasio <https://github.com/kinverarity/lasio>`__
+`https://github.com/kinverarity1/lasio <https://github.com/kinverarity1/lasio>`__
 
 Updates are made much more frequently to the ``master`` branch here. If you have
 Git installed, you can keep up to date with these changes:
