@@ -2,6 +2,7 @@ from __future__ import print_function
 
 # Standard library packages
 import codecs
+import csv
 import json
 import logging
 import os
@@ -254,6 +255,51 @@ class LASFile(object):
         from . import excel
         converter = excel.ExcelConverter(self)
         converter.write(filename)
+
+    def to_csv(self, file_ref, mnemonics=True, units='line', **kwargs):
+        '''Export to a CSV file.
+
+        Arguments:
+            file_ref (open file-like object or str): a file-like object opening
+                for writing, or a filename.
+
+        Keyword Arguments:
+            mnemonics (bool): write mnemonics as a header line at the start.
+            units (str or None): if 'line', units will be written on the
+                line following the header. If '[]' or '()', units will be written
+                in brackets/parentheses after the mnemonics e.g.
+
+                    DEPT [m],TEMP [degC]
+                    0.05,17.35
+                    0.10,17.35
+
+        Further ``kwargs`` will be sent to :func:`csv.writer`. If it is not
+        specified here, ``lineterminator='\n'`` will be included.
+
+        '''
+        opened_file = False
+        if isinstance(file_ref, basestring) and not hasattr(file_ref, "write"):
+            opened_file = True
+            file_ref = open(file_ref, "w")
+
+        if not 'lineterminator' in kwargs:
+            kwargs['lineterminator'] = '\n'
+        writer = csv.writer(file_ref, **kwargs)
+        if mnemonics:
+            if units in ('()', '[]'):
+                mnemonics = [
+                    c.original_mnemonic + ' ' + units[0] + c.unit + units[1] 
+                    for c in self.curves]
+            else:
+                mnemonics = [c.original_mnemonic for c in self.curves]
+            writer.writerow(mnemonics)
+        if units == 'line':
+            writer.writerow([curve.unit for curve in self.curves])
+        for i in range(self.data.shape[0]):
+            writer.writerow(self.data[i, :])
+        
+        if opened_file:
+            file_ref.close()
 
     def match_raw_section(self, pattern, re_func="match", flags=re.IGNORECASE):
         '''Find raw section with a regular expression.
