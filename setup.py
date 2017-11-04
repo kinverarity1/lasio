@@ -4,14 +4,17 @@ from setuptools import setup
 from os import path
 
 try:
-    from pypandoc import convert
-    read_md = lambda f: convert(f, 'rst')
-except ImportError:
-    print("warning: pypandoc module not found, could not convert Markdown to RST")
-    read_md = lambda f: open(f, 'r').read()
+    import pypandoc
+    long_description = pypandoc.convert('README.md', 'rst')
+    long_description = long_description.replace("\r","") # Do not forget this line
+except:
+    print("Pandoc not found. Long_description conversion failure.")
+
+    # pandoc is not installed, fallback to using raw contents
+    with open('README.md') as f:
+        long_description = f.read()
 
 from lasio import __version__
-
 
 with open("requirements.txt") as f:
     requirements = f.read().splitlines()
@@ -45,7 +48,7 @@ CLASSIFIERS = [
 setup(name='lasio',
       version=__version__,
       description="Read/write well data from Log ASCII Standard (LAS) files",
-      long_description=read_md('README.md'),
+      long_description=long_description,
       url="https://github.com/kinverarity1/lasio",
       author="Kent Inverarity",
       author_email="kinverarity@hotmail.com",
