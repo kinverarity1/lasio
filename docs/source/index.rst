@@ -8,6 +8,7 @@
 
    basic-example
    excel
+   writing
    lasio
 
 * :ref:`genindex`
