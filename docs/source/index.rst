@@ -38,6 +38,7 @@ files”).
    header
    writing
    excel
+   building
    encodings
    contributing
    lasio
