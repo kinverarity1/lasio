@@ -215,7 +215,8 @@ def get_encoding(auto, raw):
     return result['encoding']
 
 
-def read_file_contents(file_obj, ignore_data=False, read_policy='default'):
+def read_file_contents(file_obj, regexp_subs, value_null_subs, 
+                       ignore_data=False):
     '''Read file contents into memory.
 
     Arguments:
@@ -267,7 +268,7 @@ def read_file_contents(file_obj, ignore_data=False, read_policy='default'):
                 "line_nos": sect_line_nos,
                 }
             if not ignore_data:
-                data = read_data_section_iterative(file_obj, i + 1, read_policy=read_policy)
+                data = read_data_section_iterative(file_obj, regexp_subs, value_null_subs)
                 sections[line] = {
                     "section_type": "data",
                     "start_line": i,
@@ -308,20 +309,25 @@ def read_file_contents(file_obj, ignore_data=False, read_policy='default'):
             file_obj.seek(0)
             for i, line in enumerate(file_obj):
                 if i == section["start_line"] + 1:
-                    for pattern, sub_str in defaults.SUB_PATTERNS:
+                    for pattern, sub_str in regexp_subs:
                         line = re.sub(pattern, sub_str, line)
                     section["ncols"] = len(line.split())
                     break
     return sections
 
 
-def read_data_section_iterative(file_obj, i, read_policy='default'):
+def read_data_section_iterative(file_obj, regexp_subs, value_null_subs):
     '''Read data section into memory.
 
     Arguments:
         file_obj (open file-like object): should be positioned in line-by-line
             reading mode, with the last line read being the title of the
             ~ASCII data section.
+        regexp_subs (list): each item should be a tuple of the pattern and
+            substitution string for a call to re.sub() on each line of the
+            data section. See defaults.py READ_SUBS and NULL_SUBS for examples.
+        value_null_subs (list): list of numerical values to be replaced by
+            numpy.nan values.
 
     Returns:
         A 1-D numpy ndarray.
@@ -329,12 +335,69 @@ def read_data_section_iterative(file_obj, i, read_policy='default'):
     '''
     def items(f):
         for line in f:
-            for pattern, sub_str in defaults.SUB_PATTERNS:
+            for pattern, sub_str in regexp_subs:
                 line = re.sub(pattern, sub_str, line)
             for item in line.split():
                 yield item
 
-    return np.fromiter(items(file_obj), np.float64, -1)
+    array = np.fromiter(items(file_obj), np.float64, -1)
+    for value in value_null_subs:
+        array[array == value] = np.nan
+    return array
+
+
+def get_substitutions(read_policy, null_policy):
+    '''Parse read and null policy definitions into a list of regexp and value
+    substitutions.
+
+    Arguments:
+        read_policy (str, list, or substitution): either (1) a string defined in 
+            defaults.READ_POLICIES; (2) a list of substitutions as defined by
+            the keys of defaults.READ_SUBS; or (3) a list of actual substitutions
+            similar to the values of defaults.READ_SUBS. You can mix (2) and (3)
+            together if you want.
+        null_policy (str, list, or sub): as for read_policy but for 
+            defaults.NULL_POLICIES and defaults.NULL_SUBS
+
+    Returns:
+        regexp_subs, value_null_subs, version_NULL - two lists and a bool. 
+        The first list is pairs of regexp patterns and substrs, and the second
+        list is just a list of floats or integers. The bool is whether or not
+        'NULL' was located as a substitution.
+
+    '''
+    regexp_subs = []
+    numerical_subs = []
+    version_NULL = False
+
+    for policy_typ, policy, policy_subs, subs in (
+            ('read', read_policy, defaults.READ_POLICIES, defaults.READ_SUBS),
+            ('null', null_policy, defaults.NULL_POLICIES, defaults.NULL_SUBS)):
+        if policy in policy_subs:
+            logger.debug('using {} policy of "{}"'.format(policy_typ, policy))
+            all_subs = []
+            for sub in policy_subs[policy]:
+                logger.debug('adding substitution {}'.format(sub))
+                if sub in subs:
+                    all_subs += subs[sub]
+        else:
+            all_subs = []
+            for item in policy:
+                if item in subs:
+                    all_subs += subs[item]
+                else:
+                    all_subs.append(item)
+        if 'NULL' in policy or 'NULL' in all_subs:
+            logger.debug('located substition for LAS.version.NULL as True')
+            version_NULL = True
+        for item in all_subs:
+            if isinstance(item, list):
+                logger.debug('added regexp substitution: pattern={} substr={}'.format(item[0], item[1]))
+                regexp_subs.append(item)
+            elif not item is None:
+                logger.debug('added numerical substitution: {}'.format(item))
+                numerical_subs.append(item)
+    return regexp_subs, numerical_subs, version_NULL
 
 
 def parse_header_section(sectdict, version, ignore_header_errors=False):

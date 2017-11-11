@@ -77,8 +77,10 @@ class LASFile(object):
         if not (file_ref is None):
             self.read(file_ref, **read_kwargs)
 
-    def read(self, file_ref, null_subs=True, ignore_data=False, 
-             ignore_header_errors=False, **kwargs):
+    def read(self, file_ref, 
+             ignore_data=False, read_policy='default', null_policy='common',
+             ignore_header_errors=False, 
+             **kwargs):
         '''Read a LAS file.
 
         Arguments:
@@ -98,8 +100,13 @@ class LASFile(object):
         '''
 
         file_obj, self.encoding = reader.open_file(file_ref, **kwargs)
+
+        regexp_subs, value_null_subs, version_NULL = reader.get_substitutions(
+            read_policy, null_policy)
+
         self.raw_sections = reader.read_file_contents(
-            file_obj, ignore_data=ignore_data)
+            file_obj, regexp_subs, value_null_subs, ignore_data=ignore_data, )
+        
         if hasattr(file_obj, "close"):
             file_obj.close()
 
@@ -193,7 +200,7 @@ class LASFile(object):
             s = self.match_raw_section("~A")
             if s:
                 arr = s["array"]
-                if null_subs:
+                if version_NULL:
                     arr[arr == null] = np.nan
 
                 n_curves = len(self.curves)
