@@ -76,7 +76,7 @@ NULL_POLICIES = {
     'common': ['include(strict)', 
                '9999.25', 'NA', 'INF', 'IO', 'IND'],
     'aggressive': ['include(common)',
-                   '999.25', '999', '9999', '2147483647', '32767'],
+                   '999.25', '999.99', '999', '9999', '2147483647', '32767'],
     'all': ['include(aggressive)',
             'numbers-only', ]
     }
@@ -85,6 +85,7 @@ NULL_SUBS = {
     #'NULL': special case for numeric replacement of the las.version['NULL']
     '999.25': [-999.25, 999.25],
     '9999.25': [-9999.25, 9999.25],
+    '999.99': [-999.99, 999.99],
     '999': [-999, 999],
     '9999': [-9999, 9999],
     '2147483647': [-2147483647, 2147483647],
