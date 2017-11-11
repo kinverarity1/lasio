@@ -215,7 +215,7 @@ def get_encoding(auto, raw):
     return result['encoding']
 
 
-def read_file_contents(file_obj, ignore_data=False):
+def read_file_contents(file_obj, ignore_data=False, read_policy='default'):
     '''Read file contents into memory.
 
     Arguments:
@@ -267,7 +267,7 @@ def read_file_contents(file_obj, ignore_data=False):
                 "line_nos": sect_line_nos,
                 }
             if not ignore_data:
-                data = read_data_section_iterative(file_obj, i + 1)
+                data = read_data_section_iterative(file_obj, i + 1, read_policy=read_policy)
                 sections[line] = {
                     "section_type": "data",
                     "start_line": i,
@@ -315,7 +315,7 @@ def read_file_contents(file_obj, ignore_data=False):
     return sections
 
 
-def read_data_section_iterative(file_obj, i):
+def read_data_section_iterative(file_obj, i, read_policy='default'):
     '''Read data section into memory.
 
     Arguments:
