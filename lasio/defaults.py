@@ -65,27 +65,31 @@ READ_POLICIES = {
     }
 
 READ_SUBS = {
-    'run-on(-)': (re.compile(r'(\d)-(\d)'), r'\1 -\2'),
-    'run-on(.)': (re.compile('-?\d*\.\d*\.\d*'), ' NaN NaN '),
-    'run-on(NaN.)': (re.compile('NaN.\d*'), ' NaN NaN '),
+    'run-on(-)': [(re.compile(r'(\d)-(\d)'), r'\1 -\2'), ], 
+    'run-on(.)': [(re.compile('-?\d*\.\d*\.\d*'), ' NaN NaN '), ],
+    'run-on(NaN.)': [(re.compile('NaN.\d*'), ' NaN NaN '), ],
     }
 
 NULL_POLICIES = {
     'none': [],
     'strict': ['NULL'],
-    'common': ['include(strict)', 
-               '9999.25', 'NA', 'INF', 'IO', 'IND'],
-    'aggressive': ['include(common)',
-                   '999.25', '999.99', '999', '9999', '2147483647', '32767'],
-    'all': ['include(aggressive)',
+    'common': ['NULL', 
+               '9999.25', '999.25', 'NA', 'INF', 'IO', 'IND'],
+    'aggressive': ['NULL',
+                   '9999.25', '999.25', 'NA', 'INF', 'IO', 'IND', 
+                   '999', '999.99', '9999', '9999.99' '2147483647', '32767'],
+    'all': ['NULL',
+            '9999.25', '999.25', 'NA', 'INF', 'IO', 'IND', 
+            '999', '999.99', '9999', '9999.99' '2147483647', '32767',  
             'numbers-only', ]
     }
 
 NULL_SUBS = {
-    #'NULL': special case for numeric replacement of the las.version['NULL']
+    'NULL': [None, ],       # special case to be handled in LASFile.read()
     '999.25': [-999.25, 999.25],
     '9999.25': [-9999.25, 9999.25],
     '999.99': [-999.99, 999.99],
+    '9999.99': [-9999.99, 9999.99],
     '999': [-999, 999],
     '9999': [-9999, 9999],
     '2147483647': [-2147483647, 2147483647],
