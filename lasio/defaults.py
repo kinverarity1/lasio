@@ -60,8 +60,44 @@ DEPTH_UNITS = {
     'M': ("M", "METER", "METERS", "METRE", "METRES"),
     }
 
-SUB_PATTERNS = [
-    (re.compile(r'(\d)-(\d)'), r'\1 -\2'),
-    (re.compile('-?\d*\.\d*\.\d*'), ' NaN NaN '),
-    (re.compile('NaN.\d*'), ' NaN NaN '),
-    ]
+READ_POLICIES = {
+    'default': ['run-on(-)', 'run-on(.)', 'run-on(NaN.)'],
+    }
+
+READ_SUBS = {
+    'run-on(-)': (re.compile(r'(\d)-(\d)'), r'\1 -\2'),
+    'run-on(.)': (re.compile('-?\d*\.\d*\.\d*'), ' NaN NaN '),
+    'run-on(NaN.)': (re.compile('NaN.\d*'), ' NaN NaN '),
+    }
+
+NULL_POLICIES = {
+    'none': [],
+    'strict': ['NULL'],
+    'common': ['include(strict)', 
+               '9999.25', 'NA', 'INF', 'IO', 'IND'],
+    'aggressive': ['include(common)',
+                   '999.25', '999', '9999', '2147483647', '32767'],
+    'all': ['include(aggressive)',
+            'numbers-only', ]
+    }
+
+NULL_SUBS = {
+    #'NULL': special case for numeric replacement of the las.version['NULL']
+    '999.25': [-999.25, 999.25],
+    '9999.25': [-9999.25, 9999.25],
+    '999': [-999, 999],
+    '9999': [-9999, 9999],
+    '2147483647': [-2147483647, 2147483647],
+    '32767': [-32767, 32767],
+    'NA': [(re.compile(r'(#N/A)[ ]'), 'NaN '),
+           (re.compile(r'[ ](#N/A)'), ' NaN'), ],
+    'INF': [(re.compile(r'(-?1\.#INF)[ ]'), 'NaN '),
+            (re.compile(r'[ ](-?1\.#INF)'), ' NaN'), ],
+    'IO': [(re.compile(r'(-?1\.#IO)[ ]'), 'NaN '),
+           (re.compile(r'[ ](-?1\.#IO)'), ' NaN'), ],
+    'IND': [(re.compile(r'(-?1\.#IND)[ ]'), 'NaN '),
+            (re.compile(r'[ ](-?1\.#IND)'), ' NaN'), ],
+    'numbers-only': [(re.compile(r'([^0-9.\-+]+)[ ]'), 'NaN '),
+                     (re.compile(r'[ ]([^0-9.\-+]+)'), ' NaN'), ],
+    }
+
