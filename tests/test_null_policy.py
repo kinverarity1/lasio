@@ -75,3 +75,19 @@ def test_null_policy_text_all_subs_ERR():
 def test_null_policy_text_all_keeps_data():
     las = read(egfn("null_policy_ERR.las"), null_policy='all')
     assert las['ILD'][2] == 105.6
+
+def test_null_policy_text_all_subs_null():
+    las = read(egfn("null_policy_(null).las"), null_policy='aggressive')
+    assert numpy.isnan(las['RHOB'][2])
+
+def test_null_policy_text_dashes_1():
+    las = read(egfn("null_policy_dashes.las"), null_policy=['-', ])
+    assert numpy.isnan(las['RHOB'][0])
+
+def test_null_policy_text_dashes_2():
+    las = read(egfn("null_policy_dashes.las"), null_policy=['-', ])
+    assert numpy.isnan(las['RHOB'][2])
+
+def test_null_policy_text_dashes_3():
+    las = read(egfn("null_policy_dashes.las"), null_policy=['-', ])
+    assert las['RHOB'][1] == -2550

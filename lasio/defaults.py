@@ -73,16 +73,17 @@ READ_SUBS = {
 NULL_POLICIES = {
     'none': [],
     'strict': ['NULL', ],
-    'common': ['NULL', 
+    'common': ['NULL', '(null)', '-', 
                '9999.25', '999.25', 'NA', 'INF', 'IO', 'IND'],
-    'aggressive': ['NULL',
+    'aggressive': ['NULL', '(null)', '--', 
                    '9999.25', '999.25', 'NA', 'INF', 'IO', 'IND', 
                    '999', '999.99', '9999', '9999.99' '2147483647', '32767',
                    '-0.0', ],
-    'all': ['NULL',
+    'all': ['NULL', '(null)', '-', 
             '9999.25', '999.25', 'NA', 'INF', 'IO', 'IND', 
             '999', '999.99', '9999', '9999.99' '2147483647', '32767', '-0.0', 
-            'numbers-only', ]
+            'numbers-only', ],
+    'numbers-only': ['numbers-only', ]
     }
 
 NULL_SUBS = {
@@ -95,6 +96,15 @@ NULL_SUBS = {
     '9999': [-9999, 9999],
     '2147483647': [-2147483647, 2147483647],
     '32767': [-32767, 32767],
+    '(null)': [(re.compile(r' \(null\)'), ' NaN '),
+               (re.compile(r'\(null\) '), ' NaN '),
+               (re.compile(r' \(NULL\)'), ' NaN '), 
+               (re.compile(r'\(NULL\) '), ' NaN '), 
+               (re.compile(r' null'), ' NaN '), 
+               (re.compile(r'null '), ' NaN '), 
+               (re.compile(r' NULL'), ' NaN '), 
+               (re.compile(r'NULL '), ' NaN '), ],
+    '-': [(re.compile(r' -+ '), ' NaN '), ],
     'NA': [(re.compile(r'(#N/A)[ ]'), ' NaN '),
            (re.compile(r'[ ](#N/A)'), ' NaN '), ],
     'INF': [(re.compile(r'(-?1\.#INF)[ ]'), ' NaN '),
