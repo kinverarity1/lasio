@@ -1,6 +1,7 @@
 import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import glob
 import fnmatch
+import traceback
 
 import numpy
 import pytest
@@ -151,5 +152,6 @@ def test_missing_null_missing_headeritem():
     assert not 'NULL' in l.well
 
 def test_not_a_las_file():
-    las = read(egfn('not_a_las_file.las'))
+    with pytest.raises(KeyError):
+        las = read(egfn('not_a_las_file.las'))
     
