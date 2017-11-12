@@ -333,7 +333,6 @@ class LASFile(object):
         Intended for internal use only.
 
         '''
-        logger.debug('raw_sections {}'.format(self.raw_sections))
         for title in self.raw_sections.keys():
             title = title.strip()
             p = re.compile(pattern, flags=flags)

@@ -404,8 +404,6 @@ def get_substitutions(read_policy, null_policy):
                         version_NULL = True
                 else:
                     all_subs.append(item)
-        logger.debug('policy = {}'.format(policy))
-        logger.debug('all_subs = {}'.format(all_subs))
         for item in all_subs:
             try:
                 iter(item)
