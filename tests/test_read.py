@@ -1,6 +1,7 @@
 import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import glob
 import fnmatch
+import logging
 
 import numpy
 import pytest
@@ -13,6 +14,8 @@ test_dir = os.path.dirname(__file__)
 egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
 stegfn = lambda vers, fn: os.path.join(
     os.path.dirname(__file__), "examples", vers, fn)
+
+logger = logging.getLogger(__name__)
 
 def test_read_v12_sample():
     l = read(stegfn("1.2", "sample.las"))
@@ -154,6 +157,7 @@ def test_barebones():
     las = read(egfn('barebones.las'))
     assert las['DEPT'][1] == 201
 
-# def test_barebones2():
-#     las = read(egfn('barebones.las'))
-#     assert las
+def test_barebones_missing_all_sections():
+    las = read(egfn('barebones2.las'))
+    assert las.curves[-1].mnemonic == 'UNKNOWN:8'
+
