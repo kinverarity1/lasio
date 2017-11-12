@@ -528,6 +528,14 @@ class SectionParser(object):
         '''
         if default is None:
             default = x
+        
+        # in case it is a string.
+        try:
+            pattern, sub = defaults.READ_SUBS['comma-decimal-mark'][0]
+            x = re.sub(pattern, sub, x)
+        except:
+            pass
+
         try:
             return np.int(x)
         except:
