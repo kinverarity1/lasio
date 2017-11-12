@@ -150,4 +150,6 @@ def test_missing_null_missing_headeritem():
     l = read(egfn("missing_null.las"))
     assert not 'NULL' in l.well
 
-
+def test_not_a_las_file():
+    las = read(egfn('not_a_las_file.las'))
+    
