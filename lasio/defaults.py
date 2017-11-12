@@ -61,10 +61,11 @@ DEPTH_UNITS = {
     }
 
 READ_POLICIES = {
-    'default': ['run-on(-)', 'run-on(.)', 'run-on(NaN.)'],
+    'default': ['comma-decimal-mark', 'run-on(-)', 'run-on(.)', 'run-on(NaN.)'],
     }
 
 READ_SUBS = {
+    'comma-decimal-mark': [(re.compile(r'(\d),(\d)'), r'\1.\2'), ],
     'run-on(-)': [(re.compile(r'(\d)-(\d)'), r'\1 -\2'), ], 
     'run-on(.)': [(re.compile(r'-?\d*\.\d*\.\d*'), ' NaN NaN '), ],
     'run-on(NaN.)': [(re.compile(r'NaN[\.-]\d+'), ' NaN NaN '), ],
