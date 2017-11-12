@@ -108,3 +108,6 @@ def test_null_policy_runon_ok_2():
     las = read(egfn("null_policy_runon.las"), read_policy='default')
     assert las['C05'][2] == -19508.961
 
+def test_null_policy_ind():
+    las = read(egfn('null_policy_ind.las'))
+    assert las.curves.keys() == ['DEPT', 'GR', 'CN', 'CD']
