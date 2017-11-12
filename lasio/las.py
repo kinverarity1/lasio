@@ -106,6 +106,9 @@ class LASFile(object):
 
         self.raw_sections = reader.read_file_contents(
             file_obj, regexp_subs, value_null_subs, ignore_data=ignore_data, )
+
+        if len(self.raw_sections) == 0:
+            raise KeyError('No ~ sections found. Is this a LAS file?')
         
         if hasattr(file_obj, "close"):
             file_obj.close()

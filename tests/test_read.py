@@ -1,6 +1,7 @@
 import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import glob
 import fnmatch
+import traceback
 import logging
 
 import numpy
@@ -161,3 +162,6 @@ def test_barebones_missing_all_sections():
     las = read(egfn('barebones2.las'))
     assert las.curves[-1].mnemonic == 'UNKNOWN:8'
 
+def test_not_a_las_file():
+    with pytest.raises(KeyError):
+        las = read(egfn('not_a_las_file.las'))
