@@ -177,3 +177,7 @@ def test_comma_decimal_mark_params():
 def test_missing_a_section():
     las = read(egfn('missing_a_section.las'))
     assert not hasattr(las, 'data')
+
+def test_blank_line_in_header():
+    las = read(egfn('blank_line.las'))
+    assert las.curves[0].mnemonic == 'DEPT'
