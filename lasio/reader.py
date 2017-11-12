@@ -413,6 +413,7 @@ def get_substitutions(read_policy, null_policy):
             else:                
                 logger.debug('added regexp substitution: pattern={} substr="{}"'.format(item[0], item[1]))
                 regexp_subs.append(item)
+    numerical_subs = [n for n in numerical_subs if not n is None]
                 
     return regexp_subs, numerical_subs, version_NULL
 
