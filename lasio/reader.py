@@ -268,7 +268,12 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs,
                 "line_nos": sect_line_nos,
                 }
             if not ignore_data:
-                data = read_data_section_iterative(file_obj, regexp_subs, value_null_subs)
+                try:
+                    data = read_data_section_iterative(file_obj, regexp_subs, value_null_subs)
+                except:
+                    raise exceptions.LASDataError(
+                        traceback.format_exc()[:-1] + 
+                        ' in data section beginning line {}'.format(i + 1))
                 sections[line] = {
                     "section_type": "data",
                     "start_line": i,
@@ -373,30 +378,42 @@ def get_substitutions(read_policy, null_policy):
     for policy_typ, policy, policy_subs, subs in (
             ('read', read_policy, defaults.READ_POLICIES, defaults.READ_SUBS),
             ('null', null_policy, defaults.NULL_POLICIES, defaults.NULL_SUBS)):
-        if policy in policy_subs:
+        try:
+            is_policy = policy in policy_subs
+        except TypeError:
+            is_policy = False
+        if is_policy:
             logger.debug('using {} policy of "{}"'.format(policy_typ, policy))
             all_subs = []
             for sub in policy_subs[policy]:
                 logger.debug('adding substitution {}'.format(sub))
                 if sub in subs:
                     all_subs += subs[sub]
+                if sub == 'NULL':
+                    logger.debug('located substition for LAS.version.NULL as True')
+                    version_NULL = True
         else:
             all_subs = []
             for item in policy:
                 if item in subs:
                     all_subs += subs[item]
+                    if item == 'NULL':
+                        logger.debug('located substition for LAS.version.NULL as True')
+                        version_NULL = True
                 else:
                     all_subs.append(item)
-        if 'NULL' in policy or 'NULL' in all_subs:
-            logger.debug('located substition for LAS.version.NULL as True')
-            version_NULL = True
+        logger.debug('policy = {}'.format(policy))
+        logger.debug('all_subs = {}'.format(all_subs))
         for item in all_subs:
-            if isinstance(item, list):
-                logger.debug('added regexp substitution: pattern={} substr={}'.format(item[0], item[1]))
-                regexp_subs.append(item)
-            elif not item is None:
+            try:
+                iter(item)
+            except TypeError:
                 logger.debug('added numerical substitution: {}'.format(item))
                 numerical_subs.append(item)
+            else:                
+                logger.debug('added regexp substitution: pattern={} substr="{}"'.format(item[0], item[1]))
+                regexp_subs.append(item)
+                
     return regexp_subs, numerical_subs, version_NULL
 
 
