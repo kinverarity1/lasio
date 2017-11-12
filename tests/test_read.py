@@ -87,18 +87,6 @@ def test_mnemonic_missing_multiple():
     assert [c.mnemonic for c in l.curves] == [
         "DEPT", "DT", "RHOB", "NPHI", "UNKNOWN:1", "UNKNOWN:2", "ILM", "ILD"]
 
-def test_null_subs_default():
-    l = read(egfn("null_subs.las"))
-    assert numpy.isnan(l['DT'][0])
-
-def test_null_subs_True():
-    l = read(egfn("null_subs.las"), null_subs=True)
-    assert numpy.isnan(l['DT'][0])
-
-def test_null_subs_False():
-    l = read(egfn("null_subs.las"), null_subs=False)
-    assert l['DT'][0] == -999.25
-
 def test_multi_curve_mnemonics():
     l = read(egfn('sample_issue105_a.las'))
     assert l.keys() == [c.mnemonic for c in l.curves] == ['DEPT', 'RHO:1', 'RHO:2', 'RHO:3', 'PHI']
@@ -165,3 +153,5 @@ def test_missing_null_loads():
 def test_missing_null_missing_headeritem():
     l = read(egfn("missing_null.las"))
     assert not 'NULL' in l.well
+
+
