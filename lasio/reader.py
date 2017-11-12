@@ -278,7 +278,6 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs,
                 sections[line] = {
                     "section_type": "data",
                     "start_line": i,
-                    # "ncols": ncols,
                     "title": line,
                     "array": data,
                     }
@@ -313,6 +312,7 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs,
 
     for section in sections.values():
         if section["section_type"] == "data":
+            section["ncols"] = None
             file_obj.seek(0)
             for i, line in enumerate(file_obj):
                 if i == section["start_line"] + 1:

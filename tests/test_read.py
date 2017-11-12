@@ -173,3 +173,7 @@ def test_comma_decimal_mark_data():
 def test_comma_decimal_mark_params():
     las = read(egfn('comma_decimal_mark.las'))
     assert las.params['MDEN'].value == 2710.1
+
+def test_missing_a_section():
+    las = read(egfn('missing_a_section.las'))
+    assert not hasattr(las, 'data')
