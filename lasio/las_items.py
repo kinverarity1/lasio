@@ -360,6 +360,15 @@ class SectionItems(list):
                 item.set_session_mnemonic_only(item.useful_mnemonic + ':%d'
                                                % (i + 1))
 
+    def insert(self, i, newitem):
+        '''Insert a new HeaderItem to the object.'''
+        super(SectionItems, self).insert(i, newitem)
+        
+        existing = [j for j in range(len(self)) 
+                    if self[j].useful_mnemonic == newitem.useful_mnemonic]
+        newitem.set_session_mnemonic_only(
+            newitem.useful_mnemonic + ':{:d}'.format(len(existing)))
+        
     def dictview(self):
         '''View of mnemonics and values as a dict.
 
