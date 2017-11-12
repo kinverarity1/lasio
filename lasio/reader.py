@@ -446,10 +446,9 @@ def parse_header_section(sectdict, version, ignore_header_errors=False):
         try:
             values = read_line(line)
         except:
-            message = "Line #%d - failed in %s section on line:\n%s%s" % (
-                j, title, line,
-                traceback.format_exc().splitlines()[-1])
-
+            message = 'line {} (section {}): "{}"'.format(
+                # traceback.format_exc().splitlines()[-1].strip('\n'),
+                j, title, line)
             if ignore_header_errors:
                 logger.warning(message)
             else:
