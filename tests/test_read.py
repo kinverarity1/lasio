@@ -152,4 +152,8 @@ def test_missing_null_missing_headeritem():
 
 def test_barebones():
     las = read(egfn('barebones.las'))
-        
+    assert las['DEPT'][1] == 201
+
+# def test_barebones2():
+#     las = read(egfn('barebones.las'))
+#     assert las
