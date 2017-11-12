@@ -36,6 +36,7 @@ files”).
    basic-example
    pandas
    header
+   handling-data-section-errors
    writing
    exporting
    building

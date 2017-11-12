@@ -60,8 +60,62 @@ DEPTH_UNITS = {
     'M': ("M", "METER", "METERS", "METRE", "METRES"),
     }
 
-SUB_PATTERNS = [
-    (re.compile(r'(\d)-(\d)'), r'\1 -\2'),
-    (re.compile('-?\d*\.\d*\.\d*'), ' NaN NaN '),
-    (re.compile('NaN.\d*'), ' NaN NaN '),
-    ]
+READ_POLICIES = {
+    'default': ['run-on(-)', 'run-on(.)', 'run-on(NaN.)'],
+    }
+
+READ_SUBS = {
+    'run-on(-)': [(re.compile(r'(\d)-(\d)'), r'\1 -\2'), ], 
+    'run-on(.)': [(re.compile(r'-?\d*\.\d*\.\d*'), ' NaN NaN '), ],
+    'run-on(NaN.)': [(re.compile(r'NaN[\.-]\d+'), ' NaN NaN '), ],
+    }
+
+NULL_POLICIES = {
+    'none': [],
+    'strict': ['NULL', ],
+    'common': ['NULL', '(null)', '-', 
+               '9999.25', '999.25', 'NA', 'INF', 'IO', 'IND'],
+    'aggressive': ['NULL', '(null)', '--', 
+                   '9999.25', '999.25', 'NA', 'INF', 'IO', 'IND', 
+                   '999', '999.99', '9999', '9999.99' '2147483647', '32767',
+                   '-0.0', ],
+    'all': ['NULL', '(null)', '-', 
+            '9999.25', '999.25', 'NA', 'INF', 'IO', 'IND', 
+            '999', '999.99', '9999', '9999.99' '2147483647', '32767', '-0.0', 
+            'numbers-only', ],
+    'numbers-only': ['numbers-only', ]
+    }
+
+NULL_SUBS = {
+    'NULL': [None, ],       # special case to be handled in LASFile.read()
+    '999.25': [-999.25, 999.25],
+    '9999.25': [-9999.25, 9999.25],
+    '999.99': [-999.99, 999.99],
+    '9999.99': [-9999.99, 9999.99],
+    '999': [-999, 999],
+    '9999': [-9999, 9999],
+    '2147483647': [-2147483647, 2147483647],
+    '32767': [-32767, 32767],
+    '(null)': [(re.compile(r' \(null\)'), ' NaN '),
+               (re.compile(r'\(null\) '), ' NaN '),
+               (re.compile(r' \(NULL\)'), ' NaN '), 
+               (re.compile(r'\(NULL\) '), ' NaN '), 
+               (re.compile(r' null'), ' NaN '), 
+               (re.compile(r'null '), ' NaN '), 
+               (re.compile(r' NULL'), ' NaN '), 
+               (re.compile(r'NULL '), ' NaN '), ],
+    '-': [(re.compile(r' -+ '), ' NaN '), ],
+    'NA': [(re.compile(r'(#N/A)[ ]'), ' NaN '),
+           (re.compile(r'[ ](#N/A)'), ' NaN '), ],
+    'INF': [(re.compile(r'(-?1\.#INF)[ ]'), ' NaN '),
+            (re.compile(r'[ ](-?1\.#INF)'), ' NaN '), ],
+    'IO': [(re.compile(r'(-?1\.#IO)[ ]'), ' NaN '),
+           (re.compile(r'[ ](-?1\.#IO)'), ' NaN '), ],
+    'IND': [(re.compile(r'(-?1\.#IND)[ ]'), ' NaN '),
+            (re.compile(r'[ ](-?1\.#IND)'), ' NaN '), ],
+    '-0.0': [(re.compile(r'(-0\.0)[ ]'), ' NaN '),
+             (re.compile(r'[ ](-0\.0)'), ' NaN '), ],
+    'numbers-only': [(re.compile(r'([^ 0-9.\-+]+)[ ]'), ' NaN '),
+                     (re.compile(r'[ ]([^ 0-9.\-+]+)'), ' NaN '), ],
+    }
+

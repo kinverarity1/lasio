@@ -1,5 +1,5 @@
 import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-
+import glob
 import fnmatch
 
 import numpy
@@ -16,11 +16,7 @@ stegfn = lambda vers, fn: os.path.join(
 
 def test_read_v12_sample():
     l = read(stegfn("1.2", "sample.las"))
-
-def test_read_all():
-    for root, dirs, files in os.walk('examples'):
-        for fn in glob.glob(os.path.join(root, '*.las')):
-            l = read(fn)
+    
 
 def test_read_v12_sample_big():
     l = read(stegfn("1.2", "sample_big.las"))
@@ -86,18 +82,6 @@ def test_mnemonic_missing_multiple():
     l = read(egfn("mnemonic_missing_multiple.las"))
     assert [c.mnemonic for c in l.curves] == [
         "DEPT", "DT", "RHOB", "NPHI", "UNKNOWN:1", "UNKNOWN:2", "ILM", "ILD"]
-
-def test_null_subs_default():
-    l = read(egfn("null_subs.las"))
-    assert numpy.isnan(l['DT'][0])
-
-def test_null_subs_True():
-    l = read(egfn("null_subs.las"), null_subs=True)
-    assert numpy.isnan(l['DT'][0])
-
-def test_null_subs_False():
-    l = read(egfn("null_subs.las"), null_subs=False)
-    assert l['DT'][0] == -999.25
 
 def test_multi_curve_mnemonics():
     l = read(egfn('sample_issue105_a.las'))
@@ -165,3 +149,5 @@ def test_missing_null_loads():
 def test_missing_null_missing_headeritem():
     l = read(egfn("missing_null.las"))
     assert not 'NULL' in l.well
+
+
