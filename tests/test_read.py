@@ -165,3 +165,11 @@ def test_barebones_missing_all_sections():
 def test_not_a_las_file():
     with pytest.raises(KeyError):
         las = read(egfn('not_a_las_file.las'))
+
+def test_comma_decimal_mark_data():
+    las = read(egfn('comma_decimal_mark.las'))
+    assert las['SFLU'][1] == 123.42
+
+def test_comma_decimal_mark_params():
+    las = read(egfn('comma_decimal_mark.las'))
+    assert las.params['MDEN'].value == 2710.1
