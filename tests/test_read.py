@@ -150,4 +150,6 @@ def test_missing_null_missing_headeritem():
     l = read(egfn("missing_null.las"))
     assert not 'NULL' in l.well
 
-
+def test_barebones():
+    las = read(egfn('barebones.las'))
+        
