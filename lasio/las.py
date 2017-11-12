@@ -201,7 +201,18 @@ class LASFile(object):
         if not ignore_data:
             drop = []
             s = self.match_raw_section("~A")
-            if s:
+            s_valid = True
+            if s is None:
+                logger.warning("No data section (regexp='~A') found")
+                s_valid = False
+            try:
+                if s['ncols'] is None:
+                    logger.warning('No numerical data found inside ~A section')
+                    s_valid = False
+            except:
+                pass
+
+            if s_valid:
                 arr = s["array"]
                 logger.debug('~A data.shape {}'.format(arr.shape))
                 if version_NULL:
@@ -218,8 +229,6 @@ class LASFile(object):
 
                 self.set_data(data, truncate=False)
                 drop.append(s["title"])
-            else:
-                logger.warning("No data section (regexp='~A') found")
             for key in drop:
                 self.raw_sections.pop(key)
 
