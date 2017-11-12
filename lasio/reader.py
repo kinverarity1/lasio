@@ -281,6 +281,7 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs,
                     "title": line,
                     "array": data,
                     }
+                logger.debug('Data section ["array"].shape = {}'.format(data.shape))
             break
 
         elif line.startswith('~'):

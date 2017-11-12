@@ -66,8 +66,8 @@ READ_POLICIES = {
 
 READ_SUBS = {
     'run-on(-)': [(re.compile(r'(\d)-(\d)'), r'\1 -\2'), ], 
-    'run-on(.)': [(re.compile('-?\d*\.\d*\.\d*'), ' NaN NaN '), ],
-    'run-on(NaN.)': [(re.compile('NaN.\d*'), ' NaN NaN '), ],
+    'run-on(.)': [(re.compile(r'-?\d*\.\d*\.\d*'), ' NaN NaN '), ],
+    'run-on(NaN.)': [(re.compile(r'NaN[\.-]\d+'), ' NaN NaN '), ],
     }
 
 NULL_POLICIES = {

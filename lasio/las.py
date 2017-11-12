@@ -200,8 +200,10 @@ class LASFile(object):
             s = self.match_raw_section("~A")
             if s:
                 arr = s["array"]
+                logger.debug('~A data.shape {}'.format(arr.shape))
                 if version_NULL:
                     arr[arr == null] = np.nan
+                logger.debug('~A after NULL replacement data.shape {}'.format(arr.shape))
 
                 n_curves = len(self.curves)
                 n_arr_cols = len(self.curves) # provisional pending below check

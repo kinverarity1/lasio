@@ -91,3 +91,20 @@ def test_null_policy_text_dashes_2():
 def test_null_policy_text_dashes_3():
     las = read(egfn("null_policy_dashes.las"), null_policy=['-', ])
     assert las['RHOB'][1] == -2550
+
+def test_null_policy_runon_replaced_1():
+    las = read(egfn("null_policy_runon.las"), read_policy='default')
+    assert numpy.isnan(las['C04'][1])
+    
+def test_null_policy_runon_replaced_2():
+    las = read(egfn("null_policy_runon.las"), read_policy='default')
+    assert numpy.isnan(las['C05'][1])
+
+def test_null_policy_runon_ok_1():
+    las = read(egfn("null_policy_runon.las"), read_policy='default')
+    assert las['C04'][2] == 7.33
+
+def test_null_policy_runon_ok_2():
+    las = read(egfn("null_policy_runon.las"), read_policy='default')
+    assert las['C05'][2] == -19508.961
+
