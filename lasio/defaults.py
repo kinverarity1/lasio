@@ -102,7 +102,7 @@ NULL_SUBS = {
            (re.compile(r'[ ](-?1\.#IO)'), ' NaN '), ],
     'IND': [(re.compile(r'(-?1\.#IND)[ ]'), ' NaN '),
             (re.compile(r'[ ](-?1\.#IND)'), ' NaN '), ],
-    'numbers-only': [(re.compile(r'([^0-9.\-+]+)[ ]'), ' NaN '),
-                     (re.compile(r'[ ]([^0-9.\-+]+)'), ' NaN '), ],
+    'numbers-only': [(re.compile(r'([^ 0-9.\-+]+)[ ]'), ' NaN '),
+                     (re.compile(r'[ ]([^ 0-9.\-+]+)'), ' NaN '), ],
     }
 

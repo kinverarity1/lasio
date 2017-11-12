@@ -68,3 +68,10 @@ def test_null_policy_ERR_custom():
     las = read(egfn("null_policy_ERR.las"), null_policy=[('ERR', ' NaN '), ])
     assert numpy.isnan(las['RHOB'][2])
     
+def test_null_policy_text_all_subs_ERR():
+    las = read(egfn("null_policy_ERR.las"), null_policy='all')
+    assert numpy.isnan(las['RHOB'][2])
+
+def test_null_policy_text_all_keeps_data():
+    las = read(egfn("null_policy_ERR.las"), null_policy='all')
+    assert las['ILD'][2] == 105.6
