@@ -442,7 +442,8 @@ def parse_header_section(sectdict, version, ignore_header_errors=False):
     for i in range(len(sectdict["lines"])):
         line = sectdict["lines"][i]
         j = sectdict["line_nos"][i]
-        # if line.start
+        if not line:
+            continue
         try:
             values = read_line(line)
         except:
