@@ -181,3 +181,7 @@ def test_missing_a_section():
 def test_blank_line_in_header():
     las = read(egfn('blank_line.las'))
     assert las.curves[0].mnemonic == 'DEPT'
+
+def test_blank_line_at_start():
+    las = read(egfn('blank_line_start.las'))
+    
