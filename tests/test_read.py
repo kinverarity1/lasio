@@ -184,5 +184,4 @@ def test_blank_line_in_header():
 
 def test_duplicate_step():
     las = read(egfn('duplicate_step.las'))
-    assert las.step == -0.125
     
