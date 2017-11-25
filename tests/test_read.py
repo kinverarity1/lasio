@@ -182,6 +182,9 @@ def test_blank_line_in_header():
     las = read(egfn('blank_line.las'))
     assert las.curves[0].mnemonic == 'DEPT'
 
+def test_duplicate_step():
+    las = read(egfn('duplicate_step.las'))
+    
 def test_blank_line_at_start():
     las = read(egfn('blank_line_start.las'))
     
