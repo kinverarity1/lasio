@@ -182,6 +182,9 @@ def test_blank_line_in_header():
     las = read(egfn('blank_line.las'))
     assert las.curves[0].mnemonic == 'DEPT'
 
+def test_blank_line_at_start():
+    las = read(egfn('blank_line_start.las'))
+    
 def test_missing_STRT_STOP():
     las = read(egfn('sample_TVD.las'))
     assert len(las.well) == 12
