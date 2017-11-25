@@ -233,7 +233,7 @@ class LASFile(object):
                 self.raw_sections.pop(key)
 
         check_units_on = []
-        for mnemonic in ['STRT', 'STOP', 'STEP']:
+        for mnemonic in ('STRT', 'STOP', 'STEP'):
             if mnemonic in self.well:
                 check_units_on.append(self.well[mnemonic])
         if len(self.curves) > 0:
