@@ -232,8 +232,12 @@ class LASFile(object):
             for key in drop:
                 self.raw_sections.pop(key)
 
-        check_units_on = (self.well['STRT'], self.well['STOP'], 
-            self.well['STEP'], self.curves[0])
+        check_units_on = []
+        for mnemonic in ('STRT', 'STOP', 'STEP'):
+            if mnemonic in self.well:
+                check_units_on.append(self.well[mnemonic])
+        if len(self.curves) > 0:
+            check_units_on.append(self.curves[0])
         for index_unit, possibilities in defaults.DEPTH_UNITS.items():
             if all(i.unit.upper() in possibilities for i in check_units_on):
                 self.index_unit = index_unit
