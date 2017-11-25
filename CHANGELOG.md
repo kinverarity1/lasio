@@ -1,5 +1,15 @@
 # List of changes
 
+## Version 0.16
+
+- Add read_policy and null_policy keywords - see documentation for details
+- Fix bugs around files with missing ~V ~W ~P or ~C sections (#84 #85 #78)
+- Fix #17 involving files with commas as a decimal mark
+- Improve LASHeaderError traceback message
+- Fix bug involving files with ~A but no data lines following
+- Fix bug with blank line at start of file
+- Fix bug involving missing or duplicate STRT, STOP and STEP mnemonics
+
 ## Version 0.15.1
 
 - Major performance improvements with both memory and speed
@@ -11,6 +21,7 @@
 - ``autodetect_encoding=True`` by default
 - Allow reading of multiple non-standard header sections (#167, #168)
 - Add flexibility in reading corrupted headers (``ignore_header_errors=True``)
+- Add ability to avoid reading in data (``ignore_data=True``)
 - Remove excessive debugging messages
 - Fix bug #164 where ``FEET`` was not recognised as ``FT``
 - Fix major globals() bug #141 affecting LASFile.add_curve
