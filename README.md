@@ -6,7 +6,6 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/lasio.svg)](https://www.python.org/downloads/)
 [![Build Status](https://travis-ci.org/kinverarity1/lasio.svg?branch=master)](https://travis-ci.org/kinverarity1/lasio)
 [![Build status](https://ci.appveyor.com/api/projects/status/csr7bg8urkbtbq4n?svg=true)](https://ci.appveyor.com/project/kinverarity1/lasio)
-[![Docker Automated](https://img.shields.io/docker/automated/kinverarity/lasio.svg)](https://hub.docker.com/r/kinverarity/lasio/)
 [![Docker Build](https://img.shields.io/docker/build/kinverarity/lasio.svg)](https://hub.docker.com/r/kinverarity/lasio/)
 
 This is a Python 2.7 and 3.3+ package to read and write Log ASCII Standard (LAS) files, used for borehole data such as geophysical, geological, or petrophysical logs. It's compatible with versions 1.2 and 2.0 of the LAS file specification, published by the [Canadian Well Logging Society](http://www.cwls.org/las). Support for LAS 3 is being worked on. In principle it is designed to read as many types of LAS files as possible, including ones containing common errors or non-compliant formatting.
