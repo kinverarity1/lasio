@@ -99,11 +99,15 @@ class HeaderItem(OrderedDict):
         super(HeaderItem, self).__setattr__(key, value)
 
     def __repr__(self):
-        return (
+        result = (
             '%s(mnemonic=%s, unit=%s, value=%s, '
-            'descr=%s, original_mnemonic=%s)' % (
+            'descr=%s)' % (
                 self.__class__.__name__, self.mnemonic, self.unit, self.value,
-                self.descr, self.original_mnemonic))
+                self.descr))
+        if len(result) > 80:
+            return result[:76] + '...)'
+        else:
+            return result
 
     def _repr_pretty_(self, p, cycle):
         return p.text(self.__repr__())
