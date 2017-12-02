@@ -8,6 +8,7 @@ import pytest
 import math
 
 import lasio
+import lasio.las_items
 from lasio import las, read, exceptions
 
 
@@ -82,5 +83,5 @@ def test_non_standard_sections():
     assert "extra special information" in l.sections.keys()
 
 def test_repr():
-    h = lasio.HeaderItem('MN', unit='m', value=20, descr='test testing')
+    h = lasio.las_items.HeaderItem('MN', unit='m', value=20, descr='test testing')
     assert h.__repr__() == pformat(h)
