@@ -238,6 +238,10 @@ class SectionItems(list):
     def iteritems(self):
         return iter(self.items())
 
+    def __getslice__(self, i0, i1):
+        '''For Python 2.7 compatibility.'''
+        return self.__getitem__(slice(i0, i1))
+
     def __getitem__(self, key):
         '''Item-style access by either mnemonic or index.
 

@@ -33,10 +33,15 @@ def test_delete_section_item_by_mnemonic():
 
 def test_section_items_slice():
     las = lasio.read(egfn('sample.las'))
-    sl = las.curves[1:4]
-    logger.debug(str(sl))
+    sl = las.curves[slice(1, 4)]
     assert sl.keys() == ['DT', 'RHOB', 'NPHI']
 
+def test_section_items_indices():
+    las = lasio.read(egfn('sample.las'))
+    logger.debug('Type of las.curves = {}'.format(type(las.curves)))
+    sl = las.curves[1:4]
+    # logger.debug(str(sl))
+    assert sl.keys() == ['DT', 'RHOB', 'NPHI']
 
 def test_add_curve_duplicate():
     las = lasio.LASFile()
