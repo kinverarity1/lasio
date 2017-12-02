@@ -630,24 +630,62 @@ class LASFile(object):
                 'Unit of depth index not known')
 
     def add_curve_raw(self, mnemonic, data, unit='', descr='', value=''):
-        '''Deprecated. Use append_curve_item or insert_curve_item instead.'''
+        '''Deprecated. Use append_curve_item() or insert_curve_item() instead.'''
         return self.append_curve_item(self, mnemonic, data, unit, descr, value)
 
     def append_curve_item(self, curve_item):
+        '''Add a CurveItem.
+
+        Args:
+            curve_item (lasio.CurveItem)
+
+        '''
         self.insert_curve_item(len(self.curves), curve_item)
 
     def insert_curve_item(self, ix, curve_item):
+        '''Insert a CurveItem.
+
+        Args:
+            ix (int): position to insert CurveItem i.e. 0 for start
+            curve_item (lasio.CurveItem)
+
+        '''
         assert isinstance(curve_item, CurveItem)
         self.curves.insert(ix, curve_item)
 
     def add_curve(self, *args, **kwargs):
-        '''Deprecated. Use append_curve or insert_curve instead.'''
+        '''Deprecated. Use append_curve() or insert_curve() instead.'''
         return self.append_curve(*args, **kwargs)
 
     def append_curve(self, mnemonic, data, unit='', descr='', value=''):
+        '''Add a curve.
+
+        Arguments:
+            mnemonic (str): the curve mnemonic
+            data (1D ndarray): the curve data
+
+        Keyword Arguments:
+            unit (str): curve unit
+            descr (str): curve description
+            value (int/float/str): value e.g. API code.
+
+        '''
         return self.insert_curve(len(self.curves), mnemonic, data, unit, descr, value)
 
     def insert_curve(self, ix, mnemonic, data, unit='', descr='', value=''):
+        '''Insert a curve.
+
+        Arguments:
+            ix (int): position to insert curve at i.e. 0 for start.
+            mnemonic (str): the curve mnemonic
+            data (1D ndarray): the curve data
+
+        Keyword Arguments:
+            unit (str): curve unit
+            descr (str): curve description
+            value (int/float/str): value e.g. API code.
+
+        '''
         curve = CurveItem(mnemonic, unit, value, descr)
         if hasattr(self, 'data'):
             self.data = np.column_stack([self.data, data])
@@ -657,6 +695,15 @@ class LASFile(object):
         self.insert_curve_item(ix, curve)
 
     def delete_curve(self, mnemonic=None, ix=None):
+        '''Delete a curve.
+
+        Keyword Arguments:
+            ix (int): index of curve in LASFile.curves.
+            mnemonic (str): mnemonic of curve.
+
+        The index takes precedence over the mnemonic.
+
+        '''
         if ix is None:
             ix = self.curves.keys().index(mnemonic)
         self.curves.pop(ix)
