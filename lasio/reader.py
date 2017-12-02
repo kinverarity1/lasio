@@ -629,12 +629,17 @@ def read_header_line(line, pattern=None):
         containing a string as value.
 
     '''
-    d = {}
+    d = {'name': '', 'unit': '', 'value': '', 'descr': ''}
     if pattern is None:
-        pattern = (r'\.?(?P<name>[^.]*)\.' +
-                   r'(?P<unit>[^\s:]*)' +
-                   r'(?P<value>[^:]*):' +
-                   r'(?P<descr>.*)')
+        if not ':' in line:
+            pattern = (r'\.?(?P<name>[^.]*)\.' +
+                       r'(?P<unit>[^\s:]*)' +
+                       r'(?P<value>[^:]*)')
+        else:
+            pattern = (r'\.?(?P<name>[^.]*)\.' +
+                       r'(?P<unit>[^\s:]*)' +
+                       r'(?P<value>[^:]*):' +
+                       r'(?P<descr>.*)')
     m = re.match(pattern, line)
     mdict = m.groupdict()
     for key, value in mdict.items():
