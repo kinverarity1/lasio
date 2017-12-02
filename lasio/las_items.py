@@ -238,16 +238,22 @@ class SectionItems(list):
     def iteritems(self):
         return iter(self.items())
 
+    def __getslice__(self, i0, i1):
+        '''For Python 2.7 compatibility.'''
+        return self.__getitem__(slice(i0, i1))
+
     def __getitem__(self, key):
         '''Item-style access by either mnemonic or index.
 
         Arguments:
-            key (str, int): either a mnemonic or the index to the list.
+            key (str, int, slice): either a mnemonic or the index to the list.
 
         Returns:
             item from the list (either HeaderItem or CurveItem)
 
         '''
+        if isinstance(key, slice):
+            return SectionItems(super(SectionItems, self).__getitem__(key))
         for item in self:
             if item.mnemonic == key:
                 return item
