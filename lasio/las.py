@@ -629,53 +629,36 @@ class LASFile(object):
             raise exceptions.LASUnknownUnitError(
                 'Unit of depth index not known')
 
-    def add_curve(self, *args, **kwargs):
-        '''Add curve(s) to the LAS file.
-
-        If the first argument is a :class:`lasio.las_items.CurveItem` object,
-        then this method will assume all the arguments are CurveItem objects
-        and add them all.
-
-        Otherwise, the arguments will all be passed to
-        :meth:`lasio.las.LASFile.add_curve_raw` and a single curve will be
-        created and added.
-
-        '''
-        if isinstance(args[0], CurveItem):
-            for curve in args:
-                self.curves.append(curve)
-        else:
-            self.add_curve_raw(*args, **kwargs)
-
     def add_curve_raw(self, mnemonic, data, unit='', descr='', value=''):
-        '''Add data to the LAS file as a curve.
+        '''Deprecated. Use append_curve_item or insert_curve_item instead.'''
+        return self.append_curve_item(self, mnemonic, data, unit, descr, value)
 
-        Arguments:
-            mnemonic (str): the curve's mnemonic
-            data (array-like, 1-D): the curve's data.
+    def append_curve_item(self, curve_item):
+        self.insert_curve_item(len(self.curves), curve_item)
 
-        Keyword Arguments:
-            unit (str, optional): the unit for the curve
-            descr (str, optional): short description (keep it to a single line!)
-            value (float, str, int): value (e.g. API code??)
+    def insert_curve_item(self, ix, curve_item):
+        assert isinstance(curve_item, CurveItem)
+        self.curves.insert(ix, curve_item)
 
-        '''
+    def add_curve(self, *args, **kwargs):
+        '''Deprecated. Use append_curve or insert_curve instead.'''
+        return self.append_curve(*args, **kwargs)
+
+    def append_curve(self, mnemonic, data, unit='', descr='', value=''):
+        return self.insert_curve(len(self.curves), mnemonic, data, unit, descr, value)
+
+    def insert_curve(self, ix, mnemonic, data, unit='', descr='', value=''):
         curve = CurveItem(mnemonic, unit, value, descr)
         if hasattr(self, 'data'):
             self.data = np.column_stack([self.data, data])
         else:
             self.data = np.column_stack([data])
         curve.data = self.data[:, -1]
-        self.curves.append(curve)
+        self.insert_curve_item(ix, curve)
 
-    def delete_curve(self, mnemonic):
-        '''Remove curve by its mnemonic.
-
-        Arguments:
-            mnemonic (str): curve mnemonic (must exist in the file)
-
-        '''
-        ix = self.curves.keys().index(mnemonic)
+    def delete_curve(self, mnemonic=None, ix=None):
+        if ix is None:
+            ix = self.curves.keys().index(mnemonic)
         self.curves.pop(ix)
         self.data = np.delete(self.data, np.s_[ix], axis=1)
 
