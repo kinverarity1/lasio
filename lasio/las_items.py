@@ -256,6 +256,23 @@ class SectionItems(list):
         else:
             raise KeyError('%s not in %s' % (key, self.keys()))
 
+    def __delitem__(self, key):
+        '''Delete item by either mnemonic or index.
+
+        Arguments:
+            key (str, int): either a mnemonic or the index to the list.
+
+        '''
+        for ix, item in enumerate(self):
+            if item.mnemonic == key:
+                super(SectionItems, self).__delitem__(ix)
+                return
+        if isinstance(key, int):
+            super(SectionItems, self).__delitem__(key)
+            return
+        else:
+            raise KeyError('%s not in %s' % (key, self.keys()))
+
     def __setitem__(self, key, newitem):
         '''Either replace the item or its value.
 
