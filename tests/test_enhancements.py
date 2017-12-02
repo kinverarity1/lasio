@@ -1,11 +1,14 @@
 import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import fnmatch
+from pprint import pformat
 
 import numpy
 import pytest
 import math
 
+import lasio
+import lasio.las_items
 from lasio import las, read, exceptions
 
 
@@ -78,3 +81,7 @@ def test_non_standard_sections():
     l = read(egfn("non-standard-header-sections.las"))
     assert "SPECIAL INFORMATION" in l.sections.keys()
     assert "extra special information" in l.sections.keys()
+
+def test_repr():
+    h = lasio.las_items.HeaderItem('MN', unit='m', value=20, descr='test testing')
+    assert h.__repr__() == pformat(h)
