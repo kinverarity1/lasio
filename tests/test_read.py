@@ -21,10 +21,6 @@ def test_read_v12_sample():
     l = lasio.read(stegfn("1.2", "sample.las"))
     
 
-def test_read_v12_sample_big():
-    l = lasio.read(stegfn("1.2", "sample_big.las"))
-
-
 def test_read_v12_sample_curve_api():
     l = lasio.read(stegfn("1.2", "sample_curve_api.las"))
 
@@ -194,3 +190,7 @@ def test_missing_STRT_STOP():
 def test_UWI_API_leading_zero():
     las = lasio.read(egfn('UWI_API_leading_zero.las'))
     assert las.well['UWI'].value == '05123370660000'
+
+def test_sparse_curves():
+    las = lasio.read(egfn('sparse_curves.las'))
+    assert las.curves.keys() == ['DEPT', 'DT', 'RHOB', 'NPHI', 'SFLU', 'SFLA', 'ILM', 'ILD']
