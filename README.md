@@ -7,7 +7,7 @@
 [![Build Status](https://travis-ci.org/kinverarity1/lasio.svg?branch=master)](https://travis-ci.org/kinverarity1/lasio)
 [![Build status](https://ci.appveyor.com/api/projects/status/csr7bg8urkbtbq4n?svg=true)](https://ci.appveyor.com/project/kinverarity1/lasio)
 
-This is a Python 2/3 package to read and write Log ASCII Standard (LAS) files, used for borehole data such as geophysical, geological, or petrophysical logs. It's compatible with versions 1.2 and 2.0 of the LAS file specification, published by the [Canadian Well Logging Society](http://www.cwls.org/las). In principle it is designed to read as many types of LAS files as possible, including ones containing common errors or non-compliant formatting.
+This is a Python 2.7 and 3.3+ package to read and write Log ASCII Standard (LAS) files, used for borehole data such as geophysical, geological, or petrophysical logs. It's compatible with versions 1.2 and 2.0 of the LAS file specification, published by the [Canadian Well Logging Society](http://www.cwls.org/las). Support for LAS 3 is being worked on. In principle it is designed to read as many types of LAS files as possible, including ones containing common errors or non-compliant formatting.
 
 Depending on your particular application you may also want to check out [striplog](https://github.com/agile-geoscience/striplog) for stratigraphic/lithological data, or [welly](https://github.com/agile-geoscience/welly) for dealing with data at the well level. lasio is primarily for reading & writing LAS files.
 
