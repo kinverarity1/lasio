@@ -420,7 +420,8 @@ def get_substitutions(read_policy, null_policy):
     return regexp_subs, numerical_subs, version_NULL
 
 
-def parse_header_section(sectdict, version, ignore_header_errors=False):
+def parse_header_section(sectdict, version, ignore_header_errors=False,
+                         mnemonic_case='preserve'):
     '''Parse a header section dict into a SectionItems containing HeaderItems.
 
     Arguments:
@@ -432,6 +433,9 @@ def parse_header_section(sectdict, version, ignore_header_errors=False):
         ignore_header_errors (bool): if True, issue HeaderItem parse errors
             as :func:`logging.warning` calls instead of a
             :exc:`lasio.exceptions.LASHeaderError` exception.
+        mnemonic_case (str): 'preserve': keep the case of HeaderItem mnemonics
+                             'upper': convert all HeaderItem mnemonics to uppercase
+                             'lower': convert all HeaderItem mnemonics to lowercase
 
     Returns:
         :class:`lasio.las_items.SectionItems`
@@ -457,6 +461,10 @@ def parse_header_section(sectdict, version, ignore_header_errors=False):
             else:
                 raise exceptions.LASHeaderError(message)
         else:
+            if mnemonic_case == 'upper':
+                values['name'] = values['name'].upper()
+            elif mnemonic_case == 'lower':
+                values['name'] = values['name'].lower()
             section.append(parser(**values))
     return section
 
