@@ -85,3 +85,16 @@ def test_non_standard_sections():
 def test_repr():
     h = lasio.las_items.HeaderItem('MN', unit='m', value=20, descr='test testing')
     assert h.__repr__() == pformat(h)
+
+def test_mnemonic_case_preserved():
+    las = lasio.read(egfn('sample_mnemonic_case.las'), mnemonic_case='preserve')
+    assert [c.mnemonic for c in las.curves] == ['Dept', 'Sflu', 'NPHI', 'SFLU', 'SFLU', 'sflu', 'SfLu']
+
+def test_mnemonic_case_upper():
+    las = lasio.read(egfn('sample_mnemonic_case.las'), mnemonic_case='upper')
+    assert [c.mnemonic for c in las.curves] == ['DEPT', 'SFLU', 'NPHI', 'SFLU', 'SFLU', 'SFLU', 'SFLU']
+
+def test_mnemonic_case_lower():
+    las = lasio.read(egfn('sample_mnemonic_case.las'), mnemonic_case='lower')
+    assert [c.mnemonic for c in las.curves] == ['dept', 'sflu', 'nphi', 'sflu', 'sflu', 'sflu', 'sflu']
+
