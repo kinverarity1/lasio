@@ -185,12 +185,7 @@ class SectionItems(list):
     '''
     def __init__(self, *args, **kwargs):
         super(SectionItems, self).__init__(*args, **kwargs)
-        super(SectionItems, self).__setattr__('mnemonic_transforms', [])
-        self.append_mnemonic_transform(lambda x: x)
-
-    def append_mnemonic_transform(self, func):
-        super(SectionItems, self).__setattr__(
-            'mnemonic_transforms', self.mnemonic_transforms + [func])
+        super(SectionItems, self).__setattr__('mnemonic_transforms', False)
 
     def __str__(self):
         rstr_lines = []
@@ -209,12 +204,15 @@ class SectionItems(list):
         return '\n'.join(rstr_lines)
 
     def mnemonic_compare(self, one, two):
-        for transform in self.mnemonic_transforms:
+        if self.mnemonic_transforms:
             try:
-                if transform(one) == transform(two):
+                if one.upper() == two.upper():
                     return True
             except AttributeError:
                 pass
+        else:
+            if one == two:
+                return True
         return False
 
     def __contains__(self, testitem):
@@ -339,10 +337,11 @@ class SectionItems(list):
             HeaderItem(mnemonic='VERS', ...)
 
         '''
-        if key in self:
-            return self[key]
-        else:
-            super(SectionItems, self).__getattr__(key)
+        known_attrs = ['mnemonic_transforms', ]
+        if not key in known_attrs:
+            if key in self:
+                return self[key]
+        super(SectionItems, self).__getattr__(key)
 
     def __setattr__(self, key, value):
         '''Allow access to :meth:`lasio.las_items.SectionItems.__setitem__`
