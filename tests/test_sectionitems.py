@@ -111,3 +111,20 @@ def test_delete_curve_mnemonic():
     logger.info(str([c.mnemonic for c in las.curves]))
     las.delete_curve(mnemonic='DEPT')
     assert [c.descr for c in las.curves] == ['b2', 'b1']
+
+def test_mnemonic_case_comparison_preserve_1():
+    las = lasio.read(egfn('mnemonic_case.las'), mnemonic_case='preserve')
+    assert 'Dept' in las.curves
+
+def test_mnemonic_case_comparison_preserve_2():
+    las = lasio.read(egfn('mnemonic_case.las'), mnemonic_case='preserve')
+    assert not 'DEPT' in las.curves
+
+def test_mnemonic_case_comparison_upper():
+    las = lasio.read(egfn('mnemonic_case.las'), mnemonic_case='upper')
+    assert 'dept' in las.curves
+    
+def test_mnemonic_case_comparison_lower():
+    las = lasio.read(egfn('mnemonic_case.las'), mnemonic_case='lower')
+    assert 'DEPT' in las.curves
+

@@ -183,6 +183,9 @@ class SectionItems(list):
     '''Variant of a ``list`` which is used to represent a LAS section.
 
     '''
+    def __init__(self, *args, **kwargs):
+        super(SectionItems, self).__init__(*args, **kwargs)
+        super(SectionItems, self).__setattr__('mnemonic_transforms', [lambda x: x])
 
     def __str__(self):
         rstr_lines = []
@@ -200,6 +203,12 @@ class SectionItems(list):
             rstr_lines.append(''.join(line_items))
         return '\n'.join(rstr_lines)
 
+    def mnemonic_compare(self, one, two):
+        for transform in self.mnemonic_transforms:
+            if transform(one) == transform(two):
+                return True
+        return False
+
     def __contains__(self, testitem):
         '''Check whether a header item or mnemonic is in the section.
 
@@ -211,10 +220,10 @@ class SectionItems(list):
 
         '''
         for item in self:
-            if testitem == item.mnemonic:
+            if self.mnemonic_compare(testitem, item.mnemonic):
                 return True
             elif hasattr(testitem, 'mnemonic'):
-                if testitem.mnemonic == item.mnemonic:
+                if self.mnemonic_compare(testitem.mnemonic, item.mnemonic):
                     return True
             elif testitem is item:
                 return True
@@ -259,7 +268,7 @@ class SectionItems(list):
         if isinstance(key, slice):
             return SectionItems(super(SectionItems, self).__getitem__(key))
         for item in self:
-            if item.mnemonic == key:
+            if self.mnemonic_compare(item.mnemonic, key):
                 return item
         if isinstance(key, int):
             return super(SectionItems, self).__getitem__(key)
@@ -274,7 +283,7 @@ class SectionItems(list):
 
         '''
         for ix, item in enumerate(self):
-            if item.mnemonic == key:
+            if self.mnemonic_compare(item.mnemonic, key):
                 super(SectionItems, self).__delitem__(ix)
                 return
         if isinstance(key, int):
@@ -349,7 +358,7 @@ class SectionItems(list):
 
         '''
         for i, item in enumerate(self):
-            if key == item.mnemonic:
+            if self.mnemonic_compare(key, item.mnemonic):
 
                 # This is very important. We replace items where
                 # 'mnemonic' is equal - i.e. we do not check 
@@ -378,7 +387,7 @@ class SectionItems(list):
         existing = [item.useful_mnemonic for item in self]
         locations = []
         for i, item in enumerate(self):
-            if item.useful_mnemonic == newitem.mnemonic:
+            if self.mnemonic_compare(item.useful_mnemonic, newitem.mnemonic):
                 locations.append(i)
         if len(locations) > 1:
             current_count = 1
