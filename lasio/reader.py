@@ -444,7 +444,14 @@ def parse_header_section(sectdict, version, ignore_header_errors=False,
     title = sectdict["title"]
     assert len(sectdict["lines"]) == len(sectdict["line_nos"])
     parser = SectionParser(title, version=version)
+    
     section = SectionItems()
+    assert mnemonic_case in ('upper', 'lower', 'preserve')
+    if mnemonic_case == 'lower':
+        section.append_mnemonic_transform(lambda mnemonic: mnemonic.lower())
+    elif mnemonic_case == 'upper':
+        section.append_mnemonic_transform(lambda mnemonic: mnemonic.upper())
+    
     for i in range(len(sectdict["lines"])):
         line = sectdict["lines"][i]
         j = sectdict["line_nos"][i]

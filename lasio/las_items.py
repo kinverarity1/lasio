@@ -185,7 +185,12 @@ class SectionItems(list):
     '''
     def __init__(self, *args, **kwargs):
         super(SectionItems, self).__init__(*args, **kwargs)
-        super(SectionItems, self).__setattr__('mnemonic_transforms', [lambda x: x])
+        super(SectionItems, self).__setattr__('mnemonic_transforms', [])
+        self.append_mnemonic_transform(lambda x: x)
+
+    def append_mnemonic_transform(self, func):
+        super(SectionItems, self).__setattr__(
+            'mnemonic_transforms', self.mnemonic_transforms + [func])
 
     def __str__(self):
         rstr_lines = []
@@ -205,8 +210,11 @@ class SectionItems(list):
 
     def mnemonic_compare(self, one, two):
         for transform in self.mnemonic_transforms:
-            if transform(one) == transform(two):
-                return True
+            try:
+                if transform(one) == transform(two):
+                    return True
+            except AttributeError:
+                pass
         return False
 
     def __contains__(self, testitem):
