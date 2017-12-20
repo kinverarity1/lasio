@@ -1,6 +1,9 @@
 Metadata from the header sections
 =================================
 
+Tutorial
+--------
+
 One of the primary motivations in writing lasio was to be able to reliably
 parse LAS header sections. This is working fairly well for LAS 1.2 and 2.0
 files, and lasio does not require LAS files to be strictly compliant with
@@ -222,3 +225,112 @@ use the item-style access.
      HeaderItem(mnemonic=DRILL, unit=, value=John Smith, descr=Driller on site, original_mnemonic=DRILL)]
 
 Bingo.
+
+Handling errors
+---------------
+
+lasio will do its best to read every line from the header section. If it can make sense of it,
+it will parse it into a mnemonic, unit, value, and description.
+
+However many lines are "broken":
+
+    COUNTY: RUSSELL
+
+(missing period, should be ``COUNTY.    : RUSSELL``). Or:
+
+    API       .                                          : API Number     (required if CTRY = US)   
+    "# Surface Coords: 1,000' FNL & 2,000' FWL" 
+    LATI      .DEG                                       : Latitude  - see Surface Coords comment above 
+    LONG      .DEG                                       : Longitude - see Surface Coords comment above
+
+Obviously the line with " causes an error.
+
+All these (and any other kind of error in the header section) can be turned from LASHeaderError exceptions into :func:`logger.warning` calls instead by using ``lasio.read(..., ignore_header_errors=True)``. 
+
+Here is an example. First we try reading a file without this argument:
+
+.. code-block:: ipython
+
+In [2]: las = lasio.read('tests/examples/dodgy_param_sect.las', ignore_header_errors=False)
+---------------------------------------------------------------------------
+AttributeError                            Traceback (most recent call last)
+~\Code\lasio\lasio\reader.py in parse_header_section(sectdict, version, ignore_header_errors, mnemonic_case)
+    458         try:
+--> 459             values = read_line(line)
+    460         except:
+
+~\Code\lasio\lasio\reader.py in read_line(*args, **kwargs)
+    625     '''
+--> 626     return read_header_line(*args, **kwargs)
+    627
+
+~\Code\lasio\lasio\reader.py in read_header_line(line, pattern)
+    656     m = re.match(pattern, line)
+--> 657     mdict = m.groupdict()
+    658     for key, value in mdict.items():
+
+AttributeError: 'NoneType' object has no attribute 'groupdict'
+
+During handling of the above exception, another exception occurred:
+
+LASHeaderError                            Traceback (most recent call last)
+<ipython-input-2-3c0606fe7dc1> in <module>()
+----> 1 las = lasio.read('tests/examples/dodgy_param_sect.las', ignore_header_errors=False)
+
+~\Code\lasio\lasio\__init__.py in read(file_ref, **kwargs)
+     41
+     42     '''
+---> 43     return LASFile(file_ref, **kwargs)
+
+~\Code\lasio\lasio\las.py in __init__(self, file_ref, **read_kwargs)
+     76
+     77         if not (file_ref is None):
+---> 78             self.read(file_ref, **read_kwargs)
+     79
+     80     def read(self, file_ref,
+
+~\Code\lasio\lasio\las.py in read(self, file_ref, ignore_data, read_policy, null_policy, ignore_header_errors, mnemonic_case, **kwargs)
+    185         add_section("~P", "Parameter", version=version,
+    186                     ignore_header_errors=ignore_header_errors,
+--> 187                     mnemonic_case=mnemonic_case)
+    188         s = self.match_raw_section("~O")
+    189
+
+~\Code\lasio\lasio\las.py in add_section(pattern, name, **sect_kws)
+    122             if raw_section:
+    123                 self.sections[name] = reader.parse_header_section(raw_section,
+--> 124                                                                   **sect_kws)
+    125                 drop.append(raw_section["title"])
+    126             else:
+
+~\Code\lasio\lasio\reader.py in parse_header_section(sectdict, version, ignore_header_errors, mnemonic_case)
+    465                 logger.warning(message)
+    466             else:
+--> 467                 raise exceptions.LASHeaderError(message)
+    468         else:
+    469             if mnemonic_case == 'upper':
+
+LASHeaderError: line 31 (section ~PARAMETER INFORMATION): "DEPTH     DT       RHOB     NPHI     SFLU     SFLA      ILM      ILD"
+
+Now:
+
+.. code-block:: IPython
+
+    In [3]: las = lasio.read('tests/examples/dodgy_param_sect.las', ignore_header_errors=True)
+    line 31 (section ~PARAMETER INFORMATION): "DEPTH     DT       RHOB     NPHI     SFLU     SFLA      ILM      ILD"
+
+    In [4]: las.params
+    []
+
+    In [5]: las.curves
+    Out[5]:
+    [CurveItem(mnemonic=DEPT, unit=M, value=, descr=1  DEPTH, original_mnemonic=DEPT, data.shape=(3,)),
+    CurveItem(mnemonic=DT, unit=US/M, value=, descr=2  SONIC TRANSIT TIME, original_mnemonic=DT, data.shape=(3,)),
+    CurveItem(mnemonic=RHOB, unit=K/M3, value=, descr=3  BULK DENSITY, original_mnemonic=RHOB, data.shape=(3,)),
+    CurveItem(mnemonic=NPHI, unit=V/V, value=, descr=4   NEUTRON POROSITY, original_mnemonic=NPHI, data.shape=(3,)),
+    CurveItem(mnemonic=SFLU, unit=OHMM, value=, descr=5  RXO RESISTIVITY, original_mnemonic=SFLU, data.shape=(3,)),
+    CurveItem(mnemonic=SFLA, unit=OHMM, value=, descr=6  SHALLOW RESISTIVITY, original_mnemonic=SFLA, data.shape=(3,)),
+    CurveItem(mnemonic=ILM, unit=OHMM, value=, descr=7  MEDIUM RESISTIVITY, original_mnemonic=ILM, data.shape=(3,)),
+    CurveItem(mnemonic=ILD, unit=OHMM, value=, descr=8  DEEP RESISTIVITY, original_mnemonic=ILD, data.shape=(3,))]
+
+Only a warning is issued, and the rest of the LAS file loads OK.
