@@ -251,66 +251,66 @@ Here is an example. First we try reading a file without this argument:
 
 .. code-block:: ipython
 
-In [2]: las = lasio.read('tests/examples/dodgy_param_sect.las', ignore_header_errors=False)
----------------------------------------------------------------------------
-AttributeError                            Traceback (most recent call last)
-~\Code\lasio\lasio\reader.py in parse_header_section(sectdict, version, ignore_header_errors, mnemonic_case)
-    458         try:
---> 459             values = read_line(line)
-    460         except:
+    In [2]: las = lasio.read('tests/examples/dodgy_param_sect.las', ignore_header_errors=False)
+    ---------------------------------------------------------------------------
+    AttributeError                            Traceback (most recent call last)
+    ~\Code\lasio\lasio\reader.py in parse_header_section(sectdict, version, ignore_header_errors, mnemonic_case)
+        458         try:
+    --> 459             values = read_line(line)
+        460         except:
 
-~\Code\lasio\lasio\reader.py in read_line(*args, **kwargs)
-    625     '''
---> 626     return read_header_line(*args, **kwargs)
-    627
+    ~\Code\lasio\lasio\reader.py in read_line(*args, **kwargs)
+        625     '''
+    --> 626     return read_header_line(*args, **kwargs)
+        627
 
-~\Code\lasio\lasio\reader.py in read_header_line(line, pattern)
-    656     m = re.match(pattern, line)
---> 657     mdict = m.groupdict()
-    658     for key, value in mdict.items():
+    ~\Code\lasio\lasio\reader.py in read_header_line(line, pattern)
+        656     m = re.match(pattern, line)
+    --> 657     mdict = m.groupdict()
+        658     for key, value in mdict.items():
 
-AttributeError: 'NoneType' object has no attribute 'groupdict'
+    AttributeError: 'NoneType' object has no attribute 'groupdict'
 
-During handling of the above exception, another exception occurred:
+    During handling of the above exception, another exception occurred:
 
-LASHeaderError                            Traceback (most recent call last)
-<ipython-input-2-3c0606fe7dc1> in <module>()
-----> 1 las = lasio.read('tests/examples/dodgy_param_sect.las', ignore_header_errors=False)
+    LASHeaderError                            Traceback (most recent call last)
+    <ipython-input-2-3c0606fe7dc1> in <module>()
+    ----> 1 las = lasio.read('tests/examples/dodgy_param_sect.las', ignore_header_errors=False)
 
-~\Code\lasio\lasio\__init__.py in read(file_ref, **kwargs)
-     41
-     42     '''
----> 43     return LASFile(file_ref, **kwargs)
+    ~\Code\lasio\lasio\__init__.py in read(file_ref, **kwargs)
+        41
+        42     '''
+    ---> 43     return LASFile(file_ref, **kwargs)
 
-~\Code\lasio\lasio\las.py in __init__(self, file_ref, **read_kwargs)
-     76
-     77         if not (file_ref is None):
----> 78             self.read(file_ref, **read_kwargs)
-     79
-     80     def read(self, file_ref,
+    ~\Code\lasio\lasio\las.py in __init__(self, file_ref, **read_kwargs)
+        76
+        77         if not (file_ref is None):
+    ---> 78             self.read(file_ref, **read_kwargs)
+        79
+        80     def read(self, file_ref,
 
-~\Code\lasio\lasio\las.py in read(self, file_ref, ignore_data, read_policy, null_policy, ignore_header_errors, mnemonic_case, **kwargs)
-    185         add_section("~P", "Parameter", version=version,
-    186                     ignore_header_errors=ignore_header_errors,
---> 187                     mnemonic_case=mnemonic_case)
-    188         s = self.match_raw_section("~O")
-    189
+    ~\Code\lasio\lasio\las.py in read(self, file_ref, ignore_data, read_policy, null_policy, ignore_header_errors, mnemonic_case, **kwargs)
+        185         add_section("~P", "Parameter", version=version,
+        186                     ignore_header_errors=ignore_header_errors,
+    --> 187                     mnemonic_case=mnemonic_case)
+        188         s = self.match_raw_section("~O")
+        189
 
-~\Code\lasio\lasio\las.py in add_section(pattern, name, **sect_kws)
-    122             if raw_section:
-    123                 self.sections[name] = reader.parse_header_section(raw_section,
---> 124                                                                   **sect_kws)
-    125                 drop.append(raw_section["title"])
-    126             else:
+    ~\Code\lasio\lasio\las.py in add_section(pattern, name, **sect_kws)
+        122             if raw_section:
+        123                 self.sections[name] = reader.parse_header_section(raw_section,
+    --> 124                                                                   **sect_kws)
+        125                 drop.append(raw_section["title"])
+        126             else:
 
-~\Code\lasio\lasio\reader.py in parse_header_section(sectdict, version, ignore_header_errors, mnemonic_case)
-    465                 logger.warning(message)
-    466             else:
---> 467                 raise exceptions.LASHeaderError(message)
-    468         else:
-    469             if mnemonic_case == 'upper':
+    ~\Code\lasio\lasio\reader.py in parse_header_section(sectdict, version, ignore_header_errors, mnemonic_case)
+        465                 logger.warning(message)
+        466             else:
+    --> 467                 raise exceptions.LASHeaderError(message)
+        468         else:
+        469             if mnemonic_case == 'upper':
 
-LASHeaderError: line 31 (section ~PARAMETER INFORMATION): "DEPTH     DT       RHOB     NPHI     SFLU     SFLA      ILM      ILD"
+    LASHeaderError: line 31 (section ~PARAMETER INFORMATION): "DEPTH     DT       RHOB     NPHI     SFLU     SFLA      ILM      ILD"
 
 Now:
 
