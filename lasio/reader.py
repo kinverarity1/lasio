@@ -259,7 +259,7 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs,
         line = line.strip()
         if not line:
             continue
-        if line.startswith('~A'):
+        if line.upper().startswith('~A'):
             # HARD CODED FOR VERSION 1.2 and 2.0; needs review for 3.0
             # We have finished looking at the metadata and need
             # to start reading numerical data.

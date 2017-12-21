@@ -26,13 +26,21 @@ The header sections are stored in the dictionary ``las.sections``:
     Out[207]: dict_keys(['Version', 'Well', 'Curves', 'Parameter', 'Other'])
 
 These are special names reserved for LAS 1.2 and 2.0 files, as defined by the
-standard. It doesn't matter if your LAS file has the Parameter section
-named as ``~pARAMSwhatever`` - lasio will still understand based on that leading
-``P``. It will always appear as ``'Parameter'`` in the ``las.sections``
-dictionary.
+standard. Non-standard header sections are also allowed but not fully parsed.
 
-There are also special attributes for each of these sections: ``las.version``,
-``las.well``, ``las.curves``, and ``las.params``.
+==============================  =======================================  ===================================================================
+LAS file                        Read in as                               References in ``LASFile``
+==============================  =======================================  ===================================================================
+``~v`` or ``~V``                :class:`lasio.las_items.SectionItems`    ``LASFile.version`` and ``LASFile.sections['Version']``
+``~w`` or ``~W``                :class:`lasio.las_items.SectionItems`    ``LASFile.well`` and ``LASFile.sections['Well']``
+``~c`` or ``~C``                :class:`lasio.las_items.SectionItems`    ``LASFile.curves`` and ``LASFile.sections['Curves']``
+``~p`` or ``~P``                :class:`lasio.las_items.SectionItems`    ``LASFile.params`` and ``LASFile.sections['Parameter']``
+``~o`` or ``~O``                ``str``                                  ``LASFile.other`` and ``LASFile.sections['Other']``
+``~extra section``              ``str``                                  ``LASFile.sections['extra section']``
+``~a`` or ``~A``                :class:`numpy.ndarray`                   ``LASFile.data`` or each column is in ``LASFile.curves[...].data``
+==============================  =======================================  ===================================================================
+
+For example:
 
 .. code-block:: ipython
 
@@ -184,13 +192,7 @@ We want to rename the DREF mnemonic as LMF. We can do so by changing the
      HeaderItem(mnemonic=LMF, unit=, value=GL, descr=DREF, original_mnemonic=LMF),
      HeaderItem(mnemonic=TDD, unit=, value=136 m, descr=TDD, original_mnemonic=TDD)]
 
-And now we need to add a new mnemonic:
-
-.. code-block:: ipython
-
-    In [199]: las.params.DRILL = lasio.HeaderItem(mnemonic='DRILL', value='John Smith', descr='Driller on site')
-
-But no - this is the exception! Adding via an attribute **will not work**. You need to
+And now we need to add a new mnemonic. Adding via an attribute **will not work**. You need to
 use the item-style access.
 
 .. code-block:: ipython
@@ -232,11 +234,15 @@ Handling errors
 lasio will do its best to read every line from the header section. If it can make sense of it,
 it will parse it into a mnemonic, unit, value, and description.
 
-However many lines are "broken":
+However often there are problems in LAS files. For example, a header section might contain something like:
+
+.. code-block:: none
 
     COUNTY: RUSSELL
 
 (missing period, should be ``COUNTY.    : RUSSELL``). Or:
+
+.. code-block:: none
 
     API       .                                          : API Number     (required if CTRY = US)   
     "# Surface Coords: 1,000' FNL & 2,000' FWL" 
@@ -312,7 +318,7 @@ Here is an example. First we try reading a file without this argument:
 
     LASHeaderError: line 31 (section ~PARAMETER INFORMATION): "DEPTH     DT       RHOB     NPHI     SFLU     SFLA      ILM      ILD"
 
-Now:
+Now if we use ignore_header_errors=True:
 
 .. code-block:: IPython
 
@@ -338,7 +344,9 @@ Only a warning is issued, and the rest of the LAS file loads OK.
 Handling duplicate mnemonics 
 ----------------------------
 
-Take this file:
+Take this LAS file as an example, containing this ~C section:
+
+.. code-block:: none
 
     ~CURVE INFORMATION
     DEPT.M                     :  1  DEPTH
@@ -350,9 +358,9 @@ Take this file:
     RES.OHMM                   :  7  MEDIUM RESISTIVITY
     RES.OHMM                   :  8  DEEP RESISTIVITY
 
-Notice there are three curves with the mnemonic `RES`.
+Notice there are three curves with the mnemonic RES.
 
-When we load the file in, `lasio` distinguishes between these duplicates:
+When we load the file in, lasio distinguishes between these duplicates:
 
 .. code-block:: IPython
 
@@ -423,7 +431,7 @@ It remembers the original mnemonic, so when you write the file back out, they co
 Normalising mnemonic case 
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If there is a mix of upper and lower case characters in the mnemonics, by default lasio will convert all mnemonics to uppercase to avoid problems with producing these duplicate `:1`, `:2`, `:3` suffixes. There is a keyword argument which will preserve the original formatting if that is what you prefer.
+If there is a mix of upper and lower case characters in the mnemonics, by default lasio will convert all mnemonics to uppercase to avoid problems with producing the :1, :2, :3, and so on. There is a keyword argument which will preserve the original formatting if that is what you prefer.
 
 .. code-block:: IPython
 
