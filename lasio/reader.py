@@ -259,7 +259,7 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs,
         line = line.strip()
         if not line:
             continue
-        if line.startswith('~A'):
+        if line.upper().startswith('~A'):
             # HARD CODED FOR VERSION 1.2 and 2.0; needs review for 3.0
             # We have finished looking at the metadata and need
             # to start reading numerical data.
@@ -420,7 +420,8 @@ def get_substitutions(read_policy, null_policy):
     return regexp_subs, numerical_subs, version_NULL
 
 
-def parse_header_section(sectdict, version, ignore_header_errors=False):
+def parse_header_section(sectdict, version, ignore_header_errors=False,
+                         mnemonic_case='preserve'):
     '''Parse a header section dict into a SectionItems containing HeaderItems.
 
     Arguments:
@@ -432,6 +433,9 @@ def parse_header_section(sectdict, version, ignore_header_errors=False):
         ignore_header_errors (bool): if True, issue HeaderItem parse errors
             as :func:`logging.warning` calls instead of a
             :exc:`lasio.exceptions.LASHeaderError` exception.
+        mnemonic_case (str): 'preserve': keep the case of HeaderItem mnemonics
+                             'upper': convert all HeaderItem mnemonics to uppercase
+                             'lower': convert all HeaderItem mnemonics to lowercase
 
     Returns:
         :class:`lasio.las_items.SectionItems`
@@ -440,7 +444,12 @@ def parse_header_section(sectdict, version, ignore_header_errors=False):
     title = sectdict["title"]
     assert len(sectdict["lines"]) == len(sectdict["line_nos"])
     parser = SectionParser(title, version=version)
+
     section = SectionItems()
+    assert mnemonic_case in ('upper', 'lower', 'preserve')
+    if not mnemonic_case == 'preserve':
+        section.mnemonic_transforms = True
+    
     for i in range(len(sectdict["lines"])):
         line = sectdict["lines"][i]
         j = sectdict["line_nos"][i]
@@ -457,6 +466,10 @@ def parse_header_section(sectdict, version, ignore_header_errors=False):
             else:
                 raise exceptions.LASHeaderError(message)
         else:
+            if mnemonic_case == 'upper':
+                values['name'] = values['name'].upper()
+            elif mnemonic_case == 'lower':
+                values['name'] = values['name'].lower()
             section.append(parser(**values))
     return section
 

@@ -35,8 +35,8 @@ files”).
    installation
    basic-example
    pandas
-   header
-   handling-data-section-errors
+   header-section
+   data-section
    writing
    exporting
    building

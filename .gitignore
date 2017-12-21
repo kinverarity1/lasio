@@ -1,3 +1,4 @@
+
 *.py[cod]
 *swp
 
@@ -44,5 +45,9 @@ CONTRIBUTING.rst
 LICENSE.rst
 CHANGELOG.rst
 CODE_OF_CONDUCT.rst
+<<<<<<< HEAD
 
 .vscode*
+=======
+binary_serialization
+>>>>>>> 0f19a640f7066dfd4f7b9ec1ca6f6a9117646cd3

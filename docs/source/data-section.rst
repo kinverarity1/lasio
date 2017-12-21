@@ -1,5 +1,8 @@
-Handling data section errors
-============================
+Data section
+============
+
+Handling errors
+~~~~~~~~~~~~~~~
 
 ``lasio`` has a flexible way of handling "errors" in the ~ASCII data section to
 accommodate how strict or flexible you want to be.
@@ -202,4 +205,4 @@ easily load it:
 
     In [17]:
 
-See ``tests/test_null_policy.py`` (`link <>`__) for some examples.
+See ``tests/test_null_policy.py`` (`link <https://github.com/kinverarity1/lasio/blob/master/tests/test_null_policy.py>`__) for some examples.
