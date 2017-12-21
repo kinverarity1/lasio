@@ -1,5 +1,5 @@
-Metadata from the header sections
-=================================
+Header section metadata
+=======================
 
 Tutorial
 --------
@@ -334,3 +334,120 @@ Now:
     CurveItem(mnemonic=ILD, unit=OHMM, value=, descr=8  DEEP RESISTIVITY, original_mnemonic=ILD, data.shape=(3,))]
 
 Only a warning is issued, and the rest of the LAS file loads OK.
+
+Handling duplicate mnemonics 
+----------------------------
+
+Take this file:
+
+    ~CURVE INFORMATION
+    DEPT.M                     :  1  DEPTH
+    DT  .US/M     		        :  2  SONIC TRANSIT TIME
+    RHOB.K/M3                  :  3  BULK DENSITY
+    NPHI.V/V                   :  4   NEUTRON POROSITY
+    RXO.OHMM                   :  5  RXO RESISTIVITY
+    RES.OHMM                   :  6  SHALLOW RESISTIVITY
+    RES.OHMM                   :  7  MEDIUM RESISTIVITY
+    RES.OHMM                   :  8  DEEP RESISTIVITY
+
+Notice there are three curves with the mnemonic `RES`.
+
+When we load the file in, `lasio` distinguishes between these duplicates:
+
+.. code-block:: IPython
+
+    In [2]: las = lasio.read('tests/examples/mnemonic_duplicate2.las')
+
+    In [3]: las.curves
+    Out[3]:
+    [CurveItem(mnemonic=DEPT, unit=M, value=, descr=1  DEPTH, original_mnemonic=DEPT, data.shape=(3,)),
+    CurveItem(mnemonic=DT, unit=US/M, value=, descr=2  SONIC TRANSIT TIME, original_mnemonic=DT, data.shape=(3,)),
+    CurveItem(mnemonic=RHOB, unit=K/M3, value=, descr=3  BULK DENSITY, original_mnemonic=RHOB, data.shape=(3,)),
+    CurveItem(mnemonic=NPHI, unit=V/V, value=, descr=4   NEUTRON POROSITY, original_mnemonic=NPHI, data.shape=(3,)),
+    CurveItem(mnemonic=RXO, unit=OHMM, value=, descr=5  RXO RESISTIVITY, original_mnemonic=RXO, data.shape=(3,)),
+    CurveItem(mnemonic=RES:1, unit=OHMM, value=, descr=6  SHALLOW RESISTIVITY, original_mnemonic=RES, data.shape=(3,)),
+    CurveItem(mnemonic=RES:2, unit=OHMM, value=, descr=7  MEDIUM RESISTIVITY, original_mnemonic=RES, data.shape=(3,)),
+    CurveItem(mnemonic=RES:3, unit=OHMM, value=, descr=8  DEEP RESISTIVITY, original_mnemonic=RES, data.shape=(3,))]
+
+    In [4]: las.curves['RES:2']
+    Out[4]: CurveItem(mnemonic=RES:2, unit=OHMM, value=, descr=7  MEDIUM RESISTIVITY, original_mnemonic=RES, data.shape=(3,))
+
+It remembers the original mnemonic, so when you write the file back out, they come back:
+
+.. code-block:: IPython
+
+    In [6]: import sys
+
+    In [7]: las.write(sys.stdout)
+    ~Version ---------------------------------------------------
+    VERS. 1.2 : CWLS LOG ASCII STANDARD - VERSION 1.2
+    WRAP.  NO : ONE LINE PER DEPTH STEP
+    ~Well ------------------------------------------------------
+    STRT.M         1670.0 :
+    STOP.M        1669.75 :
+    STEP.M         -0.125 :
+    NULL.         -999.25 :
+    COMP.         COMPANY : # ANY OIL COMPANY LTD.
+    WELL.            WELL : ANY ET AL OIL WELL #12
+    FLD .           FIELD : EDAM
+    LOC .        LOCATION : A9-16-49-20W3M
+    PROV.        PROVINCE : SASKATCHEWAN
+    SRVC. SERVICE COMPANY : ANY LOGGING COMPANY LTD.
+    DATE.        LOG DATE : 25-DEC-1988
+    UWI .  UNIQUE WELL ID : 100091604920W300
+    ~Curves ----------------------------------------------------
+    DEPT.M     : 1  DEPTH
+    DT  .US/M  : 2  SONIC TRANSIT TIME
+    RHOB.K/M3  : 3  BULK DENSITY
+    NPHI.V/V   : 4   NEUTRON POROSITY
+    RXO .OHMM  : 5  RXO RESISTIVITY
+    RES .OHMM  : 6  SHALLOW RESISTIVITY
+    RES .OHMM  : 7  MEDIUM RESISTIVITY
+    RES .OHMM  : 8  DEEP RESISTIVITY
+    ~Params ----------------------------------------------------
+    BHT .DEGC   35.5 : BOTTOM HOLE TEMPERATURE
+    BS  .MM    200.0 : BIT SIZE
+    FD  .K/M3 1000.0 : FLUID DENSITY
+    MATR.        0.0 : NEUTRON MATRIX(0=LIME,1=SAND,2=DOLO)
+    MDEN.     2710.0 : LOGGING MATRIX DENSITY
+    RMF .OHMM  0.216 : MUD FILTRATE RESISTIVITY
+    DFD .K/M3 1525.0 : DRILL FLUID DENSITY
+    ~Other -----------------------------------------------------
+    Note: The logging tools became stuck at 625 meters causing the data
+    between 625 meters and 615 meters to be invalid.
+    ~ASCII -----------------------------------------------------
+        1670     123.45       2550       0.45     123.45     123.45      110.2      105.6
+        1669.9     123.45       2550       0.45     123.45     123.45      110.2      105.6
+        1669.8     123.45       2550       0.45     123.45     123.45      110.2      105.6
+
+Normalising mnemonic case 
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If there is a mix of upper and lower case characters in the mnemonics, by default lasio will convert all mnemonics to uppercase to avoid problems with producing these duplicate `:1`, `:2`, `:3` suffixes. There is a keyword argument which will preserve the original formatting if that is what you prefer.
+
+.. code-block:: IPython
+
+    In [8]: las = lasio.read('tests/examples/mnemonic_case.las')
+
+    In [9]: las.curves
+    Out[9]:
+    [CurveItem(mnemonic=DEPT, unit=M, value=, descr=1  DEPTH, original_mnemonic=DEPT, data.shape=(3,)),
+    CurveItem(mnemonic=SFLU:1, unit=K/M3, value=, descr=3  BULK DENSITY, original_mnemonic=SFLU, data.shape=(3,)),
+    CurveItem(mnemonic=NPHI, unit=V/V, value=, descr=4   NEUTRON POROSITY, original_mnemonic=NPHI, data.shape=(3,)),
+    CurveItem(mnemonic=SFLU:2, unit=OHMM, value=, descr=5  RXO RESISTIVITY, original_mnemonic=SFLU, data.shape=(3,)),
+    CurveItem(mnemonic=SFLU:3, unit=OHMM, value=, descr=6  SHALLOW RESISTIVITY, original_mnemonic=SFLU, data.shape=(3,)),
+    CurveItem(mnemonic=SFLU:4, unit=OHMM, value=, descr=7  MEDIUM RESISTIVITY, original_mnemonic=SFLU, data.shape=(3,)),
+    CurveItem(mnemonic=SFLU:5, unit=OHMM, value=, descr=8  DEEP RESISTIVITY, original_mnemonic=SFLU, data.shape=(3,))]
+
+    In [10]: las = lasio.read('tests/examples/mnemonic_case.las', mnemonic_case='preserve')
+
+    In [11]: las.curves
+    Out[11]:
+    [CurveItem(mnemonic=Dept, unit=M, value=, descr=1  DEPTH, original_mnemonic=Dept, data.shape=(3,)),
+    CurveItem(mnemonic=Sflu, unit=K/M3, value=, descr=3  BULK DENSITY, original_mnemonic=Sflu, data.shape=(3,)),
+    CurveItem(mnemonic=NPHI, unit=V/V, value=, descr=4   NEUTRON POROSITY, original_mnemonic=NPHI, data.shape=(3,)),
+    CurveItem(mnemonic=SFLU:1, unit=OHMM, value=, descr=5  RXO RESISTIVITY, original_mnemonic=SFLU, data.shape=(3,)),
+    CurveItem(mnemonic=SFLU:2, unit=OHMM, value=, descr=6  SHALLOW RESISTIVITY, original_mnemonic=SFLU, data.shape=(3,)),
+    CurveItem(mnemonic=sflu, unit=OHMM, value=, descr=7  MEDIUM RESISTIVITY, original_mnemonic=sflu, data.shape=(3,)),
+    CurveItem(mnemonic=SfLu, unit=OHMM, value=, descr=8  DEEP RESISTIVITY, original_mnemonic=SfLu, data.shape=(3,))]
+

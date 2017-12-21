@@ -1,5 +1,8 @@
-Handling data section errors
-============================
+Data section
+============
+
+Handling errors
+~~~~~~~~~~~~~~~
 
 ``lasio`` has a flexible way of handling "errors" in the ~ASCII data section to
 accommodate how strict or flexible you want to be.
