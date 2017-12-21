@@ -59,7 +59,7 @@ Comma-separated values (CSV)
 
 LASFile objects can be converted to CSV files with a few options for how
 mnemonics and units are included (or not). It uses the
-:meth:`lasio.LASFile.to_csv` method.
+:meth:`lasio.las.LASFile.to_csv` method.
 
 .. code-block:: ipython
 

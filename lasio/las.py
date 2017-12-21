@@ -79,7 +79,7 @@ class LASFile(object):
 
     def read(self, file_ref, 
              ignore_data=False, read_policy='default', null_policy='common',
-             ignore_header_errors=False, 
+             ignore_header_errors=False, mnemonic_case='upper', 
              **kwargs):
         '''Read a LAS file.
 
@@ -93,6 +93,9 @@ class LASFile(object):
                 just the header metadata. False by default.
             ignore_header_errors (bool): ignore LASHeaderErrors (False by 
                 default)
+            mnemonic_case (str): 'preserve': keep the case of HeaderItem mnemonics
+                                 'upper': convert all HeaderItem mnemonics to uppercase
+                                 'lower': convert all HeaderItem mnemonics to lowercase
 
         See :func:`lasio.reader.open_with_codecs` for additional keyword
         arguments which help to manage issues relate to character encodings.
@@ -127,7 +130,8 @@ class LASFile(object):
                 self.raw_sections.pop(key)
 
         add_section("~V", "Version", version=1.2, 
-                    ignore_header_errors=ignore_header_errors)
+                    ignore_header_errors=ignore_header_errors,
+                    mnemonic_case=mnemonic_case)
 
         # Establish version and wrap values if possible.
 
@@ -164,7 +168,8 @@ class LASFile(object):
                 version = 2
 
         add_section("~W", "Well", version=version, 
-                    ignore_header_errors=ignore_header_errors)
+                    ignore_header_errors=ignore_header_errors,
+                    mnemonic_case=mnemonic_case)
 
         # Establish NULL value if possible.
 
@@ -175,9 +180,11 @@ class LASFile(object):
             null = None
 
         add_section("~C", "Curves", version=version, 
-                    ignore_header_errors=ignore_header_errors)
+                    ignore_header_errors=ignore_header_errors,
+                    mnemonic_case=mnemonic_case)
         add_section("~P", "Parameter", version=version, 
-                    ignore_header_errors=ignore_header_errors)
+                    ignore_header_errors=ignore_header_errors,
+                    mnemonic_case=mnemonic_case)
         s = self.match_raw_section("~O")
 
         drop = []
