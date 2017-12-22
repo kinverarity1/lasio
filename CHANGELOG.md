@@ -1,5 +1,19 @@
 # List of changes
 
+## Version 0.17
+
+- Add Appveyor continuous integration testing
+- Add example notebook for how to use python logging module
+- Fix #160 (add methods to LASFile for inserting curves)
+- Fix #155 (implement del keyword for header items)
+- Fix #142 (implement slicing for SectionItems)
+- Fix #135 (UWI numbers losing their leading zeros)
+- Fix #153 (fix SectionItems pprint repr in Python 3)
+- Fix #81 (accept header items with missing colon)
+- Fix #71 (add Docker build for lasio to DockerHub)
+- Fix #210 (allow upper/lowercase standardization of mnemonics on read)
+- Document recent additions (nearly up to date) (in Sphinx docs)
+
 ## Version 0.16
 
 - Add read_policy and null_policy keywords - see documentation for details
