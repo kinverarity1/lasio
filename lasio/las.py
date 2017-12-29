@@ -401,13 +401,24 @@ class LASFile(object):
             raise KeyError('{} not found in curves ({})'.format(key, curve_mnemonics))
 
     def __setitem__(self, key, value):
-        '''Not implemented.
+        '''Append a curve.
 
-        It is not possible yet to set curve data via the LASFile's item
-        access shortcut.
+        Arguments:
+            key (str): the curve mnemonic
+            value (1D data or CurveItem): either the curve data, or a CurveItem
+
+        See :meth:`lasio.las.LASFile.append_curve_item` or 
+        :meth:`lasio.las.LASFile.append_curve` for more details.
 
         '''
-        assert NotImplementedError('not yet')
+        if isinstance(value, CurveItem):
+            if key != value.mnemonic:
+                raise KeyError('key {} does not match value.mnemonic {}'.format(
+                    key, value.mnemonic))
+            self.append_curve_item(value)
+        else:
+            # Assume value is an ndarray
+            self.append_curve(key, value)
 
     def keys(self):
         '''Return curve mnemonics.'''
