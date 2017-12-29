@@ -103,3 +103,19 @@ def test_duplicate_append_curve():
     las.append_curve('TEST', data=[1,2,3])
     las.append_curve('TEST', data=[4,5,6])
     assert [c.mnemonic for c in las.curves[-2:]] == ['TEST:1', 'TEST:2']
+    
+def test_lasfile_setitem_data():
+    las = lasio.read(egfn('sample.las'))
+    las['EXTRA'] = las['ILD'] / 2
+    assert (las.curves['EXTRA'].data == [52.8, 52.8, 52.8]).all()
+
+def test_lasfile_setitem_curveitem():
+    las = lasio.read(egfn('sample.las'))
+    las['EXTRA'] = lasio.las_items.CurveItem('EXTRA', data=las['ILD'] / 2)
+    assert (las.curves['EXTRA'].data == [52.8, 52.8, 52.8]).all()
+
+def test_lasfile_setitem_curveitem_mnemonic_mismatch():
+    las = lasio.read(egfn('sample.las'))
+    with pytest.raises(KeyError):
+        las['EXTRA'] = lasio.las_items.CurveItem('EXTRA2', data=las['ILD'] / 2)
+
