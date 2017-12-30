@@ -367,7 +367,6 @@ class SectionItems(list):
         If **key** is not present, it appends **newitem**.
 
         '''
-        logger.debug('set_item key={} mnemonic={}'.format(key, mnemonic))
         for i, item in enumerate(self):
             if self.mnemonic_compare(key, item.mnemonic):
 
