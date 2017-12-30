@@ -98,3 +98,8 @@ def test_mnemonic_case_lower():
     las = lasio.read(egfn('mnemonic_case.las'), mnemonic_case='lower')
     assert [c.mnemonic for c in las.curves] == ['dept', 'sflu:1', 'nphi', 'sflu:2', 'sflu:3', 'sflu:4', 'sflu:5']
 
+def test_duplicate_append_curve():
+    las = lasio.read(egfn('sample.las'))
+    las.append_curve('TEST', data=[1,2,3])
+    las.append_curve('TEST', data=[4,5,6])
+    assert [c.mnemonic for c in las.curves[-2:]] == ['TEST:1', 'TEST:2']

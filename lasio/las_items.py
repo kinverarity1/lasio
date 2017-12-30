@@ -34,6 +34,7 @@ class HeaderItem(OrderedDict):
         # The original mnemonic needs to be stored for rewriting a new file.
         # it might be nothing - '' - or a duplicate e.g. two 'RHO' curves,
         # or unique - 'X11124' - or perhaps invalid??
+        # It will be used only when exporting.
 
         self.original_mnemonic = mnemonic
 
@@ -41,6 +42,7 @@ class HeaderItem(OrderedDict):
         # (technically not, but read on) for people to access the curve while
         # the LASFile object exists. For example, a curve which is unnamed
         # and has an original_mnemonic of '' will be accessed as 'UNKNOWN'.
+        # It is used in contexts where duplicate mnemonics are acceptable.
 
         if mnemonic.strip() == '':
             self.useful_mnemonic = 'UNKNOWN'
@@ -51,6 +53,7 @@ class HeaderItem(OrderedDict):
         # mnemonics. Any duplicates will have ':1', ':2', ':3', etc., appended
         # to them. The result of this will be stored as the
         # HeaderItem.mnemonic attribute through the below method.
+        # It is used in contexts where duplicate mnemonics cannot exist.
 
         self.set_session_mnemonic_only(self.useful_mnemonic)
 
@@ -369,7 +372,7 @@ class SectionItems(list):
 
                 # This is very important. We replace items where
                 # 'mnemonic' is equal - i.e. we do not check 
-                # against original_mnemonic.
+                # against useful_mnemonic or original_mnemonic.
 
                 return super(SectionItems, self).__setitem__(i, newitem)
         else:
@@ -389,29 +392,37 @@ class SectionItems(list):
     def append(self, newitem):
         '''Append a new HeaderItem to the object.'''
         super(SectionItems, self).append(newitem)
-
-        # Check to fix the :n suffixes
-        existing = [item.useful_mnemonic for item in self]
-        locations = []
-        for i, item in enumerate(self):
-            if self.mnemonic_compare(item.useful_mnemonic, newitem.mnemonic):
-                locations.append(i)
-        if len(locations) > 1:
-            current_count = 1
-            for i, loc in enumerate(locations):
-                item = self[loc]
-                item.set_session_mnemonic_only(item.useful_mnemonic + ':%d'
-                                               % (i + 1))
+        self.assign_duplicate_suffixes(newitem.useful_mnemonic)
 
     def insert(self, i, newitem):
-        '''Insert a new HeaderItem to the object.'''        
-        existing = [j for j in range(len(self)) 
-                    if self[j].useful_mnemonic == newitem.useful_mnemonic]
+        '''Insert a new HeaderItem to the object.'''
         super(SectionItems, self).insert(i, newitem)
-        if len(existing):
-            newitem.set_session_mnemonic_only(
-                newitem.useful_mnemonic + ':{:d}'.format(len(existing) + 1))
-        
+        self.assign_duplicate_suffixes(newitem.useful_mnemonic)
+
+    def assign_duplicate_suffixes(self, test_mnemonic=None):
+        '''Check and re-assign suffixes for duplicate mnemonics.
+
+        Arguments:
+            test_mnemonic (str, optional): check for duplicates of
+                this mnemonic. If it is None, check all mnemonics.
+
+        '''
+        if test_mnemonic is None:
+            for test_mnemonic in {i.useful_mnemonic for i in self}:
+                self.assign_duplicate_suffixes(test_mnemonic)
+        else:
+            existing = [item.useful_mnemonic for item in self]
+            locations = []
+            for i, item in enumerate(self):
+                if self.mnemonic_compare(item.useful_mnemonic, test_mnemonic):
+                    locations.append(i)
+            if len(locations) > 1:
+                current_count = 1
+                for i, loc in enumerate(locations):
+                    item = self[loc]
+                    item.set_session_mnemonic_only(item.useful_mnemonic + ':%d'
+                                                % (i + 1))
+
     def dictview(self):
         '''View of mnemonics and values as a dict.
 
