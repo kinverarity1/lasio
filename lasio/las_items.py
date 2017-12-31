@@ -150,12 +150,13 @@ class CurveItem(HeaderItem):
     '''
 
     def __init__(self, *args, **kwargs):
-        if "data" in kwargs:
-            self.data = np.asarray(kwargs["data"])
-            del kwargs["data"]
-        else:
-            self.data = np.ndarray([])
-        super(CurveItem, self).__init__(*args, **kwargs)
+        kwargs_copy = {}
+        for key in ['mnemonic', 'unit', 'value', 'descr']:
+            if key in kwargs:
+                kwargs_copy[key] = value
+        super(CurveItem, self).__init__(*args, **kwargs_copy)
+        data = kwargs.get('data', [])
+        self.data = np.asarray(kwargs.get('data', []))
 
     @property
     def API_code(self):

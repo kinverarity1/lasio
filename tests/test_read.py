@@ -171,7 +171,7 @@ def test_comma_decimal_mark_params():
 
 def test_missing_a_section():
     las = lasio.read(egfn('missing_a_section.las'))
-    assert not hasattr(las, 'data')
+    assert not las.data
 
 def test_blank_line_in_header():
     las = lasio.read(egfn('blank_line.las'))
