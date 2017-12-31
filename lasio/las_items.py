@@ -106,9 +106,6 @@ class HeaderItem(OrderedDict):
             
             self.original_mnemonic = value
             self.set_session_mnemonic_only(self.useful_mnemonic)
-            logger.debug('__setattr__(mnemonic={}) original_mnemonic={}'.format(value, self.original_mnemonic))
-            logger.debug('__setattr__(mnemonic={}) useful_mnemonic={}'.format(value, self.useful_mnemonic))
-            logger.debug('__setattr__(mnemonic={}) mnemonic={}'.format(value, self.mnemonic))
         else:
             super(HeaderItem, self).__setattr__(key, value)
 
