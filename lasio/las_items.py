@@ -96,6 +96,10 @@ class HeaderItem(OrderedDict):
 
         if key == 'mnemonic':
             super(HeaderItem, self).__setattr__('original_mnemonic', value)
+            if value == '':
+                value = 'UNKNOWN'
+            super(HeaderItem, self).__setattr__('useful_mnemonic', value)
+            self.set_session_mnemonic_only(value)
 
         # Otherwise it's fine.
 
