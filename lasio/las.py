@@ -549,8 +549,16 @@ class LASFile(object):
             df = df.set_index(self.curves[0].mnemonic)
         return df
 
+    @property
+    def data(self):
+        return np.vstack([c.data for c in self.curves]).T
+
+    @data.setter
+    def data(self, value):
+        return self.set_data(value)
+
     def set_data(self, array_like, names=None, truncate=False):
-        '''Set the LAS file data array.
+        '''Set the data for the LAS; actually sets data on individual curves.
 
         Arguments:
             array_like (array_like or :class:`pandas.DataFrame`): 2-D data array
@@ -572,27 +580,26 @@ class LASFile(object):
             if isinstance(array_like, pd.DataFrame):
                 return self.set_data_from_df(
                     array_like, **dict(names=names, truncate=False))
-
         data = np.asarray(array_like)
-        logger.debug('set_data data.shape = {}'.format(data.shape))
+
+        # Truncate data array if necessary.
         if truncate:
             data = data[:, len(self.curves)]
+
+        # Extend curves list if necessary.
+        while data.shape[1] > len(self.curves):
+            self.curves.append(CurveItem(''))
+
+        if not names:
+            names = [c.mnemonic for c in self.curves]
         else:
-            for i in range(data.shape[1]):
-                if i < len(self.curves):
-                    curve = self.curves[i]
-                    if names:
-                        curve.name = names[i]
-                else:
-                    if names:
-                        name = names[i]
-                    else:
-                        name = ''
-                    curve = CurveItem(name)
-                    self.curves.insert(i, curve)
-                curve.data = data[:, i]
-        self.data = data
-        logger.debug('set_data self.data.shape = {}'.format(self.data.shape))
+            # Extend names list if necessary.
+            while len(self.curves) > len(names):
+                names.append('')
+
+        for i, curve in enumerate(self.curves):
+            curve.mnemonic = names[i]
+            curve.data = data[:, i]
 
     def set_data_from_df(self, df, **kwargs):
         '''Set the LAS file data from a :class:`pandas.DataFrame`.
@@ -694,12 +701,7 @@ class LASFile(object):
             value (int/float/str): value e.g. API code.
 
         '''
-        curve = CurveItem(mnemonic, unit, value, descr)
-        if hasattr(self, 'data'):
-            self.data = np.column_stack([self.data, data])
-        else:
-            self.data = np.column_stack([data])
-        curve.data = self.data[:, -1]
+        curve = CurveItem(mnemonic, unit, value, descr, data)
         self.insert_curve_item(ix, curve)
 
     def delete_curve(self, mnemonic=None, ix=None):
@@ -715,7 +717,6 @@ class LASFile(object):
         if ix is None:
             ix = self.curves.keys().index(mnemonic)
         self.curves.pop(ix)
-        self.data = np.delete(self.data, np.s_[ix], axis=1)
 
     @property
     def json(self):
