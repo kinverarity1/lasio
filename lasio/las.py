@@ -591,15 +591,18 @@ class LASFile(object):
             self.curves.append(CurveItem(''))
 
         if not names:
-            names = [c.mnemonic for c in self.curves]
+            names = [c.original_mnemonic for c in self.curves]
         else:
             # Extend names list if necessary.
             while len(self.curves) > len(names):
                 names.append('')
+        logger.debug('set_data. names to use: {}'.format(names))
 
         for i, curve in enumerate(self.curves):
             curve.mnemonic = names[i]
             curve.data = data[:, i]
+            
+        self.curves.assign_duplicate_suffixes()
 
     def set_data_from_df(self, df, **kwargs):
         '''Set the LAS file data from a :class:`pandas.DataFrame`.
