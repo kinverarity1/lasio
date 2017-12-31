@@ -391,13 +391,14 @@ class LASFile(object):
             1D :class:`numpy.ndarray` (the data for the curve)
 
         '''
+        #TODO: If I implement 2D arrays, need to check here for :1 :2 :3 etc.
+        curve_mnemonics = [c.mnemonic for c in self.curves]
         if isinstance(key, int):
             return self.curves[key].data
-        elif isinstance(key, str):
-            if key in self.keys():
-                return self.curves[key].data
+        elif key in curve_mnemonics:
+            return self.curves[key].data
         else:
-            super(LASFile, self).__getitem__(key)
+            raise KeyError('{} not found in curves ({})'.format(key, curve_mnemonics))
 
     def __setitem__(self, key, value):
         '''Not implemented.
