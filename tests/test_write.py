@@ -2,6 +2,7 @@ import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import pytest
 
+import lasio
 from lasio import read
 from lasio.excel import ExcelConverter
 
@@ -12,53 +13,10 @@ test_dir = os.path.dirname(__file__)
 egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
 
 
-def test_write_sect_widths_12():
-    l = read(egfn("sample_write_sect_widths_12.las"))
-    s = StringIO()
-    l.write(s, version=1.2)
-    s.seek(0)
-    assert s.read() == '''~Version ---------------------------------------------------
-VERS. 1.2 : CWLS LOG ASCII STANDARD - VERSION 1.2
-WRAP.  NO : ONE LINE PER DEPTH STEP
-~Well ------------------------------------------------------
-STRT   .M  1670.0 : 
-STOP   .M 1669.75 : 
-STEP   .M  -0.125 : 
-NULL   .  -999.25 : 
-COMPANY.  COMPANY : # ANY OIL COMPANY LTD.
-WELL   .     WELL : ANY ET AL OIL WELL #12
-FLD    .    FIELD : EDAM
-LOC    . LOCATION : A9-16-49-20W3M
-PROV   . PROVINCE : SASKATCHEWAN
-SRVC   .  SERVICE : The company that did this logging has a very very long name....
-DATE   . LOG DATE : 25-DEC-1988
-UWI    .  WELL ID : 100091604920W300
-~Curves ----------------------------------------------------
-D.M     : 1  DEPTH
-A.US/M  : 2  SONIC TRANSIT TIME
-B.K/M3  : 3  BULK DENSITY
-C.V/V   : 4   NEUTRON POROSITY
- .      : 
- .      : 
- .      : 
- .      : 
-~Params ----------------------------------------------------
-BHT .DEGC   35.5 : BOTTOM HOLE TEMPERATURE
-BS  .MM    200.0 : BIT SIZE
-FD  .K/M3 1000.0 : FLUID DENSITY
-MATR.        0.0 : NEUTRON MATRIX(0=LIME,1=SAND,2=DOLO)
-MDEN.     2710.0 : LOGGING MATRIX DENSITY
-RMF .OHMM  0.216 : MUD FILTRATE RESISTIVITY
-DFD .K/M3 1525.0 : DRILL FLUID DENSITY
-~Other -----------------------------------------------------
-Note: The logging tools became stuck at 625 meters causing the data
-between 625 meters and 615 meters to be invalid.
-~ASCII -----------------------------------------------------
-       1670     123.45       2550       0.45     123.45     123.45      110.2      105.6
-     1669.9     123.45       2550       0.45     123.45     123.45      110.2      105.6
-     1669.8     123.45       2550       0.45     123.45     123.45      110.2      105.6
-'''
-
+def test_write_sect_widths_12(capsys):
+    las = lasio.read(egfn("sample_write_sect_widths_12.las"))
+    las.write(sys.stdout, version=1.2)
+    assert capsys.readouterr()[0] == open(egfn('test_write_sect_widths_12.txt')).read()
 
 def test_write_to_filename():
     las = read(egfn("sample_write_sect_widths_12.las"))

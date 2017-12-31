@@ -132,3 +132,8 @@ def test_missing_sectionitems_mnemonic():
     las = lasio.read(egfn('sample.las'))
     with pytest.raises(KeyError):
         las.curves['blahblahblah']
+
+def test_mnemonic_rename_1():
+    las = lasio.read(egfn('sample.las'))
+    las.curves[-1].mnemonic = ''
+    assert las.curves[-1].mnemonic == 'UNKNOWN'

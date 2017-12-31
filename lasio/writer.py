@@ -102,8 +102,8 @@ def write(las, file_object, version=None, wrap=None, STRT=None,
         # logger.debug('LASFile.write ' + str(header_item))
         order = order_func(mnemonic)
         # logger.debug('LASFile.write order = %s' % (order, ))
-        logger.debug('LASFile.write %s\norder=%s section_widths=%s' % (
-            header_item, order, section_widths))
+        logger.debug('LASFile.write %s order=%s section_widths=%s' % (
+                        header_item, order, section_widths))
         formatter_func = get_formatter_function(order, **section_widths)
         line = formatter_func(header_item)
         lines.append(line)
@@ -118,7 +118,7 @@ def write(las, file_object, version=None, wrap=None, STRT=None,
     for header_item in las.well.values():
         mnemonic = header_item.original_mnemonic
         order = order_func(mnemonic)
-        logger.debug('LASFile.write %s\norder=%s section_widths=%s' % (
+        logger.debug('LASFile.write %s order=%s section_widths=%s' % (
             header_item, order, section_widths))
         formatter_func = get_formatter_function(order, **section_widths)
         line = formatter_func(header_item)

@@ -44,10 +44,7 @@ class HeaderItem(OrderedDict):
         # and has an original_mnemonic of '' will be accessed as 'UNKNOWN'.
         # It is used in contexts where duplicate mnemonics are acceptable.
 
-        if mnemonic.strip() == '':
-            self.useful_mnemonic = 'UNKNOWN'
-        else:
-            self.useful_mnemonic = mnemonic
+        # see property HeaderItem.useful_mnemonic
 
         # But note that we need to (later) check (repeatedly) for duplicate
         # mnemonics. Any duplicates will have ':1', ':2', ':3', etc., appended
@@ -60,6 +57,17 @@ class HeaderItem(OrderedDict):
         self.unit = unit
         self.value = value
         self.descr = descr
+
+    @property
+    def useful_mnemonic(self):
+        if self.original_mnemonic.strip() == '':
+            return 'UNKNOWN'
+        else:
+            return self.original_mnemonic
+
+    @useful_mnemonic.setter
+    def useful_mnemonic(self, value):
+        raise ValueError('Cannot set read-only attribute; try .mnemonic instead')
 
     def set_session_mnemonic_only(self, value):
         '''Set the mnemonic for session use.
@@ -90,16 +98,16 @@ class HeaderItem(OrderedDict):
 
     def __setattr__(self, key, value):
         
-        # The user wants to rename the item! This means we must send their
-        # new mnemonic to the original_mnemonic attribute. Remember that the
-        # mnemonic attribute is for session use only.
-
         if key == 'mnemonic':
-            super(HeaderItem, self).__setattr__('original_mnemonic', value)
-
-        # Otherwise it's fine.
-
-        super(HeaderItem, self).__setattr__(key, value)
+            
+            # The user wants to rename the item! This means we must send their
+            # new mnemonic to the original_mnemonic attribute. Remember that the
+            # mnemonic attribute is for session use only.
+            
+            self.original_mnemonic = value
+            self.set_session_mnemonic_only(self.useful_mnemonic)
+        else:
+            super(HeaderItem, self).__setattr__(key, value)
 
     def __repr__(self):
         result = (
@@ -145,13 +153,11 @@ class CurveItem(HeaderItem):
 
     '''
 
-    def __init__(self, *args, **kwargs):
-        if "data" in kwargs:
-            self.data = np.asarray(kwargs["data"])
-            del kwargs["data"]
-        else:
-            self.data = np.ndarray([])
-        super(CurveItem, self).__init__(*args, **kwargs)
+    def __init__(self, mnemonic='', unit='', value='', descr='', data=None):
+        if data is None:
+            data = []
+        super(CurveItem, self).__init__(mnemonic, unit, value, descr)
+        self.data = np.asarray(data)
 
     @property
     def API_code(self):
