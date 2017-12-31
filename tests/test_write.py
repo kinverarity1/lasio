@@ -16,7 +16,7 @@ egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
 def test_write_sect_widths_12(capsys):
     las = lasio.read(egfn("sample_write_sect_widths_12.las"))
     las.write(sys.stdout, version=1.2)
-    assert capsys.readouterr().out == open(egfn('test_write_sect_widths_12.txt')).read()
+    assert capsys.readouterr()[0] == open(egfn('test_write_sect_widths_12.txt')).read()
 
 def test_write_to_filename():
     las = read(egfn("sample_write_sect_widths_12.las"))
