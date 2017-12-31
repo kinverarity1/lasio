@@ -54,3 +54,10 @@ def test_missing_lasfile_mnemonic():
     las = lasio.read(egfn('sample.las'))
     with pytest.raises(KeyError):
         las['blahblahblah']
+
+def test_append_curve_and_item():
+    las = lasio.LASFile()
+    data = [1, 2, 3]
+    las.append_curve('TEST1', data=data)
+    las.append_curve_item(lasio.CurveItem('TEST2', data=data))
+    assert (las['TEST1'] == las['TEST2']).all()
