@@ -128,7 +128,7 @@ def test_mnemonic_case_comparison_lower():
     las = lasio.read(egfn('mnemonic_case.las'), mnemonic_case='lower')
     assert 'DEPT' in las.curves
 
-def test_missing_mnemonic():
+def test_missing_sectionitems_mnemonic():
     las = lasio.read(egfn('sample.las'))
     with pytest.raises(KeyError):
-        las['blahblahblah']
+        las.curves['blahblahblah']
