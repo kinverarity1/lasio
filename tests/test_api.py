@@ -8,6 +8,10 @@ import pytest
 import lasio
 from lasio import read, las
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 test_dir = os.path.dirname(__file__)
 
 egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
@@ -61,3 +65,12 @@ def test_append_curve_and_item():
     las.append_curve('TEST1', data=data)
     las.append_curve_item(lasio.CurveItem('TEST2', data=data))
     assert (las['TEST1'] == las['TEST2']).all()
+
+def test_data_attr():
+    las = lasio.LASFile()
+    las.append_curve('TEST1', data=[1, 2, 3])
+    las.append_curve_item(lasio.CurveItem('TEST2', data=[4, 5, 6]))
+    las.append_curve('TEST3', data=[7, 8, 9])
+    logger.debug('las.data = {}'.format(las.data))
+    # the .all() method assumes these are numpy ndarrays; that should be the case.
+    assert (las.data == np.asarray([[1, 4, 7], [2, 5, 8], [3, 6, 9]])).all()
