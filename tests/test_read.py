@@ -194,3 +194,7 @@ def test_UWI_API_leading_zero():
 def test_sparse_curves():
     las = lasio.read(egfn('sparse_curves.las'))
     assert las.curves.keys() == ['DEPT', 'DT', 'RHOB', 'NPHI', 'SFLU', 'SFLA', 'ILM', 'ILD']
+
+def test_issue92():
+    las = lasio.read(egfn('issue92.las'), ignore_header_errors=True)
+    
