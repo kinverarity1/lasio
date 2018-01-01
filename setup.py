@@ -1,7 +1,7 @@
 '''Setup script for lasio'''
 
 from setuptools import setup
-from os import path
+import os
 
 try:
     import pypandoc
@@ -14,9 +14,10 @@ except:
     with open('README.md') as f:
         long_description = f.read()
 
-from lasio import __version__
+with open(os.path.join(os.path.dirname(__file__), 'VERSION')) as version_file:
+    version = version_file.read().strip()
 
-with open("requirements.txt") as f:
+with open(os.path.join(os.path.dirname(__file__), "requirements.txt"), "r") as f:
     requirements = f.read().splitlines()
 
 CLASSIFIERS = [
@@ -46,7 +47,7 @@ CLASSIFIERS = [
 
 
 setup(name='lasio',
-      version=__version__,
+      version=version,
       description="Read/write well data from Log ASCII Standard (LAS) files",
       long_description=long_description,
       url="https://github.com/kinverarity1/lasio",

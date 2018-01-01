@@ -1,3 +1,5 @@
+import os
+
 from .las import LASFile, JSONEncoder
 from .las_items import CurveItem, HeaderItem, SectionItems
 from .reader import open_file
@@ -9,7 +11,9 @@ except ImportError:
 else:
     from .excel import ExcelConverter
 
-__version__ = '0.17'
+
+with open(os.path.join(os.path.dirname(__file__), '..', 'VERSION')) as version_file:
+    __version__ = version_file.read().strip()
 
 
 def version():
