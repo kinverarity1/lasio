@@ -14,8 +14,7 @@ except:
     with open('README.md') as f:
         long_description = f.read()
 
-execfile('...lasio/version.py')
-# now we have a `__version__` variable
+__version__ = '0.18'
 
 with open(os.path.join(os.path.dirname(__file__), "requirements.txt"), "r") as f:
     requirements = f.read().splitlines()

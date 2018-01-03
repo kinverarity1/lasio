@@ -3,7 +3,6 @@ import os
 from .las import LASFile, JSONEncoder
 from .las_items import CurveItem, HeaderItem, SectionItems
 from .reader import open_file
-from .version import __version__
 
 try:
     import openpyxl
@@ -12,6 +11,8 @@ except ImportError:
 else:
     from .excel import ExcelConverter
 
+
+__version__ = '0.18'
 
 
 def read(file_ref, **kwargs):
