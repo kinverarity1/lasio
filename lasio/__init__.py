@@ -12,13 +12,7 @@ else:
     from .excel import ExcelConverter
 
 
-with open(os.path.join(os.path.dirname(__file__), '..', 'VERSION')) as version_file:
-    __version__ = version_file.read().strip()
-
-
-def version():
-    '''Print version number.'''
-    print(__version__)
+__version__ = '0.18'
 
 
 def read(file_ref, **kwargs):

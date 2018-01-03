@@ -14,8 +14,7 @@ except:
     with open('README.md') as f:
         long_description = f.read()
 
-with open(os.path.join(os.path.dirname(__file__), 'VERSION')) as version_file:
-    version = version_file.read().strip()
+__version__ = '0.18'
 
 with open(os.path.join(os.path.dirname(__file__), "requirements.txt"), "r") as f:
     requirements = f.read().splitlines()
@@ -47,7 +46,7 @@ CLASSIFIERS = [
 
 
 setup(name='lasio',
-      version=version,
+      version=__version__,
       description="Read/write well data from Log ASCII Standard (LAS) files",
       long_description=long_description,
       url="https://github.com/kinverarity1/lasio",

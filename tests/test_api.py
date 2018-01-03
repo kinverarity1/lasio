@@ -18,6 +18,9 @@ egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
 stegfn = lambda vers, fn: os.path.join(
     os.path.dirname(__file__), "examples", vers, fn)
 
+def test_version():
+    assert '.' in lasio.__version__
+
 def test_keys_curve_mnemonics():
     l = lasio.read(egfn("sample.las"))
      # DEPT.M                      :  1  DEPTH
