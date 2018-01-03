@@ -1,5 +1,15 @@
 # List of changes
 
+## Version 0.18
+
+- Fix version numbering setup
+- Fix #92 (can ignore blah blah lines in ~C section)
+- Fix #209 (can now add curves with LASFile['mnemonic'] = [1, 2, 3])
+- Fix #213 (LASFile.data is now a lazily generated property, with setter)
+- Fix #218 (LASFile.append_curve was not adding data=[...] properly)
+- Fix #216 (LASFile now raises KeyError for missing mnemonics)
+- Fix #214 (first duplicate mnemonic when added was missing the :1)
+
 ## Version 0.17
 
 - Add Appveyor continuous integration testing
