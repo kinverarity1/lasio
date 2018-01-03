@@ -1,5 +1,9 @@
 # List of changes
 
+## Version 0.19
+
+- Fix #223 (critical version/installation bug)
+
 ## Version 0.18
 
 - Fix version numbering setup
