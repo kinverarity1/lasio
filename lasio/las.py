@@ -107,14 +107,15 @@ class LASFile(object):
         regexp_subs, value_null_subs, version_NULL = reader.get_substitutions(
             read_policy, null_policy)
 
-        self.raw_sections = reader.read_file_contents(
-            file_obj, regexp_subs, value_null_subs, ignore_data=ignore_data, )
+        try:
+            self.raw_sections = reader.read_file_contents(
+                file_obj, regexp_subs, value_null_subs, ignore_data=ignore_data, )
+        finally:
+            if hasattr(file_obj, "close"):
+                file_obj.close()
 
         if len(self.raw_sections) == 0:
             raise KeyError('No ~ sections found. Is this a LAS file?')
-        
-        if hasattr(file_obj, "close"):
-            file_obj.close()
 
         def add_section(pattern, name, **sect_kws):
             raw_section = self.match_raw_section(pattern)
