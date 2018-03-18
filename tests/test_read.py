@@ -200,6 +200,6 @@ def test_issue92():
     
 def test_emptyparam(capsys):
     las = lasio.read(egfn('emptyparam.las'))
-    ut, err = capsys.readouterr()
+    out, err = capsys.readouterr()
     msg = 'Header section Parameter regexp=~P is empty.'
     assert not msg in out 
