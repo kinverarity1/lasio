@@ -78,7 +78,7 @@ class LASFile(object):
             self.read(file_ref, **read_kwargs)
 
     def read(self, file_ref, 
-             ignore_data=False, read_policy='default', null_policy='common',
+             ignore_data=False, read_policy='default', null_policy='strict',
              ignore_header_errors=False, mnemonic_case='upper', 
              **kwargs):
         '''Read a LAS file.
@@ -88,7 +88,8 @@ class LASFile(object):
                 object, or a string containing the contents of a file.
 
         Keyword Arguments:
-            null_subs (bool): if True, replace invalid values with np.nan
+            null_policy (str or list): see 
+                http://lasio.readthedocs.io/en/latest/data-section.html#handling-invalid-data-indicators-automatically
             ignore_data (bool): if True, do not read in any of the actual data, 
                 just the header metadata. False by default.
             ignore_header_errors (bool): ignore LASHeaderErrors (False by 
