@@ -198,6 +198,8 @@ def test_sparse_curves():
 def test_issue92():
     las = lasio.read(egfn('issue92.las'), ignore_header_errors=True)
     
-def test_emptyparam(caplog):
+def test_emptyparam(capsys):
     las = lasio.read(egfn('emptyparam.las'))
-    assert not 'Header section Parameter regexp=~P was not found.' in caplog.text
+    ut, err = capsys.readouterr()
+    msg = 'Header section Parameter regexp=~P is empty.'
+    assert not msg in out 
