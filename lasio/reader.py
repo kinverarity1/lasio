@@ -254,6 +254,7 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs,
     sect_lines = []
     sect_line_nos = []
     sect_title_line = None
+    section_exists = False
 
     for i, line in enumerate(file_obj):
         line = line.strip()
@@ -287,7 +288,7 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs,
             break
 
         elif line.startswith('~'):
-            if sect_lines:
+            if section_exists:
                 # We have ended a section and need to start the next
                 sections[sect_title_line] = {
                     "section_type": "header",
@@ -299,6 +300,7 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs,
                 sect_line_nos = []
             else:
                 # We are entering into a section for the first time
+                section_exists = True
                 pass
             sect_title_line = line # either way... this is the case.
 
