@@ -1,6 +1,7 @@
 import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import pytest
+import numpy as np
 
 import lasio
 from lasio import read
@@ -77,9 +78,9 @@ DFD .K/M3 1525.0 : DRILL FLUID DENSITY
 Note: The logging tools became stuck at 625 metres causing the data
 between 625 metres and 615 metres to be invalid.
 ~ASCII -----------------------------------------------------
-       1670     123.45       2550       0.45     123.45     123.45      110.2      105.6
-     1669.9     123.45       2550       0.45     123.45     123.45      110.2      105.6
-     1669.8     123.45       2550       0.45     123.45     123.45      110.2      105.6
+ 1670.00000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+ 1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+ 1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
 """
 
 
@@ -126,9 +127,9 @@ DFD .K/M3 1525.0 : DRILL FLUID DENSITY
 Note: The logging tools became stuck at 625 metres causing the data
 between 625 metres and 615 metres to be invalid.
 ~ASCII -----------------------------------------------------
-       1670     123.45       2550       0.45     123.45     123.45      110.2      105.6
-     1669.9     123.45       2550       0.45     123.45     123.45      110.2      105.6
-     1669.8     123.45       2550       0.45     123.45     123.45      110.2      105.6
+ 1670.00000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+ 1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+ 1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
 """
 
 def test_write_sample_empty_params():
@@ -432,7 +433,15 @@ DFD .K/M3 1525.0 : DRILL FLUID DENSITY
 Note: The logging tools became stuck at 625 meters causing the data
 between 625 meters and 615 meters to be invalid.
 ~ASCII -----------------------------------------------------
-       1670     123.45       2550       0.45     123.45     123.45      110.2      105.6
-     1669.9     123.45       2550       0.45     123.45     123.45      110.2      105.6
-     1669.8     123.45       2550       0.45     123.45     123.45      110.2      105.6
+ 1670.00000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+ 1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+ 1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
 '''
+
+def test_write_large_depths():
+    las = lasio.read(egfn("sample.las"))
+    las.curves[0].data *= 10.5 + 0.1
+    las.write('write_large_depths.las')
+    las2 = lasio.read('write_large_depths.las')
+    os.remove('write_large_depths.las')
+    assert np.all(las.curves[0].data == las2.curves[0].data)

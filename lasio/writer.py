@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def write(las, file_object, version=None, wrap=None, STRT=None,
-          STOP=None, STEP=None, fmt='%10.5g'):
+          STOP=None, STEP=None, fmt='%.5f'):
     '''Write a LAS files.
 
     Arguments:
