@@ -1,2 +1,2 @@
-IPython
+IPython==6.3.1
 lasio
