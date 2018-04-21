@@ -1,2 +1,2 @@
 IPython==6.3.1
-lasio
+lasio==0.19
