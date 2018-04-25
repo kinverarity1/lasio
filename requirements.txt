@@ -1,2 +1,2 @@
-numpy
-ordereddict
+numpy==1.14.2
+ordereddict==1.1

@@ -1,2 +1,2 @@
-IPython
-lasio
+IPython==6.3.1
+lasio==0.19
