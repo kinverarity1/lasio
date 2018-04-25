@@ -12,7 +12,7 @@ else:
     from .excel import ExcelConverter
 
 
-__version__ = '0.19'
+__version__ = '0.20'
 
 
 def read(file_ref, **kwargs):

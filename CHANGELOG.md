@@ -1,5 +1,13 @@
 # List of changes
 
+## Version 0.20
+
+- Fix #233 (pickling error lost Curve.data during multiprocessing)
+- Fix #226 (do not issue warning on empty ~Parameter section)
+- Revised default behaviour to using null_policy='strict' (ref. #227)
+- Fix #221 (depths > 10000 were being rounded by default)
+- Fix #225 (file handle leaked if exception during parsing)
+
 ## Version 0.19
 
 - Fix #223 (critical version/installation bug)
