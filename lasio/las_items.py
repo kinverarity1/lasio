@@ -28,7 +28,7 @@ class HeaderItem(OrderedDict):
     object.
 
     '''
-    def __init__(self, mnemonic='', unit='', value='', descr=''):
+    def __init__(self, mnemonic='', unit='', value='', descr='', data=None):
         super(HeaderItem, self).__init__()
 
         # The original mnemonic needs to be stored for rewriting a new file.
@@ -57,6 +57,7 @@ class HeaderItem(OrderedDict):
         self.unit = unit
         self.value = value
         self.descr = descr
+        self.data = data
 
     @property
     def useful_mnemonic(self):
@@ -125,7 +126,7 @@ class HeaderItem(OrderedDict):
 
     def __reduce__(self):
         return self.__class__, (self.mnemonic, self.unit, self.value, 
-                                self.descr)
+                                self.descr, self.data)
 
     @property
     def json(self):
