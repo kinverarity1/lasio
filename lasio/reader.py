@@ -349,9 +349,12 @@ def read_data_section_iterative(file_obj, regexp_subs, value_null_subs):
             for pattern, sub_str in regexp_subs:
                 line = re.sub(pattern, sub_str, line)
             for item in line.split():
-                yield item
+                try:
+                    yield np.float64(item)
+                except ValueError:
+                    yield item
 
-    array = np.fromiter(items(file_obj), np.float64, -1)
+    array = np.array([i for i in items(file_obj)])
     for value in value_null_subs:
         array[array == value] = np.nan
     return array
