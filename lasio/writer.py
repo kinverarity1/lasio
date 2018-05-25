@@ -126,7 +126,7 @@ def write(las, file_object, version=None, wrap=None, STRT=None,
 
     # ~Curves
     logger.debug('LASFile.write Curves section')
-    lines.append('~Curves '.ljust(60, '-'))
+    lines.append('~Curve Information '.ljust(60, '-'))
     order_func = get_section_order_function('Curves', version)
     section_widths = get_section_widths(
         'Curves', las.curves, version, order_func)
