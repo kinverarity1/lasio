@@ -1,2 +1,2 @@
 IPython
-lasio
+lasio==0.19
