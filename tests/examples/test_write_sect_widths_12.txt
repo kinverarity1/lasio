@@ -14,7 +14,7 @@ PROV   . PROVINCE : SASKATCHEWAN
 SRVC   .  SERVICE : The company that did this logging has a very very long name....
 DATE   . LOG DATE : 25-DEC-1988
 UWI    .  WELL ID : 100091604920W300
-~Curves ----------------------------------------------------
+~Curve Information -----------------------------------------
 D.M     : 1  DEPTH
 A.US/M  : 2  SONIC TRANSIT TIME
 B.K/M3  : 3  BULK DENSITY

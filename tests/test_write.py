@@ -56,7 +56,7 @@ PROV.   ALBERTA : PROVINCE
 SRVC.   LOGGING : SERVICE COMPANY ARE YOU KIDDING THIS IS A REALLY REALLY LONG STRING
 DATE. 13-DEC-86 : LOG DATE
 UWI .  10012340 : UNIQUE WELL ID
-~Curves ----------------------------------------------------
+~Curve Information -----------------------------------------
 DEPT.M                 : 1  DEPTH
 DT  .US/M 60 520 32 00 : 2  SONIC TRANSIT TIME
 RHOB.K/M3 45 350 01 00 : 3  BULK DENSITY
@@ -105,7 +105,7 @@ PROV.                                                         ALBERTA : PROVINCE
 SRVC. The company that did this logging has a very very long name.... : SERVICE COMPANY
 DATE.                                                       13-DEC-86 : LOG DATE
 UWI .                                                100123401234W500 : UNIQUE WELL ID
-~Curves ----------------------------------------------------
+~Curve Information -----------------------------------------
 DEPT.M                 : 1  DEPTH
 DT  .US/M 60 520 32 00 : 2  SONIC TRANSIT TIME
 RHOB.K/M3 45 350 01 00 : 3  BULK DENSITY
@@ -160,7 +160,7 @@ PROV.             SASKATCHEWAN : PROVINCE
 SRVC. ANY LOGGING COMPANY LTD. : SERVICE COMPANY
 DATE.              25-DEC-1988 : LOG DATE
 UWI .         100091604920W300 : UNIQUE WELL ID
-~Curves ----------------------------------------------------
+~Curve Information -----------------------------------------
 DEPT    .M     : 1  DEPTH
 DT      .US/M  : 2  SONIC TRANSIT TIME
 RHOB    .K/M3  : 3  BULK DENSITY
@@ -221,7 +221,7 @@ PROV.             SASKATCHEWAN : PROVINCE
 SRVC. ANY LOGGING COMPANY LTD. : SERVICE COMPANY
 DATE.              25-DEC-1988 : LOG DATE
 UWI .         100091604920W300 : UNIQUE WELL ID
-~Curves ----------------------------------------------------
+~Curve Information -----------------------------------------
 DEPT.M     : 1  DEPTH
 RHO .ohmm  : curve 1,2,3
 RHO .ohmm  : curve 10,20,30
@@ -265,7 +265,7 @@ PROV.             SASKATCHEWAN : PROVINCE
 SRVC. ANY LOGGING COMPANY LTD. : SERVICE COMPANY
 DATE.              25-DEC-1988 : LOG DATE
 UWI .         100091604920W300 : UNIQUE WELL ID
-~Curves ----------------------------------------------------
+~Curve Information -----------------------------------------
 DEPT.M     : 1  DEPTH
     .ohmm  : curve 1,2,3
     .ohmm  : curve 10,20,30
@@ -310,7 +310,7 @@ PROV.             SASKATCHEWAN : PROVINCE
 SRVC. ANY LOGGING COMPANY LTD. : SERVICE COMPANY
 DATE.              25-DEC-1988 : LOG DATE
 UWI .         100091604920W300 : UNIQUE WELL ID
-~Curves ----------------------------------------------------
+~Curve Information -----------------------------------------
 DEPT.FT    : 1  DEPTH
 DT  .US/M  : 2  SONIC TRANSIT TIME
 RHOB.K/M3  : 3  BULK DENSITY
@@ -412,7 +412,7 @@ PROV.             SASKATCHEWAN : PROVINCE
 SRVC. ANY LOGGING COMPANY LTD. : SERVICE COMPANY
 DATE.              25-DEC-1988 : LOG DATE
 UWI .         100091604920W300 : UNIQUE WELL ID
-~Curves ----------------------------------------------------
+~Curve Information -----------------------------------------
 DEPT    .M     : 1  DEPTH
 New_DT  .US/M  : 2  SONIC TRANSIT TIME
 New_RHOB.K/M3  : 3  BULK DENSITY

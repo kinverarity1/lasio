@@ -35,7 +35,7 @@ SRVC. ANY LOGGING COMPANY INC. : SERVICE COMPANY
 SON .                   142085 : SERVICE ORDER
 DATE.                13-DEC-86 : LOG DATE
 UWI .                          : UNIQUE WELL ID
-~Curves ----------------------------------------------------
+~Curve Information -----------------------------------------
 DEPT.M     : Depth
 DT  .US/M  : 1 Sonic Travel Time
 RHOB.K/M   : 2 Density-Bulk Density
@@ -130,7 +130,7 @@ SRVC. ANY LOGGING COMPANY INC. : SERVICE COMPANY
 SON .                   142085 : SERVICE ORDER
 DATE.                13-DEC-86 : LOG DATE
 UWI .                          : UNIQUE WELL ID
-~Curves ----------------------------------------------------
+~Curve Information -----------------------------------------
 DEPT.M     : Depth
 DT  .US/M  : 1 Sonic Travel Time
 RHOB.K/M   : 2 Density-Bulk Density
