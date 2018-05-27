@@ -204,7 +204,10 @@ def test_emptyparam(capsys):
     msg = 'Header section Parameter regexp=~P is empty.'
     assert not msg in out
 
-def test_data_characters():
+def test_data_characters_1():
     las = lasio.read(egfn('data_characters.las'))
     assert las['TIME'][0] == '00:00:00'
+
+def test_data_characters_2():
+    las = lasio.read(egfn('data_characters.las'))    
     assert las['DATE'][0] == '01-Jan-20'
