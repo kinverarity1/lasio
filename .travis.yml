@@ -28,7 +28,7 @@ install:
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION 
   - source activate test-environment
   - pip install numpy
-  - conda install pandas pytest requests
+  - pip install pandas pytest requests
   - pip install ordereddict cchardet argparse chardet
   - pip install openpyxl==2.0.3
   - python setup.py install
