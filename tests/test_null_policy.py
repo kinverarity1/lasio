@@ -61,8 +61,8 @@ def test_null_policy_custom_2():
     assert las['SFLA'][2] == -999.25
 
 def test_null_policy_ERR_strict():
-    with pytest.raises(exceptions.LASDataError):
-        las = read(egfn("null_policy_ERR.las"), null_policy='strict')
+    las = read(egfn("null_policy_ERR.las"), null_policy='strict')
+    assert las['RHOB'][2] == 'ERR'
     
 def test_null_policy_ERR_custom():
     las = read(egfn("null_policy_ERR.las"), null_policy=[('ERR', ' NaN '), ])
