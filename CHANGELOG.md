@@ -1,5 +1,10 @@
 # List of changes
 
+## Version 0.21
+
+- Fix #236 and #237 (can now read ASCII in ~Data section)
+- Fix #239 (Petrel can't read lasio output)
+
 ## Version 0.20
 
 - Fix #233 (pickling error lost Curve.data during multiprocessing)
