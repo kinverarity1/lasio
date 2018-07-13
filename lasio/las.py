@@ -557,7 +557,14 @@ class LASFile(object):
     def df(self):
         '''Return data as a :class:`pandas.DataFrame` structure.'''
         import pandas as pd
+        from pandas.api.types import is_object_dtype
         df = pd.DataFrame(self.data, columns=[c.mnemonic for c in self.curves])
+        for column in df.columns:
+            if is_object_dtype(df[column].dtype):
+                try:
+                    df[column] = df[column].astype(np.float64)
+                except ValueError:
+                    pass
         if len(self.curves) > 0:
             df = df.set_index(self.curves[0].mnemonic)
         return df
