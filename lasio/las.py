@@ -661,7 +661,7 @@ class LASFile(object):
                 'Unit of depth index not known')
 
     def _index_unit_is(self, unit_code):
-        '''Check for index_unit in one place
+        '''Check value of index_unit string, ignoring case
 
         Args:
             index unit code (string) e.g. 'M' or 'FT'

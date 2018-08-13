@@ -21,6 +21,7 @@ stegfn = lambda vers, fn: os.path.join(
 
 def test_autodepthindex():
     m = read(egfn("autodepthindex_M.las"))
+    m_lower = read(egfn("autodepthindex_M_lower.las"))
     f = read(egfn("autodepthindex_F.las"))
     ft = read(egfn("autodepthindex_FT.las"))
     err = read(egfn("autodepthindex_M_FT.las"))
@@ -31,11 +32,13 @@ def test_autodepthindex_inconsistent():
     with pytest.raises(exceptions.LASUnknownUnitError):
         print(err.depth_m)
 
-
 def test_autodepthindex_m():
     l = read(egfn("autodepthindex_M.las"))
     assert (l.depth_ft[-1] * 0.3048 == l.index[-1])
 
+def test_autodepthindex_m_lower():
+    l = read(egfn("autodepthindex_M_lower.las"))
+    assert (l.depth_ft[-1] * 0.3048 == l.index[-1])
 
 def test_autodepthindex_f():
     l = read(egfn("autodepthindex_F.las"))
