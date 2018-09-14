@@ -44,7 +44,7 @@ class LASFile(object):
     '''LAS file object.
 
     Keyword Arguments:
-        file_ref (file-like object, str): either a filename, an open file 
+        file_ref (file-like object, str): either a filename, an open file
             object, or a string containing the contents of a file.
 
     See these routines for additional keyword arguments you can use when
@@ -77,22 +77,22 @@ class LASFile(object):
         if not (file_ref is None):
             self.read(file_ref, **read_kwargs)
 
-    def read(self, file_ref, 
+    def read(self, file_ref,
              ignore_data=False, read_policy='default', null_policy='strict',
-             ignore_header_errors=False, mnemonic_case='upper', 
+             ignore_header_errors=False, mnemonic_case='upper',
              **kwargs):
         '''Read a LAS file.
 
         Arguments:
-            file_ref (file-like object, str): either a filename, an open file 
+            file_ref (file-like object, str): either a filename, an open file
                 object, or a string containing the contents of a file.
 
         Keyword Arguments:
-            null_policy (str or list): see 
+            null_policy (str or list): see
                 http://lasio.readthedocs.io/en/latest/data-section.html#handling-invalid-data-indicators-automatically
-            ignore_data (bool): if True, do not read in any of the actual data, 
+            ignore_data (bool): if True, do not read in any of the actual data,
                 just the header metadata. False by default.
-            ignore_header_errors (bool): ignore LASHeaderErrors (False by 
+            ignore_header_errors (bool): ignore LASHeaderErrors (False by
                 default)
             mnemonic_case (str): 'preserve': keep the case of HeaderItem mnemonics
                                  'upper': convert all HeaderItem mnemonics to uppercase
@@ -122,7 +122,7 @@ class LASFile(object):
             raw_section = self.match_raw_section(pattern)
             drop = []
             if raw_section:
-                self.sections[name] = reader.parse_header_section(raw_section, 
+                self.sections[name] = reader.parse_header_section(raw_section,
                                                                   **sect_kws)
                 drop.append(raw_section["title"])
             else:
@@ -131,7 +131,7 @@ class LASFile(object):
             for key in drop:
                 self.raw_sections.pop(key)
 
-        add_section("~V", "Version", version=1.2, 
+        add_section("~V", "Version", version=1.2,
                     ignore_header_errors=ignore_header_errors,
                     mnemonic_case=mnemonic_case)
 
@@ -169,7 +169,7 @@ class LASFile(object):
                 logger.info('Assuming that LAS VERS is 2.0')
                 version = 2
 
-        add_section("~W", "Well", version=version, 
+        add_section("~W", "Well", version=version,
                     ignore_header_errors=ignore_header_errors,
                     mnemonic_case=mnemonic_case)
 
@@ -181,10 +181,10 @@ class LASFile(object):
             logger.warning('NULL item not found in the ~W section')
             null = None
 
-        add_section("~C", "Curves", version=version, 
+        add_section("~C", "Curves", version=version,
                     ignore_header_errors=ignore_header_errors,
                     mnemonic_case=mnemonic_case)
-        add_section("~P", "Parameter", version=version, 
+        add_section("~P", "Parameter", version=version,
                     ignore_header_errors=ignore_header_errors,
                     mnemonic_case=mnemonic_case)
         s = self.match_raw_section("~O")
@@ -257,7 +257,7 @@ class LASFile(object):
         Arguments:
             file_ref (open file-like object or str): a file-like object opening
                 for writing, or a filename.
-    
+
         All ``**kwargs`` are passed to :func:`lasio.writer.write` -- please
         check the docstring of that function for more keyword arguments you can
         use here!
@@ -303,8 +303,8 @@ class LASFile(object):
                 use the curve mnemonics.
             units (list, True, False): as for mnemonics.
             units_loc (str or None): either 'line', '[]' or '()'. 'line' will put
-                units on the line following the mnemonics (good for WellCAD). 
-                '[]' and '()' will put the units in either brackets or 
+                units on the line following the mnemonics (good for WellCAD).
+                '[]' and '()' will put the units in either brackets or
                 parentheses following the mnemonics, on the single header line
                 (better for Excel)
             **kwargs: passed to :class:`csv.writer`. Note that if
@@ -320,7 +320,7 @@ class LASFile(object):
         if not 'lineterminator' in kwargs:
             kwargs['lineterminator'] = '\n'
         writer = csv.writer(file_ref, **kwargs)
-        
+
         if mnemonics is True:
             mnemonics = [c.original_mnemonic for c in self.curves]
         if units is True:
@@ -329,7 +329,7 @@ class LASFile(object):
         if mnemonics:
             if units_loc in ('()', '[]') and units:
                 mnemonics = [
-                    m + ' ' + units_loc[0] + u + units_loc[1] 
+                    m + ' ' + units_loc[0] + u + units_loc[1]
                     for m, u in zip(mnemonics, units)]
             writer.writerow(mnemonics)
         if units:
@@ -338,7 +338,7 @@ class LASFile(object):
 
         for i in range(self.data.shape[0]):
             writer.writerow(self.data[i, :])
-        
+
         if opened_file:
             file_ref.close()
 
@@ -409,7 +409,7 @@ class LASFile(object):
             key (str): the curve mnemonic
             value (1D data or CurveItem): either the curve data, or a CurveItem
 
-        See :meth:`lasio.las.LASFile.append_curve_item` or 
+        See :meth:`lasio.las.LASFile.append_curve_item` or
         :meth:`lasio.las.LASFile.append_curve` for more details.
 
         '''
@@ -621,7 +621,7 @@ class LASFile(object):
         for i, curve in enumerate(self.curves):
             curve.mnemonic = names[i]
             curve.data = data[:, i]
-            
+
         self.curves.assign_duplicate_suffixes()
 
     def set_data_from_df(self, df, **kwargs):
@@ -633,7 +633,14 @@ class LASFile(object):
         Keyword arguments are passed to :meth:`lasio.las.LASFile.set_data`.
 
         '''
+        def try_float(arr):
+            try:
+                return float(arr)
+            except:
+                return arr
+
         df_values = np.vstack([df.index.values, df.values.T]).T
+        # need to apply try_float per column
         if (not 'names' in kwargs) or (not kwargs['names']):
             kwargs['names'] = [df.index.name] + [str(name) for name in df.columns.values]
         self.set_data(df_values, **kwargs)
