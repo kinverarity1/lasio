@@ -1,5 +1,7 @@
 # List of changes
 
+## Version 0.22
+
 - Fix #252 (removing case sensitivity in index_unit checks)
 - Fix #249 (fix bug producing df without converting to floats)
 - Attempt to fix Lasso classification on GitHub
