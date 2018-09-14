@@ -1,5 +1,9 @@
 # List of changes
 
+- Fix #252 (removing case sensitivity in index_unit checks)
+- Fix #249 (fix bug producing df without converting to floats)
+- Attempt to fix Lasso classification on GitHub
+
 ## Version 0.21
 
 - Fix #236 and #237 (can now read ASCII in ~Data section)
@@ -84,7 +88,7 @@ Version 0.14 and 0.15 skipped due to broken PyPI upload.
 ## Version 0.11
 
 - Reorganise code into modules
-- various 
+- various
 
 ## Version 0.10
 
