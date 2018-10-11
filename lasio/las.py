@@ -7,6 +7,7 @@ import json
 import logging
 import os
 import re
+import sys
 import textwrap
 import traceback
 
@@ -263,8 +264,21 @@ class LASFile(object):
                 if wrap == "NO":
                     if s["ncols"] > n_curves:
                         n_arr_cols = s["ncols"]
-                data = np.reshape(arr, (-1, n_arr_cols))
-
+                try:
+                    data = np.reshape(arr, (-1, n_arr_cols))
+                except ValueError as e:
+                    err_msg = (
+                        "cannot reshape ~A array of "
+                        "size {arr_shape} into "
+                        "{n_arr_cols} columns".format(
+                            arr_shape=arr.shape, n_arr_cols=n_arr_cols
+                        )
+                    )
+                    if sys.version_info.major < 3:
+                        e.message = err_msg
+                        raise e
+                    else:
+                        raise ValueError(err_msg) from e
                 self.set_data(data, truncate=False)
                 drop.append(s["title"])
             for key in drop:
@@ -597,12 +611,12 @@ class LASFile(object):
         return self.sections
 
     def df(self):
-        '''Return data as a :class:`pandas.DataFrame` structure.
+        """Return data as a :class:`pandas.DataFrame` structure.
 
         The first Curve of the LASFile object is used as the pandas
         DataFrame's index.
 
-        '''
+        """
         import pandas as pd
         from pandas.api.types import is_object_dtype
 
