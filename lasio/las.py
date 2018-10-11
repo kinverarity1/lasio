@@ -255,7 +255,14 @@ class LASFile(object):
                 if wrap == "NO":
                     if s["ncols"] > n_curves:
                         n_arr_cols = s["ncols"]
-                data = np.reshape(arr, (-1, n_arr_cols))
+                try:
+                    data = np.reshape(arr, (-1, n_arr_cols))
+                except ValueError as e:
+                    self._warn(
+                        "Can't convert ~A section to data: "+str(e),
+                        { "arr" : arr , "cols" : n_arr_cols }
+                    )
+                    data=np.asarray([])
                 self.set_data(data, truncate=False)
                 drop.append(s["title"])
             for key in drop:
@@ -482,7 +489,7 @@ class LASFile(object):
         '''Header information from the Well (~W) section.
 
         Returns:
-            :class:`lasio.las_items.SectionItems` object.
+            :class:`lasio.las_items.SectionIrtems` oobject.
 
         '''
         return self.sections['Well']
@@ -626,6 +633,13 @@ class LASFile(object):
                 return self.set_data_from_df(
                     array_like, **dict(names=names, truncate=False))
         data = np.asarray(array_like)
+
+        if len(data.shape)!=2:
+            self._warn(
+                "Data is not 2-dimensional. Shape: %s" % str(data.shape),
+                { "data" : data }
+            )
+            return
 
         # Truncate data array if necessary.
         if truncate:
