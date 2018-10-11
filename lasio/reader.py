@@ -274,6 +274,8 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs,
             if not ignore_data:
                 try:
                     data = read_data_section_iterative(file_obj, regexp_subs, value_null_subs)
+                except KeyboardInterrupt:
+                    raise
                 except:
                     raise exceptions.LASDataError(
                         traceback.format_exc()[:-1] + 
