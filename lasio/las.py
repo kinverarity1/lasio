@@ -37,6 +37,10 @@ from . import writer
 
 from . import logger
 
+from collections import namedtuple
+
+LASFileProblem = namedtuple("LASFileProblem",("description","info"))
+
 class LASFile(object):
 
     '''LAS file object.
@@ -72,8 +76,14 @@ class LASFile(object):
             'Other': str(default_items['Other']),
         }
 
+        self._problems=[]
+
         if not (file_ref is None):
             self.read(file_ref, **read_kwargs)
+
+    def _warn(self,msg,context):
+            logger.warning(msg)
+            self._problems.append(LASFileProblem(msg,context))
 
     def read(self, file_ref,
              ignore_data=False, read_policy='default', null_policy='strict',
@@ -124,8 +134,9 @@ class LASFile(object):
                                                                   **sect_kws)
                 drop.append(raw_section["title"])
             else:
-                logger.warning("Header section %s regexp=%s was not found."
-                               % (name, pattern))
+                self._warn(
+                    "Header section %s regexp=%s was not found." % (name, pattern),
+                    {"sections" : list(self.raw_sections.keys())})
             for key in drop:
                 self.raw_sections.pop(key)
 
@@ -138,13 +149,17 @@ class LASFile(object):
         try:
             version = self.version['VERS'].value
         except KeyError:
-            logger.warning('VERS item not found in the ~V section.')
+            self._warn(
+                'VERS item not found in the ~V section.',
+                {"keys" :  list(self.version.keys())})
             version = None
 
         try:
             wrap = self.version['WRAP'].value
         except KeyError:
-            logger.warning('WRAP item not found in the ~V section')
+            self._warn(
+                'WRAP item not found in the ~V section',
+                {"keys" :  list(self.version.keys())})
             wrap = None
 
         # Validate version.
@@ -176,7 +191,9 @@ class LASFile(object):
         try:
             null = self.well['NULL'].value
         except KeyError:
-            logger.warning('NULL item not found in the ~W section')
+            self._warn(
+                'NULL item not found in the ~W section',
+                {"keys" :  list(self.well.keys())})
             null = None
 
         add_section("~C", "Curves", version=version,
@@ -199,7 +216,9 @@ class LASFile(object):
         drop = []
         for s in self.raw_sections.values():
             if s["section_type"] == "header":
-                logger.warning('Found nonstandard LAS section: ' + s["title"])
+                self._warn(
+                    'Found nonstandard LAS section: ' + s["title"],
+                    s)
                 self.sections[s["title"][1:]] = "\n".join(s["lines"])
                 drop.append(s["title"])
         for key in drop:
@@ -210,11 +229,15 @@ class LASFile(object):
             s = self.match_raw_section("~A")
             s_valid = True
             if s is None:
-                logger.warning("No data section (regexp='~A') found")
+                self._warn(
+                    "No data section (regexp='~A') found",
+                    {"sections" : list(self.raw_sections.keys())})
                 s_valid = False
             try:
                 if s['ncols'] is None:
-                    logger.warning('No numerical data found inside ~A section')
+                    self._warn(
+                        'No numerical data found inside ~A section',
+                        s)
                     s_valid = False
             except:
                 pass
@@ -233,7 +256,6 @@ class LASFile(object):
                     if s["ncols"] > n_curves:
                         n_arr_cols = s["ncols"]
                 data = np.reshape(arr, (-1, n_arr_cols))
-
                 self.set_data(data, truncate=False)
                 drop.append(s["title"])
             for key in drop:
@@ -482,6 +504,11 @@ class LASFile(object):
     @curves.setter
     def curves(self, section):
         self.sections['Curves'] = section
+
+    @property
+    def problems(self):
+        '''a list of problems that occurred during reading'''
+        return self._problems
 
     @property
     def curvesdict(self):
