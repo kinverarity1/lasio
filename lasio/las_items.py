@@ -71,7 +71,7 @@ class HeaderItem(OrderedDict):
     def set_session_mnemonic_only(self, value):
         '''Set the mnemonic for session use.
 
-        See source comments for :class:`lasio.las_items.HeaderItem.__init__` 
+        See source comments for :class:`lasio.las_items.HeaderItem.__init__`
         for a more in-depth explanation.
 
         '''
@@ -96,13 +96,13 @@ class HeaderItem(OrderedDict):
                 'CurveItem only has restricted items (not %s)' % key)
 
     def __setattr__(self, key, value):
-        
+
         if key == 'mnemonic':
-            
+
             # The user wants to rename the item! This means we must send their
             # new mnemonic to the original_mnemonic attribute. Remember that the
             # mnemonic attribute is for session use only.
-            
+
             self.original_mnemonic = value
             self.set_session_mnemonic_only(self.useful_mnemonic)
         else:
@@ -123,7 +123,7 @@ class HeaderItem(OrderedDict):
         return p.text(self.__repr__())
 
     def __reduce__(self):
-        return self.__class__, (self.mnemonic, self.unit, self.value, 
+        return self.__class__, (self.mnemonic, self.unit, self.value,
                                 self.descr, self.data)
 
     @property
@@ -199,7 +199,7 @@ class SectionItems(list):
         rstr_lines = []
         data = [['Mnemonic', 'Unit', 'Value', 'Description'],
                 ['--------', '----', '-----', '-----------']]
-        data += [[str(x) for x in [item.mnemonic, item.unit, item.value, 
+        data += [[str(x) for x in [item.mnemonic, item.unit, item.value,
                                    item.descr]] for item in self]
         col_widths = []
         for i in range(len(data[0])):
@@ -325,7 +325,7 @@ class SectionItems(list):
             >>> section.OPERATOR
             HeaderItem(mnemonic='OPERATOR', value='Kent')
 
-        See :meth:`lasio.las_items.SectionItems.set_item` and 
+        See :meth:`lasio.las_items.SectionItems.set_item` and
         :meth:`lasio.las_items.SectionItems.set_item_value`.
 
         '''
@@ -365,7 +365,7 @@ class SectionItems(list):
         '''Replace an item by comparison of session mnemonics.
 
         Arguments:
-            key (str): the item mnemonic (or HeaderItem with mnemonic) 
+            key (str): the item mnemonic (or HeaderItem with mnemonic)
                 you want to replace.
             newitem (HeaderItem): the new item
 
@@ -376,7 +376,7 @@ class SectionItems(list):
             if self.mnemonic_compare(key, item.mnemonic):
 
                 # This is very important. We replace items where
-                # 'mnemonic' is equal - i.e. we do not check 
+                # 'mnemonic' is equal - i.e. we do not check
                 # against useful_mnemonic or original_mnemonic.
 
                 return super(SectionItems, self).__setitem__(i, newitem)

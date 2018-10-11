@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 def test_read_v12_sample():
     l = lasio.read(stegfn("1.2", "sample.las"))
-    
+
 
 def test_read_v12_sample_curve_api():
     l = lasio.read(stegfn("1.2", "sample_curve_api.las"))
@@ -125,7 +125,7 @@ def test_missing_vers_write_version_none_fails():
 def test_missing_vers_write_version_specified_works():
     l = lasio.read(egfn("missing_vers.las"))
     l.write(sys.stdout, version=1.2)
-        
+
 def test_missing_wrap_loads():
     l = lasio.read(egfn("missing_wrap.las"))
 
@@ -141,7 +141,7 @@ def test_missing_wrap_write_wrap_none_fails():
 def test_missing_wrap_write_wrap_specified_works():
     l = lasio.read(egfn("missing_wrap.las"))
     l.write(sys.stdout, wrap=True)
-        
+
 def test_missing_null_loads():
     l = lasio.read(egfn("missing_null.las"))
 
@@ -179,10 +179,10 @@ def test_blank_line_in_header():
 
 def test_duplicate_step():
     las = lasio.read(egfn('duplicate_step.las'))
-    
+
 def test_blank_line_at_start():
     las = lasio.read(egfn('blank_line_start.las'))
-    
+
 def test_missing_STRT_STOP():
     las = lasio.read(egfn('sample_TVD.las'))
     assert len(las.well) == 12
@@ -197,7 +197,7 @@ def test_sparse_curves():
 
 def test_issue92():
     las = lasio.read(egfn('issue92.las'), ignore_header_errors=True)
-    
+
 def test_emptyparam(capsys):
     las = lasio.read(egfn('emptyparam.las'))
     out, err = capsys.readouterr()
@@ -209,7 +209,7 @@ def test_data_characters_1():
     assert las['TIME'][0] == '00:00:00'
 
 def test_data_characters_2():
-    las = lasio.read(egfn('data_characters.las'))    
+    las = lasio.read(egfn('data_characters.las'))
     assert las['DATE'][0] == '01-Jan-20'
 
 def test_data_characters_types():

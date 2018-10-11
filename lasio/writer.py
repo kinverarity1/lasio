@@ -18,7 +18,7 @@ def write(las, file_object, version=None, wrap=None, STRT=None,
         file_object (file-like object open for writing): output
 
     Keyword Arguments:
-        version (float or None): version of written file, either 1.2 or 2. 
+        version (float or None): version of written file, either 1.2 or 2.
             If this is None, ``las.version.VERS.value`` will be used.
         wrap (bool or None): whether to wrap the output data section.
             If this is None, ``las.version.WRAP.value`` will be used.
@@ -34,7 +34,7 @@ def write(las, file_object, version=None, wrap=None, STRT=None,
         fmt (str): Python string formatting operator for numeric data to be
             used.
 
-    You should avoid calling this function directly - instead use the 
+    You should avoid calling this function directly - instead use the
     :meth:`lasio.las.LASFile.write` method.
 
     '''
@@ -183,7 +183,7 @@ def write(las, file_object, version=None, wrap=None, STRT=None,
                          (len(lines), depth_slice))
         else:
             lines = [depth_slice]
-                    
+
         for line in lines:
             if las.version['VERS'].value == 1.2 and len(line) > 255:
                 logger.warning('[v1.2] line #{} has {} chars (>256)'.format(
@@ -205,8 +205,8 @@ def get_formatter_function(order, left_width=None, middle_width=None):
             first period from the left and the first colon from the left.
 
     Returns:
-        A function which takes a header item 
-        (e.g. :class:`lasio.las_items.HeaderItem`) as its single argument and 
+        A function which takes a header item
+        (e.g. :class:`lasio.las_items.HeaderItem`) as its single argument and
         which in turn returns a string which is the correctly formatted LAS
         header line.
 
@@ -247,7 +247,7 @@ def get_section_order_function(section, version,
         order_definitions (dict): see source of defaults.py for more information
 
     Returns:
-        A function which takes a mnemonic (str) as its only argument, and 
+        A function which takes a mnemonic (str) as its only argument, and
         in turn returns the order 'value:descr' or 'descr:value'.
 
     '''
