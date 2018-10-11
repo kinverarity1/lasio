@@ -290,6 +290,13 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs,
         elif line.startswith('~'):
             if section_exists:
                 # We have ended a section and need to start the next
+                if sect_title_line in sections:
+                    logger.warning("Section '%s' exists at least twice in file" % sect_title_line)
+                    while sect_title_line in sections:
+                        # This is trouble if there are too many duplicate sections.
+                        # But then the whole LAS-file probably has a problem
+                        sect_title_line+="_Duplicate"
+
                 sections[sect_title_line] = {
                     "section_type": "header",
                     "title": sect_title_line,

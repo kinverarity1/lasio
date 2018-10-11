@@ -385,16 +385,26 @@ class LASFile(object):
         Intended for internal use only.
 
         '''
+        p = re.compile(pattern, flags=flags)
+        if re_func == "match":
+            re_func = re.match
+        elif re_func == "search":
+            re_func = re.search
+
+        sec=None
+
         for title in self.raw_sections.keys():
             title = title.strip()
-            p = re.compile(pattern, flags=flags)
-            if re_func == "match":
-                re_func = re.match
-            elif re_func == "search":
-                re_func == re.search
             m = re_func(p, title)
             if m:
-                return self.raw_sections[title]
+                if sec is None:
+                    sec=self.raw_sections[title]
+                else:
+                    self._warn(
+                        "Redundant match for section %s: Section '%s'" % (pattern,title),
+                        { "pattern" : pattern , "keys" : list(self.raw_sections.keys()) }
+                    )
+        return sec
 
     def get_curve(self, mnemonic):
         '''Return CurveItem object.
