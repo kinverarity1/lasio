@@ -50,8 +50,7 @@ def test_read_v2_sample_wrapped():
 
 
 def test_dodgy_param_sect():
-    with pytest.raises(lasio.exceptions.LASHeaderError):
-        l = lasio.read(egfn("dodgy_param_sect.las"))
+    l = lasio.read(egfn("dodgy_param_sect.las"))
 
 def test_ignore_header_errors():
     l = lasio.read(egfn("dodgy_param_sect.las"), ignore_header_errors=True)
