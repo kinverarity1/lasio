@@ -4,7 +4,6 @@ from __future__ import print_function
 import codecs
 import csv
 import json
-import logging
 import os
 import re
 import textwrap
@@ -36,8 +35,7 @@ from . import defaults
 from . import reader
 from . import writer
 
-logger = logging.getLogger(__name__)
-
+from . import logger
 
 class LASFile(object):
 

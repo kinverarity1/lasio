@@ -1,4 +1,3 @@
-import logging
 import textwrap
 
 import numpy as np
@@ -8,8 +7,7 @@ from .las_items import (
 from . import defaults
 from . import exceptions
 
-logger = logging.getLogger(__name__)
-
+from . import logger
 
 def write(las, file_object, version=None, wrap=None, STRT=None,
           STOP=None, STEP=None, fmt='%.5f'):

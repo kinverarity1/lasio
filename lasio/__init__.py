@@ -1,5 +1,8 @@
 import os
 
+import logging
+logger = logging.getLogger(__name__)
+
 from .las import LASFile, JSONEncoder
 from .las_items import CurveItem, HeaderItem, SectionItems
 from .reader import open_file
@@ -10,7 +13,6 @@ except ImportError:
     pass
 else:
     from .excel import ExcelConverter
-
 
 __version__ = '0.22'
 

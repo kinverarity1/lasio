@@ -1,5 +1,4 @@
 import json
-import logging
 
 # The standard library OrderedDict was introduced in Python 2.7 so
 # we have a third-party option to support Python 2.6
@@ -11,8 +10,7 @@ except ImportError:
 
 import numpy as np
 
-logger = logging.getLogger(__name__)
-
+from . import logger
 
 class HeaderItem(OrderedDict):
 

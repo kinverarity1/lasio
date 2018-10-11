@@ -1,5 +1,4 @@
 import codecs
-import logging
 import os
 import re
 import textwrap
@@ -8,6 +7,8 @@ import traceback
 import numpy as np
 
 from . import defaults
+
+from . import logger
 
 # Convoluted import for StringIO in order to support:
 #
@@ -30,9 +31,6 @@ else:
 from . import defaults
 from . import exceptions
 from .las_items import HeaderItem, CurveItem, SectionItems, OrderedDict
-
-
-logger = logging.getLogger(__name__)
 
 URL_REGEXP = re.compile(
     r'^(?:http|ftp)s?://'  # http:// or https://
