@@ -666,6 +666,12 @@ def read_header_line(line, pattern=None):
                        r'(?P<value>[^:]*):' +
                        r'(?P<descr>.*)')
     m = re.match(pattern, line)
+    if m is None:
+        logger.warning("Header line '%s' does not match patterm %s" % (line,pattern))
+        d["value"]=line
+        d["name"]="Unmatched_%03d" % read_header_line.unmatchedNr
+        read_header_line.unmatchedNr += 1
+        return d
     mdict = m.groupdict()
     for key, value in mdict.items():
         d[key] = value.strip()
@@ -673,3 +679,6 @@ def read_header_line(line, pattern=None):
             if d[key].endswith('.'):
                 d[key] = d[key].strip('.')  # see issue #36
     return d
+
+# Counter for the unmatched lines in the header (to make them unique)
+read_header_line.unmatchedNr = 1

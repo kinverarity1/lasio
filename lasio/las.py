@@ -132,6 +132,15 @@ class LASFile(object):
             if raw_section:
                 self.sections[name] = reader.parse_header_section(raw_section,
                                                                   **sect_kws)
+                for item in self.sections[name]:
+                    if item.mnemonic.find("UNMATCHED_")==0:
+                        self._warn(
+                            "Section %s has unmatched line '%s'" % (
+                                name,
+                                item.value),
+                            { "name" : name , "pattern" : pattern ,
+                              "line" : item.value }
+                        )
                 drop.append(raw_section["title"])
             else:
                 self._warn(
