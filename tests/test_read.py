@@ -219,3 +219,12 @@ def test_data_characters_types():
     assert is_object_dtype(las.df()['DATE'].dtype)
     assert is_float_dtype(las.df()['DEPT'].dtype)
     assert is_float_dtype(las.df()['ARC_GR_UNC_RT'].dtype)
+
+def test_read_v2_sample_duplicate_header():
+    l = lasio.read(stegfn("2.0", "sample_2.0_duplicateHeader.las"))
+
+def test_read_v2_sample_missformed_data():
+    l = lasio.read(stegfn("2.0", "sample_2.0_misformed.las"))
+
+def test_read_v2_sample_wrong_header():
+    l = lasio.read(stegfn("2.0", "sample_2.0_wrongHeader.las"))
