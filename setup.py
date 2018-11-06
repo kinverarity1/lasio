@@ -56,7 +56,10 @@ setup(name='lasio',
       classifiers=CLASSIFIERS,
       keywords="science geophysics io",
       packages=["lasio", ],
-      install_requires=requirements,
+      install_requires=[
+          "numpy",
+          "ordereddict"
+      ],
       entry_points={
           'console_scripts': [
               'las2excel = lasio.excel:main',
