@@ -1,5 +1,10 @@
 # List of changes
 
+## Version 0.23
+
+- Fix #259 (error when encoding missing from URL response headers)
+- Fix #262 (broken build due to cchardet dependency)
+
 ## Version 0.22
 
 - Fix #252 (removing case sensitivity in index_unit checks)
