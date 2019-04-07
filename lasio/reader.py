@@ -665,6 +665,8 @@ def read_header_line(line, pattern=None):
                        r'(?P<value>[^:]*):' +
                        r'(?P<descr>.*)')
     m = re.match(pattern, line)
+    if m is None:
+        logger.warning("Unable to parse line as LAS header: {}".format(line))
     mdict = m.groupdict()
     for key, value in mdict.items():
         d[key] = value.strip()
