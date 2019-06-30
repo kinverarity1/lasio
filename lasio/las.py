@@ -366,7 +366,7 @@ class LASFile(object):
             if re_func == "match":
                 re_func = re.match
             elif re_func == "search":
-                re_func == re.search
+                re_func = re.search
             m = re_func(p, title)
             if m:
                 return self.raw_sections[title]
