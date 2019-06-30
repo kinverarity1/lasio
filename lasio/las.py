@@ -557,7 +557,12 @@ class LASFile(object):
         return self.sections
 
     def df(self):
-        '''Return data as a :class:`pandas.DataFrame` structure.'''
+        '''Return data as a :class:`pandas.DataFrame` structure.
+
+        The first Curve of the LASFile object is used as the pandas
+        DataFrame's index.
+
+        '''
         import pandas as pd
         from pandas.api.types import is_object_dtype
         df = pd.DataFrame(self.data, columns=[c.mnemonic for c in self.curves])
@@ -631,6 +636,8 @@ class LASFile(object):
 
         Arguments:
             df (pandas.DataFrame): curve mnemonics are the column names.
+                The depth column for the curves must be the index of the
+                DataFrame.
 
         Keyword arguments are passed to :meth:`lasio.las.LASFile.set_data`.
 
