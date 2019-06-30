@@ -16,6 +16,7 @@ install:
   - python setup.py install
 script:
     - pytest
+    - codecov
 notifications:
   email:
     recipients:
