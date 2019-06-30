@@ -28,7 +28,7 @@ def write(
     Arguments:
         las (:class:`lasio.las.LASFile`)
         file_object (file-like object open for writing): output
-        version (float or None): version of written file, either 1.2 or 2. 
+        version (float or None): version of written file, either 1.2 or 2.
             If this is None, ``las.version.VERS.value`` will be used.
         wrap (bool or None): whether to wrap the output data section.
             If this is None, ``las.version.WRAP.value`` will be used.
@@ -47,12 +47,12 @@ def write(
             greater than than all the formatted numeric values in the file).
         data_width (79): width of data field in characters
 
-    Creating an output file is not the only side-effect of this function. It 
+    Creating an output file is not the only side-effect of this function. It
     will also modify the STRT, STOP and STEP HeaderItems so that they correctly
     reflect the ~Data section's units and the actual first, last, and interval
-    values. 
+    values.
 
-    You should avoid calling this function directly - instead use the 
+    You should avoid calling this function directly - instead use the
     :meth:`lasio.las.LASFile.write` method.
 
     """
@@ -149,6 +149,7 @@ def write(
         lines.append(line)
 
     # ~Params
+    logger.debug("LASFile.write Params section")
     lines.append("~Params ".ljust(header_width, "-"))
     order_func = get_section_order_function("Parameter", version)
     section_widths = get_section_widths("Parameter", las.params, version, order_func)
@@ -160,9 +161,11 @@ def write(
         lines.append(line)
 
     # ~Other
+    logger.debug("LASFile.write Other section")
     lines.append("~Other ".ljust(header_width, "-"))
     lines += las.other.splitlines()
 
+    logger.debug("LASFile.write ASCII section")
     lines.append("~ASCII ".ljust(header_width, "-"))
 
     file_object.write("\n".join(lines))
@@ -172,11 +175,15 @@ def write(
     # data_arr = np.column_stack([c.data for c in las.curves])
     data_arr = las.data
     nrows, ncols = data_arr.shape
+    logger.debug("Data section shape: {}".format((nrows, ncols)))
 
+    logger.debug("len_numeric_field = {}".format(len_numeric_field))
     if len_numeric_field is None:
+        logger.debug("Calculating len_numeric_field. fmt = {}".format(fmt))
         len_numeric_field = 10
         test_fmt = fmt % np.pi
-        while len(test_fmt) < (len_numeric_field - 1):
+        while len(test_fmt) > (len_numeric_field - 1):
+            logger.debug("test_fmt = {}".format(test_fmt))
             len_numeric_field += 1
 
     def format_data_section_line(n, fmt, l=len_numeric_field, spacer=" "):
@@ -191,6 +198,7 @@ def write(
     twrapper = textwrap.TextWrapper(width=data_width)
 
     for i in range(nrows):
+        logger.debug("Writing data array row {} of {}".format(i + 1, nrows))
         depth_slice = ""
         for j in range(ncols):
             depth_slice += format_data_section_line(data_arr[i, j], fmt)
@@ -227,8 +235,8 @@ def get_formatter_function(order, left_width=None, middle_width=None):
             first period from the left and the first colon from the left.
 
     Returns:
-        A function which takes a header item 
-        (e.g. :class:`lasio.las_items.HeaderItem`) as its single argument and 
+        A function which takes a header item
+        (e.g. :class:`lasio.las_items.HeaderItem`) as its single argument and
         which in turn returns a string which is the correctly formatted LAS
         header line.
 
@@ -270,7 +278,7 @@ def get_section_order_function(
         order_definitions (dict): see source of defaults.py for more information
 
     Returns:
-        A function which takes a mnemonic (str) as its only argument, and 
+        A function which takes a mnemonic (str) as its only argument, and
         in turn returns the order 'value:descr' or 'descr:value'.
 
     """
