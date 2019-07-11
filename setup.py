@@ -14,7 +14,7 @@ except:
     with open('README.md') as f:
         long_description = f.read()
 
-__version__ = '0.23'
+__version__ = '0.24'
 
 with open(os.path.join(os.path.dirname(__file__), "requirements.txt"), "r") as f:
     requirements = f.read().splitlines()

@@ -1,5 +1,9 @@
 # List of changes
 
+## Version 0.24
+
+- Fix #256 (parse units in brackets and add index_unit kwarg)
+
 ## Version 0.23
 
 - Fix #259 (error when encoding missing from URL response headers)
