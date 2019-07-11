@@ -694,9 +694,9 @@ class LASFile(object):
     @property
     def depth_m(self):
         """Return the index as metres."""
-        if self._index_unit_is("M"):
+        if self._index_unit_contains("M"):
             return self.index
-        elif self._index_unit_is("FT"):
+        elif self._index_unit_contains("F"):
             return self.index * 0.3048
         else:
             raise exceptions.LASUnknownUnitError("Unit of depth index not known")
@@ -704,20 +704,20 @@ class LASFile(object):
     @property
     def depth_ft(self):
         """Return the index as feet."""
-        if self._index_unit_is("M"):
+        if self._index_unit_contains("M"):
             return self.index / 0.3048
-        elif self._index_unit_is("FT"):
+        elif self._index_unit_contains("F"):
             return self.index
         else:
             raise exceptions.LASUnknownUnitError("Unit of depth index not known")
 
-    def _index_unit_is(self, unit_code):
+    def _index_unit_contains(self, unit_code):
         """Check value of index_unit string, ignoring case
 
         Args:
             index unit code (string) e.g. 'M' or 'FT'
         """
-        return self.index_unit and (self.index_unit.upper() == unit_code.upper())
+        return self.index_unit and (unit_code.upper() in self.index_unit.upper())
 
     def add_curve_raw(self, mnemonic, data, unit="", descr="", value=""):
         """Deprecated. Use append_curve_item() or insert_curve_item() instead."""

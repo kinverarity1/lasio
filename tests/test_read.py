@@ -335,3 +335,11 @@ def test_strip_square_brackets():
     las = lasio.read(egfn("sample_bracketed_units.las"))
     assert las.curves[0].unit == "M"
 
+
+def test_index_unit_equals_f():
+    las = lasio.read(egfn("autodepthindex_M.las"), index_unit="f")
+    assert (las.depth_ft == las.index).all()
+
+def test_index_unit_equals_m():
+    las = lasio.read(egfn("autodepthindex_M.las"), index_unit="m")
+    assert (las.depth_ft[1:] != las.index[1:]).all()
