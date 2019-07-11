@@ -597,16 +597,12 @@ class LASFile(object):
         return self.sections
 
     def df(self):
-<<<<<<< HEAD
         '''Return data as a :class:`pandas.DataFrame` structure.
 
         The first Curve of the LASFile object is used as the pandas
         DataFrame's index.
 
         '''
-=======
-        """Return data as a :class:`pandas.DataFrame` structure."""
->>>>>>> 9e153ed1b5b85d12cb78dfa7750f014f6674bc9d
         import pandas as pd
         from pandas.api.types import is_object_dtype
 

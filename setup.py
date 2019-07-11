@@ -58,7 +58,6 @@ setup(name='lasio',
       packages=["lasio", ],
       install_requires=[
           "numpy",
-          "ordereddict"
       ],
       entry_points={
           'console_scripts': [
