@@ -3,21 +3,7 @@
 from setuptools import setup
 import os
 
-try:
-    import pypandoc
-    long_description = pypandoc.convert('README.md', 'rst')
-    long_description = long_description.replace("\r","") # Do not forget this line
-except:
-    print("Pandoc not found. Long_description conversion failure.")
-
-    # pandoc is not installed, fallback to using raw contents
-    with open('README.md') as f:
-        long_description = f.read()
-
-__version__ = '0.24'
-
-with open(os.path.join(os.path.dirname(__file__), "requirements.txt"), "r") as f:
-    requirements = f.read().splitlines()
+__version__ = '0.24.1'
 
 CLASSIFIERS = [
     "Development Status :: 4 - Beta",
@@ -48,7 +34,8 @@ CLASSIFIERS = [
 setup(name='lasio',
       version=__version__,
       description="Read/write well data from Log ASCII Standard (LAS) files",
-      long_description=long_description,
+      long_description=open("README.md", "r").read(),
+      long_description_content_type="text/markdown",
       url="https://github.com/kinverarity1/lasio",
       author="Kent Inverarity",
       author_email="kinverarity@hotmail.com",
