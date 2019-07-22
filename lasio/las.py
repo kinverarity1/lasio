@@ -139,6 +139,8 @@ class LASFile(object):
                 logger.warning(
                     "Header section %s regexp=%s was not found." % (name, pattern)
                 )
+                # if name == "Version" or name == "Well":
+                #     del self.sections[name]
             for key in drop:
                 self.raw_sections.pop(key)
 
@@ -814,6 +816,13 @@ class LASFile(object):
     @json.setter
     def json(self, value):
         raise Exception("Cannot set objects from JSON")
+
+    def check_conforming(self):
+        if "Version" not in self.sections.keys():
+            return False
+        if "Well" not in self.sections.keys():
+            return False
+        return True
 
 
 class Las(LASFile):
