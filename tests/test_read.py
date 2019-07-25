@@ -252,6 +252,11 @@ def test_check_conforming_no_well():
     assert not las.check_conforming()
 
 
+def test_check_conforming_positive():
+    las = lasio.read(egfn("sample.las"))
+    assert las.check_conforming()
+
+
 def test_not_a_las_file():
     with pytest.raises(KeyError):
         las = lasio.read(egfn("not_a_las_file.las"))
