@@ -242,6 +242,16 @@ def test_barebones_missing_all_sections():
     assert las.curves[-1].mnemonic == "UNKNOWN:8"
 
 
+def test_check_conforming_no_version():
+    las = lasio.read(egfn("missing_version_section.las"))
+    assert not las.check_conforming()
+
+
+def test_check_conforming_no_well():
+    las = lasio.read(egfn("missing_well_section.las"))
+    assert not las.check_conforming()
+
+
 def test_not_a_las_file():
     with pytest.raises(KeyError):
         las = lasio.read(egfn("not_a_las_file.las"))
