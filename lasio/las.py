@@ -145,7 +145,7 @@ class LASFile(object):
                 #     del self.sections[name]
                 if name == "Version":
                     self.version_not_found = True
-                if name == "Well":
+                elif name == "Well":
                     self.well_not_found = True
 
             for key in drop:
