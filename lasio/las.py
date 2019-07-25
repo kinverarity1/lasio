@@ -64,8 +64,8 @@ class LASFile(object):
         super(LASFile, self).__init__()
         self._text = ""
         self.index_unit = None
-        self.version_not_found = False
-        self.well_not_found = False
+        self.version_section_not_found = False
+        self.well_section_not_found = False
         default_items = defaults.get_default_items()
         self.sections = {
             "Version": default_items["Version"],
@@ -141,12 +141,10 @@ class LASFile(object):
                 logger.warning(
                     "Header section %s regexp=%s was not found." % (name, pattern)
                 )
-                # if name == "Version" or name == "Well":
-                #     del self.sections[name]
                 if name == "Version":
-                    self.version_not_found = True
+                    self.version_section_not_found = True
                 elif name == "Well":
-                    self.well_not_found = True
+                    self.well_section_not_found = True
 
             for key in drop:
                 self.raw_sections.pop(key)
@@ -825,7 +823,7 @@ class LASFile(object):
         raise Exception("Cannot set objects from JSON")
 
     def check_conforming(self):
-        if self.version_not_found or self.well_not_found:
+        if self.version_section_not_found or self.well_section_not_found:
             return False
         return True
 
