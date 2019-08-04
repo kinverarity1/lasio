@@ -34,6 +34,7 @@ from .las_items import HeaderItem, CurveItem, SectionItems, OrderedDict
 from . import defaults
 from . import reader
 from . import writer
+from . import spec
 
 logger = logging.getLogger(__name__)
 
@@ -64,19 +65,20 @@ class LASFile(object):
         super(LASFile, self).__init__()
         self._text = ""
         self.index_unit = None
-        self.version_section_not_found = False
-        self.well_section_not_found = False
+        # self.version_section_not_found = False
+        # self.well_section_not_found = False
         default_items = defaults.get_default_items()
-        self.sections = {
-            "Version": default_items["Version"],
-            "Well": default_items["Well"],
-            "Curves": default_items["Curves"],
-            "Parameter": default_items["Parameter"],
-            "Other": str(default_items["Other"]),
-        }
-
         if not (file_ref is None):
+            self.sections = {}
             self.read(file_ref, **read_kwargs)
+        else:
+            self.sections = {
+                "Version": default_items["Version"],
+                "Well": default_items["Well"],
+                "Curves": default_items["Curves"],
+                "Parameter": default_items["Parameter"],
+                "Other": str(default_items["Other"]),
+            }
 
     def read(
         self,
@@ -141,10 +143,6 @@ class LASFile(object):
                 logger.warning(
                     "Header section %s regexp=%s was not found." % (name, pattern)
                 )
-                if name == "Version":
-                    self.version_section_not_found = True
-                elif name == "Well":
-                    self.well_section_not_found = True
 
             for key in drop:
                 self.raw_sections.pop(key)
@@ -264,16 +262,17 @@ class LASFile(object):
                     "~A after NULL replacement data.shape {}".format(arr.shape)
                 )
 
-                n_curves = len(self.curves)
-                n_arr_cols = len(self.curves)  # provisional pending below check
-                logger.debug("n_curves=%d ncols=%d" % (n_curves, s["ncols"]))
-                if wrap == "NO":
-                    if s["ncols"] > n_curves:
-                        n_arr_cols = s["ncols"]
-                data = np.reshape(arr, (-1, n_arr_cols))
+                if "Curves" in self.sections:
+                    n_curves = len(self.curves)
+                    n_arr_cols = len(self.curves)  # provisional pending below check
+                    logger.debug("n_curves=%d ncols=%d" % (n_curves, s["ncols"]))
+                    if wrap == "NO":
+                        if s["ncols"] > n_curves:
+                            n_arr_cols = s["ncols"]
+                    data = np.reshape(arr, (-1, n_arr_cols))
 
-                self.set_data(data, truncate=False)
-                drop.append(s["title"])
+                    self.set_data(data, truncate=False)
+                    drop.append(s["title"])
             for key in drop:
                 self.raw_sections.pop(key)
 
@@ -285,10 +284,12 @@ class LASFile(object):
         else:
             check_units_on = []
             for mnemonic in ("STRT", "STOP", "STEP"):
-                if mnemonic in self.well:
-                    check_units_on.append(self.well[mnemonic])
-            if len(self.curves) > 0:
-                check_units_on.append(self.curves[0])
+                if "Well" in self.sections:
+                    if mnemonic in self.well:
+                        check_units_on.append(self.well[mnemonic])
+            if "Curves" in self.sections:
+                if len(self.curves) > 0:
+                    check_units_on.append(self.curves[0])
             for index_unit, possibilities in defaults.DEPTH_UNITS.items():
                 if all(i.unit.upper() in possibilities for i in check_units_on):
                     self.index_unit = index_unit
@@ -823,9 +824,10 @@ class LASFile(object):
         raise Exception("Cannot set objects from JSON")
 
     def check_conforming(self):
-        if self.version_section_not_found or self.well_section_not_found:
-            return False
-        return True
+        return spec.VersionSectionExists.check(self) and \
+               spec.WellSectionExists.check(self) and \
+               spec.CurvesSectionExists.check(self) and \
+               spec.AsciiSectionExists.check(self)
 
 
 class Las(LASFile):
