@@ -65,16 +65,19 @@ class LASFile(object):
         self._text = ""
         self.index_unit = None
         default_items = defaults.get_default_items()
-        self.sections = {
-            "Version": default_items["Version"],
-            "Well": default_items["Well"],
-            "Curves": default_items["Curves"],
-            "Parameter": default_items["Parameter"],
-            "Other": str(default_items["Other"]),
-        }
+
 
         if not (file_ref is None):
+            self.sections = {}
             self.read(file_ref, **read_kwargs)
+        else:
+            self.sections = {
+                "Version": default_items["Version"],
+                "Well": default_items["Well"],
+                "Curves": default_items["Curves"],
+                "Parameter": default_items["Parameter"],
+                "Other": str(default_items["Other"]),
+            }
 
     def read(
         self,
