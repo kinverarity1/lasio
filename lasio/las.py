@@ -65,8 +65,6 @@ class LASFile(object):
         super(LASFile, self).__init__()
         self._text = ""
         self.index_unit = None
-        # self.version_section_not_found = False
-        # self.well_section_not_found = False
         default_items = defaults.get_default_items()
         if not (file_ref is None):
             self.sections = {}
