@@ -152,18 +152,20 @@ def write(
     logger.debug("LASFile.write Params section")
     lines.append("~Params ".ljust(header_width, "-"))
     order_func = get_section_order_function("Parameter", version)
-    section_widths = get_section_widths("Parameter", las.params, version, order_func)
-    for header_item in las.params.values():
-        mnemonic = header_item.original_mnemonic
-        order = order_func(mnemonic)
-        formatter_func = get_formatter_function(order, **section_widths)
-        line = formatter_func(header_item)
-        lines.append(line)
+    if "Parameter" in las.sections:
+        section_widths = get_section_widths("Parameter", las.params, version, order_func)
+        for header_item in las.params.values():
+            mnemonic = header_item.original_mnemonic
+            order = order_func(mnemonic)
+            formatter_func = get_formatter_function(order, **section_widths)
+            line = formatter_func(header_item)
+            lines.append(line)
 
     # ~Other
     logger.debug("LASFile.write Other section")
     lines.append("~Other ".ljust(header_width, "-"))
-    lines += las.other.splitlines()
+    if "Other" in las.sections:
+        lines += las.other.splitlines()
 
     logger.debug("LASFile.write ASCII section")
     lines.append("~ASCII ".ljust(header_width, "-"))

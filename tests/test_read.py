@@ -10,6 +10,7 @@ import numpy
 import pytest
 
 import lasio
+from lasio import spec
 
 test_dir = os.path.dirname(__file__)
 
@@ -239,7 +240,7 @@ def test_barebones():
 
 def test_barebones_missing_all_sections():
     las = lasio.read(egfn("barebones2.las"))
-    assert las.curves[-1].mnemonic == "UNKNOWN:8"
+    assert las.sections == {}
 
 
 def test_check_conforming_no_version():
@@ -250,6 +251,21 @@ def test_check_conforming_no_version():
 def test_check_conforming_no_well():
     las = lasio.read(egfn("missing_well_section.las"))
     assert not las.check_conforming()
+
+
+def test_check_conforming_no_curves():
+    las = lasio.read(egfn("missing_curves_section.las"))
+    assert not las.check_conforming()
+
+
+def test_check_conforming_no_ascii():
+    las = lasio.read(egfn("missing_ascii_section.las"))
+    assert not las.check_conforming()
+
+
+def test_check_conforming_no_ascii_2():
+    las = lasio.read(egfn("missing_curves_section.las"))
+    assert not spec.AsciiSectionExists.check(las)
 
 
 def test_check_conforming_positive():
@@ -354,6 +370,7 @@ def test_strip_square_brackets():
 def test_index_unit_equals_f():
     las = lasio.read(egfn("autodepthindex_M.las"), index_unit="f")
     assert (las.depth_ft == las.index).all()
+
 
 def test_index_unit_equals_m():
     las = lasio.read(egfn("autodepthindex_M.las"), index_unit="m")
