@@ -240,7 +240,7 @@ def test_barebones():
 
 def test_barebones_missing_all_sections():
     las = lasio.read(egfn("barebones2.las"))
-    assert las.sections == {}
+    assert las.curves[-1].mnemonic == "UNKNOWN:8"
 
 
 def test_check_conforming_no_version():
