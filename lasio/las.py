@@ -822,10 +822,9 @@ class LASFile(object):
         raise Exception("Cannot set objects from JSON")
 
     def check_conforming(self):
-        return spec.VersionSectionExists.check(self) and \
-               spec.WellSectionExists.check(self) and \
-               spec.CurvesSectionExists.check(self) and \
-               spec.AsciiSectionExists.check(self)
+        return spec.MandatorySections.check(self) and \
+               spec.MandatoryLinesInVersionSection.check(self)
+
 
 
 class Las(LASFile):

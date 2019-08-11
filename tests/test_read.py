@@ -263,9 +263,19 @@ def test_check_conforming_no_ascii():
     assert not las.check_conforming()
 
 
-def test_check_conforming_no_ascii_2():
+def test_check_ascii_for_no_curves():
     las = lasio.read(egfn("missing_curves_section.las"))
     assert not spec.AsciiSectionExists.check(las)
+
+
+def test_check_no_version():
+    las = lasio.read(egfn("missing_vers.las"))
+    assert not las.check_conforming()
+
+
+def test_check_no_wrap():
+    las = lasio.read(egfn("missing_wrap.las"))
+    assert not las.check_conforming()
 
 
 def test_check_conforming_positive():
@@ -375,3 +385,5 @@ def test_index_unit_equals_f():
 def test_index_unit_equals_m():
     las = lasio.read(egfn("autodepthindex_M.las"), index_unit="m")
     assert (las.depth_ft[1:] != las.index[1:]).all()
+
+test_check_no_version()
