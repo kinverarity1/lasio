@@ -823,8 +823,8 @@ class LASFile(object):
 
     def check_conforming(self):
         return spec.MandatorySections.check(self) and \
-               spec.MandatoryLinesInVersionSection.check(self)
-
+               spec.MandatoryLinesInVersionSection.check(self) and \
+               spec.MandatoryLinesInWellSection.check(self)
 
 
 class Las(LASFile):

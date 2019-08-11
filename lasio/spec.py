@@ -45,5 +45,26 @@ class MandatoryLinesInVersionSection(Rule):
     @staticmethod
     def check(las_file):
         if "Version" in las_file.sections:
-            return "VERS" in las_file.version and "WRAP" in las_file.version
+            mandatory_lines = ["VERS", "WRAP"]
+            return all(elem in las_file.version for elem in mandatory_lines)
+        return False
+
+
+class MandatoryLinesInWellSection(Rule):
+    @staticmethod
+    def check(las_file):
+        if "Well" in las_file.sections:
+            #PROV, UWI can have alternatives
+            mandatory_lines = ["STRT", "STOP", "STEP", "NULL", "COMP", "WELL", "FLD", "LOC", "SRVC", "DATE"]
+            mandatory_sections_found = all(elem in las_file.well for elem in mandatory_lines)
+            if not mandatory_sections_found:
+                return False
+            if "UWI" not in las_file.well and "API" not in las_file.well:
+                return False
+            if "PROV" not in las_file.well and \
+               "CNTY" not in las_file.well and \
+               "CTRY" not in las_file.well and \
+               "STAT" not in las_file.well:
+                return False
+            return True
         return False
