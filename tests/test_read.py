@@ -1,16 +1,11 @@
 import os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-import glob
-import fnmatch
-import traceback
 import logging
 
-import numpy
 import pytest
 
 import lasio
-from lasio import spec
 
 test_dir = os.path.dirname(__file__)
 
