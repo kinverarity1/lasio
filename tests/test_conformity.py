@@ -54,23 +54,83 @@ def test_check_no_wrap():
     assert not las.check_conforming()
 
 
+def test_check_no_version_section():
+    las = lasio.read(egfn("missing_version_section.las"))
+    assert not spec.MandatoryLinesInVersionSection.check(las)
+
+
 def test_check_no_well_well():
     las = lasio.read(egfn("missing_well_well.las"))
-    assert not spec.MandatoryLinesInWellSection.check(las)
+    assert not las.check_conforming()
 
 
 def test_check_no_well_strt():
     las = lasio.read(egfn("missing_well_strt.las"))
-    assert not spec.MandatoryLinesInWellSection.check(las)
+    assert not las.check_conforming()
 
 
 def test_check_no_well_stop():
     las = lasio.read(egfn("missing_well_stop.las"))
-    assert not spec.MandatoryLinesInWellSection.check(las)
+    assert not las.check_conforming()
 
 
 def test_check_no_well_step():
     las = lasio.read(egfn("missing_well_step.las"))
+    assert not las.check_conforming()
+
+
+def test_check_no_well_null():
+    las = lasio.read(egfn("missing_well_null.las"))
+    assert not las.check_conforming()
+
+
+def test_check_no_well_comp():
+    las = lasio.read(egfn("missing_well_comp.las"))
+    assert not las.check_conforming()
+
+
+def test_check_no_well_fld():
+    las = lasio.read(egfn("missing_well_fld.las"))
+    assert not las.check_conforming()
+
+
+def test_check_no_well_loc():
+    las = lasio.read(egfn("missing_well_loc.las"))
+    assert not las.check_conforming()
+
+
+def test_check_no_well_prov():
+    las = lasio.read(egfn("missing_well_prov.las"))
+    assert not las.check_conforming()
+
+
+def test_check_no_well_prov_having_cnty():
+    las = lasio.read(egfn("missing_well_prov_having_cnty.las"))
+    assert las.check_conforming()
+
+
+def test_check_no_well_srvc():
+    las = lasio.read(egfn("missing_well_srvc.las"))
+    assert not las.check_conforming()
+
+
+def test_check_no_well_date():
+    las = lasio.read(egfn("missing_well_date.las"))
+    assert not las.check_conforming()
+
+
+def test_check_no_well_uwi():
+    las = lasio.read(egfn("missing_well_uwi.las"))
+    assert not las.check_conforming()
+
+
+def test_check_no_well_uwi_having_api():
+    las = lasio.read(egfn("missing_well_uwi_having_api.las"))
+    assert las.check_conforming()
+
+
+def test_check_no_well_section():
+    las = lasio.read(egfn("missing_well_section.las"))
     assert not spec.MandatoryLinesInWellSection.check(las)
 
 
