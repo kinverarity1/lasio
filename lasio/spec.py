@@ -54,7 +54,7 @@ class MandatoryLinesInWellSection(Rule):
     @staticmethod
     def check(las_file):
         if "Well" in las_file.sections:
-            #PROV, UWI can have alternatives
+            # PROV, UWI can have alternatives
             mandatory_lines = ["STRT", "STOP", "STEP", "NULL", "COMP", "WELL", "FLD", "LOC", "SRVC", "DATE"]
             mandatory_sections_found = all(elem in las_file.well for elem in mandatory_lines)
             if not mandatory_sections_found:
@@ -68,3 +68,16 @@ class MandatoryLinesInWellSection(Rule):
                 return False
             return True
         return False
+
+
+class DuplicateSections(Rule):
+    @staticmethod
+    def check(las_file):
+        if las_file.duplicate_v_section or \
+                las_file.duplicate_w_section or \
+                las_file.duplicate_p_section or \
+                las_file.duplicate_c_section or \
+                las_file.duplicate_o_section:
+            return False
+        else:
+            return True

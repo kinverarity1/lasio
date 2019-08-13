@@ -65,6 +65,13 @@ class LASFile(object):
         super(LASFile, self).__init__()
         self._text = ""
         self.index_unit = None
+
+        self.duplicate_v_section = False
+        self.duplicate_w_section = False
+        self.duplicate_p_section = False
+        self.duplicate_c_section = False
+        self.duplicate_o_section = False
+
         default_items = defaults.get_default_items()
         if not (file_ref is None):
             self.sections = {}
@@ -153,6 +160,9 @@ class LASFile(object):
             mnemonic_case=mnemonic_case,
         )
 
+        if self.match_raw_section("~V"):
+            self.duplicate_v_section = True
+
         # Establish version and wrap values if possible.
 
         try:
@@ -195,6 +205,9 @@ class LASFile(object):
             mnemonic_case=mnemonic_case,
         )
 
+        if self.match_raw_section("~W"):
+            self.duplicate_w_section = True
+
         # Establish NULL value if possible.
 
         try:
@@ -210,6 +223,10 @@ class LASFile(object):
             ignore_header_errors=ignore_header_errors,
             mnemonic_case=mnemonic_case,
         )
+
+        if self.match_raw_section("~C"):
+            self.duplicate_c_section = True
+
         add_section(
             "~P",
             "Parameter",
@@ -217,6 +234,10 @@ class LASFile(object):
             ignore_header_errors=ignore_header_errors,
             mnemonic_case=mnemonic_case,
         )
+
+        if self.match_raw_section("~P"):
+            self.duplicate_p_section = True
+
         s = self.match_raw_section("~O")
 
         drop = []
@@ -225,6 +246,9 @@ class LASFile(object):
             drop.append(s["title"])
         for key in drop:
             self.raw_sections.pop(key)
+
+        if self.match_raw_section("~O"):
+            self.duplicate_o_section = True
 
         # Deal with nonstandard sections that some operators and/or
         # service companies (eg IHS) insist on adding.
@@ -824,7 +848,8 @@ class LASFile(object):
     def check_conforming(self):
         return spec.MandatorySections.check(self) and \
                spec.MandatoryLinesInVersionSection.check(self) and \
-               spec.MandatoryLinesInWellSection.check(self)
+               spec.MandatoryLinesInWellSection.check(self) and \
+               spec.DuplicateSections.check(self)
 
 
 class Las(LASFile):
