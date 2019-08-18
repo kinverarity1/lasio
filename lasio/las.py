@@ -71,6 +71,7 @@ class LASFile(object):
         self.duplicate_p_section = False
         self.duplicate_c_section = False
         self.duplicate_o_section = False
+        self.sections_after_a_section = False
 
         default_items = defaults.get_default_items()
         if not (file_ref is None):
@@ -126,7 +127,7 @@ class LASFile(object):
         )
 
         try:
-            self.raw_sections = reader.read_file_contents(
+            self.raw_sections, self.sections_after_a_section = reader.read_file_contents(
                 file_obj, regexp_subs, value_null_subs, ignore_data=ignore_data
             )
         finally:

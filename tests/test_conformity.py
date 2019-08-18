@@ -133,6 +133,11 @@ def test_check_duplicate_sections():
     assert not las.check_conforming()
 
 
+def test_check_sections_after_a_section():
+    las = lasio.read(egfn("sample_sections_after_a_section.las"))
+    assert not las.check_conforming()
+
+
 def test_check_conforming_positive():
     las = lasio.read(egfn("sample.las"))
     assert las.check_conforming()

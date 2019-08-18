@@ -282,11 +282,16 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
     sect_line_nos = []
     sect_title_line = None
     section_exists = False
+    data_section_read = False
+    sections_after_a_section = False
 
     for i, line in enumerate(file_obj):
         line = line.strip()
         if not line:
             continue
+        if data_section_read:
+            sections_after_a_section = True
+
         if line.upper().startswith("~A"):
             # HARD CODED FOR VERSION 1.2 and 2.0; needs review for 3.0
             # We have finished looking at the metadata and need
@@ -303,6 +308,7 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
                     data = read_data_section_iterative(
                         file_obj, regexp_subs, value_null_subs
                     )
+                    data_section_read = True
                 except:
                     raise exceptions.LASDataError(
                         traceback.format_exc()[:-1]
@@ -315,7 +321,8 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
                     "array": data,
                 }
                 logger.debug('Data section ["array"].shape = {}'.format(data.shape))
-            break
+            # this may not be the last section
+            # break
 
         elif line.startswith("~"):
             if section_exists:
@@ -354,7 +361,7 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
                         line = re.sub(pattern, sub_str, line)
                     section["ncols"] = len(line.split())
                     break
-    return sections
+    return sections, sections_after_a_section
 
 
 def read_data_section_iterative(file_obj, regexp_subs, value_null_subs):
@@ -377,6 +384,12 @@ def read_data_section_iterative(file_obj, regexp_subs, value_null_subs):
 
     def items(f):
         for line in f:
+            if line.startswith("#"):
+                continue
+            if not line.strip():
+                return
+            if line.startswith("~"):
+                return
             for pattern, sub_str in regexp_subs:
                 line = re.sub(pattern, sub_str, line)
             for item in line.split():

@@ -77,7 +77,8 @@ class DuplicateSections(Rule):
                 las_file.duplicate_w_section or \
                 las_file.duplicate_p_section or \
                 las_file.duplicate_c_section or \
-                las_file.duplicate_o_section:
+                las_file.duplicate_o_section or \
+                las_file.sections_after_a_section:
             return False
         else:
             return True
