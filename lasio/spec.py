@@ -93,3 +93,9 @@ class ValidIndexMnemonic(Rule):
                 las_file.curves[0].mnemonic == "INDEX":
             return True
         return False
+
+
+class VSectionFirst(Rule):
+    @staticmethod
+    def check(las_file):
+        return las_file.v_section_first

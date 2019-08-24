@@ -284,6 +284,7 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
     section_exists = False
     data_section_read = False
     sections_after_a_section = False
+    v_section_first = False
 
     for i, line in enumerate(file_obj):
         line = line.strip()
@@ -327,12 +328,18 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
         elif line.startswith("~"):
             if section_exists:
                 # We have ended a section and need to start the next
+                if sections.keys().__len__() == 0:
+                    # This is the first section we are adding
+                    if sect_title_line.startswith("~v") or\
+                            sect_title_line.startswith("~V"):
+                        v_section_first = True
                 sections[sect_title_line] = {
                     "section_type": "header",
                     "title": sect_title_line,
                     "lines": sect_lines,
                     "line_nos": sect_line_nos,
                 }
+
                 sect_lines = []
                 sect_line_nos = []
             else:
@@ -361,7 +368,7 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
                         line = re.sub(pattern, sub_str, line)
                     section["ncols"] = len(line.split())
                     break
-    return sections, sections_after_a_section
+    return sections, sections_after_a_section, v_section_first
 
 
 def read_data_section_iterative(file_obj, regexp_subs, value_null_subs):
