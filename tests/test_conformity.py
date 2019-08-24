@@ -138,6 +138,11 @@ def test_check_sections_after_a_section():
     assert not las.check_conforming()
 
 
+def test_check_valid_mnemonic():
+    las = lasio.read(egfn("invalid_index_mnemonic.las"))
+    assert not las.check_conforming()
+
+
 def test_check_conforming_positive():
     las = lasio.read(egfn("sample.las"))
     assert las.check_conforming()

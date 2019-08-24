@@ -850,7 +850,8 @@ class LASFile(object):
         return spec.MandatorySections.check(self) and \
                spec.MandatoryLinesInVersionSection.check(self) and \
                spec.MandatoryLinesInWellSection.check(self) and \
-               spec.DuplicateSections.check(self)
+               spec.DuplicateSections.check(self) and \
+               spec.ValidIndexMnemonic.check(self)
 
 
 class Las(LASFile):

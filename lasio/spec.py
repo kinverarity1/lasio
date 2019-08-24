@@ -82,3 +82,14 @@ class DuplicateSections(Rule):
             return False
         else:
             return True
+
+
+class ValidIndexMnemonic(Rule):
+    @staticmethod
+    def check(las_file):
+        if las_file.curves[0].mnemonic == "DEPT" or \
+                las_file.curves[0].mnemonic == "DEPTH" or \
+                las_file.curves[0].mnemonic == "TIME" or \
+                las_file.curves[0].mnemonic == "INDEX":
+            return True
+        return False
