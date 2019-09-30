@@ -183,6 +183,16 @@ def test_inf_uwi():
     assert l.well["UWI"].value == "300E074350061450"
 
 
+def test_inf_uwi_leading_zero_value_01():
+    las = lasio.read(stegfn("2.0", "sample_2.0_inf_uwi_leading_zero_01.las"))
+    assert las.well["UWI"].value == "05001095820000"
+
+
+def test_inf_api_leading_zero_value_01():
+    las = lasio.read(stegfn("2.0", "sample_2.0_inf_api_leading_zero_01.las"))
+    assert las.well["API"].value == "05001095820000"
+
+
 def test_missing_vers_loads():
     l = lasio.read(egfn("missing_vers.las"))
 

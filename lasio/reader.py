@@ -621,12 +621,18 @@ class SectionParser(object):
         :func:`lasio.reader.read_header_line`.
 
         """
+        number_strings = ['API', 'UWI']
         key_order = self.orders.get(keys["name"], self.default_order)
         if key_order == "value:descr":
+            if keys["name"].upper() in number_strings:
+                value = keys["value"]
+            else:
+                value = self.num(keys["value"])
+
             return HeaderItem(
                 keys["name"],  # mnemonic
                 self.strip_brackets(keys["unit"]),  # unit
-                self.num(keys["value"]),  # value
+                value,  # value
                 keys["descr"],  # descr
             )
         elif key_order == "descr:value":
