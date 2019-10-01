@@ -637,7 +637,7 @@ class SectionParser(object):
             descr = keys["value"]
 
         if keys["name"].upper() not in number_strings:
-            value = self.num(keys["value"])
+            value = self.num(value)
 
         item = HeaderItem(
             keys["name"],  # mnemonic
