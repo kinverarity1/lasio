@@ -8,6 +8,7 @@ import logging
 
 import numpy
 import pytest
+from numbers import Number
 
 import lasio
 
@@ -183,14 +184,32 @@ def test_inf_uwi():
     assert l.well["UWI"].value == "300E074350061450"
 
 
-def test_inf_uwi_leading_zero_value_01():
-    las = lasio.read(stegfn("2.0", "sample_2.0_inf_uwi_leading_zero_01.las"))
+def test_v12_inf_uwi_leading_zero_value():
+    las = lasio.read(stegfn("1.2", "sample_inf_uwi_leading_zero.las"))
     assert las.well["UWI"].value == "05001095820000"
+    # check that numerical fields are still treated as numbers
+    assert isinstance(las.well["STRT"].value, Number)
 
 
-def test_inf_api_leading_zero_value_01():
-    las = lasio.read(stegfn("2.0", "sample_2.0_inf_api_leading_zero_01.las"))
+def test_v12_inf_api_leading_zero_value():
+    las = lasio.read(stegfn("1.2", "sample_inf_api_leading_zero.las"))
     assert las.well["API"].value == "05001095820000"
+    # check that numerical fields are still treated as numbers
+    assert isinstance(las.well["STRT"].value, Number)
+
+
+def test_v2_inf_uwi_leading_zero_value():
+    las = lasio.read(stegfn("2.0", "sample_2.0_inf_uwi_leading_zero.las"))
+    assert las.well["UWI"].value == "05001095820000"
+    # check that numerical fields are still treated as numbers
+    assert isinstance(las.well["STRT"].value, Number)
+
+
+def test_v2_inf_api_leading_zero_value():
+    las = lasio.read(stegfn("2.0", "sample_2.0_inf_api_leading_zero.las"))
+    assert las.well["API"].value == "05001095820000"
+    # check that numerical fields are still treated as numbers
+    assert isinstance(las.well["STRT"].value, Number)
 
 
 def test_missing_vers_loads():
