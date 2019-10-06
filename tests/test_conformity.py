@@ -148,7 +148,6 @@ def test_check_v_section_first():
     assert not las.check_conforming()
 
 
-# Not very sure about this!!
 def test_check_depth_divide_by_step():
     las = lasio.read(egfn("sample.las"))
     assert spec.ValidDepthDividedByStep.check(las)
