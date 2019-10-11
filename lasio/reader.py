@@ -621,21 +621,32 @@ class SectionParser(object):
         :func:`lasio.reader.read_header_line`.
 
         """
+        # number_strings: fields that shouldn't be converted to numbers
+        number_strings = ['API', 'UWI']
+
         key_order = self.orders.get(keys["name"], self.default_order)
+
+        value = ''
+        descr = ''
+
         if key_order == "value:descr":
-            return HeaderItem(
-                keys["name"],  # mnemonic
-                self.strip_brackets(keys["unit"]),  # unit
-                self.num(keys["value"]),  # value
-                keys["descr"],  # descr
-            )
+            value = keys["value"]
+            descr = keys["descr"]
         elif key_order == "descr:value":
-            return HeaderItem(
-                keys["name"],  # mnemonic
-                self.strip_brackets(keys["unit"]),  # unit
-                keys["descr"],  # descr
-                self.num(keys["value"]),  # value
-            )
+            value = keys["descr"]
+            descr = keys["value"]
+
+        if keys["name"].upper() not in number_strings:
+            value = self.num(value)
+
+        item = HeaderItem(
+            keys["name"],  # mnemonic
+            self.strip_brackets(keys["unit"]),  # unit
+            value,  # value
+            descr,  # descr
+        )
+        return item
+
 
     def curves(self, **keys):
         """Return CurveItem.
