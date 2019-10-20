@@ -83,7 +83,9 @@ def write(
     if STOP is None:
         STOP = las.index[-1]
     if STEP is None:
-        STEP = las.index[1] - las.index[0]  # Faster than np.gradient
+        if STOP != STRT: #prevents an error being thrown in the case of only a single sample being written
+            STEP = las.index[1] - las.index[0]  # Faster than np.gradient
+
     las.well["STRT"].value = STRT
     las.well["STOP"].value = STOP
     las.well["STEP"].value = STEP
