@@ -278,7 +278,7 @@ class LASFile(object):
                         e.message = err_msg
                         raise e
                     else:
-                        raise ValueError(err_msg) from e
+                        raise ValueError(err_msg).with_traceback(e.__traceback__)
                 self.set_data(data, truncate=False)
                 drop.append(s["title"])
             for key in drop:
