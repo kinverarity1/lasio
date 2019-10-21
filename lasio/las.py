@@ -704,6 +704,43 @@ class LASFile(object):
                 str(name) for name in df.columns.values
             ]
         self.set_data(df_values, **kwargs)
+    
+    def stack_curves(self, curve_list=None, stub=None, sort_curves=True):
+        """Stack multi-channel curve data to a numpy 2D ndarray. Provide a 
+        list of curves or a stub name (prefix shared by all curves that will
+        be stacked). If `stub` and `curve_list` are both supplied, `stub`
+        is used.
+        
+        Keyword Arguments:
+            stub (str): Supply the first several characters of the channel
+                set to be stacked. 
+            curve_list (list): Or a list of the curves to be stacked
+            sort_curves (bool): Natural sort curves based on mnemonic prior 
+                to stacking.
+
+        Returns:
+            2-D numpy array
+        """
+        curves = self.curves.keys()
+        if stub:
+            channels = [i for i in curves if i.startswith(stub)]
+        elif curve_list:
+            channels = curve_list
+        if sort_curves:
+            channels.sort(key=self._sort_channels)
+        if channels:
+            indices = [curves.index(i) for i in channels]
+        if indices:
+            return self.data[:, indices]
+    
+    def _str_to_int(self, mnemonic):
+        if mnemonic.isdigit():
+            return int(mnemonic)
+        else:
+            return mnemonic
+
+    def _sort_channels(self, mnemonic):
+        return [self._str_to_int(i) for i in re.split(r'(\d+)', mnemonic)]
 
     @property
     def index(self):
