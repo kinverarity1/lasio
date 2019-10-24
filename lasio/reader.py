@@ -64,6 +64,9 @@ def open_file(file_ref, **encoding_kwargs):
         was used to decode it (if it were read from disk).
 
     """
+
+    # TODO: Add condition for pathlib.Path objects
+
     encoding = None
     if isinstance(file_ref, str):  # file_ref != file-like object, so what is it?
         lines = file_ref.splitlines()

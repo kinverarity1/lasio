@@ -1,6 +1,10 @@
 import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
+
 import pytest
+
+# TODO: decide how to handle python 2.7 versions
+from pathlib import Path
 
 from lasio import read
 
@@ -8,6 +12,19 @@ test_dir = os.path.dirname(__file__)
 
 egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
 
+def test_open_pathlib_object():
+    print('\nEGFN', egfn("sample.las"))
+    print('INSTANCE-OF-PATH: [', isinstance(Path(egfn("sample.las")), Path), ']')
+    print('TYPE: [', type(Path(egfn("sample.las"))), ']')
+    """
+    print(dir(Path(egfn("sample.las"))))
+    print(Path(egfn("sample.las")).joinpath())
+    print(Path(egfn("sample.las")).absolute())
+    print(Path(egfn("sample.las")).home())
+    print(Path(egfn("sample.las")).read_text())
+    l = read(Path(egfn("sample.las")).read_text())
+    """
+    l = read(Path(egfn("sample.las")))
 
 def test_open_url():
     l = read("https://raw.githubusercontent.com/kinverarity1/"
