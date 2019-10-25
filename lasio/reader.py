@@ -7,6 +7,7 @@ import traceback
 
 import numpy as np
 
+from pathlib import Path
 from . import defaults
 
 # Convoluted import for StringIO in order to support:
@@ -45,6 +46,12 @@ URL_REGEXP = re.compile(
     re.IGNORECASE,
 )
 
+def check_for_path_obj(file_ref):
+    if isinstance(file_ref, Path):
+        return file_ref.open()
+    else:
+        return file_ref
+
 
 def open_file(file_ref, **encoding_kwargs):
     """Open a file if necessary.
@@ -65,7 +72,7 @@ def open_file(file_ref, **encoding_kwargs):
 
     """
 
-    # TODO: Add condition for pathlib.Path objects
+    file_ref = check_for_path_obj(file_ref)
 
     encoding = None
     if isinstance(file_ref, str):  # file_ref != file-like object, so what is it?
