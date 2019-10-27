@@ -88,4 +88,5 @@ def test_stack_mnemonics_in_list_not_in_LAS():
     las = lasio.read(egfn("multi_channel_natural_sorting.las"))
     with pytest.raises(KeyError) as e:
         las.stack_curves(['CBP1', 'CBP13', 'KTIM', 'TCMR'])
-    assert e.value.args[0] == 'TCMR, KTIM not found in LAS curves.'
+    assert (e.value.args[0] == 'TCMR, KTIM not found in LAS curves.') or \
+        (e.value.args[0] == 'KTIM, TCMR not found in LAS curves.')
