@@ -47,8 +47,14 @@ URL_REGEXP = re.compile(
 )
 
 def check_for_path_obj(file_ref):
+    """
+    If file_ref is a pathlib.Path object,
+    then return its absolute file path as a string so
+    it will get processed as other string filenames.
+    """
+
     if isinstance(file_ref, Path):
-        return file_ref.open()
+        return file_ref.absolute().__str__()
     else:
         return file_ref
 
