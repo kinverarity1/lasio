@@ -285,10 +285,13 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
     data_section_read = False
     sections_after_a_section = False
     v_section_first = False
+    blank_line_in_section = False
 
     for i, line in enumerate(file_obj):
         line = line.strip()
         if not line:
+            if section_exists:
+                blank_line_in_section = True
             continue
         if data_section_read:
             sections_after_a_section = True
@@ -370,7 +373,7 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
                         line = re.sub(pattern, sub_str, line)
                     section["ncols"] = len(line.split())
                     break
-    return sections, sections_after_a_section, v_section_first
+    return sections, sections_after_a_section, v_section_first, blank_line_in_section
 
 
 def read_data_section_iterative(file_obj, regexp_subs, value_null_subs):

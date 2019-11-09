@@ -70,6 +70,7 @@ class LASFile(object):
         self.duplicate_o_section = False
         self.sections_after_a_section = False
         self.v_section_first = False
+        self.blank_line_in_section = False
 
         default_items = defaults.get_default_items()
         if not (file_ref is None):
@@ -125,9 +126,8 @@ class LASFile(object):
         )
 
         try:
-            self.raw_sections, self.sections_after_a_section, self.v_section_first = reader.read_file_contents(
-                file_obj, regexp_subs, value_null_subs, ignore_data=ignore_data
-            )
+            self.raw_sections, self.sections_after_a_section, self.v_section_first, self.blank_line_in_section = \
+                reader.read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=ignore_data)
         finally:
             if hasattr(file_obj, "close"):
                 file_obj.close()
@@ -864,7 +864,8 @@ class LASFile(object):
                spec.DuplicateSections.check(self) and \
                spec.ValidIndexMnemonic.check(self) and \
                spec.VSectionFirst.check(self) and \
-               spec.ValidDepthDividedByStep.check(self)
+               spec.ValidDepthDividedByStep.check(self) and \
+               spec.BlankLineInSection.check(self)
 
 
 class Las(LASFile):

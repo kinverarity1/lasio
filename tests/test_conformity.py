@@ -153,6 +153,11 @@ def test_check_depth_divide_by_step():
     assert spec.ValidDepthDividedByStep.check(las)
 
 
+def test_check_blank_line_in_section():
+    las = lasio.read(egfn("blank_line_embedded_in_section.las"))
+    assert not spec.BlankLineInSection.check(las)
+
+
 def test_check_conforming_positive():
     las = lasio.read(egfn("sample.las"))
     assert las.check_conforming()

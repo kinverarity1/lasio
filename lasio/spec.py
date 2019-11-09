@@ -113,3 +113,11 @@ class VSectionFirst(Rule):
     @staticmethod
     def check(las_file):
         return las_file.v_section_first
+
+
+class BlankLineInSection(Rule):
+    @staticmethod
+    def check(las_file):
+        if las_file.blank_line_in_section:
+            return False
+        return True
