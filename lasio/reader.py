@@ -59,7 +59,7 @@ def open_file(file_ref, **encoding_kwargs):
     See :func:`lasio.reader.open_with_codecs` for keyword arguments that can be
     used here.
 
-    Returns: 
+    Returns:
         tuple of an open file-like object, and the encoding that
         was used to decode it (if it were read from disk).
 
@@ -115,13 +115,13 @@ def open_with_codecs(
             :func:`codecs.open`.
         encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
             handle errors with encodings (see
-            `this section 
+            `this section
             <https://docs.python.org/3/library/codecs.html#codec-base-classes>`__
             of the standard library's :mod:`codecs` module for more information)
-        autodetect_encoding (str or bool): default True to use 
-            `chardet <https://github.com/chardet/chardet>`__/`cchardet 
-            <https://github.com/PyYoshi/cChardet>`__ to detect encoding. 
-            Note if set to False several common encodings will be tried but 
+        autodetect_encoding (str or bool): default True to use
+            `chardet <https://github.com/chardet/chardet>`__/`cchardet
+            <https://github.com/PyYoshi/cChardet>`__ to detect encoding.
+            Note if set to False several common encodings will be tried but
             chardet won't be used.
         autodetect_encoding_chars (int/None): number of chars to read from LAS
             file for auto-detection of encoding.
@@ -310,6 +310,8 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
                         file_obj, regexp_subs, value_null_subs
                     )
                     data_section_read = True
+                except KeyboardInterrupt:
+                    raise
                 except:
                     raise exceptions.LASDataError(
                         traceback.format_exc()[:-1]
@@ -416,16 +418,16 @@ def get_substitutions(read_policy, null_policy):
     substitutions.
 
     Arguments:
-        read_policy (str, list, or substitution): either (1) a string defined in 
+        read_policy (str, list, or substitution): either (1) a string defined in
             defaults.READ_POLICIES; (2) a list of substitutions as defined by
             the keys of defaults.READ_SUBS; or (3) a list of actual substitutions
             similar to the values of defaults.READ_SUBS. You can mix (2) and (3)
             together if you want.
-        null_policy (str, list, or sub): as for read_policy but for 
+        null_policy (str, list, or sub): as for read_policy but for
             defaults.NULL_POLICIES and defaults.NULL_SUBS
 
     Returns:
-        regexp_subs, value_null_subs, version_NULL - two lists and a bool. 
+        regexp_subs, value_null_subs, version_NULL - two lists and a bool.
         The first list is pairs of regexp patterns and substrs, and the second
         list is just a list of floats or integers. The bool is whether or not
         'NULL' was located as a substitution.
@@ -641,21 +643,32 @@ class SectionParser(object):
         :func:`lasio.reader.read_header_line`.
 
         """
+        # number_strings: fields that shouldn't be converted to numbers
+        number_strings = ['API', 'UWI']
+
         key_order = self.orders.get(keys["name"], self.default_order)
+
+        value = ''
+        descr = ''
+
         if key_order == "value:descr":
-            return HeaderItem(
-                keys["name"],  # mnemonic
-                self.strip_brackets(keys["unit"]),  # unit
-                self.num(keys["value"]),  # value
-                keys["descr"],  # descr
-            )
+            value = keys["value"]
+            descr = keys["descr"]
         elif key_order == "descr:value":
-            return HeaderItem(
-                keys["name"],  # mnemonic
-                self.strip_brackets(keys["unit"]),  # unit
-                keys["descr"],  # descr
-                self.num(keys["value"]),  # value
-            )
+            value = keys["descr"]
+            descr = keys["value"]
+
+        if keys["name"].upper() not in number_strings:
+            value = self.num(value)
+
+        item = HeaderItem(
+            keys["name"],  # mnemonic
+            self.strip_brackets(keys["unit"]),  # unit
+            value,  # value
+            descr,  # descr
+        )
+        return item
+
 
     def curves(self, **keys):
         """Return CurveItem.

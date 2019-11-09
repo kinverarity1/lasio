@@ -4,6 +4,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import logging
 
 import pytest
+from numbers import Number
 
 import lasio
 
@@ -179,6 +180,34 @@ def test_inf_uwi():
     assert l.well["UWI"].value == "300E074350061450"
 
 
+def test_v12_inf_uwi_leading_zero_value():
+    las = lasio.read(stegfn("1.2", "sample_inf_uwi_leading_zero.las"))
+    assert las.well["UWI"].value == "05001095820000"
+    # check that numerical fields are still treated as numbers
+    assert isinstance(las.well["STRT"].value, Number)
+
+
+def test_v12_inf_api_leading_zero_value():
+    las = lasio.read(stegfn("1.2", "sample_inf_api_leading_zero.las"))
+    assert las.well["API"].value == "05001095820000"
+    # check that numerical fields are still treated as numbers
+    assert isinstance(las.well["STRT"].value, Number)
+
+
+def test_v2_inf_uwi_leading_zero_value():
+    las = lasio.read(stegfn("2.0", "sample_2.0_inf_uwi_leading_zero.las"))
+    assert las.well["UWI"].value == "05001095820000"
+    # check that numerical fields are still treated as numbers
+    assert isinstance(las.well["STRT"].value, Number)
+
+
+def test_v2_inf_api_leading_zero_value():
+    las = lasio.read(stegfn("2.0", "sample_2.0_inf_api_leading_zero.las"))
+    assert las.well["API"].value == "05001095820000"
+    # check that numerical fields are still treated as numbers
+    assert isinstance(las.well["STRT"].value, Number)
+
+
 def test_missing_vers_loads():
     l = lasio.read(egfn("missing_vers.las"))
 
@@ -340,3 +369,8 @@ def test_index_unit_equals_f():
 def test_index_unit_equals_m():
     las = lasio.read(egfn("autodepthindex_M.las"), index_unit="m")
     assert (las.depth_ft[1:] != las.index[1:]).all()
+
+
+def test_read_incorrect_shape():
+    with pytest.raises(ValueError):
+        lasio.read(egfn("sample_lastcolblanked.las"))
