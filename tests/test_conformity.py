@@ -156,5 +156,3 @@ def test_check_depth_divide_by_step():
 def test_check_conforming_positive():
     las = lasio.read(egfn("sample.las"))
     assert las.check_conforming()
-
-test_check_depth_divide_by_step()

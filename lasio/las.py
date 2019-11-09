@@ -863,7 +863,8 @@ class LASFile(object):
                spec.MandatoryLinesInWellSection.check(self) and \
                spec.DuplicateSections.check(self) and \
                spec.ValidIndexMnemonic.check(self) and \
-               spec.VSectionFirst.check(self)
+               spec.VSectionFirst.check(self) and \
+               spec.ValidDepthDividedByStep.check(self)
 
 
 class Las(LASFile):
