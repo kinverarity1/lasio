@@ -45,6 +45,25 @@ URL_REGEXP = re.compile(
     re.IGNORECASE,
 )
 
+def check_for_path_obj(file_ref):
+    """Check if file_ref is a pathlib.Path object.
+
+    If file_ref is a pathlib.Path object, then return its absolute file 
+    path as a string so it will get processed as other string filenames.
+
+    If pathlib is not available, do nothing and return file_ref.
+
+    """
+    try:
+        from pathlib import Path
+    except ImportError:
+        return file_ref
+
+    if isinstance(file_ref, Path):
+        return file_ref.absolute().__str__()
+    else:
+        return file_ref
+
 
 def open_file(file_ref, **encoding_kwargs):
     """Open a file if necessary.
@@ -64,6 +83,9 @@ def open_file(file_ref, **encoding_kwargs):
         was used to decode it (if it were read from disk).
 
     """
+
+    file_ref = check_for_path_obj(file_ref)
+
     encoding = None
     if isinstance(file_ref, str):  # file_ref != file-like object, so what is it?
         lines = file_ref.splitlines()

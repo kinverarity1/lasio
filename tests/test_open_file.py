@@ -1,6 +1,10 @@
 import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
+
 import pytest
+
+# pathlib for python2 is installed via pip install -r requirements.txt
+from pathlib import Path
 
 from lasio import read
 
@@ -8,6 +12,8 @@ test_dir = os.path.dirname(__file__)
 
 egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
 
+def test_open_pathlib_object():
+    l = read(Path(egfn("sample.las")))
 
 def test_open_url():
     l = read("https://raw.githubusercontent.com/kinverarity1/"
