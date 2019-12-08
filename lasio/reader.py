@@ -7,7 +7,6 @@ import traceback
 
 import numpy as np
 
-from pathlib import Path
 from . import defaults
 
 # Convoluted import for StringIO in order to support:
@@ -47,11 +46,18 @@ URL_REGEXP = re.compile(
 )
 
 def check_for_path_obj(file_ref):
+    """Check if file_ref is a pathlib.Path object.
+
+    If file_ref is a pathlib.Path object, then return its absolute file 
+    path as a string so it will get processed as other string filenames.
+
+    If pathlib is not available, do nothing and return file_ref.
+
     """
-    If file_ref is a pathlib.Path object,
-    then return its absolute file path as a string so
-    it will get processed as other string filenames.
-    """
+    try:
+        from pathlib import Path
+    except ImportError:
+        return file_ref
 
     if isinstance(file_ref, Path):
         return file_ref.absolute().__str__()
