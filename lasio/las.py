@@ -2,7 +2,12 @@ from __future__ import print_function
 
 # Standard library packages
 import codecs
-from collections.abc import Sequence
+
+try: # will work in Python 3
+    from collections.abc import Sequence
+except ImportError: # Support Python 2.7
+    from collections import Sequence
+
 import csv
 import json
 import logging
