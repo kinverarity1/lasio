@@ -2,6 +2,7 @@ from __future__ import print_function
 
 # Standard library packages
 import codecs
+from collections.abc import Sequence
 import csv
 import json
 import logging
@@ -720,16 +721,20 @@ class LASFile(object):
         Returns:
             2-D numpy array
         """
+        if isinstance(mnemonic, np.ndarray):
+            mnemonic = list(mnemonic)
+
         if (not mnemonic) or (not all([i for i in mnemonic])):
             raise ValueError('`mnemonic` must not contain empty element')
 
         keys = self.curves.keys()
         if isinstance(mnemonic, str):
             channels = [i for i in keys if i.startswith(mnemonic)] or [mnemonic]
-        elif isinstance(mnemonic, list):
-            channels = mnemonic
+        elif isinstance(mnemonic, Sequence):
+            channels = list(mnemonic)
         else:
-            raise TypeError('`mnemonic` argument must be str or list')
+            raise TypeError('`mnemonic` argument must be string or sequence')
+        print(channels)
 
         if not set(keys).issuperset(set(channels)):
             missing = ', '.join(set(channels).difference(set(keys)))

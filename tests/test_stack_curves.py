@@ -38,7 +38,7 @@ def test_stack_curves_with_ndarray():
     las = lasio.read(egfn("multi_channel.las"))
     sc = las.stack_curves(np.array(['CBP1', 'CBP2', 'CBP3', 'CBP4', 'CBP5', 'CBP6', 'CBP7', 'CBP8']))
     assert (sc[0] == np.array([0.0144, 0.0055, 0.0001, 0.    , 0.    , 0.    , 0.    , 0.0003])).all()
-
+    
 
 def test_stack_unordered_curves_with_list():
     las = lasio.read(egfn("multi_channel_out_of_order.las"))
