@@ -377,3 +377,28 @@ def test_index_unit_equals_m():
 def test_read_incorrect_shape():
     with pytest.raises(ValueError):
         lasio.read(egfn("sample_lastcolblanked.las"))
+
+def test_dot_delmiter_issue_264():
+    l = lasio.read(stegfn("1.2", "issue-264-dot-delimiter.las"))
+    assert [c.mnemonic for c in l.curves] == [
+        "DEPT",
+        "SPEED",
+        "COND",
+        "GAMMA",
+        "I",
+    ]
+    assert [c.unit for c in l.curves] == [
+        "FT",
+        "M/MIN",
+        "MS/M",
+        "CPS",
+        "",
+    ]
+    assert [c.value for c in l.curves] == [
+        "",
+        "",
+        "",
+        "",
+        "Res..OHM-M",
+    ]
+
