@@ -728,18 +728,40 @@ def read_header_line(line, pattern=None):
 
     """
     d = {"name": "", "unit": "", "value": "", "descr": ""}
+
+    # Default regular expressions for name, unit, value and desc fields
+    name_re = r"\.?(?P<name>[^.]*)\."
+    unit_re = r"(?P<unit>[^\s:]*)"
+    value_re = r"(?P<value>[^:]*):"
+    desc_re = r"(?P<descr>.*)"
+
+    # Alternate regular expressions for special cases
+    value_without_decs_delimiter_re = r"(?P<value>[^:]*)"
+    name_with_dots_re = r"\.?(?P<name>[^.].*[.])\."
+    no_desc_re = ""
+
+    # Configure any needed special cases
     if pattern is None:
         if not ":" in line:
-            pattern = (
-                r"\.?(?P<name>[^.]*)\." + r"(?P<unit>[^\s:]*)" + r"(?P<value>[^:]*)"
-            )
+            value_re = value_without_decs_delimiter_re
+            desc_re = no_desc_re
+            if '..' in line:
+                name_re = name_with_dots_re
         else:
-            pattern = (
-                r"\.?(?P<name>[^.]*)\."
-                + r"(?P<unit>[^\s:]*)"
-                + r"(?P<value>[^:]*):"
-                + r"(?P<descr>.*)"
-            )
+            if '..' in line:
+                double_dot = line.find('..')
+                desc_colon = line.rfind(':')
+                if double_dot < desc_colon:
+                    name_re = name_with_dots_re
+
+    # Build full regex pattern
+    pattern = (
+        name_re
+        + unit_re
+        + value_re
+        + desc_re
+    )
+
     m = re.match(pattern, line)
     if m is None:
         logger.warning("Unable to parse line as LAS header: {}".format(line))

@@ -383,22 +383,22 @@ def test_dot_delmiter_issue_264():
     assert [c.mnemonic for c in l.curves] == [
         "DEPT",
         "SPEED",
-        "COND",
+        "COND.",
         "GAMMA",
-        "I",
+        "I. RES.",
     ]
     assert [c.unit for c in l.curves] == [
         "FT",
         "M/MIN",
         "MS/M",
         "CPS",
-        "",
+        "OHM-M",
     ]
     assert [c.value for c in l.curves] == [
         "",
         "",
         "",
         "",
-        "Res..OHM-M",
+        "",
     ]
 
