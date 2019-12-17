@@ -112,5 +112,5 @@ def get_local_examples_path():
     import lasio
 
     return os.path.join(
-        os.path.abspath(os.path.abspath(lasio.__file__)), "tests", "examples"
+        os.path.dirname(os.path.dirname(lasio.__file__)), "tests", "examples"
     )
