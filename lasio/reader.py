@@ -522,7 +522,7 @@ def parse_header_section(
         if not line:
             continue
         try:
-            values = read_line(line)
+            values = read_line(line, section_name=parser.section_name2)
         except:
             message = 'line {} (section {}): "{}"'.format(
                 # traceback.format_exc().splitlines()[-1].strip('\n'),
@@ -711,7 +711,7 @@ def read_line(*args, **kwargs):
     return read_header_line(*args, **kwargs)
 
 
-def read_header_line(line, pattern=None):
+def read_header_line(line, pattern=None, section_name=None):
     """Read a line from a LAS header section.
 
     The line is parsed with a regular expression -- see LAS file specs for
@@ -745,10 +745,10 @@ def read_header_line(line, pattern=None):
         if not ":" in line:
             value_re = value_without_decs_delimiter_re
             desc_re = no_desc_re
-            if '..' in line:
+            if '..' in line and section_name == 'Curves':
                 name_re = name_with_dots_re
         else:
-            if '..' in line:
+            if '..' in line and section_name == 'Curves':
                 double_dot = line.find('..')
                 desc_colon = line.rfind(':')
                 if double_dot < desc_colon:
