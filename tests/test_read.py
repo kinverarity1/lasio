@@ -378,7 +378,7 @@ def test_read_incorrect_shape():
     with pytest.raises(ValueError):
         lasio.read(egfn("sample_lastcolblanked.las"))
 
-def test_dot_delmiter_issue_264():
+def test_dot_delimiter_issue_264():
     l = lasio.read(stegfn("1.2", "issue-264-dot-delimiter.las"))
     assert [c.mnemonic for c in l.curves] == [
         "DEPT",
