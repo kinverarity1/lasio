@@ -1,3 +1,4 @@
+import logging
 import os
 
 # Convoluted import for StringIO in order to support:
@@ -21,6 +22,9 @@ else:
 from .las import LASFile
 
 
+logger = logging.getLogger(__name__)
+
+
 def open(filename, **kwargs):
     """Open an example LAS file from lasio's test suite.
 
@@ -31,7 +35,7 @@ def open(filename, **kwargs):
 
     Other keyword arguments are passed to `lasio.LASFile`. If lasio has been
     installed locally from source, then the local version of the example file
-    will be opened. If lasio has not been installed from source then the LAS 
+    will be opened. If lasio has not been installed from source then the LAS
     file will be downloaded from GitHub.
 
     Returns: LASFile object
