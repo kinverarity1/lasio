@@ -48,3 +48,4 @@ CODE_OF_CONDUCT.rst
 
 .vscode*
 coverage.xml*
+htmlcov
