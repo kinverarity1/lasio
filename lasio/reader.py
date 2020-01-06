@@ -522,7 +522,7 @@ def parse_header_section(
         if not line:
             continue
         try:
-            values = read_line(line)
+            values = read_line(line, section_name=parser.section_name2)
         except:
             message = 'line {} (section {}): "{}"'.format(
                 # traceback.format_exc().splitlines()[-1].strip('\n'),
@@ -711,7 +711,7 @@ def read_line(*args, **kwargs):
     return read_header_line(*args, **kwargs)
 
 
-def read_header_line(line, pattern=None):
+def read_header_line(line, pattern=None, section_name=None):
     """Read a line from a LAS header section.
 
     The line is parsed with a regular expression -- see LAS file specs for
@@ -728,18 +728,49 @@ def read_header_line(line, pattern=None):
 
     """
     d = {"name": "", "unit": "", "value": "", "descr": ""}
+
+    # Default regular expressions for name, unit, value and desc fields
+    name_re = r"\.?(?P<name>[^.]*)\."
+    unit_re = r"(?P<unit>[^\s:]*)"
+    value_re = r"(?P<value>[^:]*):"
+    desc_re = r"(?P<descr>.*)"
+
+    # Alternate regular expressions for special cases
+    value_without_colon_delimiter_re = r"(?P<value>[^:]*)"
+    name_with_dots_re = r"\.?(?P<name>[^.].*[.])\."
+    no_desc_re = ""
+
+    # Configure special cases
+    # 1. missing colon delimiter and description field
+    # 2. double_dots '..' caused by mnemonic abbreviation (with period)
+    #    next to the dot delimiter.
     if pattern is None:
         if not ":" in line:
-            pattern = (
-                r"\.?(?P<name>[^.]*)\." + r"(?P<unit>[^\s:]*)" + r"(?P<value>[^:]*)"
-            )
+            # If there isn't a colon delimiter then there isn't
+            # a description field either.
+            value_re = value_without_colon_delimiter_re
+            desc_re = no_desc_re
+
+            if '..' in line and section_name == 'Curves':
+                name_re = name_with_dots_re
         else:
-            pattern = (
-                r"\.?(?P<name>[^.]*)\."
-                + r"(?P<unit>[^\s:]*)"
-                + r"(?P<value>[^:]*):"
-                + r"(?P<descr>.*)"
-            )
+            if '..' in line and section_name == 'Curves':
+                double_dot = line.find('..')
+                desc_colon = line.rfind(':')
+
+                # Check that a double_dot in not in the 
+                # description string.
+                if double_dot < desc_colon:
+                    name_re = name_with_dots_re
+
+    # Build full regex pattern
+    pattern = (
+        name_re
+        + unit_re
+        + value_re
+        + desc_re
+    )
+
     m = re.match(pattern, line)
     if m is None:
         logger.warning("Unable to parse line as LAS header: {}".format(line))
