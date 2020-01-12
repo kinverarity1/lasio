@@ -402,3 +402,14 @@ def test_dot_delimiter_issue_264():
         "",
     ]
 
+def test_issue_201_non_delimiter_colon_start():
+    las = lasio.read(egfn("colon_pick_start.las"))
+    assert las.params["TCS"].unit == "hh:mm"
+    assert las.params["TCS"].value == "21:30 23-JAN-2001"
+    assert las.params["TCS"].descr == "Time Circ. Stopped"
+
+def test_issue_201_non_delimiter_colon_end():
+    las = lasio.read(egfn("colon_pick_end.las"))
+    assert las.params["TCS"].unit == "hh:mm"
+    assert las.params["TCS"].value == "21:30 23-JAN-2001"
+    assert las.params["TCS"].descr == "Time Circ. Stopped"

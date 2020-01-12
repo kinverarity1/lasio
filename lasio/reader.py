@@ -731,8 +731,8 @@ def read_header_line(line, pattern=None, section_name=None):
 
     # Default regular expressions for name, unit, value and desc fields
     name_re = r"\.?(?P<name>[^.]*)\."
-    unit_re = r"(?P<unit>[^\s:]*)"
-    value_re = r"(?P<value>[^:]*):"
+    unit_re = r"(?P<unit>[^\s]*)"
+    value_re = r"(?P<value>.*):"
     desc_re = r"(?P<descr>.*)"
 
     # Alternate regular expressions for special cases
