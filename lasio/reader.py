@@ -737,6 +737,8 @@ def read_header_line(line, pattern=None, section_name=None):
 
     # Alternate regular expressions for special cases
     value_without_colon_delimiter_re = r"(?P<value>[^:]*)"
+    value_re_for_param_section =
+        r"(?P<value>.*?)(?:(?<!( [0-2][0-3]| hh| HH)):(?!([0-5][0-9]|mm|MM)))"
     name_with_dots_re = r"\.?(?P<name>[^.].*[.])\."
     no_desc_re = ""
 
@@ -762,6 +764,8 @@ def read_header_line(line, pattern=None, section_name=None):
                 # description string.
                 if double_dot < desc_colon:
                     name_re = name_with_dots_re
+            if section_name == 'Parameter':
+                value_re = value_re_for_param_section
 
     # Build full regex pattern
     pattern = (
