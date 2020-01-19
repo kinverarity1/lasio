@@ -407,11 +407,11 @@ def test_issue_201_non_delimiter_colon_start():
     assert las.params["TCS"].descr == "Time Circ. Stopped"
     assert las.params["TIML"].unit == "hh:mm"
     assert las.params["TIML"].value == "23:15 23-JAN-2001"
-    # assert las.params["TIML"].descr == "Time Logger: At Bottom"
+    assert las.params["TIML"].descr == "Time Logger: At Bottom"
 
 def test_issue_201_non_delimiter_colon_end():
     las = lasio.read(egfn("colon_pick_end.las"))
     assert las.params["TCS"].descr == "Time Circ. Stopped"
     assert las.params["TIML"].unit == "hh:mm"
     assert las.params["TIML"].value == "23:15 23-JAN-2001"
-    # assert las.params["TIML"].descr == "Time Logger At Bottom:"
+    assert las.params["TIML"].descr == "Time Logger At Bottom:"
