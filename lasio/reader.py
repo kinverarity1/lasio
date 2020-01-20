@@ -731,12 +731,13 @@ def read_header_line(line, pattern=None, section_name=None):
 
     # Default regular expressions for name, unit, value and desc fields
     name_re = r"\.?(?P<name>[^.]*)\."
-    unit_re = r"(?P<unit>[^\s:]*)"
-    value_re = r"(?P<value>[^:]*):"
+    unit_re = r"(?P<unit>[^\s]*)"
+    value_re = r"(?P<value>.*):"
     desc_re = r"(?P<descr>.*)"
 
     # Alternate regular expressions for special cases
     value_without_colon_delimiter_re = r"(?P<value>[^:]*)"
+    value_re_for_param_section = r"(?P<value>.*?)(?:(?<!( [0-2][0-3]| hh| HH)):(?!([0-5][0-9]|mm|MM)))"
     name_with_dots_re = r"\.?(?P<name>[^.].*[.])\."
     no_desc_re = ""
 
@@ -762,6 +763,8 @@ def read_header_line(line, pattern=None, section_name=None):
                 # description string.
                 if double_dot < desc_colon:
                     name_re = name_with_dots_re
+            if section_name == 'Parameter':
+                value_re = value_re_for_param_section
 
     # Build full regex pattern
     pattern = (
