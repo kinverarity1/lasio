@@ -897,9 +897,11 @@ class JSONEncoder(json.JSONEncoder):
                 if isinstance(section, basestring):
                     d["metadata"][name] = section
                 else:
-                    d["metadata"][name] = []
-                    for item in section:
-                        d["metadata"][name].append(dict(item))
+                    try:
+                        d["metadata"][name] = section.dictview()
+                    except:
+                        for item in section:
+                            d["metadata"][name].append(dict(item))
             for curve in obj.curves:
                 d["data"][curve.mnemonic] = list(curve.data)
             return d
