@@ -1,28 +1,28 @@
 ~Version ---------------------------------------------------
-VERS. 1.2 : CWLS LOG ASCII STANDARD - VERSION 1.2
+VERS. 2.0 : CWLS log ASCII Standard -VERSION 2.0
 WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
-STRT   .M  1670.0 : 
-STOP   .M 1669.75 : 
-STEP   .M  -0.125 : 
-NULL   .  -999.25 : 
-COMPANY.  COMPANY : # ANY OIL COMPANY LTD.
-WELL   .     WELL : ANY ET AL OIL WELL #12
-FLD    .    FIELD : EDAM
-LOC    . LOCATION : A9-16-49-20W3M
-PROV   . PROVINCE : SASKATCHEWAN
-SRVC   .  SERVICE : The company that did this logging has a very very long name....
-DATE   . LOG DATE : 25-DEC-1988
-UWI    .  WELL ID : 100091604920W300
+STRT.M                  1670.0 : 
+STOP.M                 1669.75 : 
+STEP.M                  -0.125 : 
+NULL.                  -999.25 : 
+COMP.   # ANY OIL COMPANY LTD. : COMPANY
+WELL.   ANY ET AL OIL WELL #12 : WELL
+FLD .                     EDAM : FIELD
+LOC .           A9-16-49-20W3M : LOCATION
+PROV.             SASKATCHEWAN : PROVINCE
+SRVC. ANY LOGGING COMPANY LTD. : SERVICE COMPANY
+DATE.              25-DEC-1988 : LOG DATE
+UWI .         100091604920W300 : UNIQUE WELL ID
 ~Curve Information -----------------------------------------
-D.M     : 1  DEPTH
-A.US/M  : 2  SONIC TRANSIT TIME
-B.K/M3  : 3  BULK DENSITY
-C.V/V   : 4   NEUTRON POROSITY
- .      : 
- .      : 
- .      : 
- .      : 
+DEPT.M     : 1  DEPTH
+DT  .US/M  : 2  SONIC TRANSIT TIME
+RHOB.K/M3  : 3  BULK DENSITY
+NPHI.V/V   : 4   NEUTRON POROSITY
+SFLU.OHMM  : 5  RXO RESISTIVITY
+SFLA.OHMM  : 6  SHALLOW RESISTIVITY
+ILM .OHMM  : 7  MEDIUM RESISTIVITY
+ILD .OHMM  : 8  DEEP RESISTIVITY
 ~Params ----------------------------------------------------
 BHT .DEGC   35.5 : BOTTOM HOLE TEMPERATURE
 BS  .MM    200.0 : BIT SIZE

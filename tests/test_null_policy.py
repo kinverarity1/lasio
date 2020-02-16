@@ -61,8 +61,8 @@ def test_null_policy_custom_2():
     assert las['SFLA'][2] == -999.25
 
 def test_null_policy_ERR_strict():
-    with pytest.raises(exceptions.LASDataError):
-        las = read(egfn("null_policy_ERR.las"), null_policy='strict')
+    las = read(egfn("null_policy_ERR.las"), null_policy='strict')
+    assert las['RHOB'][2] == 'ERR'
     
 def test_null_policy_ERR_custom():
     las = read(egfn("null_policy_ERR.las"), null_policy=[('ERR', ' NaN '), ])
@@ -107,7 +107,3 @@ def test_null_policy_runon_ok_1():
 def test_null_policy_runon_ok_2():
     las = read(egfn("null_policy_runon.las"), read_policy='default')
     assert las['C05'][2] == -19508.961
-
-def test_null_policy_ind():
-    las = read(egfn('null_policy_ind.las'))
-    assert las.curves.keys() == ['DEPT', 'GR', 'CN', 'CD']

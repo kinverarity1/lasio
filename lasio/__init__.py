@@ -12,7 +12,7 @@ else:
     from .excel import ExcelConverter
 
 
-__version__ = '0.19'
+__version__ = '0.24.1'
 
 
 def read(file_ref, **kwargs):
@@ -22,10 +22,10 @@ def read(file_ref, **kwargs):
     are currently supported.
 
     Arguments:
-        file_ref (file-like object, str): either a filename, an open file 
+        file_ref (file-like object, str): either a filename, an open file
             object, or a string containing the contents of a file.
 
-    Returns: 
+    Returns:
         A LASFile object representing the file -- see above
 
     There are a number of optional keyword arguments that can be passed to this

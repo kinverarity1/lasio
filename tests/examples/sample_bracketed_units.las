@@ -1,42 +1,4 @@
-import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-
-
-import pytest
-
-# pathlib for python2 is installed via pip install -r requirements.txt
-from pathlib import Path
-
-from lasio import read
-
-test_dir = os.path.dirname(__file__)
-
-egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
-
-def test_open_pathlib_object():
-    l = read(Path(egfn("sample.las")))
-
-def test_open_url():
-    l = read("https://raw.githubusercontent.com/kinverarity1/"
-             "lasio/master/standards/examples"
-             "/1.2/sample_curve_api.las")
-
-
-def test_open_file_object():
-    with open(egfn("sample.las"), mode="r") as f:
-        l = read(f)
-
-
-def test_open_filename():
-    l = read(egfn("sample.las"))
-
-
-def test_open_incorrect_filename():
-    with pytest.raises(OSError):
-        l = read(egfn("sampleXXXDOES NOT EXIST.las"))
-
-
-def test_open_string():
-    l = read("""~VERSION INFORMATION
+~VERSION INFORMATION
  VERS.                  1.2:   CWLS LOG ASCII STANDARD -VERSION 1.2
  WRAP.                  NO:   ONE LINE PER DEPTH STEP
 ~WELL INFORMATION BLOCK
@@ -57,14 +19,14 @@ def test_open_string():
 ~CURVE INFORMATION
 #MNEM.UNIT      API CODE      CURVE DESCRIPTION
 #---------    -------------   ------------------------------
- DEPT.M                      :  1  DEPTH
- DT  .US/M               :  2  SONIC TRANSIT TIME
- RHOB.K/M3                   :  3  BULK DENSITY
- NPHI.V/V                    :  4   NEUTRON POROSITY
- SFLU.OHMM                   :  5  RXO RESISTIVITY
- SFLA.OHMM                   :  6  SHALLOW RESISTIVITY
- ILM .OHMM                   :  7  MEDIUM RESISTIVITY
- ILD .OHMM                   :  8  DEEP RESISTIVITY
+ DEPT.[M]                      :  1  DEPTH
+ DT  .[US/M]     		     :  2  SONIC TRANSIT TIME
+ RHOB.[K/M3]                   :  3  BULK DENSITY
+ NPHI.[V/V]                    :  4   NEUTRON POROSITY
+ SFLU.[OHMM]                   :  5  RXO RESISTIVITY
+ SFLA.[OHMM]                   :  6  SHALLOW RESISTIVITY
+ ILM .[OHMM]                   :  7  MEDIUM RESISTIVITY
+ ILD .[OHMM]                   :  8  DEEP RESISTIVITY
 ~PARAMETER INFORMATION
 #MNEM.UNIT        VALUE       DESCRIPTION
 #---------    -------------   ------------------------------
@@ -77,9 +39,8 @@ def test_open_string():
  DFD .K/M3       1525.0000:   DRILL FLUID DENSITY
 ~Other
      Note: The logging tools became stuck at 625 meters causing the data
-       between 625 meters and 615 meters to be invalid.
+	   between 625 meters and 615 meters to be invalid.
 ~A  DEPTH     DT       RHOB     NPHI     SFLU     SFLA      ILM      ILD
 1670.000   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
 1669.875   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
 1669.750   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
-""")

@@ -1,5 +1,33 @@
 # List of changes
 
+## Version 0.24
+
+- Fix #256 (parse units in brackets and add index_unit kwarg)
+
+## Version 0.23
+
+- Fix #259 (error when encoding missing from URL response headers)
+- Fix #262 (broken build due to cchardet dependency)
+
+## Version 0.22
+
+- Fix #252 (removing case sensitivity in index_unit checks)
+- Fix #249 (fix bug producing df without converting to floats)
+- Attempt to fix Lasso classification on GitHub
+
+## Version 0.21
+
+- Fix #236 and #237 (can now read ASCII in ~Data section)
+- Fix #239 (Petrel can't read lasio output)
+
+## Version 0.20
+
+- Fix #233 (pickling error lost Curve.data during multiprocessing)
+- Fix #226 (do not issue warning on empty ~Parameter section)
+- Revised default behaviour to using null_policy='strict' (ref. #227)
+- Fix #221 (depths > 10000 were being rounded by default)
+- Fix #225 (file handle leaked if exception during parsing)
+
 ## Version 0.19
 
 - Fix #223 (critical version/installation bug)
@@ -71,7 +99,7 @@ Version 0.14 and 0.15 skipped due to broken PyPI upload.
 ## Version 0.11
 
 - Reorganise code into modules
-- various 
+- various
 
 ## Version 0.10
 
