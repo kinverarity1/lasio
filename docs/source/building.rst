@@ -40,7 +40,7 @@ In our case, let's set the correct date:
 
     In [8]: from datetime import datetime
 
-    In [9]: las.well.DATE = str(datetime.today())
+    In [9]: las.well.DATE = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
 
 And add some new header fields:
 
