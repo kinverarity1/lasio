@@ -45,7 +45,7 @@ def write(
         fmt (str): Python string formatting operator for numeric data to be
             used.
         column_fmt (dict or None): use this to set a different format string
-            for specific columns from the data ndarray. E.g. to use ``'%.4f'``
+            for specific columns from the data ndarray. E.g. to use ``'%.3f'``
             for the depth column and ``'%.2f'`` for all the other columns,
             you would use ``fmt='%.2f', column_fmt={0: '%.3f'}``.
         len_numeric_field (int): width of each numeric field column (must be
