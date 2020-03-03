@@ -39,5 +39,5 @@ def test_json_headers():
 
 def test_json_null():
     l = lasio.examples.open("sample_null.las")
-    lj = json.dumps(l, cls=las.JSONEncoder)
+    lj = json.dumps(l, cls=las.JSONEncoder, sort_keys=True)
     assert lj == open(egfn('sample_null.json'), 'r').read()
