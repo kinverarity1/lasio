@@ -19,6 +19,7 @@ def write(
     STOP=None,
     STEP=None,
     fmt="%.5f",
+    column_fmt=None,
     len_numeric_field=None,
     data_width=79,
     header_width=60,
@@ -43,6 +44,10 @@ def write(
             be estimated from the first two rows of the first column.
         fmt (str): Python string formatting operator for numeric data to be
             used.
+        column_fmt (dict or None): use this to set a different format string
+            for specific columns from the data ndarray. E.g. to use ``'%.4f'``
+            for the depth column and ``'%.2f'`` for all the other columns,
+            you would use ``fmt='%.2f', column_fmt={0: '%.3f'}``.
         len_numeric_field (int): width of each numeric field column (must be
             greater than than all the formatted numeric values in the file).
         data_width (79): width of data field in characters
@@ -56,6 +61,8 @@ def write(
     :meth:`lasio.las.LASFile.write` method.
 
     """
+    if column_fmt is None:
+        column_fmt = {}
     if wrap is None:
         wrap = las.version["WRAP"] == "YES"
     elif wrap is True:
@@ -83,7 +90,9 @@ def write(
     if STOP is None:
         STOP = las.index[-1]
     if STEP is None:
-        if STOP != STRT: #prevents an error being thrown in the case of only a single sample being written
+        if (
+            STOP != STRT
+        ):  # prevents an error being thrown in the case of only a single sample being written
             STEP = las.index[1] - las.index[0]  # Faster than np.gradient
 
     las.well["STRT"].value = STRT
@@ -203,7 +212,10 @@ def write(
         logger.debug("Writing data array row {} of {}".format(i + 1, nrows))
         depth_slice = ""
         for j in range(ncols):
-            depth_slice += format_data_section_line(data_arr[i, j], fmt)
+            col_fmt = fmt
+            if j in column_fmt:
+                col_fmt = column_fmt[j]
+            depth_slice += format_data_section_line(data_arr[i, j], col_fmt)
 
         if wrap:
             lines = twrapper.wrap(depth_slice)
