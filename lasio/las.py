@@ -3,9 +3,9 @@ from __future__ import print_function
 # Standard library packages
 import codecs
 
-try: # will work in Python 3
+try:  # will work in Python 3
     from collections.abc import Sequence
-except ImportError: # Support Python 2.7
+except ImportError:  # Support Python 2.7
     from collections import Sequence
 
 import csv
@@ -710,17 +710,17 @@ class LASFile(object):
                 str(name) for name in df.columns.values
             ]
         self.set_data(df_values, **kwargs)
-    
+
     def stack_curves(self, mnemonic, sort_curves=True):
-        """Stack multi-channel curve data to a numpy 2D ndarray. Provide a 
-        stub name (prefix shared by all curves that will be stacked) or a 
-        list of curve mnemonic strings.          
+        """Stack multi-channel curve data to a numpy 2D ndarray. Provide a
+        stub name (prefix shared by all curves that will be stacked) or a
+        list of curve mnemonic strings.
 
         Keyword Arguments:
             mnemonic (str or list): Supply the first several characters of
-                the channel set to be stacked. Alternatively, supply a list 
+                the channel set to be stacked. Alternatively, supply a list
                 of the curve names (mnemonics strings) to be stacked.
-            sort_curves (bool): Natural sort curves based on mnemonic prior 
+            sort_curves (bool): Natural sort curves based on mnemonic prior
                 to stacking.
 
         Returns:
@@ -730,7 +730,7 @@ class LASFile(object):
             mnemonic = list(mnemonic)
 
         if (not mnemonic) or (not all([i for i in mnemonic])):
-            raise ValueError('`mnemonic` must not contain empty element')
+            raise ValueError("`mnemonic` must not contain empty element")
 
         keys = self.curves.keys()
         if isinstance(mnemonic, str):
@@ -738,16 +738,17 @@ class LASFile(object):
         elif isinstance(mnemonic, Sequence):
             channels = list(mnemonic)
         else:
-            raise TypeError('`mnemonic` argument must be string or sequence')
+            raise TypeError("`mnemonic` argument must be string or sequence")
         print(channels)
 
         if not set(keys).issuperset(set(channels)):
-            missing = ', '.join(set(channels).difference(set(keys)))
-            raise KeyError('{} not found in LAS curves.'.format(missing))
+            missing = ", ".join(set(channels).difference(set(keys)))
+            raise KeyError("{} not found in LAS curves.".format(missing))
 
         if sort_curves:
-            nat_sort = lambda x: \
-                [int(i) if i.isdigit() else i for i in re.split(r'(\d+)', x)]
+            nat_sort = lambda x: [
+                int(i) if i.isdigit() else i for i in re.split(r"(\d+)", x)
+            ]
             channels.sort(key=nat_sort)
 
         indices = [keys.index(i) for i in channels]
@@ -903,5 +904,7 @@ class JSONEncoder(json.JSONEncoder):
                         for item in section:
                             d["metadata"][name].append(dict(item))
             for curve in obj.curves:
-                d["data"][curve.mnemonic] = list(curve.data)
+                d["data"][curve.mnemonic] = [
+                    None if np.isnan(x) else x for x in curve.data
+                ]
             return d

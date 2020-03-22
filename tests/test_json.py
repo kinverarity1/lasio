@@ -3,6 +3,8 @@ import json
 
 import pytest
 
+import lasio
+import lasio.examples
 from lasio import las, read
 
 
@@ -35,3 +37,7 @@ def test_json_headers():
     assert(pylj['metadata']['Curves']['DT'] == '60 520 32 00')
     assert(pylj['metadata']['Parameter']['DFD'] == 1525)
 
+def test_json_null():
+    l = lasio.examples.open("sample_null.las")
+    lj = json.dumps(l, cls=las.JSONEncoder, sort_keys=True)
+    assert lj == open(egfn('sample_null.json'), 'r').read()
