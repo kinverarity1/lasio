@@ -1,5 +1,19 @@
 # List of changes
 
+## Version 0.25
+- Add stack_curves() method to allow joining a set of curves into a 2D array (issue #284, PR #293)
+- Add lasio.examples module (#296)
+- Fix #278 (leading zeroes were being stripped from API/UWI numbers)
+- Fix #286 (error on trying to write a file with one row of data)
+- Fix #258 (do not catch Ctrl+C when reading file)
+- Fix #292 (improve error checking for when trying to write non-2D data)
+- Fix #277 (allow pathlib objects to lasio.read)
+- Fix #264 (allow periods in mnemonics to be retained in specific cases)
+- Fix #201 (adjust descr parsing in \~P section to allow times in the descr, see PR #298)
+- Fix #302 (change in str(datetime) handling)
+- Fixes to JSON output (#300, #303)
+- Fix #304 (add column_fmt argument to LASFile.write method)
+
 ## Version 0.24
 
 - Fix #256 (parse units in brackets and add index_unit kwarg)
