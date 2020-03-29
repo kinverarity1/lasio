@@ -66,7 +66,7 @@ READ_POLICIES = {
 
 READ_SUBS = {
     'comma-decimal-mark': [(re.compile(r'(\d),(\d)'), r'\1.\2'), ],
-    'run-on(-)': [(re.compile(r'(\d)-(\d)'), r'\1 -\2'), ], 
+    'run-on(-)': [(re.compile(r'(\d)-(\d)'), r'\1 -\2'), ],
     'run-on(.)': [(re.compile(r'-?\d*\.\d*\.\d*'), ' NaN NaN '), ],
     'run-on(NaN.)': [(re.compile(r'NaN[\.-]\d+'), ' NaN NaN '), ],
     }
@@ -74,15 +74,15 @@ READ_SUBS = {
 NULL_POLICIES = {
     'none': [],
     'strict': ['NULL', ],
-    'common': ['NULL', '(null)', '-', 
+    'common': ['NULL', '(null)', '-',
                '9999.25', '999.25', 'NA', 'INF', 'IO', 'IND'],
-    'aggressive': ['NULL', '(null)', '--', 
-                   '9999.25', '999.25', 'NA', 'INF', 'IO', 'IND', 
+    'aggressive': ['NULL', '(null)', '--',
+                   '9999.25', '999.25', 'NA', 'INF', 'IO', 'IND',
                    '999', '999.99', '9999', '9999.99' '2147483647', '32767',
                    '-0.0', ],
-    'all': ['NULL', '(null)', '-', 
-            '9999.25', '999.25', 'NA', 'INF', 'IO', 'IND', 
-            '999', '999.99', '9999', '9999.99' '2147483647', '32767', '-0.0', 
+    'all': ['NULL', '(null)', '-',
+            '9999.25', '999.25', 'NA', 'INF', 'IO', 'IND',
+            '999', '999.99', '9999', '9999.99' '2147483647', '32767', '-0.0',
             'numbers-only', ],
     'numbers-only': ['numbers-only', ]
     }
@@ -99,11 +99,11 @@ NULL_SUBS = {
     '32767': [-32767, 32767],
     '(null)': [(re.compile(r' \(null\)'), ' NaN'),
                (re.compile(r'\(null\) '), 'NaN '),
-               (re.compile(r' \(NULL\)'), ' NaN'), 
-               (re.compile(r'\(NULL\) '), 'NaN '), 
-               (re.compile(r' null'), ' NaN'), 
-               (re.compile(r'null '), 'NaN '), 
-               (re.compile(r' NULL'), ' NaN'), 
+               (re.compile(r' \(NULL\)'), ' NaN'),
+               (re.compile(r'\(NULL\) '), 'NaN '),
+               (re.compile(r' null'), ' NaN'),
+               (re.compile(r'null '), 'NaN '),
+               (re.compile(r' NULL'), ' NaN'),
                (re.compile(r'NULL '), 'NaN '), ],
     '-': [(re.compile(r' -+ '), ' NaN '), ],
     'NA': [(re.compile(r'(#N/A)[ ]'), 'NaN '),

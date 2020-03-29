@@ -26,7 +26,7 @@ def read(file_ref, **kwargs):
             object, or a string containing the contents of a file.
 
     Returns:
-        A LASFile object representing the file -- see above
+        a :class:`lasio.LASFile` object representing the file -- see above
 
     There are a number of optional keyword arguments that can be passed to this
     function that control how the LAS file is opened and parsed. Any of the

@@ -27,7 +27,7 @@ def write(
     """Write a LAS files.
 
     Arguments:
-        las (:class:`lasio.las.LASFile`)
+        las (:class:`lasio.LASFile`)
         file_object (file-like object open for writing): output
         version (float or None): version of written file, either 1.2 or 2.
             If this is None, ``las.version.VERS.value`` will be used.
@@ -58,7 +58,7 @@ def write(
     values.
 
     You should avoid calling this function directly - instead use the
-    :meth:`lasio.las.LASFile.write` method.
+    :meth:`lasio.LASFile.write` method.
 
     """
     if column_fmt is None:
@@ -250,7 +250,7 @@ def get_formatter_function(order, left_width=None, middle_width=None):
 
     Returns:
         A function which takes a header item
-        (e.g. :class:`lasio.las_items.HeaderItem`) as its single argument and
+        (e.g. :class:`lasio.HeaderItem`) as its single argument and
         which in turn returns a string which is the correctly formatted LAS
         header line.
 
