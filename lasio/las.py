@@ -58,7 +58,7 @@ class LASFile(object):
 
     * :func:`lasio.reader.open_with_codecs` - manage issues relate to character
       encodings
-    * :meth:`lasio.las.LASFile.read` - control how NULL values and errors are
+    * :meth:`lasio.LASFile.read` - control how NULL values and errors are
       handled during parsing
 
     Attributes:
@@ -435,7 +435,7 @@ class LASFile(object):
             mnemonic (str): the name of the curve
 
         Returns:
-            :class:`lasio.las_items.CurveItem` (not just the data array)
+            :class:`lasio.CurveItem` (not just the data array)
 
         """
         for curve in self.curves:
@@ -468,8 +468,8 @@ class LASFile(object):
             key (str): the curve mnemonic
             value (1D data or CurveItem): either the curve data, or a CurveItem
 
-        See :meth:`lasio.las.LASFile.append_curve_item` or
-        :meth:`lasio.las.LASFile.append_curve` for more details.
+        See :meth:`lasio.LASFile.append_curve_item` or
+        :meth:`lasio.LASFile.append_curve` for more details.
 
         """
         if isinstance(value, CurveItem):
@@ -510,7 +510,7 @@ class LASFile(object):
         """Header information from the Version (~V) section.
 
         Returns:
-            :class:`lasio.las_items.SectionItems` object.
+            :class:`lasio.SectionItems` object.
 
         """
         return self.sections["Version"]
@@ -524,7 +524,7 @@ class LASFile(object):
         """Header information from the Well (~W) section.
 
         Returns:
-            :class:`lasio.las_items.SectionItems` object.
+            :class:`lasio.SectionItems` object.
 
         """
         return self.sections["Well"]
@@ -538,7 +538,7 @@ class LASFile(object):
         """Curve information and data from the Curves (~C) and data section..
 
         Returns:
-            :class:`lasio.las_items.SectionItems` object.
+            :class:`lasio.SectionItems` object.
 
         """
         return self.sections["Curves"]
@@ -565,7 +565,7 @@ class LASFile(object):
         """Header information from the Parameter (~P) section.
 
         Returns:
-            :class:`lasio.las_items.SectionItems` object.
+            :class:`lasio.SectionItems` object.
 
         """
         return self.sections["Parameter"]
@@ -593,7 +593,7 @@ class LASFile(object):
         """All header information joined together.
 
         Returns:
-            :class:`lasio.las_items.SectionItems` object.
+            :class:`lasio.SectionItems` object.
 
         """
         s = SectionItems()
@@ -653,7 +653,7 @@ class LASFile(object):
 
         Keyword Arguments:
             names (list, optional): used to replace the names of the existing
-                :class:`lasio.las_items.CurveItem` objects.
+                :class:`lasio.CurveItem` objects.
             truncate (bool): remove any columns which are not included in the
                 Curves (~C) section.
 
@@ -701,7 +701,7 @@ class LASFile(object):
                 The depth column for the curves must be the index of the
                 DataFrame.
 
-        Keyword arguments are passed to :meth:`lasio.las.LASFile.set_data`.
+        Keyword arguments are passed to :meth:`lasio.LASFile.set_data`.
 
         """
         df_values = np.vstack([df.index.values, df.values.T]).T
@@ -866,6 +866,9 @@ class LASFile(object):
     @property
     def json(self):
         """Return object contents as a JSON string."""
+        return self.to_json()
+
+    def to_json(self):
         obj = OrderedDict()
         for name, section in self.sections.items():
             try:

@@ -73,7 +73,7 @@ class HeaderItem(OrderedDict):
     def set_session_mnemonic_only(self, value):
         '''Set the mnemonic for session use.
 
-        See source comments for :class:`lasio.las_items.HeaderItem.__init__`
+        See source comments for :class:`lasio.HeaderItem.__init__`
         for a more in-depth explanation.
 
         '''
@@ -147,7 +147,7 @@ class CurveItem(HeaderItem):
 
     '''Dictionary/namedtuple-style object for a LAS curve.
 
-    See :class:`lasio.las_items.HeaderItem`` for the (keyword) arguments.
+    See :class:`lasio.HeaderItem`` for the (keyword) arguments.
 
     Keyword Arguments:
         data (array-like, 1-D): the curve's data.
@@ -315,7 +315,7 @@ class SectionItems(list):
             key (int, str): either the mnemonic or the index.
             newitem (HeaderItem or str/float/int): the thing to be set.
 
-        If ``newitem`` is a :class:`lasio.las_items.HeaderItem` then the
+        If ``newitem`` is a :class:`lasio.HeaderItem` then the
         existing item will be replaced. Otherwise the existing item's ``value``
         attribute will be replaced.
 
@@ -331,8 +331,8 @@ class SectionItems(list):
             >>> section.OPERATOR
             HeaderItem(mnemonic=OPERATOR, unit=, value=Kent, descr=)
 
-        See :meth:`lasio.las_items.SectionItems.set_item` and
-        :meth:`lasio.las_items.SectionItems.set_item_value`.
+        See :meth:`lasio.SectionItems.set_item` and
+        :meth:`lasio.SectionItems.set_item_value`.
 
         '''
         if isinstance(newitem, HeaderItem):
@@ -362,12 +362,15 @@ class SectionItems(list):
         super(SectionItems, self).__getattr__(key)
 
     def __setattr__(self, key, value):
-        '''Allow access to :meth:`lasio.las_items.SectionItems.__setitem__`
+        '''Allow access to :meth:`lasio.SectionItems.__setitem__`
         via attribute access.
 
         '''
         if key in self:
             self[key] = value
+        elif isinstance(value, HeaderItem) or isinstance(value, CurveItem):
+            assert value.mnemonic == key
+            self.append(value)
         else:
             super(SectionItems, self).__setattr__(key, value)
 

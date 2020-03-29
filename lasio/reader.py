@@ -48,7 +48,7 @@ URL_REGEXP = re.compile(
 def check_for_path_obj(file_ref):
     """Check if file_ref is a pathlib.Path object.
 
-    If file_ref is a pathlib.Path object, then return its absolute file 
+    If file_ref is a pathlib.Path object, then return its absolute file
     path as a string so it will get processed as other string filenames.
 
     If pathlib is not available, do nothing and return file_ref.
@@ -504,7 +504,7 @@ def parse_header_section(
                              'lower': convert all HeaderItem mnemonics to lowercase
 
     Returns:
-        :class:`lasio.las_items.SectionItems`
+        :class:`lasio.SectionItems`
 
     """
     title = sectdict["title"]
@@ -759,7 +759,7 @@ def read_header_line(line, pattern=None, section_name=None):
                 double_dot = line.find('..')
                 desc_colon = line.rfind(':')
 
-                # Check that a double_dot in not in the 
+                # Check that a double_dot in not in the
                 # description string.
                 if double_dot < desc_colon:
                     name_re = name_with_dots_re

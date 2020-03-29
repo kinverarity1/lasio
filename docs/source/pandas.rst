@@ -2,23 +2,20 @@ Integration with pandas.DataFrame
 =================================
 
 The :meth:`lasio.LASFile.df` method converts the LAS data to a
-:class:`pandas.DataFrame`.
+:class:`pandas.DataFrame`. Any changes that you make to the DataFrame can be
+brought back into the LASFile object with :meth:`lasio.LASFile.set_data`.
 
-Any changes that you make to the DataFrame can be brought back into the
-LASFile object with :meth:`lasio.LASFile.set_data`.
+.. code-block:: python
 
-.. code-block:: ipython
-
-    In [168]: las = lasio.read('tests/examples/6038187_v1.2.las')
-
-    In [169]: df = las.df()
+    >>> import lasio.examples
+    >>> las = lasio.examples.open('6038187_v1.2.las')
+    >>> df = las.df()
 
 There are some summary methods handy for data exploration:
 
-.. code-block:: ipython
+.. code-block:: python
 
-    In [170]: df.head(10)
-    Out[170]:
+    >>> df.head(10)
             CALI   DFAR  DNEAR     GAMN  NEUT       PR     SP     COND
     DEPT
     0.05  49.765  4.587  3.382      NaN   NaN      NaN    NaN      NaN
@@ -31,9 +28,7 @@ There are some summary methods handy for data exploration:
     0.40  49.765  4.587  3.382 -2324.28   NaN  115.508 -3.049 -116.998
     0.45  49.765  4.587  3.382 -2324.28   NaN  115.508 -3.049 -116.998
     0.50  49.765  4.587  3.382 -2324.28   NaN  115.508 -3.049 -116.998
-
-    In [171]: df.tail(40)
-    Out[171]:
+    >>> df.tail(40)
                CALI   DFAR  DNEAR     GAMN   NEUT       PR     SP     COND
     DEPT
     134.65  100.983  1.563  1.357 -2324.28  158.0  115.508 -3.049  578.643
@@ -76,9 +71,7 @@ There are some summary methods handy for data exploration:
     136.50   48.555    NaN    NaN      NaN    NaN      NaN    NaN      NaN
     136.55   48.438    NaN    NaN      NaN    NaN      NaN    NaN      NaN
     136.60  -56.275    NaN    NaN      NaN    NaN      NaN    NaN      NaN
-
-    In [172]: df.describe()
-    Out[172]:
+    >>> df.describe()
                   CALI         DFAR        DNEAR         GAMN         NEUT  \
     count  2732.000000  2701.000000  2701.000000  2691.000000  2492.000000
     mean     97.432002     1.767922     1.729209  -102.330033   441.600013
@@ -102,14 +95,11 @@ There are some summary methods handy for data exploration:
 There's obviously a problem with the GAMN log: -2324.28 is not a valid value.
 Let's fix that.
 
-.. code-block:: ipython
+.. code-block:: python
 
-    In [44]: import numpy as np
-
-    In [173]: df['GAMN'][df['GAMN'] == -2324.28] = np.nan
-
-    In [174]: df.describe()['GAMN']
-    Out[174]:
+    >>> import numpy as np
+    >>> df['GAMN'][df['GAMN'] == -2324.28] = np.nan
+    >>> df.describe()['GAMN']
     count    2491.000000
     mean       76.068198
     std        23.120160
@@ -124,19 +114,17 @@ Let's create a new log with the moving average of the GAMN log, over
 1 m. This is easy enough to do with the pandas :meth:`pandas.Series.rolling`
 method and the LAS file's STEP value:
 
-.. code-block:: ipython
+.. code-block:: python
 
-    In [175]: df['GAMN_avg'] = df['GAMN'].rolling(int(1 / las.well.STEP.value), center=True).mean()
+    >>> df['GAMN_avg'] = df['GAMN'].rolling(int(1 / las.well.STEP.value), center=True).mean()
 
 Now we want to apply this DataFrame ``df`` back to the ``las`` LASFile object,
 and check that it's all there:
 
-.. code-block:: ipython
+.. code-block:: python
 
-    In [176]: las.set_data(df)
-
-    In [177]: las.curves
-    Out[177]:
+    >>> las.set_data(df)
+    >>> las.curves
     [CurveItem(mnemonic=DEPT, unit=M, value=, descr=DEPTH, original_mnemonic=DEPT, data.shape=(2732,)),
      CurveItem(mnemonic=CALI, unit=MM, value=, descr=CALI, original_mnemonic=CALI, data.shape=(2732,)),
      CurveItem(mnemonic=DFAR, unit=G/CM3, value=, descr=DFAR, original_mnemonic=DFAR, data.shape=(2732,)),
@@ -147,9 +135,7 @@ and check that it's all there:
      CurveItem(mnemonic=SP, unit=MV, value=, descr=SP, original_mnemonic=SP, data.shape=(2732,)),
      CurveItem(mnemonic=COND, unit=MS/M, value=, descr=COND, original_mnemonic=COND, data.shape=(2732,)),
      CurveItem(mnemonic=GAMN_avg, unit=, value=, descr=, original_mnemonic=GAMN_avg, data.shape=(2732,))]
-
-    In [178]: las.df().describe()
-    Out[178]:
+    >>> las.df().describe()
                   CALI         DFAR        DNEAR         GAMN         NEUT  \
     count  2732.000000  2701.000000  2701.000000  2491.000000  2492.000000
     mean     97.432002     1.767922     1.729209    76.068198   441.600013

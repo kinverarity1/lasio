@@ -1,77 +1,19 @@
 Exporting to other formats
 ======================================
 
-The following examples all use ``sample.las``:
-
-.. code-block:: none
-    :linenos:
-
-    ~VERSION INFORMATION
-     VERS.                  1.2:   CWLS LOG ASCII STANDARD -VERSION 1.2
-     WRAP.                  NO:   ONE LINE PER DEPTH STEP
-    ~WELL INFORMATION BLOCK
-    #MNEM.UNIT       DATA TYPE    INFORMATION
-    #---------    -------------   ------------------------------
-     STRT.M        1670.000000:
-     STOP.M        1660.000000:
-     STEP.M            -0.1250:
-     NULL.           -999.2500:
-     COMP.             COMPANY:   # ANY OIL COMPANY LTD.
-     WELL.                WELL:   ANY ET AL OIL WELL #12
-     FLD .               FIELD:   EDAM
-     LOC .            LOCATION:   A9-16-49-20W3M
-     PROV.            PROVINCE:   SASKATCHEWAN
-     SRVC.     SERVICE COMPANY:   ANY LOGGING COMPANY LTD.
-     DATE.            LOG DATE:   25-DEC-1988
-     UWI .      UNIQUE WELL ID:   100091604920W300
-    ~CURVE INFORMATION
-    #MNEM.UNIT      API CODE      CURVE DESCRIPTION
-    #---------    -------------   ------------------------------
-     DEPT.M                      :  1  DEPTH
-     DT  .US/M               :  2  SONIC TRANSIT TIME
-     RHOB.K/M3                   :  3  BULK DENSITY
-     NPHI.V/V                    :  4   NEUTRON POROSITY
-     SFLU.OHMM                   :  5  RXO RESISTIVITY
-     SFLA.OHMM                   :  6  SHALLOW RESISTIVITY
-     ILM .OHMM                   :  7  MEDIUM RESISTIVITY
-     ILD .OHMM                   :  8  DEEP RESISTIVITY
-    ~PARAMETER INFORMATION
-    #MNEM.UNIT        VALUE       DESCRIPTION
-    #---------    -------------   ------------------------------
-     BHT .DEGC         35.5000:   BOTTOM HOLE TEMPERATURE
-     BS  .MM          200.0000:   BIT SIZE
-     FD  .K/M3       1000.0000:   FLUID DENSITY
-     MATR.              0.0000:   NEUTRON MATRIX(0=LIME,1=SAND,2=DOLO)
-     MDEN.           2710.0000:   LOGGING MATRIX DENSITY
-     RMF .OHMM          0.2160:   MUD FILTRATE RESISTIVITY
-     DFD .K/M3       1525.0000:   DRILL FLUID DENSITY
-    ~Other
-         Note: The logging tools became stuck at 625 meters causing the data
-           between 625 meters and 615 meters to be invalid.
-    ~A  DEPTH     DT       RHOB     NPHI     SFLU     SFLA      ILM      ILD
-    1670.000   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
-    1669.875   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
-    1669.750   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
-
-
 Comma-separated values (CSV)
 ----------------------------
 
-LASFile objects can be converted to CSV files with a few options for how
-mnemonics and units are included (or not). It uses the
-:meth:`lasio.las.LASFile.to_csv` method.
+:class:`lasio.LASFile` objects can be converted to CSV files with a few
+options for how mnemonics and units are included (or not). It uses the
+:meth:`lasio.LASFile.to_csv` method.
 
-.. code-block:: ipython
+.. code-block:: python
 
-    In [3]: import lasio
-
-    In [4]: las = lasio.read('tests/examples/sample.las')
-
-    In [6]: las.to_csv('sample.csv')
-
-.. code-block:: none
-    :linenos:
-
+    >>> import lasio.examples
+    >>> from sys import stdout
+    >>> las = lasio.examples.open('sample.las')
+    >>> las.to_csv(stdout)
     DEPT,DT,RHOB,NPHI,SFLU,SFLA,ILM,ILD
     M,US/M,K/M3,V/V,OHMM,OHMM,OHMM,OHMM
     1670.0,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
@@ -80,13 +22,9 @@ mnemonics and units are included (or not). It uses the
 
 There are options for putting the units together with mnemonics:
 
-.. code-block:: ipython
+.. code-block:: python
 
-    In [7]: las.to_csv('sample.csv', units_loc='[]')
-
-.. code-block:: none
-    :linenos:
-
+    >>> las.to_csv(stdout, units_loc='[]')
     DEPT [M],DT [US/M],RHOB [K/M3],NPHI [V/V],SFLU [OHMM],SFLA [OHMM],ILM [OHMM],ILD [OHMM]
     1670.0,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
     1669.875,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
@@ -94,36 +32,28 @@ There are options for putting the units together with mnemonics:
 
 Or leaving things out altogether:
 
-.. code-block:: ipython
+.. code-block:: python
 
-    In [11]: las.to_csv('sample.csv', mnemonics=False, units=False)
-
-.. code-block:: none
-    :linenos:
-
+    >>> las.to_csv(stdout, mnemonics=False, units=False)
     1670.0,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
     1669.875,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
     1669.75,123.45,2550.0,0.45,123.45,123.45,110.2,105.6
-    
 
 Excel spreadsheet (XLSX)
 ------------------------
 
 You can easily convert LAS files into Excel, retaining the header information.
-
 If we are working in Python, you export like this:
 
-.. code-block:: ipython
+.. code-block:: python
 
-    In [58]: las = lasio.read('tests/examples/sample.las')
-
-    In [59]: las.to_excel('sample.xlsx')
+    >>> las.to_excel('sample.xlsx')
 
 You will need to have `openpyxl <https://openpyxl.readthedocs.io/en/default/>`__
 installed (``$ pip install openpyxl``).
 
 Format of exported Excel file
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The exported spreadsheet has two sheets named "Header" and "Curves". The
 "Header" sheet has five columns named "Section", "Mnemonic", "Unit", "Value",
@@ -143,9 +73,9 @@ Script interfaces
 Single file
 ___________
 
-.. code-block:: doscon
+.. code-block:: bash
 
-    (py36) C:\Program Files (x86)\Misc\kentcode\lasio>las2excel --help
+    $ las2excel --help
     usage: Convert LAS file to XLSX [-h] LAS_filename XLSX_filename
 
     positional arguments:
@@ -155,16 +85,16 @@ ___________
     optional arguments:
       -h, --help     show this help message and exit
 
-    (py36) C:\Program Files (x86)\Misc\kentcode\lasio>las2excel tests\examples\sample.las c:\users\kinverarity\Desktop\sample.xlsx
+    $ las2excel sample.las sample.xlsx
 
 Multiple files (``las2excelbulk``)
 __________________________________
 
 The better script to use is ``las2excelbulk``:
 
-.. code-block:: doscon
+.. code-block:: bash
 
-    (py36) C:\Windows\System32>las2excelbulk --help
+    $ las2excelbulk --help
     usage: Convert LAS files to XLSX [-h] [-g GLOB] [-r] [-i] path
 
     positional arguments:
@@ -177,12 +107,12 @@ The better script to use is ``las2excelbulk``:
       -i, --ignore-header-errors
                             Ignore header section errors. (default: False)
 
-Here is the command to create Excel versions of all the LAS files contained within the folder
-``test_folder``, and any sub-folders:
+Here is the command to create Excel versions of all the LAS files contained
+within the folder ``test_folder``, and any sub-folders:
 
-.. code-block:: doscon
+.. code-block::
 
-    (py36) C:\Users\kinverarity\Documents\scratch2017\November>las2excelbulk --recursive test_folder
+    $ las2excelbulk --recursive test_folder
     Converting test_folder\-2793 & -2746\5086\PN41497.LAS -> test_folder\-2793 & -2746\5086\pn41497.xlsx
     Converting test_folder\-2793 & -2746\5149\PN41497.LAS -> test_folder\-2793 & -2746\5149\pn41497.xlsx
     Converting test_folder\-2794\6356\66302794.las -> test_folder\-2794\6356\66302794.xlsx
@@ -267,11 +197,13 @@ Here is the command to create Excel versions of all the LAS files contained with
     Converting test_folder\-3068\6812\3068HYD.LAS -> test_folder\-3068\6812\3068hyd.xlsx
     Converting test_folder\-3068\6812\66303068.LAS -> test_folder\-3068\6812\66303068.xlsx
 
-Notice that some LAS files raised exceptions (in this case, ``ValueError``) and were not converted. In some cases these will relate to errors in the header sections:
+Notice that some LAS files raised exceptions (in this case, ``ValueError``)
+and were not converted. In some cases these will relate to errors in the
+header sections:
 
-.. code-block:: doscon
+.. code-block:: bash
 
-    (py36) Q:\>las2excelbulk.exe -r .
+    $ las2excelbulk.exe -r .
     Converting .\4424\PN31769.LAS -> .\4424\pn31769.xlsx
     Converting .\4424\PN31769L.LAS -> .\4424\pn31769l.xlsx
     Converting .\4424\PN31769R.LAS -> .\4424\pn31769r.xlsx
@@ -304,11 +236,13 @@ Notice that some LAS files raised exceptions (in this case, ``ValueError``) and 
 
     Converting .\4526\PENRICE.LAS -> .\4526\penrice.xlsx
 
-But in this case I'm happy to lose that single corrupted line in the header in the conversion. In order to force lasio to ignore the error and continue to convert the file, use the ``--ignore-header-errors`` flag (``-i`` for short):
+But in this case I'm happy to lose that single corrupted line in the header in
+the conversion. In order to force lasio to ignore the error and continue to
+convert the file, use the ``--ignore-header-errors`` flag (``-i`` for short):
 
-.. code-block:: doscon
+.. code-block:: bash
 
-    (py36) Q:\>las2excelbulk.exe -r -i .
+    $ las2excelbulk.exe -r -i .
     Converting .\4424\PN31769.LAS -> .\4424\pn31769.xlsx
     Converting .\4424\PN31769L.LAS -> .\4424\pn31769l.xlsx
     Converting .\4424\PN31769R.LAS -> .\4424\pn31769r.xlsx
@@ -317,4 +251,5 @@ But in this case I'm happy to lose that single corrupted line in the header in t
     PN        PERMIT NUMBER: 31769AttributeError: 'NoneType' object has no attribute 'groupdict'
     Converting .\4526\PENRICE.LAS -> .\4526\penrice.xlsx
 
-lasio still reports the problem, but ignores it and continues the conversion of the file.
+lasio still reports the problem, but ignores it and continues the conversion
+of the file.

@@ -15,7 +15,7 @@ class ExcelConverter(object):
     '''Provide ability to export LAS data into an Excel spreadsheet.
 
     Arguments:
-        las (:class:`lasio.las.LASFile` object)
+        las (:class:`lasio.LASFile` object)
 
     '''
 
@@ -26,7 +26,7 @@ class ExcelConverter(object):
         '''Set LASFile object.
 
         Arguments:
-            las (:class:`lasio.las.LASFile` object)
+            las (:class:`lasio.LASFile` object)
 
         '''
         self.las = las
