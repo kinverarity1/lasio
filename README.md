@@ -4,35 +4,47 @@
 
 Read and write Log ASCII Standard files with Python.
 
-This is a Python 2.7 and 3.3+ package to read and write Log ASCII Standard (LAS) files, used for borehole data such as geophysical, geological, or petrophysical logs. It's compatible with versions 1.2 and 2.0 of the LAS file specification, published by the [Canadian Well Logging Society](http://www.cwls.org/las). Support for LAS 3 is being worked on. In principle it is designed to read as many types of LAS files as possible, including ones containing common errors or non-compliant formatting.
+This is a Python 2.7 and 3.3+ package to read and write Log ASCII Standard
+(LAS) files, used for borehole data such as geophysical, geological, or
+petrophysical logs. It's compatible with versions 1.2 and 2.0 of the LAS file
+specification, published by the [Canadian Well Logging
+Society](http://www.cwls.org/las). Support for LAS 3 is being worked on. In
+principle it is designed to read as many types of LAS files as possible,
+including ones containing common errors or non-compliant formatting.
 
-Depending on your particular application you may also want to check out [striplog](https://github.com/agile-geoscience/striplog) for stratigraphic/lithological data, and [welly](https://github.com/agile-geoscience/welly) for dealing with data at the well level. lasio is primarily for reading & writing LAS files.
+Depending on your particular application you may also want to check out
+[striplog](https://github.com/agile-geoscience/striplog) for
+stratigraphic/lithological data, and
+[welly](https://github.com/agile-geoscience/welly) for dealing with data at
+the well level. lasio is primarily for reading & writing LAS files.
 
 Note this is *not* a package for reading LiDAR data (also called "LAS files").
 
 ## Documentation
 
-See here for the [complete lasio package documentation](https://lasio.readthedocs.io/en/latest/).
+See here for the [complete lasio package
+documentation](https://lasio.readthedocs.io/en/latest/).
 
 ## Quick start
 
-For the minimum working requirements, you'll need numpy installed. Install lasio with:
+For the minimum working requirements, you'll need numpy installed. Install
+lasio with:
 
 ```bash
 $ pip install lasio
 ```
 
-To make sure you have everything, use this to ensure pandas, cchardet, and openpyxl are also installed:
+To make sure you have everything, use this to ensure pandas, cchardet, and
+openpyxl are also installed:
 
 ```bash
 $ pip install lasio[all]
 ```
 
-Very quick example session:
+Example session:
 
 ```python
 >>> import lasio
->>> las = lasio.read("sample_big.las")
 ```
 
 Data is accessible both directly as numpy arrays
@@ -61,7 +73,8 @@ CurveItem(mnemonic=ILM, unit=OHMM, value=, descr=7  MEDIUM RESISTIVITY, original
 CurveItem(mnemonic=ILD, unit=OHMM, value=, descr=8  DEEP RESISTIVITY, original_mnemonic=ILD, data.shape=(29897,))]
 ```
 
-Header information is parsed into simple HeaderItem objects, and stored in a dictionary for each section of the header:
+Header information is parsed into simple HeaderItem objects, and stored in a
+dictionary for each section of the header:
 
 ```python
 >>> las.version
@@ -103,10 +116,12 @@ array([[ 1670.   ,   123.45 ,  2550.   , ...,   123.45 ,   110.2  ,   105.6  ],
        [ 1669.875,   123.45 ,  2550.   , ...,   123.45 ,   110.2  ,   105.6  ]])
 ```
 
-You can also retrieve and load data as a ``pandas`` DataFrame, build LAS files from scratch,
-write them back to disc, and export to Excel, amongst other things.
+You can also retrieve and load data as a ``pandas`` DataFrame, build LAS files
+from scratch, write them back to disc, and export to Excel, amongst other
+things.
 
-See the [documentation](https://lasio.readthedocs.io/en/latest/) for more details.
+See the [package documentation](https://lasio.readthedocs.io/en/latest/) for
+more details.
 
 ## License
 
