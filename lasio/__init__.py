@@ -1,3 +1,11 @@
+from pkg_resources import get_distribution, DistributionNotFound
+
+try:
+    __version__ = get_distribution(__name__).version
+except DistributionNotFound:
+    # package is not installed
+    pass
+
 import os
 
 from .las import LASFile, JSONEncoder
@@ -12,7 +20,7 @@ else:
     from .excel import ExcelConverter
 
 
-__version__ = '0.25.0'
+
 
 
 def read(file_ref, **kwargs):

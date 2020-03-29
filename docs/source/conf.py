@@ -29,8 +29,9 @@ project = u"lasio"
 copyright = u"2013-2020, Kent Inverarity and contributors"
 author = u"Kent Inverarity and contributors"
 
-version = "0.25"
-release = "0.25.0"
+from pkg_resources import get_distribution
+release = get_distribution('myproject').version
+version = '.'.join(release.split('.')[:2])
 
 language = None
 
