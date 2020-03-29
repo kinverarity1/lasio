@@ -6,7 +6,7 @@ python:
     - "3.7"
     - "3.8"
 install:
-  - pip install -e .
+  - pip install --editable ".[all]"
   - pip install pytest>=3.6 pytest-cov coverage pathlib
 script:
     - pytest
