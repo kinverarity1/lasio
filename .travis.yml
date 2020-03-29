@@ -8,6 +8,7 @@ python:
 install:
   - pip install --editable ".[all]"
   - pip install pytest>=3.6 pytest-cov coverage pathlib
+  - python -c "import lasio; print(lasio.__version__)"
 script:
     - pytest
 notifications:
