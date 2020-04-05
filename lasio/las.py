@@ -597,7 +597,15 @@ class LASFile(object):
 
         """
         s = SectionItems()
-        for section in self.sections:
+        for section_name, section in self.sections.items():
+            if not hasattr(section, 'assign_duplicate_suffixes'):
+                logger.warning( """
+WARNING: Section skipped: It doesn't have an assign_duplicate_suffixes method.
+    SectionName: %s
+    SectionContent:
+        %s\n""" % (section_name, section)
+                )
+                continue
             for item in section:
                 s.append(item)
         return s
