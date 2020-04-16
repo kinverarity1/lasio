@@ -589,32 +589,6 @@ class LASFile(object):
         self.sections["Other"] = section
 
     @property
-    def metadata(self):
-        """All header information joined together.
-
-        Returns:
-            :class:`lasio.SectionItems` object.
-
-        """
-        s = SectionItems()
-        for section_name, section in self.sections.items():
-            if not hasattr(section, 'assign_duplicate_suffixes'):
-                logger.warning( """
-WARNING: Section skipped: It doesn't have an assign_duplicate_suffixes method.
-    SectionName: %s
-    SectionContent:
-        %s\n""" % (section_name, section)
-                )
-                continue
-            for item in section:
-                s.append(item)
-        return s
-
-    @metadata.setter
-    def metadata(self, value):
-        raise NotImplementedError("Set values in the section directly")
-
-    @property
     def header(self):
         """All header information
 
