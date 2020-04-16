@@ -589,24 +589,6 @@ class LASFile(object):
         self.sections["Other"] = section
 
     @property
-    def metadata(self):
-        """All header information joined together.
-
-        Returns:
-            :class:`lasio.SectionItems` object.
-
-        """
-        s = SectionItems()
-        for section in self.sections:
-            for item in section:
-                s.append(item)
-        return s
-
-    @metadata.setter
-    def metadata(self, value):
-        raise NotImplementedError("Set values in the section directly")
-
-    @property
     def header(self):
         """All header information
 
