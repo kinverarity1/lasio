@@ -1,9 +1,17 @@
+import subprocess
 from pkg_resources import get_distribution, DistributionNotFound
 
 try:
     __version__ = get_distribution(__name__).version
 except DistributionNotFound:
-    # package is not installed
+    __version__ = "A Dev version: probably in a git repo."
+    tmpbytes = subprocess.check_output(
+        ["git", "log", "-1", "--pretty=tformat:Commit %h"]
+    ).strip()
+
+    tmpstr = "".join( chr(x) for x in tmpbytes)
+    if tmpstr.startswith("Commit"):
+       __version__ = "Dev version: {}".format(tmpstr)
     pass
 
 import os
