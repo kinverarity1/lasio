@@ -1,17 +1,22 @@
-import subprocess
+import subprocess, re
 from pkg_resources import get_distribution, DistributionNotFound
 
 try:
     __version__ = get_distribution(__name__).version
 except DistributionNotFound:
-    __version__ = "A Dev version: probably in a git repo."
-    tmpbytes = subprocess.check_output(
-        ["git", "log", "-1", "--pretty=tformat:Commit %h"]
+    # default version
+    __version__ = "0.0.0.unknown.version"
+
+    semver_regex = re.compile('^\d+\.\d+\.\d+')
+
+    # python setup.py --version
+    tmpstr = subprocess.check_output(
+        ["python", "setup.py", "--version"],
+        encoding='utf-8'
     ).strip()
 
-    tmpstr = "".join( chr(x) for x in tmpbytes)
-    if tmpstr.startswith("Commit"):
-       __version__ = "Dev version: {}".format(tmpstr)
+    if semver_regex.match(tmpstr):
+       __version__ = tmpstr
     pass
 
 import os

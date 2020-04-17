@@ -15,7 +15,7 @@ setup(
     author="Kent Inverarity",
     author_email="kinverarity@hotmail.com",
     license="MIT",
-    classifiers=(
+    classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Console",
         "Intended Audience :: Customer Service",
@@ -38,7 +38,7 @@ setup(
         "Topic :: Scientific/Engineering",
         "Topic :: System :: Filesystems",
         "Topic :: Scientific/Engineering :: Information Analysis",
-    ),
+    ],
     keywords="science geophysics io",
     packages=("lasio",),
     install_requires=("numpy",),
