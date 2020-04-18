@@ -1,29 +1,12 @@
-import subprocess, re
-from pkg_resources import get_distribution, DistributionNotFound
-
-try:
-    __version__ = get_distribution(__name__).version
-except DistributionNotFound:
-    # default version
-    __version__ = "0.0.0.unknown.version"
-
-    semver_regex = re.compile('^\d+\.\d+\.\d+')
-
-    # python setup.py --version
-    tmpstr = subprocess.check_output(
-        ["python", "setup.py", "--version"],
-        encoding='utf-8'
-    ).strip()
-
-    if semver_regex.match(tmpstr):
-       __version__ = tmpstr
-    pass
 
 import os
 
+from .las_version import get_version
 from .las import LASFile, JSONEncoder
 from .las_items import CurveItem, HeaderItem, SectionItems
 from .reader import open_file
+
+__version__ = get_version()
 
 try:
     import openpyxl
