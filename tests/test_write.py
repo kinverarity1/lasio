@@ -491,3 +491,150 @@ between 625 metres and 615 metres to be invalid.
 ~ASCII -----------------------------------------------------
  1670.00000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
 '''
+
+
+def test_write_12_to_20_ver_in_mem_is_12():
+    las = read(egfn("1.2/sample.las"))
+    s = StringIO()
+    las.write(s, version=2)
+    s.seek(0)
+    assert las.version.VERS.value == 1.2
+    assert s.read() == '''~Version ---------------------------------------------------
+VERS. 2.0 : CWLS log ASCII Standard -VERSION 2.0
+WRAP.  NO : ONE LINE PER DEPTH STEP
+~Well ------------------------------------------------------
+STRT.M                  1670.0 : 
+STOP.M                 1669.75 : 
+STEP.M                  -0.125 : 
+NULL.                  -999.25 : 
+COMP.   # ANY OIL COMPANY LTD. : COMPANY
+WELL.   ANY ET AL OIL WELL #12 : WELL
+FLD .                     EDAM : FIELD
+LOC .           A9-16-49-20W3M : LOCATION
+PROV.             SASKATCHEWAN : PROVINCE
+SRVC. ANY LOGGING COMPANY LTD. : SERVICE COMPANY
+DATE.              25-DEC-1988 : LOG DATE
+UWI .         100091604920W300 : UNIQUE WELL ID
+~Curve Information -----------------------------------------
+DEPT.M     : 1  DEPTH
+DT  .US/M  : 2  SONIC TRANSIT TIME
+RHOB.K/M3  : 3  BULK DENSITY
+NPHI.V/V   : 4   NEUTRON POROSITY
+SFLU.OHMM  : 5  RXO RESISTIVITY
+SFLA.OHMM  : 6  SHALLOW RESISTIVITY
+ILM .OHMM  : 7  MEDIUM RESISTIVITY
+ILD .OHMM  : 8  DEEP RESISTIVITY
+~Params ----------------------------------------------------
+BHT .DEGC   35.5 : BOTTOM HOLE TEMPERATURE
+BS  .MM    200.0 : BIT SIZE
+FD  .K/M3 1000.0 : FLUID DENSITY
+MATR.        0.0 : NEUTRON MATRIX(0=LIME,1=SAND,2=DOLO)
+MDEN.     2710.0 : LOGGING MATRIX DENSITY
+RMF .OHMM  0.216 : MUD FILTRATE RESISTIVITY
+DFD .K/M3 1525.0 : DRILL FLUID DENSITY
+~Other -----------------------------------------------------
+Note: The logging tools became stuck at 625 meters causing the data
+between 625 meters and 615 meters to be invalid.
+~ASCII -----------------------------------------------------
+ 1670.00000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+ 1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+ 1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+'''
+
+def test_write_12_to_20_ver():
+    las = read(egfn("1.2/sample.las"))
+    las.version.VERS.value = 2
+    s = StringIO()
+    las.write(s)
+    s.seek(0)
+    assert las.version.VERS.value != 1.2
+    assert s.read() == '''~Version ---------------------------------------------------
+VERS. 2.0 : CWLS log ASCII Standard -VERSION 2.0
+WRAP.  NO : ONE LINE PER DEPTH STEP
+~Well ------------------------------------------------------
+STRT.M                  1670.0 : 
+STOP.M                 1669.75 : 
+STEP.M                  -0.125 : 
+NULL.                  -999.25 : 
+COMP.   # ANY OIL COMPANY LTD. : COMPANY
+WELL.   ANY ET AL OIL WELL #12 : WELL
+FLD .                     EDAM : FIELD
+LOC .           A9-16-49-20W3M : LOCATION
+PROV.             SASKATCHEWAN : PROVINCE
+SRVC. ANY LOGGING COMPANY LTD. : SERVICE COMPANY
+DATE.              25-DEC-1988 : LOG DATE
+UWI .         100091604920W300 : UNIQUE WELL ID
+~Curve Information -----------------------------------------
+DEPT.M     : 1  DEPTH
+DT  .US/M  : 2  SONIC TRANSIT TIME
+RHOB.K/M3  : 3  BULK DENSITY
+NPHI.V/V   : 4   NEUTRON POROSITY
+SFLU.OHMM  : 5  RXO RESISTIVITY
+SFLA.OHMM  : 6  SHALLOW RESISTIVITY
+ILM .OHMM  : 7  MEDIUM RESISTIVITY
+ILD .OHMM  : 8  DEEP RESISTIVITY
+~Params ----------------------------------------------------
+BHT .DEGC   35.5 : BOTTOM HOLE TEMPERATURE
+BS  .MM    200.0 : BIT SIZE
+FD  .K/M3 1000.0 : FLUID DENSITY
+MATR.        0.0 : NEUTRON MATRIX(0=LIME,1=SAND,2=DOLO)
+MDEN.     2710.0 : LOGGING MATRIX DENSITY
+RMF .OHMM  0.216 : MUD FILTRATE RESISTIVITY
+DFD .K/M3 1525.0 : DRILL FLUID DENSITY
+~Other -----------------------------------------------------
+Note: The logging tools became stuck at 625 meters causing the data
+between 625 meters and 615 meters to be invalid.
+~ASCII -----------------------------------------------------
+ 1670.00000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+ 1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+ 1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+'''
+
+
+def test_write_20_to_12_ver_in_mem_is_20():
+    las = read(egfn("2.0/sample_2.0.las"))
+    s = StringIO()
+    las.write(s, version=1.2)
+    s.seek(0)
+    assert s.read() == '''~Version ---------------------------------------------------
+VERS. 1.2 : CWLS LOG ASCII STANDARD - VERSION 1.2
+WRAP.  NO : ONE LINE PER DEPTH STEP
+~Well ------------------------------------------------------
+STRT.M         1670.0 : START DEPTH
+STOP.M        1669.75 : STOP DEPTH
+STEP.M         -0.125 : STEP
+NULL.         -999.25 : NULL VALUE
+COMP.         COMPANY : ANY OIL COMPANY INC.
+WELL.            WELL : AAAAA_2
+FLD .           FIELD : WILDCAT
+LOC .        LOCATION : 12-34-12-34W5M
+PROV.        PROVINCE : ALBERTA
+SRVC. SERVICE COMPANY : ANY LOGGING COMPANY INC.
+DATE.        LOG DATE : 13-DEC-86
+UWI .  UNIQUE WELL ID : 100123401234W500
+~Curve Information -----------------------------------------
+DEPT.M                 : 1  DEPTH
+DT  .US/M 60 520 32 00 : 2  SONIC TRANSIT TIME
+RHOB.K/M3 45 350 01 00 : 3  BULK DENSITY
+NPHI.V/V  42 890 00 00 : 4  NEUTRON POROSITY
+SFLU.OHMM 07 220 04 00 : 5  SHALLOW RESISTIVITY
+SFLA.OHMM 07 222 01 00 : 6  SHALLOW RESISTIVITY
+ILM .OHMM 07 120 44 00 : 7  MEDIUM RESISTIVITY
+ILD .OHMM 07 120 46 00 : 8  DEEP RESISTIVITY
+~Params ----------------------------------------------------
+MUD .   GEL CHEM : MUD TYPE
+BHT .DEGC   35.5 : BOTTOM HOLE TEMPERATURE
+BS  .MM    200.0 : BIT SIZE
+FD  .K/M3 1000.0 : FLUID DENSITY
+MATR.       SAND : NEUTRON MATRIX
+MDEN.     2710.0 : LOGGING MATRIX DENSITY
+RMF .OHMM  0.216 : MUD FILTRATE RESISTIVITY
+DFD .K/M3 1525.0 : DRILL FLUID DENSITY
+~Other -----------------------------------------------------
+Note: The logging tools became stuck at 625 metres causing the data
+between 625 metres and 615 metres to be invalid.
+~ASCII -----------------------------------------------------
+ 1670.00000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+ 1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+ 1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+'''

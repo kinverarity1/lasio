@@ -3,6 +3,8 @@ import textwrap
 
 import numpy as np
 
+from copy import deepcopy
+
 from .las_items import HeaderItem, CurveItem, SectionItems, OrderedDict
 from . import defaults
 from . import exceptions
@@ -57,6 +59,11 @@ def write(
     reflect the ~Data section's units and the actual first, last, and interval
     values.
 
+    However, passing a version to this write() function only changes the version
+    of the object written to. Example: las.write(myfile, version=2).
+    Lasio's internal-las-object version will remain separate and defined by
+    las.version.VERS.value
+
     You should avoid calling this function directly - instead use the
     :meth:`lasio.LASFile.write` method.
 
@@ -73,15 +80,17 @@ def write(
         las.version["WRAP"] = HeaderItem("WRAP", "", "NO", "One line per depth step")
     lines = []
 
+    version_section_to_write = deepcopy(las.version)
+    
     assert version in (1.2, 2, None)
     if version is None:
         version = las.version["VERS"].value
     if version == 1.2:
-        las.version["VERS"] = HeaderItem(
+        version_section_to_write.VERS = HeaderItem(
             "VERS", "", 1.2, "CWLS LOG ASCII STANDARD - VERSION 1.2"
         )
     elif version == 2:
-        las.version["VERS"] = HeaderItem(
+        version_section_to_write.VERS = HeaderItem(
             "VERS", "", 2.0, "CWLS log ASCII Standard -VERSION 2.0"
         )
 
@@ -113,11 +122,11 @@ def write(
     # get_formatter_function ( ** get_section_widths )
 
     # ~Version
-    logger.debug("LASFile.write Version section")
+    logger.debug("LASFile.write Version section, Version: %s" % (version))
     lines.append("~Version ".ljust(header_width, "-"))
     order_func = get_section_order_function("Version", version)
-    section_widths = get_section_widths("Version", las.version, version, order_func)
-    for header_item in las.version.values():
+    section_widths = get_section_widths("Version", version_section_to_write, version, order_func)
+    for header_item in version_section_to_write.values():
         mnemonic = header_item.original_mnemonic
         # logger.debug('LASFile.write ' + str(header_item))
         order = order_func(mnemonic)
@@ -226,7 +235,7 @@ def write(
             lines = [depth_slice]
 
         for line in lines:
-            if las.version["VERS"].value == 1.2 and len(line) > 255:
+            if version_section_to_write.VERS == 1.2 and len(line) > 255:
                 logger.warning(
                     "[v1.2] line #{} has {} chars (>256)".format(
                         line_counter + 1, len(line)
