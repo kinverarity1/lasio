@@ -42,7 +42,10 @@ setup(
     keywords="science geophysics io",
     packages=("lasio",),
     install_requires=("numpy",),
-    extras_require={"all": ("pandas", "cchardet", "openpyxl", "argparse")},
+    extras_require={
+        "all": ("pandas", "cchardet", "openpyxl", "argparse"),
+        "test": ("pytest>=3.6", "pytest-cov", "coverage", "codecov", "pathlib")
+    },
     tests_require=("pytest>=3.6", "pytest-cov", "coverage", "codecov", "pathlib"),
     entry_points={
         "console_scripts": (
