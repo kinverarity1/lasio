@@ -38,7 +38,7 @@ def _get_vcs_version():
             # ["python", "setup.py", "--version"],
             ["git", "describe", "--tags", "--match", "v*"],
             stderr=subprocess.STDOUT,
-            encoding='utf-8'
+            text=True
         ).strip()
     except subprocess.CalledProcessError:
         pass
