@@ -34,12 +34,14 @@ def _get_vcs_version():
     try:    
         # https://git-scm.com/docs/git-describe
         # git describe --tags --match 'v*'
-        tmpstr = subprocess.check_output(
+        tmpbytes = subprocess.check_output(
             # ["python", "setup.py", "--version"],
             ["git", "describe", "--tags", "--match", "v*"],
             stderr=subprocess.STDOUT,
-            text=True
         ).strip()
+
+        # Convert byte string to text string
+        tmpstr = "".join( chr(x) for x in tmpbytes)
     except subprocess.CalledProcessError:
         pass
 
