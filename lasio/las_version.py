@@ -48,7 +48,7 @@ def _get_vcs_version():
     try:
         tmpstr = "".join( chr(x) for x in tmpbytes)
     except TypeError as e:
-        print("Error: {}\n".format(e.msg))
+        print("Error: {}\n".format(e))
 
     if semver_regex.match(tmpstr):
         tmpstr = tmpstr[1:]
