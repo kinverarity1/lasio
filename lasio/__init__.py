@@ -1,12 +1,12 @@
 
 import os
 
-from .las_version import get_version
+from .las_version import version
 from .las import LASFile, JSONEncoder
 from .las_items import CurveItem, HeaderItem, SectionItems
 from .reader import open_file
 
-__version__ = get_version()
+__version__ = version()
 
 try:
     import openpyxl

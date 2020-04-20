@@ -4,7 +4,7 @@ from datetime import datetime
 
 ver_date = datetime.now().strftime("d%Y%m%d")
 
-def get_version():
+def version():
     las_version = ''
 
     # Test for distribution version
