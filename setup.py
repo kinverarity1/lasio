@@ -3,6 +3,10 @@
 from setuptools import setup
 import os
 
+EXTRA_REQS = ("pandas", "cchardet", "openpyxl", "argparse")
+TEST_REQS = (
+    "pytest>=3.6", "pytest-cov", "coverage", "codecov", "pathlib"
+)
 
 setup(
     name="lasio",
@@ -15,7 +19,7 @@ setup(
     author="Kent Inverarity",
     author_email="kinverarity@hotmail.com",
     license="MIT",
-    classifiers=(
+    classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Console",
         "Intended Audience :: Customer Service",
@@ -27,7 +31,6 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.2",
@@ -35,15 +38,20 @@ setup(
         "Programming Language :: Python :: 3.4",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Topic :: Scientific/Engineering",
         "Topic :: System :: Filesystems",
         "Topic :: Scientific/Engineering :: Information Analysis",
-    ),
+    ],
     keywords="science geophysics io",
     packages=("lasio",),
     install_requires=("numpy",),
-    extras_require={"all": ("pandas", "cchardet", "openpyxl", "argparse")},
-    tests_require=("pytest>=3.6", "pytest-cov", "coverage", "codecov", "pathlib"),
+    extras_require={
+        "all": EXTRA_REQS,
+        "las_test_reqs": ( EXTRA_REQS, TEST_REQS)
+    },
+    tests_require= (TEST_REQS),
     entry_points={
         "console_scripts": (
             "las2excel = lasio.excel:main",
