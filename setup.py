@@ -49,7 +49,7 @@ setup(
     install_requires=("numpy",),
     extras_require={
         "all": EXTRA_REQS,
-        "las_test_reqs": ( EXTRA_REQS, TEST_REQS)
+        "test": ( EXTRA_REQS, TEST_REQS)
     },
     tests_require= (TEST_REQS),
     entry_points={
