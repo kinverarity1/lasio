@@ -414,14 +414,15 @@ def read_data_section_iterative(file_obj, regexp_subs, value_null_subs, remove_l
         for line in f:
             if remove_line_filter is not None:
                 if remove_line_filter(line):
-                    pass
-            for pattern, sub_str in regexp_subs:
-                line = re.sub(pattern, sub_str, line)
-            for item in line.split():
-                try:
-                    yield np.float64(item)
-                except ValueError:
-                    yield item
+                    continue
+                else:
+                    for pattern, sub_str in regexp_subs:
+                        line = re.sub(pattern, sub_str, line)
+                    for item in line.split():
+                        try:
+                            yield np.float64(item)
+                        except ValueError:
+                            yield item
 
     array = np.array([i for i in items(file_obj)])
     for value in value_null_subs:
