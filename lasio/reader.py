@@ -275,8 +275,12 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
         null_subs (bool): True will substitute ``numpy.nan`` for invalid values
         ignore_data (bool): if True, do not read in the numerical data in the
             ~ASCII section
-        remove_line_filter (func): a function which accepts a string (a line)
+        remove_line_filter (str, func): string or function for removing/ignoring lines
+            in the data section e.g. a function which accepts a string (a line)
             and returns either True (do not parse the line) or False (parse the line).
+            If this is a string it will be converted to a function which rejects all
+            lines starting with that value e.g. ``"#"`` will be converted to
+            ``lambda line: line.strip().startswith("#")``.
 
     Returns:
         OrderedDict
@@ -306,6 +310,8 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
     sect_line_nos = []
     sect_title_line = None
     section_exists = False
+    if isinstance(remove_line_filter, str):
+        remove_line_filter = lambda line: line.strip().startswith(remove_line_filter)
 
     for i, line in enumerate(file_obj):
         line = line.strip()
