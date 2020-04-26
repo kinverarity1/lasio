@@ -311,7 +311,8 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
     sect_title_line = None
     section_exists = False
     if isinstance(remove_line_filter, str):
-        remove_line_filter = lambda line: line.strip().startswith(remove_line_filter)
+        value = str(remove_line_filter)
+        remove_line_filter = lambda line: line.strip().startswith(value)
 
     for i, line in enumerate(file_obj):
         line = line.strip()
