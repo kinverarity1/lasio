@@ -265,7 +265,7 @@ def get_encoding(auto, raw):
     return result["encoding"]
 
 
-def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False):
+def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False, remove_line_filter=None):
     """Read file contents into memory.
 
     Arguments:
@@ -275,6 +275,8 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
         null_subs (bool): True will substitute ``numpy.nan`` for invalid values
         ignore_data (bool): if True, do not read in the numerical data in the
             ~ASCII section
+        remove_line_filter (func): a function which accepts a string (a line)
+            and returns either True (do not parse the line) or False (parse the line).
 
     Returns:
         OrderedDict
@@ -323,7 +325,7 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
             if not ignore_data:
                 try:
                     data = read_data_section_iterative(
-                        file_obj, regexp_subs, value_null_subs
+                        file_obj, regexp_subs, value_null_subs, remove_line_filter=remove_line_filter
                     )
                 except KeyboardInterrupt:
                     raise
@@ -381,7 +383,7 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
     return sections
 
 
-def read_data_section_iterative(file_obj, regexp_subs, value_null_subs):
+def read_data_section_iterative(file_obj, regexp_subs, value_null_subs, remove_line_filter=None):
     """Read data section into memory.
 
     Arguments:
@@ -393,6 +395,8 @@ def read_data_section_iterative(file_obj, regexp_subs, value_null_subs):
             data section. See defaults.py READ_SUBS and NULL_SUBS for examples.
         value_null_subs (list): list of numerical values to be replaced by
             numpy.nan values.
+        remove_line_filter (func): a function which accepts a string (a line)
+            and returns either True (do not parse the line) or False (parse the line).
 
     Returns:
         A 1-D numpy ndarray.
@@ -401,6 +405,9 @@ def read_data_section_iterative(file_obj, regexp_subs, value_null_subs):
 
     def items(f):
         for line in f:
+            if remove_line_filter is not None:
+                if remove_line_filter(line):
+                    pass
             for pattern, sub_str in regexp_subs:
                 line = re.sub(pattern, sub_str, line)
             for item in line.split():
