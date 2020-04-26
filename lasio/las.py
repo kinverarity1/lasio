@@ -92,6 +92,7 @@ class LASFile(object):
         ignore_header_errors=False,
         mnemonic_case="upper",
         index_unit=None,
+        remove_line_filter="#"
         **kwargs
     ):
         """Read a LAS file.
@@ -111,6 +112,12 @@ class LASFile(object):
                                  'upper': convert all HeaderItem mnemonics to uppercase
                                  'lower': convert all HeaderItem mnemonics to lowercase
             index_unit (str): Optionally force-set the index curve's unit to "m" or "ft"
+            remove_line_filter (str, func): string or function for removing/ignoring lines
+                in the data section e.g. a function which accepts a string (a line)
+                and returns either True (do not parse the line) or False (parse the line).
+                If this is a string it will be converted to a function which rejects all
+                lines starting with that value e.g. ``"#"`` will be converted to
+                ``lambda line: line.strip().startswith("#")``.
 
         See :func:`lasio.reader.open_with_codecs` for additional keyword
         arguments which help to manage issues relate to character encodings.
@@ -125,7 +132,7 @@ class LASFile(object):
 
         try:
             self.raw_sections = reader.read_file_contents(
-                file_obj, regexp_subs, value_null_subs, ignore_data=ignore_data
+                file_obj, regexp_subs, value_null_subs, ignore_data=ignore_data, remove_line_filter="#"
             )
         finally:
             if hasattr(file_obj, "close"):
