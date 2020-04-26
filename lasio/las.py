@@ -92,7 +92,7 @@ class LASFile(object):
         ignore_header_errors=False,
         mnemonic_case="upper",
         index_unit=None,
-        remove_line_filter="#"
+        remove_line_filter="#",
         **kwargs
     ):
         """Read a LAS file.
