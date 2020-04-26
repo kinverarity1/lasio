@@ -415,3 +415,7 @@ def test_issue_201_non_delimiter_colon_end():
     assert las.params["TIML"].unit == "hh:mm"
     assert las.params["TIML"].value == "23:15 23-JAN-2001"
     assert las.params["TIML"].descr == "Time Logger At Bottom:"
+
+def test_skip_comments_in_data_section():
+    l = lasio.read(egfn("skip_data_section_comments.las"))
+    assert (l.curves[0].data == [0.3, 0.4, 0.5, 0.6]).all()
