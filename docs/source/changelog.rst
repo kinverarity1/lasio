@@ -1,6 +1,13 @@
 List of changes
 ===============================
 
+Version 0.25.1 (1 May 2020)
+-------------------------------------------
+- Shift to setuptools_scm (#311)
+- Fix #321 (EOF character causes error on read)
+- Fix #182 (remove side-effect LASFile.write causing LASFile.version.VERS to change)
+- Fix #310 (remove LASFile.metadata which was not working)
+
 Version 0.25 (28 March 2020)
 --------------------------------------------
 - Add stack_curves() method to allow joining a set of curves into a 2D array (issue #284, PR #293)
