@@ -212,6 +212,45 @@ And now we need to add a new mnemonic.
 
 Bingo.
 
+What if we want to delete or remove an item? You can delete items the same way you
+would remove an item from a dictionary. Let's remove the item we just added (DRILL):
+
+.. code-block:: python
+
+    >>> del las.well["DRILL"]
+    
+There are methods intended for removing curves. Say you want to remove the PR curve:
+
+.. code-block:: python
+
+    >>> las.delete_curve("PR")
+    [CurveItem(mnemonic=DEPT, unit=M, value=, descr=DEPTH, original_mnemonic=DEPT, data.shape=(121,)),
+     CurveItem(mnemonic=CALI, unit=MM, value=, descr=CALI, original_mnemonic=CALI, data.shape=(121,)),
+     CurveItem(mnemonic=DFAR, unit=G/CM3, value=, descr=DFAR, original_mnemonic=DFAR, data.shape=(121,)),
+     CurveItem(mnemonic=DNEAR, unit=G/CM3, value=, descr=DNEAR, original_mnemonic=DNEAR, data.shape=(121,)),
+     CurveItem(mnemonic=GAMN, unit=GAPI, value=, descr=GAMN, original_mnemonic=GAMN, data.shape=(121,)),
+     CurveItem(mnemonic=NEUT, unit=CPS, value=, descr=NEUT, original_mnemonic=NEUT, data.shape=(121,)),
+     CurveItem(mnemonic=SP, unit=MV, value=, descr=SP, original_mnemonic=SP, data.shape=(121,)),
+     CurveItem(mnemonic=COND, unit=MS/M, value=, descr=COND, original_mnemonic=COND, data.shape=(121,))]
+
+.. warning:: Common mistake!
+
+A common job is to iterate through the curves and remove all but a few that you are
+interested in. When doing this, be careful to iterate over a **copy** of the curves
+section:
+
+.. code-block:: python
+
+    >>> keep_curves = ['DEPT', 'DFAR', 'DNEAR']
+    >>> for curve in las.curves[:]:
+    ...     if curve.mnemonic not in keep_curves:
+    ...        las.delete_curve(curve.mnemonic)
+    ... 
+    >>> las.curves
+    [CurveItem(mnemonic=DEPT, unit=M, value=, descr=DEPTH, original_mnemonic=DEPT, data.shape=(121,)),
+     CurveItem(mnemonic=DFAR, unit=G/CM3, value=, descr=DFAR, original_mnemonic=DFAR, data.shape=(121,)),
+     CurveItem(mnemonic=DNEAR, unit=G/CM3, value=, descr=DNEAR, original_mnemonic=DNEAR, data.shape=(121,))]
+    
 Handling errors
 ---------------
 
