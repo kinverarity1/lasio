@@ -415,3 +415,12 @@ def test_issue_201_non_delimiter_colon_end():
     assert las.params["TIML"].unit == "hh:mm"
     assert las.params["TIML"].value == "23:15 23-JAN-2001"
     assert las.params["TIML"].descr == "Time Logger At Bottom:"
+
+def test_header_only_file():
+    las = lasio.read(egfn("header_only.py"))
+    assert las.well.STRT.value == 9000.0
+    assert las.well.STOP.value == 10000.0
+    assert las.curves[0].mnemonic == "DEPT"
+    assert las.curves[0].unit == "ft"
+    assert las.curves[12].mnemonic == "WPHI_FIT[1]"
+    assert len(las.curves) == 21
