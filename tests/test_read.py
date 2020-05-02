@@ -417,7 +417,7 @@ def test_issue_201_non_delimiter_colon_end():
     assert las.params["TIML"].descr == "Time Logger At Bottom:"
 
 def test_header_only_file():
-    las = lasio.read(egfn("header_only.py"))
+    las = lasio.read(egfn("header_only.las"))
     assert las.well.STRT.value == 9000.0
     assert las.well.STOP.value == 10000.0
     assert las.curves[0].mnemonic == "DEPT"
