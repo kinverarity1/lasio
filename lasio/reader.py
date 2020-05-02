@@ -314,13 +314,18 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
             # HARD CODED FOR VERSION 1.2 and 2.0; needs review for 3.0
             # We have finished looking at the metadata and need
             # to start reading numerical data.
+
             if not sect_title_line is None:
-                sections[sect_title_line] = {
-                    "section_type": "header",
-                    "title": sect_title_line,
-                    "lines": sect_lines,
-                    "line_nos": sect_line_nos,
-                }
+               sections[sect_title_line] = {
+                   "section_type": "header",
+                   "title": sect_title_line,
+                   "lines": sect_lines,
+                   "line_nos": sect_line_nos,
+               }
+               sect_lines = []
+               sect_line_nos = []
+        
+
             if not ignore_data:
                 try:
                     data = read_data_section_iterative(
@@ -340,19 +345,22 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
                     "array": data,
                 }
                 logger.debug('Data section ["array"].shape = {}'.format(data.shape))
+
+            section_exists = False
             break
 
         elif line.startswith("~"):
             if section_exists:
                 # We have ended a section and need to start the next
-                sections[sect_title_line] = {
-                    "section_type": "header",
-                    "title": sect_title_line,
-                    "lines": sect_lines,
-                    "line_nos": sect_line_nos,
-                }
-                sect_lines = []
-                sect_line_nos = []
+               if not sect_title_line is None:
+                   sections[sect_title_line] = {
+                       "section_type": "header",
+                       "title": sect_title_line,
+                       "lines": sect_lines,
+                       "line_nos": sect_line_nos,
+                   }
+                   sect_lines = []
+                   sect_line_nos = []
             else:
                 # We are entering into a section for the first time
                 section_exists = True
@@ -364,6 +372,17 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
             if not line.startswith("#"):  # ignore commented-out lines.. for now.
                 sect_lines.append(line)
                 sect_line_nos.append(i + 1)
+
+    # If the file had header data only, and is truncated before the ~A section
+    # we need to save the last header section.
+    if section_exists and not sect_title_line is None:
+        sections[sect_title_line] = {
+            "section_type": "header",
+            "title": sect_title_line,
+            "lines": sect_lines,
+            "line_nos": sect_line_nos,
+        }
+
 
     # Find the number of columns in the data section(s). This is only
     # useful if WRAP = NO, but we do it for all since we don't yet know
