@@ -1,16 +1,12 @@
-from pkg_resources import get_distribution, DistributionNotFound
-
-try:
-    __version__ = get_distribution(__name__).version
-except DistributionNotFound:
-    # package is not installed
-    pass
 
 import os
 
+from .las_version import version
 from .las import LASFile, JSONEncoder
 from .las_items import CurveItem, HeaderItem, SectionItems
 from .reader import open_file
+
+__version__ = version()
 
 try:
     import openpyxl
