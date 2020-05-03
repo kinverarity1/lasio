@@ -90,6 +90,7 @@ class LASFile(object):
         read_policy="default",
         null_policy="strict",
         ignore_header_errors=False,
+        ignore_comments=("#",),
         mnemonic_case="upper",
         index_unit=None,
         **kwargs
@@ -107,6 +108,8 @@ class LASFile(object):
                 just the header metadata. False by default.
             ignore_header_errors (bool): ignore LASHeaderErrors (False by
                 default)
+            ignore_comments (tuple/str): ignore comments beginning with characters
+                e.g. ``("#", '"')``
             mnemonic_case (str): 'preserve': keep the case of HeaderItem mnemonics
                                  'upper': convert all HeaderItem mnemonics to uppercase
                                  'lower': convert all HeaderItem mnemonics to lowercase
@@ -122,154 +125,108 @@ class LASFile(object):
         try:
             file_obj, self.encoding = reader.open_file(file_ref, **kwargs)
 
-            logger.debug("Fetching substitutions for read_policy {} and null policy {}".format(read_policy, null_policy))
+            logger.debug(
+                "Fetching substitutions for read_policy {} and null policy {}".format(
+                    read_policy, null_policy
+                )
+            )
             regexp_subs, value_null_subs, version_NULL = reader.get_substitutions(
                 read_policy, null_policy
             )
 
-            logger.debug("Searching for sections... ")
+            provisional_version = 2.0
+            provisional_wrapped = True
+            provisional_null = None
+
             section_positions = reader.find_sections_in_file(file_obj)
-            logger.debug("found {}.".format(len(section_positions)))
+            logger.debug("Found {} sections".format(len(section_positions)))
+            if len(section_positions) == 0:
+                raise KeyError("No ~ sections found. Is this a LAS file?")
 
-            for k, ln, section_title in section_positions:
-                logger.debug("Parsing section {title} at line {ln} ({k} bytes)".format(title=section_title, ln=ln, k=k))
+            data_section_indices = []
+            for i, (k, first_line, last_line, section_title) in enumerate(section_positions):
                 section_type = reader.determine_section_type(section_title)
-                logger.debug("Section type {}".format(section_type))
+                logger.debug(
+                    "Parsing {typ} section at lines {first_line}-{last_line} ({k} bytes) {title}".format(
+                        typ=section_type,
+                        title=section_title,
+                        first_line=first_line + 1,
+                        last_line=last_line + 1,
+                        k=k,
+                    )
+                )
+
+                # Read traditional LAS header item section
+                if section_type == "Header items":
+                    file_obj.seek(k)
+                    sct_items = reader.parse_header_items_section(
+                        file_obj,
+                        line_nos=(first_line, last_line),
+                        version=provisional_version,
+                        ignore_header_errors=ignore_header_errors,
+                        mnemonic_case=mnemonic_case,
+                        ignore_comments=ignore_comments,
+                    )
+
+                    # Update provisional statuses
+                    if "VERS" in sct_items:
+                        provisional_version = sct_items.VERS.value
+                    if "WRAP" in sct_items:
+                        provisional_wrapped = sct_items.WRAP.value
+
+                    if section_title[1] == "V":
+                        self.sections["Version"] = sct_items
+                    elif section_title[1] == "W":
+                        self.sections["Well"] = sct_items
+                    elif section_title[1] == "C":
+                        self.sections["Curves"] = sct_items
+                    elif section_title[1] == "P":
+                        self.sections["Parameter"] = sct_items
+                    else:
+                        self.sections[section_title[1:]] = sct_items
+
+                # Read free-text LAS header section
+                elif section_type == "Header (other)":
+                    file_obj.seek(k)
+                    line_no = first_line
+                    contents = []
+                    for line in file_obj:
+                        line_no += 1
+                        contents.append(line.strip("\n"))
+                        if line_no == last_line:
+                            break
+                    sct_contents = "\n".join(contents)
+
+                    if section_title[1] == "O":
+                        self.sections["Other"] = sct_contents
+                    else:
+                        self.sections[section_title[1:]] = sct_contents
+
+                elif section_type == "Data":
+                    logger.debug("Storing reference and returning later...")
+                    data_section_indices.append(i)
+
+            if not ignore_data:
+                for k, first_line, last_line, section_title in [section_positions[i] for i in data_section_indices]:
+                    section_type = reader.determine_section_type(section_title)
+                    logger.debug("Reading data section {}".format(section_title))
+
+
         finally:
             if hasattr(file_obj, "close"):
                 file_obj.close()
 
-        try:
-            self.raw_sections = reader.read_file_contents(
-                file_obj, regexp_subs, value_null_subs, ignore_data=ignore_data
-            )
-        finally:
-            if hasattr(file_obj, "close"):
-                file_obj.close()
 
-        if len(self.raw_sections) == 0:
-            raise KeyError("No ~ sections found. Is this a LAS file?")
+        # TODO: reimplement these!
 
-        def add_section(pattern, name, **sect_kws):
-            raw_section = self.match_raw_section(pattern)
-            drop = []
-            if raw_section:
-                self.sections[name] = reader.parse_header_section(
-                    raw_section, **sect_kws
-                )
-                drop.append(raw_section["title"])
-            else:
-                logger.warning(
-                    "Header section %s regexp=%s was not found." % (name, pattern)
-                )
-            for key in drop:
-                self.raw_sections.pop(key)
+        ###### logger.warning("No data section (regexp='~A') found")
 
-        add_section(
-            "~V",
-            "Version",
-            version=1.2,
-            ignore_header_errors=ignore_header_errors,
-            mnemonic_case=mnemonic_case,
-        )
+        ###### logger.warning("No numerical data found inside ~A section")
 
-        # Establish version and wrap values if possible.
 
-        try:
-            version = self.version["VERS"].value
-        except KeyError:
-            logger.warning("VERS item not found in the ~V section.")
-            version = None
-
-        try:
-            wrap = self.version["WRAP"].value
-        except KeyError:
-            logger.warning("WRAP item not found in the ~V section")
-            wrap = None
-
-        # Validate version.
-        #
-        # If VERS was missing and version = None, then the file will be read in
-        # as if version were 2.0. But there will be no VERS HeaderItem, meaning
-        # that las.write(..., version=None) will fail with a KeyError. But
-        # las.write(..., version=1.2) will work because a new VERS HeaderItem
-        # will be created.
-
-        try:
-            assert version in (1.2, 2, None)
-        except AssertionError:
-            if version < 2:
-                version = 1.2
-            else:
-                version = 2
-        else:
-            if version is None:
-                logger.info("Assuming that LAS VERS is 2.0")
-                version = 2
-
-        add_section(
-            "~W",
-            "Well",
-            version=version,
-            ignore_header_errors=ignore_header_errors,
-            mnemonic_case=mnemonic_case,
-        )
-
-        # Establish NULL value if possible.
-
-        try:
-            null = self.well["NULL"].value
-        except KeyError:
-            logger.warning("NULL item not found in the ~W section")
-            null = None
-
-        add_section(
-            "~C",
-            "Curves",
-            version=version,
-            ignore_header_errors=ignore_header_errors,
-            mnemonic_case=mnemonic_case,
-        )
-        add_section(
-            "~P",
-            "Parameter",
-            version=version,
-            ignore_header_errors=ignore_header_errors,
-            mnemonic_case=mnemonic_case,
-        )
-        s = self.match_raw_section("~O")
-
-        drop = []
-        if s:
-            self.sections["Other"] = "\n".join(s["lines"])
-            drop.append(s["title"])
-        for key in drop:
-            self.raw_sections.pop(key)
-
-        # Deal with nonstandard sections that some operators and/or
-        # service companies (eg IHS) insist on adding.
-        drop = []
-        for s in self.raw_sections.values():
-            if s["section_type"] == "header":
-                logger.warning("Found nonstandard LAS section: " + s["title"])
-                self.sections[s["title"][1:]] = "\n".join(s["lines"])
-                drop.append(s["title"])
-        for key in drop:
-            self.raw_sections.pop(key)
-
-        if not ignore_data:
-            drop = []
-            s = self.match_raw_section("~A")
-            s_valid = True
-            if s is None:
-                logger.warning("No data section (regexp='~A') found")
-                s_valid = False
-            try:
-                if s["ncols"] is None:
-                    logger.warning("No numerical data found inside ~A section")
-                    s_valid = False
-            except:
-                pass
+        #     self.raw_sections = reader.read_file_contents(
+        #         file_obj, regexp_subs, value_null_subs, ignore_data=ignore_data
+        #     )
 
             if s_valid:
                 arr = s["array"]

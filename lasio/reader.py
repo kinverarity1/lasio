@@ -269,20 +269,28 @@ def get_encoding(auto, raw):
 def find_sections_in_file(file_obj):
     """Find LAS sections in a file.
 
-    Returns: a list of tuples *(k, line_no, line)* - *k* is the position
-        in the *file_obj* in bytes, *line_no* is the line number (starting
+    Returns: a list of lists *(k, first_line_no, last_line_no, line]*.
+        *k* is the position in the *file_obj* in bytes,
+        *first_line_no* is the first line number of the section (starting
         from zero), and *line* is the contents of the section title/definition
         i.e. beginning with ``~`` but stripped of beginning or ending whitespace
         or line breaks.
 
     """
     k = 0
-    section_positions = []
+    starts = []
+    ends = []
     for i, line in enumerate(file_obj):
-        k += len(line)
         sline = line.strip().strip("\n")
         if sline.startswith("~"):
-            section_positions.append((k, i, sline))
+            starts.append((k, i, sline))
+            if len(starts) > 1:
+                ends.append(i - 1)
+        k += len(line)
+    ends.append(i)
+    section_positions = []
+    for j, (k, i, sline) in enumerate(starts):
+        section_positions.append((k, i, ends[j], sline))
     return section_positions
 
 
@@ -300,8 +308,10 @@ def determine_section_type(section_title):
     stitle = section_title.strip().strip("\n")
     if stitle[:2] == "~A":
         return "Data"
+    elif stitle[:2] == "~O":
+        return "Header (other)"
     else:
-        return "Header"
+        return "Header items"
 
 
 def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False):
@@ -539,14 +549,19 @@ def get_substitutions(read_policy, null_policy):
     return regexp_subs, numerical_subs, version_NULL
 
 
-def parse_header_section(
-    sectdict, version, ignore_header_errors=False, mnemonic_case="preserve"
+def parse_header_items_section(
+    file_obj,
+    line_nos,
+    version,
+    ignore_header_errors=False,
+    mnemonic_case="preserve",
+    ignore_comments=("#",),
 ):
     """Parse a header section dict into a SectionItems containing HeaderItems.
 
     Arguments:
-        sectdict (dict): object returned from
-            :func:`lasio.reader.read_file_contents`
+        file_obj: file-like object open for reading at the beginning of the section
+        line_nos (tuple): the first and last line no of the section to read
         version (float): either 1.2 or 2.0
 
     Keyword Arguments:
@@ -556,13 +571,18 @@ def parse_header_section(
         mnemonic_case (str): 'preserve': keep the case of HeaderItem mnemonics
                              'upper': convert all HeaderItem mnemonics to uppercase
                              'lower': convert all HeaderItem mnemonics to lowercase
+        ignore_comments (False, True, or list): ignore lines starting with these
+            characters; by default True as '#'.
 
     Returns:
         :class:`lasio.SectionItems`
 
     """
-    title = sectdict["title"]
-    assert len(sectdict["lines"]) == len(sectdict["line_nos"])
+    line_no = line_nos[0]
+    title = file_obj.readline()
+    title = title.strip("\n").strip()
+    logger.debug("Line {}: Section title parsed as '{}'".format(line_no + 1, title))
+
     parser = SectionParser(title, version=version)
 
     section = SectionItems()
@@ -570,30 +590,41 @@ def parse_header_section(
     if not mnemonic_case == "preserve":
         section.mnemonic_transforms = True
 
-    for i in range(len(sectdict["lines"])):
-        line = sectdict["lines"][i]
-        j = sectdict["line_nos"][i]
+    for i, line in enumerate(file_obj):
+        line_no = line_no + 1
+        line = line.strip("\n").strip()
         if not line:
-            continue
-        try:
-            values = read_line(line, section_name=parser.section_name2)
-        except:
-            message = 'line {} (section {}): "{}"'.format(
-                # traceback.format_exc().splitlines()[-1].strip('\n'),
-                j,
-                title,
-                line,
+            logger.debug("Line {}: empty, ignoring".format(line_no + 1))
+        elif line[0] in ignore_comments:
+            logger.debug(
+                "Line {}: treating as a comment and ignoring: '{}'".format(
+                    line_no + 1, line
+                )
             )
-            if ignore_header_errors:
-                logger.warning(message)
-            else:
-                raise exceptions.LASHeaderError(message)
         else:
-            if mnemonic_case == "upper":
-                values["name"] = values["name"].upper()
-            elif mnemonic_case == "lower":
-                values["name"] = values["name"].lower()
-            section.append(parser(**values))
+            try:
+                values = read_line(line, section_name=parser.section_name2)
+            except:
+                message = 'Line {} (section {}): "{}"'.format(
+                    line_no + 1,
+                    title,
+                    line,
+                )
+                if ignore_header_errors:
+                    logger.warning(message)
+                else:
+                    raise exceptions.LASHeaderError(message)
+            else:
+                if mnemonic_case == "upper":
+                    values["name"] = values["name"].upper()
+                elif mnemonic_case == "lower":
+                    values["name"] = values["name"].lower()
+                item = parser(**values)
+                logger.debug("Line {}: parsed as {}".format(line_no + 1, item))
+                section.append(item)
+        if line_no == line_nos[1]:
+            break
+
     return section
 
 
