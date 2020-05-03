@@ -442,13 +442,12 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
     return sections
 
 
-def read_data_section_iterative(file_obj, regexp_subs, value_null_subs):
+def read_data_section_iterative(file_obj, line_nos, regexp_subs, value_null_subs):
     """Read data section into memory.
 
     Arguments:
-        file_obj (open file-like object): should be positioned in line-by-line
-            reading mode, with the last line read being the title of the
-            ~ASCII data section.
+        file_obj: file-like object open for reading at the beginning of the section
+        line_nos (tuple): the first and last line no of the section to read
         regexp_subs (list): each item should be a tuple of the pattern and
             substitution string for a call to re.sub() on each line of the
             data section. See defaults.py READ_SUBS and NULL_SUBS for examples.
@@ -460,8 +459,15 @@ def read_data_section_iterative(file_obj, regexp_subs, value_null_subs):
 
     """
 
-    def items(f):
+    title = file_obj.readline()
+
+    def items(f, start_line_no, end_line_no):
+        line_no = start_line_no
         for line in f:
+            line_no += 1
+            logger.debug(
+                "Line {}: reading data '{}'".format(line_no + 1, line.strip("\n").strip())
+            )
             for pattern, sub_str in regexp_subs:
                 line = re.sub(pattern, sub_str, line)
             line = line.replace(chr(26), "")
@@ -470,8 +476,12 @@ def read_data_section_iterative(file_obj, regexp_subs, value_null_subs):
                     yield np.float64(item)
                 except ValueError:
                     yield item
+            if line_no == end_line_no:
+                break
 
-    array = np.array([i for i in items(file_obj)])
+    array = np.array(
+        [i for i in items(file_obj, start_line_no=line_nos[0] + 1, end_line_no=line_nos[1])]
+    )
     for value in value_null_subs:
         array[array == value] = np.nan
     return array
@@ -605,11 +615,7 @@ def parse_header_items_section(
             try:
                 values = read_line(line, section_name=parser.section_name2)
             except:
-                message = 'Line {} (section {}): "{}"'.format(
-                    line_no + 1,
-                    title,
-                    line,
-                )
+                message = 'Line {} (section {}): "{}"'.format(line_no + 1, title, line)
                 if ignore_header_errors:
                     logger.warning(message)
                 else:

@@ -144,7 +144,9 @@ class LASFile(object):
                 raise KeyError("No ~ sections found. Is this a LAS file?")
 
             data_section_indices = []
-            for i, (k, first_line, last_line, section_title) in enumerate(section_positions):
+            for i, (k, first_line, last_line, section_title) in enumerate(
+                section_positions
+            ):
                 section_type = reader.determine_section_type(section_title)
                 logger.debug(
                     "Parsing {typ} section at lines {first_line}-{last_line} ({k} bytes) {title}".format(
@@ -173,6 +175,8 @@ class LASFile(object):
                         provisional_version = sct_items.VERS.value
                     if "WRAP" in sct_items:
                         provisional_wrapped = sct_items.WRAP.value
+                    if "NULL" in sct_items:
+                        provisional_null = sct_items.NULL.value
 
                     if section_title[1] == "V":
                         self.sections["Version"] = sct_items
@@ -207,26 +211,33 @@ class LASFile(object):
                     data_section_indices.append(i)
 
             if not ignore_data:
-                for k, first_line, last_line, section_title in [section_positions[i] for i in data_section_indices]:
-                    section_type = reader.determine_section_type(section_title)
+                for k, first_line, last_line, section_title in [
+                    section_positions[i] for i in data_section_indices
+                ]:
                     logger.debug("Reading data section {}".format(section_title))
 
+                    file_obj.seek(k)
+                    arr = reader.read_data_section_iterative(
+                        file_obj, (first_line, last_line), regexp_subs, value_null_subs
+                    )
+                    logger.debug("Read ndarray {arrshape}".format(arrshape=arr.shape))
+
+                    # TODO: check whether this treatment of NULLs is correct
+                    arr[arr == provisional_null] = np.nan
+
+                    # TODO: work out how to do array reshaping.
+                    n_curves = len(self.curves)
+                    n_arr_cols = len(self.curves)
 
         finally:
             if hasattr(file_obj, "close"):
                 file_obj.close()
 
+            # TODO: reimplement these warnings!!
 
-        # TODO: reimplement these!
+            ###### logger.warning("No data section (regexp='~A') found")
+            ###### logger.warning("No numerical data found inside ~A section")
 
-        ###### logger.warning("No data section (regexp='~A') found")
-
-        ###### logger.warning("No numerical data found inside ~A section")
-
-
-        #     self.raw_sections = reader.read_file_contents(
-        #         file_obj, regexp_subs, value_null_subs, ignore_data=ignore_data
-        #     )
 
             if s_valid:
                 arr = s["array"]
