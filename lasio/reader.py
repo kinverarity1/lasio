@@ -266,6 +266,44 @@ def get_encoding(auto, raw):
     return result["encoding"]
 
 
+def find_sections_in_file(file_obj):
+    """Find LAS sections in a file.
+
+    Returns: a list of tuples *(k, line_no, line)* - *k* is the position
+        in the *file_obj* in bytes, *line_no* is the line number (starting
+        from zero), and *line* is the contents of the section title/definition
+        i.e. beginning with ``~`` but stripped of beginning or ending whitespace
+        or line breaks.
+
+    """
+    k = 0
+    section_positions = []
+    for i, line in enumerate(file_obj):
+        k += len(line)
+        sline = line.strip().strip("\n")
+        if sline.startswith("~"):
+            section_positions.append((k, i, sline))
+    return section_positions
+
+
+def determine_section_type(section_title):
+    """Return the type of the LAS section based on its title
+
+        >>> determine_section_type("~Curves Section")
+        "Header"
+        >>> determine_section_type("~ASCII")
+        "Data"
+
+    Returns: bool
+
+    """
+    stitle = section_title.strip().strip("\n")
+    if stitle[:2] == "~A":
+        return "Data"
+    else:
+        return "Header"
+
+
 def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False):
     """Read file contents into memory.
 
@@ -307,10 +345,17 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
     section_exists = False
 
     for i, line in enumerate(file_obj):
+        logger.debug("Reading line {i}: {line}".format(i=i, line=line.strip("\n")))
         line = line.strip()
         if not line:
             continue
         if line.upper().startswith("~A"):
+            logger.debug(
+                "Line {i}: start of data section {line}".format(
+                    i=i, line=line.strip("\n")
+                )
+            )
+
             # HARD CODED FOR VERSION 1.2 and 2.0; needs review for 3.0
             # We have finished looking at the metadata and need
             # to start reading numerical data.
@@ -343,6 +388,11 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
             break
 
         elif line.startswith("~"):
+            logger.debug(
+                "Line {i}: start of header section {line}".format(
+                    i=i, line=line.strip("\n")
+                )
+            )
             if section_exists:
                 # We have ended a section and need to start the next
                 sections[sect_title_line] = {

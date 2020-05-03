@@ -117,11 +117,27 @@ class LASFile(object):
 
         """
 
-        file_obj, self.encoding = reader.open_file(file_ref, **kwargs)
+        logger.debug("Reading {}...".format(str(file_ref)))
 
-        regexp_subs, value_null_subs, version_NULL = reader.get_substitutions(
-            read_policy, null_policy
-        )
+        try:
+            file_obj, self.encoding = reader.open_file(file_ref, **kwargs)
+
+            logger.debug("Fetching substitutions for read_policy {} and null policy {}".format(read_policy, null_policy))
+            regexp_subs, value_null_subs, version_NULL = reader.get_substitutions(
+                read_policy, null_policy
+            )
+
+            logger.debug("Searching for sections... ")
+            section_positions = reader.find_sections_in_file(file_obj)
+            logger.debug("found {}.".format(len(section_positions)))
+
+            for k, ln, section_title in section_positions:
+                logger.debug("Parsing section {title} at line {ln} ({k} bytes)".format(title=section_title, ln=ln, k=k))
+                section_type = reader.determine_section_type(section_title)
+                logger.debug("Section type {}".format(section_type))
+        finally:
+            if hasattr(file_obj, "close"):
+                file_obj.close()
 
         try:
             self.raw_sections = reader.read_file_contents(
