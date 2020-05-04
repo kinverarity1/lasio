@@ -693,6 +693,8 @@ class SectionParser(object):
         elif title.upper().startswith("~V"):
             self.func = self.metadata
             self.section_name2 = "Version"
+        else:
+            raise KeyError("Unknown section name {}".format(title.upper()))
 
         self.version = version
         self.section_name = title
