@@ -442,6 +442,38 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
     return sections
 
 
+def inspect_data_section(file_obj, line_nos):
+    """Determine how many columns there are in the data section.
+
+    Arguments:
+        file_obj: file-like object open for reading at the beginning of the section
+        line_nos (tuple): the first and last line no of the section to read
+
+    Returns: integer number of columns or -1 where they are different.
+
+    """
+    line_no = line_nos[0]
+    title_line = file_obj.readline()
+
+    item_counts = []
+
+    for i, line in enumerate(file_obj):
+        line_no = line_no + 1
+        line = line.strip("\n").strip()
+        n_items = len(line.split())
+        logger.debug("Line {}: {} items counted in '{}'".format(line_no + 1, n_items, line))
+        item_counts.append(n_items)
+        if (line_no == line_nos[1]) or (i >= 20):
+            break
+
+    try:
+        assert len(set(item_counts)) == 1
+    except AssertionError:
+        return -1
+    else:
+        return item_counts[0]
+
+
 def read_data_section_iterative(file_obj, line_nos, regexp_subs, value_null_subs):
     """Read data section into memory.
 
@@ -480,7 +512,7 @@ def read_data_section_iterative(file_obj, line_nos, regexp_subs, value_null_subs
                 break
 
     array = np.array(
-        [i for i in items(file_obj, start_line_no=line_nos[0] + 1, end_line_no=line_nos[1])]
+        [i for i in items(file_obj, start_line_no=line_nos[0], end_line_no=line_nos[1])]
     )
     for value in value_null_subs:
         array[array == value] = np.nan
