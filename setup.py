@@ -4,9 +4,7 @@ from setuptools import setup
 import os
 
 EXTRA_REQS = ("pandas", "cchardet", "openpyxl", "argparse")
-TEST_REQS = (
-    "pytest>=3.6", "pytest-cov", "coverage", "codecov", "pathlib"
-)
+TEST_REQS = ("pytest>=3.6", "pytest-cov", "coverage", "codecov", "pathlib")
 
 setup(
     name="lasio",
@@ -47,15 +45,13 @@ setup(
     keywords="science geophysics io",
     packages=("lasio",),
     install_requires=("numpy",),
-    extras_require={
-        "all": EXTRA_REQS,
-        "test": ( EXTRA_REQS, TEST_REQS)
-    },
-    tests_require= (TEST_REQS),
+    extras_require={"all": EXTRA_REQS, "test": (EXTRA_REQS, TEST_REQS)},
+    tests_require=(TEST_REQS),
     entry_points={
         "console_scripts": (
             "las2excel = lasio.excel:main",
             "las2excelbulk = lasio.excel:main_bulk",
+            "lasversionconvert = lasio.convert_version:convert_version",
             "lasio = lasio:version",
         )
     },
