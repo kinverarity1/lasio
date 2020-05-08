@@ -21,4 +21,4 @@ def test_time_str_and_colon_in_desc():
 def test_cyrillic_depth_unit():
     line = u" DEPT.метер                      :  1  DEPTH"
     result = read_header_line(line, section_name="Curves")
-    assert result["unit"] == "метер"
+    assert result["unit"] == u"метер"
