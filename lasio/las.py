@@ -850,7 +850,7 @@ class LASFile(object):
         """Return object contents as a JSON string."""
         return self.to_json()
 
-    def to_json(self):
+    def to_json_old(self):
         obj = OrderedDict()
         for name, section in self.sections.items():
             try:
@@ -858,6 +858,9 @@ class LASFile(object):
             except AttributeError:
                 obj[name] = json.dumps(section)
         return json.dumps(obj)
+
+    def to_json(self):
+        return json.dumps(self, cls=JSONEncoder)
 
     @json.setter
     def json(self, value):
