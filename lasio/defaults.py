@@ -65,7 +65,7 @@ ORDER_DEFINITIONS = {
 
 DEPTH_UNITS = {
     "FT": ("FT", "F", "FEET", "FOOT"),
-    "M": ("M", "METER", "METERS", "METRE", "METRES", "метер", "м"),
+    "M": ("M", "METER", "METERS", "METRE", "METRES", u"метер", u"м"),
 }
 
 READ_POLICIES = {
