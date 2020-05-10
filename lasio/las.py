@@ -863,6 +863,10 @@ class LASFile(object):
         return self.to_json()
 
     def to_json_old(self):
+        """
+        deprecated: to_json_old version=0.25.1 since=20200507 remove=20210508
+        replacement_options: to_json()
+        """
         obj = OrderedDict()
         for name, section in self.sections.items():
             try:
