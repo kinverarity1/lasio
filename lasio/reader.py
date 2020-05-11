@@ -751,6 +751,47 @@ def read_header_line(line, pattern=None, section_name=None):
     """
     d = {"name": "", "unit": "", "value": "", "descr": ""}
 
+    # Set defaults for local variables.
+    patterns = []
+    m = None
+
+    if pattern is None:
+        patterns = configure_and_match_pattern(line, section_name)
+    else: # pattern was passed in on function call
+        patterns.append(pattern)
+        m = re.match(pattern, line)
+
+    for pattern in patterns:
+        m = re.match(pattern, line)
+        if m is not None:
+            break
+
+    if m is None:
+        logger.warning("Unable to parse line as LAS header: {}".format(line))
+
+    mdict = m.groupdict()
+    for key, value in mdict.items():
+        d[key] = value.strip()
+        if key == "unit":
+            if d[key].endswith("."):
+                d[key] = d[key].strip(".")  # see issue #36
+    return d
+
+def configure_and_match_pattern(line, section_name):
+    """Configure a regular expression pattern and try to match it with the line
+
+    Arguments:
+        line (str): line from LAS header section
+        section_name (str): Name of the section the 'line' is from
+
+    Returns:
+        A dictionary with keys 'name', 'unit', 'value', and 'descr', each
+        containing a string as value or the None value.
+
+    """
+    # Default return value
+    patterns = []
+
     # Default regular expressions for name, unit, value and desc fields
     name_re = r"\.?(?P<name>[^.]*)\."
     unit_re = r"(?P<unit>[^\s]*)"
@@ -759,7 +800,7 @@ def read_header_line(line, pattern=None, section_name=None):
 
     # Alternate regular expressions for special cases
     value_without_colon_delimiter_re = r"(?P<value>[^:]*)"
-    value_re_for_param_section = (
+    value_with_time_colon_re = (
         r"(?P<value>.*?)(?:(?<!( [0-2][0-3]| hh| HH)):(?!([0-5][0-9]|mm|MM)))"
     )
     name_with_dots_re = r"\.?(?P<name>[^.].*[.])\."
@@ -769,37 +810,32 @@ def read_header_line(line, pattern=None, section_name=None):
     # 1. missing colon delimiter and description field
     # 2. double_dots '..' caused by mnemonic abbreviation (with period)
     #    next to the dot delimiter.
-    if pattern is None:
-        if not ":" in line:
-            # If there isn't a colon delimiter then there isn't
-            # a description field either.
-            value_re = value_without_colon_delimiter_re
-            desc_re = no_desc_re
+    if not ":" in line:
+        # If there isn't a colon delimiter then there isn't
+        # a description field either.
+        value_re = value_without_colon_delimiter_re
+        desc_re = no_desc_re
 
-            if ".." in line and section_name == "Curves":
+        if ".." in line and section_name == "Curves":
+            name_re = name_with_dots_re
+    else:
+        if ".." in line and section_name == "Curves":
+            double_dot = line.find("..")
+            desc_colon = line.rfind(":")
+
+            # Check that a double_dot is not in the
+            # description string.
+            if double_dot < desc_colon:
                 name_re = name_with_dots_re
-        else:
-            if ".." in line and section_name == "Curves":
-                double_dot = line.find("..")
-                desc_colon = line.rfind(":")
 
-                # Check that a double_dot in not in the
-                # description string.
-                if double_dot < desc_colon:
-                    name_re = name_with_dots_re
-            if section_name == "Parameter":
-                value_re = value_re_for_param_section
+    if section_name == "Parameter":
+        # Search for a value entry with a time-value first.
+        pattern = name_re + unit_re + value_with_time_colon_re + desc_re
+        patterns.append(pattern)
 
-    # Build full regex pattern
+    # Add the regular pattern for all section_names
+    # for the Parameter section this will run after time-value pattern
     pattern = name_re + unit_re + value_re + desc_re
+    patterns.append(pattern)
 
-    m = re.match(pattern, line)
-    if m is None:
-        logger.warning("Unable to parse line as LAS header: {}".format(line))
-    mdict = m.groupdict()
-    for key, value in mdict.items():
-        d[key] = value.strip()
-        if key == "unit":
-            if d[key].endswith("."):
-                d[key] = d[key].strip(".")  # see issue #36
-    return d
+    return patterns
