@@ -47,6 +47,12 @@ Example session:
 >>> import lasio
 ```
 
+You can read the file using a filename, file-like object, or URL:
+
+```python
+>>> las = lasio.read("sample_rev.las")
+```
+
 Data is accessible both directly as numpy arrays
 
 ```python
