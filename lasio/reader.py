@@ -324,7 +324,7 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
                }
                sect_lines = []
                sect_line_nos = []
-        
+
 
             if not ignore_data:
                 try:
@@ -743,6 +743,9 @@ def read_header_line(line, pattern=None, section_name=None):
 
     Arguments:
         line (str): line from a LAS header section
+        section_name (str): Name of the section the 'line' is from. The default
+        value is None.
+
 
     Returns:
         A dictionary with keys 'name', 'unit', 'value', and 'descr', each
@@ -756,18 +759,16 @@ def read_header_line(line, pattern=None, section_name=None):
     m = None
 
     if pattern is None:
-        patterns = configure_and_match_pattern(line, section_name)
+        patterns = configure_metadata_patterns(line, section_name)
     else: # pattern was passed in on function call
         patterns.append(pattern)
-        m = re.match(pattern, line)
 
     for pattern in patterns:
+        # Attempt to parse the section line's name(mnemonic), unit, value and
+        # descr fields with the given pattern.
         m = re.match(pattern, line)
         if m is not None:
             break
-
-    if m is None:
-        logger.warning("Unable to parse line as LAS header: {}".format(line))
 
     mdict = m.groupdict()
     for key, value in mdict.items():
@@ -777,18 +778,17 @@ def read_header_line(line, pattern=None, section_name=None):
                 d[key] = d[key].strip(".")  # see issue #36
     return d
 
-def configure_and_match_pattern(line, section_name):
-    """Configure a regular expression pattern and try to match it with the line
+def configure_metadata_patterns(line, section_name):
+    """Configure regular-expression patterns to parse section meta-data lines.
 
     Arguments:
         line (str): line from LAS header section
-        section_name (str): Name of the section the 'line' is from
+        section_name (str): Name of the section the 'line' is from.
 
     Returns:
-        A dictionary with keys 'name', 'unit', 'value', and 'descr', each
-        containing a string as value or the None value.
-
+        An array of regular-expression strings (patterns).
     """
+
     # Default return value
     patterns = []
 
