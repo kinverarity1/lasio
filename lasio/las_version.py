@@ -54,7 +54,7 @@ def version():
 
 
 def _get_vcs_version():
-    semver_regex = re.compile('^v\d+\.\d+\.\d+') # examples: 'v0.0.0', 'v0.25.0'
+    semver_regex = re.compile(r'^v\d+\.\d+\.\d+') # examples: 'v0.0.0', 'v0.25.0'
     split_regex = re.compile('-')
     local_las_version = ''
     tmpstr = ''
