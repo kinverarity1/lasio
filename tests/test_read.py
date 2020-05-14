@@ -422,3 +422,24 @@ def test_header_only_file():
 def test_read_cyrillic_depth_unit():
     las = lasio.read(egfn("sample_cyrillic_depth_unit.las"))
     assert las.index_unit == "M"
+
+def test_section_parser_num_except_pass():
+    sp = lasio.reader.SectionParser("~C")
+    assert sp.num(None) == None
+
+def test_adhoc_test_encoding():
+    filename = stegfn("1.2", "sample.las")
+    res = lasio.reader.adhoc_test_encoding(filename)
+    assert res == "ascii"
+
+def test_open_with_codecs_no_autodetect():
+    filename = stegfn("1.2", "sample.las")
+    obj, encoding = lasio.reader.open_with_codecs(
+        filename, autodetect_encoding=False)
+    assert encoding == "ascii"
+
+def test_open_with_codecs_no_autodetect_chars():
+    filename = stegfn("1.2", "sample.las")
+    obj, encoding = lasio.reader.open_with_codecs(
+        filename, autodetect_encoding_chars=0)
+    assert encoding == "ASCII"
