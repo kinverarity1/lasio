@@ -2,12 +2,10 @@ import codecs
 import logging
 import os
 import re
-import textwrap
 import traceback
 
 import numpy as np
 
-from . import defaults
 
 # Convoluted import for StringIO in order to support:
 #
