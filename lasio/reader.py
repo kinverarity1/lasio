@@ -644,6 +644,10 @@ def parse_header_items_section(
                 )
             )
         else:
+            # We have arrived at a new section so break and return the previous
+            # section's object.
+            if line.startswith('~'):
+                break
             try:
                 values = read_line(line, section_name=parser.section_name2)
             except:
