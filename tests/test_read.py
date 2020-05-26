@@ -422,3 +422,8 @@ def test_header_only_file():
 def test_read_cyrillic_depth_unit():
     las = lasio.read(egfn("sample_cyrillic_depth_unit.las"))
     assert las.index_unit == "M"
+
+def test_section_parser_num_except_pass():
+    sp = lasio.reader.SectionParser("~C")
+    assert sp.num(None) == None
+

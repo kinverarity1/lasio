@@ -34,3 +34,26 @@ def test_non_delimiter_colon_in_desc():
     result = read_header_line(line, section_name="Parameter")
     assert result["value"] == ""
     assert result["descr"] == "Survey quality: GOOD or BAD versus criteria"
+
+def test_dot_in_name():
+    """issue_264"""
+    line = "I. Res..OHM-M                  "
+    result = read_header_line(line, section_name="Curves")
+    assert result["name"] == "I. Res."
+
+def test_pattern_arg():
+    line = "DEPT.M                      :  1  DEPTH"
+
+    name_re = "\\.?(?P<name>[^.]*)"
+    unit_re = "\\.(?P<unit>[^\\s]*)"
+    value_re = "(?P<value>.*)"
+    colon_delim = ":"
+    descr_re = "(?P<descr>.*)"
+
+    pattern_re = "".join((name_re, unit_re, value_re, colon_delim, descr_re))
+
+    result = read_header_line(line, section_name="Curves", pattern=pattern_re)
+
+    assert result["name"] == "DEPT"
+    assert result["unit"] == "M"
+    assert result["value"] == ""

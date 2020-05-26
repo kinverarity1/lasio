@@ -7,9 +7,10 @@ import pytest
 
 from pathlib import Path
 
-from lasio import read
+from lasio import read, reader
 
 egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
+stegfn = lambda vers, fn: os.path.join(os.path.dirname(__file__), "examples", vers, fn)
 
 def test_encoding_attr():
     las = read(egfn("encodings_utf8.las"), autodetect_encoding='cchardet')
@@ -46,3 +47,19 @@ def test_pathlib_utf16bebom_cchardet(): las = read(Path(egfn("encodings_utf16beb
 def test_pathlib_iso88591_cchardet(): las = read(Path(egfn("encodings_iso88591.las")), autodetect_encoding='cchardet')
 def test_pathlib_cp1252_cchardet(): las = read(Path(egfn("encodings_cp1252.las")), autodetect_encoding='cchardet')
 
+def test_adhoc_test_encoding():
+    filename = stegfn("1.2", "sample.las")
+    res = reader.adhoc_test_encoding(filename)
+    assert res == "ascii"
+
+def test_open_with_codecs_no_autodetect():
+    filename = stegfn("1.2", "sample.las")
+    obj, encoding = reader.open_with_codecs(
+        filename, autodetect_encoding=False)
+    assert encoding == "ascii"
+
+def test_open_with_codecs_no_autodetect_chars():
+    filename = stegfn("1.2", "sample.las")
+    obj, encoding = reader.open_with_codecs(
+        filename, autodetect_encoding_chars=0)
+    assert encoding == "ASCII"
