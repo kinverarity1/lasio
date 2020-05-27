@@ -122,6 +122,7 @@ class LASFile(object):
 
         logger.debug("Reading {}...".format(str(file_ref)))
 
+        file_obj = ''
         try:
             file_obj, self.encoding = reader.open_file(file_ref, **kwargs)
 
