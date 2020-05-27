@@ -228,46 +228,50 @@ class LASFile(object):
                     )
                     logger.debug("Read ndarray {arrshape}".format(arrshape=arr.shape))
 
-                    # TODO: check whether this treatment of NULLs is correct
-                    arr[arr == provisional_null] = np.nan
+                    # This is so we can check data size and use self.set_data(data, truncate=False)
+                    # in cases of data.size is zero.
+                    data = arr
 
-                    # Provisionally, assume that the number of columns represented
-                    # by the data section's array is equal to the number of columns
-                    # defined in the Curves/Definition section.
+                    if data.size > 0:
+                        # TODO: check whether this treatment of NULLs is correct
+                        arr[arr == provisional_null] = np.nan
 
-                    n_columns_in_arr = len(self.curves)
+                        # Provisionally, assume that the number of columns represented
+                        # by the data section's array is equal to the number of columns
+                        # defined in the Curves/Definition section.
 
-                    # If we are told the file is unwrapped, then we assume that each
-                    # column detected is a column, and we ignore the Curves/Definition
-                    # section's number of columns instead.
+                        n_columns_in_arr = len(self.curves)
 
-                    if provisional_wrapped == "NO":
-                        if len(self.curves) > n_columns:
-                            n_columns_in_arr = n_columns
+                        # If we are told the file is unwrapped, then we assume that each
+                        # column detected is a column, and we ignore the Curves/Definition
+                        # section's number of columns instead.
 
-                    logger.debug(
-                        "Data array (size {}) assumed to have {} columns "
-                        "({} curves defined)".format(
-                            arr.shape, n_columns_in_arr, len(self.curves)
-                        )
-                    )
+                        if provisional_wrapped == "NO":
+                            if len(self.curves) > n_columns:
+                                n_columns_in_arr = n_columns
 
-                    # We attempt to reshape the 1D array read in from
-                    # the data section so that it can be assigned to curves.
-
-                    try:
-                        data = np.reshape(arr, (-1, n_columns_in_arr))
-                    except ValueError as exception:
-                        error_message = "Cannot reshape ~A data size {0} into {1} columns".format(
-                            arr.shape, n_columns_in_arr
-                        )
-                        if sys.version_info.major < 3:
-                            exception.message = error_message
-                            raise exception
-                        else:
-                            raise ValueError(error_message).with_traceback(
-                                exception.__traceback__
+                        logger.debug(
+                            "Data array (size {}) assumed to have {} columns "
+                            "({} curves defined)".format(
+                                arr.shape, n_columns_in_arr, len(self.curves)
                             )
+                        )
+
+                        # We attempt to reshape the 1D array read in from
+                        # the data section so that it can be assigned to curves.
+                        try:
+                            data = np.reshape(arr, (-1, n_columns_in_arr))
+                        except ValueError as exception:
+                            error_message = "Cannot reshape ~A data size {0} into {1} columns".format(
+                                arr.shape, n_columns_in_arr
+                            )
+                            if sys.version_info.major < 3:
+                                exception.message = error_message
+                                raise exception
+                            else:
+                                raise ValueError(error_message).with_traceback(
+                                    exception.__traceback__
+                                )
 
                     self.set_data(data, truncate=False)
         finally:
@@ -649,7 +653,7 @@ class LASFile(object):
             data = data[:, len(self.curves)]
 
         # Extend curves list if necessary.
-        while data.shape[1] > len(self.curves):
+        while data.size > 0 and (data.shape[1] > len(self.curves)):
             self.curves.append(CurveItem(""))
 
         if not names:
@@ -660,9 +664,10 @@ class LASFile(object):
                 names.append("")
         logger.debug("set_data. names to use: {}".format(names))
 
-        for i, curve in enumerate(self.curves):
-            curve.mnemonic = names[i]
-            curve.data = data[:, i]
+        if data.size > 0:
+            for i, curve in enumerate(self.curves):
+                curve.mnemonic = names[i]
+                curve.data = data[:, i]
 
         self.curves.assign_duplicate_suffixes()
 
