@@ -2,7 +2,6 @@ import codecs
 import logging
 import os
 import re
-import textwrap
 import traceback
 
 import numpy as np
@@ -27,7 +26,6 @@ except ImportError:
 else:
     from StringIO import StringIO
 
-from . import defaults
 from . import exceptions
 from .las_items import HeaderItem, CurveItem, SectionItems, OrderedDict
 
