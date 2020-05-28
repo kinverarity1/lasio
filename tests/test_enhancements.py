@@ -53,6 +53,14 @@ def test_autodepthindex_feet():
     l = read(egfn("autodepthindex_FEET.las"))
     assert (l.depth_m[-1] / 0.3048 == l.index[-1])
 
+def test_autodepthindex_point_one_inch():
+    # Using 'las' instead of 'l' as the variable because
+    # the python debugger uses 'l' to list the current code.
+    las = read(egfn("autodepthindex_point_one_inch.las"))
+    assert las.index_unit == '.1IN'
+    assert (las.depth_ft[-1] * 120 == las.index[-1])
+    assert ((las.depth_m[-1] / 0.3048) * 120 == las.index[-1])
+
 def test_df_indexing():
     l = read(egfn("6038187_v1.2.las"))
     metres = 9.05
