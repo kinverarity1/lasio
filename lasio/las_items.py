@@ -112,8 +112,8 @@ class HeaderItem(OrderedDict):
 
     def __repr__(self):
         result = (
-            '%s(mnemonic=%s, unit=%s, value=%s, '
-            'descr=%s)' % (
+            '%s(mnemonic="%s", unit="%s", value="%s", '
+            'descr="%s")' % (
                 self.__class__.__name__, self.mnemonic, self.unit, self.value,
                 self.descr))
         if len(result) > 80:
@@ -167,8 +167,8 @@ class CurveItem(HeaderItem):
 
     def __repr__(self):
         return (
-            '%s(mnemonic=%s, unit=%s, value=%s, '
-            'descr=%s, original_mnemonic=%s, data.shape=%s)' % (
+            '%s(mnemonic="%s", unit="%s", value="%s", '
+            'descr="%s", original_mnemonic="%s", data.shape=%s)' % (
                 self.__class__.__name__, self.mnemonic, self.unit, self.value,
                 self.descr, self.original_mnemonic, self.data.shape))
 

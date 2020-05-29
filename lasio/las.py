@@ -759,6 +759,8 @@ class LASFile(object):
             return self.index
         elif self._index_unit_contains("F"):
             return self.index * 0.3048
+        elif self._index_unit_contains(".1IN"):
+            return (self.index / 120) * 0.3048
         else:
             raise exceptions.LASUnknownUnitError("Unit of depth index not known")
 
@@ -769,6 +771,8 @@ class LASFile(object):
             return self.index / 0.3048
         elif self._index_unit_contains("F"):
             return self.index
+        elif self._index_unit_contains(".1IN"):
+            return self.index / 120
         else:
             raise exceptions.LASUnknownUnitError("Unit of depth index not known")
 
