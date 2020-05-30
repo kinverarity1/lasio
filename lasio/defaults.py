@@ -49,7 +49,10 @@ ORDER_DEFINITIONS = {
             ("Version", ["value:descr"]),
             (
                 "Well",
-                ["descr:value", ("value:descr", ["STRT", "STOP", "STEP", "NULL"])],
+                ["descr:value", ("value:descr", [
+                    "STRT", "STOP", "STEP", "NULL",
+                    "strt", "stop", "step", "null"
+                ])],
             ),
             ("Curves", ["value:descr"]),
             ("Parameter", ["value:descr"]),
