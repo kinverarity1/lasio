@@ -265,7 +265,26 @@ def get_encoding(auto, raw):
     )
     return result["encoding"]
 
+def find_sections_in_file_wip(file_ref):
+	# with open(file_ref, "rb") as f
+	with open("tests/examples/encodings_utf8.las", "rb") as f:
+		byte = f.read(1)
+		getnext = False
+		start = 0
+		while byte:
+			if byte == os.linesep:
+				print('HERE')
+				getnext = True
+			if byte == b"\n":
+				start = f.tell()
+				getnext = True
+			elif getnext is True and byte == b"~":
+				print(start)
+				print(byte)
+				getnext = False
+			byte = f.read(1)
 
+    
 def find_sections_in_file(file_obj):
     """Find LAS sections in a file.
 
@@ -280,13 +299,20 @@ def find_sections_in_file(file_obj):
     k = 0
     starts = []
     ends = []
+    logger.setLevel(logging.DEBUG)
     for i, line in enumerate(file_obj):
         sline = line.strip().strip("\n")
         if sline.startswith("~"):
             starts.append((k, i, sline))
             if len(starts) > 1:
                 ends.append(i - 1)
-        k += len(line)
+        logger.debug("#--------------------------------------#")
+        logger.debug("LINE-NO: [{}], BYTE: [{}], SLINE: [{}]".format(i, k, sline))
+        logger.debug("LOC: [{}]".format(file_obj.tell()))
+        logger.debug("#--------------------------------------#")
+
+        k += len(line) 
+    logger.setLevel(logging.INFO)
     ends.append(i)
     section_positions = []
     for j, (k, i, sline) in enumerate(starts):
@@ -625,6 +651,7 @@ def parse_header_items_section(
     title = title.strip("\n").strip()
     logger.debug("Line {}: Section title parsed as '{}'".format(line_no + 1, title))
 
+    # import pdb; pdb.set_trace()
     parser = SectionParser(title, version=version)
 
     section = SectionItems()
@@ -633,7 +660,9 @@ def parse_header_items_section(
         section.mnemonic_transforms = True
 
     for i, line in enumerate(file_obj):
+
         line_no = line_no + 1
+        logger.debug("LineNo: [{}], Idx: [{}]".format(line_no, i + 1))
         line = line.strip("\n").strip()
         if not line:
             logger.debug("Line {}: empty, ignoring".format(line_no + 1))
@@ -665,6 +694,8 @@ def parse_header_items_section(
                 logger.debug("Line {}: parsed as {}".format(line_no + 1, item))
                 section.append(item)
         if line_no == line_nos[1]:
+            logger.debug("HERE-1: LineNo: [{}], Lines [{}]".format(line_no, line_nos))
+            # import traceback; traceback.print_stack()
             break
 
     return section

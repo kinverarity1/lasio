@@ -43,6 +43,7 @@ from . import reader
 from . import writer
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class LASFile(object):
@@ -140,10 +141,19 @@ class LASFile(object):
             provisional_null = None
 
             section_positions = reader.find_sections_in_file(file_obj)
-            logger.debug("Found {} sections".format(len(section_positions)))
+            section_positions = reader.find_sections_in_file(file_obj)
+            # logger.debug("Found {} sections".format(len(section_positions)))
+            logger.debug("Found {} sections".format(section_positions))
+
             if len(section_positions) == 0:
                 raise KeyError("No ~ sections found. Is this a LAS file?")
 
+            file_obj.seek(143, os.SEEK_SET)
+            logger.debug("MY-LINE: [{}]".format(file_obj.readline()))
+            file_obj.seek(766, os.SEEK_SET)
+            logger.debug("MY-LINE2: [{}]".format(file_obj.readline()))
+            file_obj.seek(1312)
+            logger.debug("MY-LINE3: [{}]".format(file_obj.readline()))
             data_section_indices = []
             for i, (k, first_line, last_line, section_title) in enumerate(
                 section_positions
