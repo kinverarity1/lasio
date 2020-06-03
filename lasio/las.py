@@ -140,8 +140,8 @@ class LASFile(object):
             provisional_wrapped = "YES"
             provisional_null = None
 
-            section_positions = reader.find_sections_in_file(file_obj)
-            section_positions = reader.find_sections_in_file(file_obj)
+            # section_positions = reader.find_sections_in_file(file_obj)
+            section_positions = reader.find_sections_in_file(file_ref)
             # logger.debug("Found {} sections".format(len(section_positions)))
             logger.debug("Found {} sections".format(section_positions))
 

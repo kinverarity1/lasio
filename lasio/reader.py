@@ -265,27 +265,77 @@ def get_encoding(auto, raw):
     )
     return result["encoding"]
 
-def find_sections_in_file_wip(file_ref):
-	# with open(file_ref, "rb") as f
-	with open("tests/examples/encodings_utf8.las", "rb") as f:
-		byte = f.read(1)
-		getnext = False
-		start = 0
-		while byte:
-			if byte == os.linesep:
-				print('HERE')
-				getnext = True
-			if byte == b"\n":
-				start = f.tell()
-				getnext = True
-			elif getnext is True and byte == b"~":
-				print(start)
-				print(byte)
-				getnext = False
-			byte = f.read(1)
 
-    
-def find_sections_in_file(file_obj):
+def find_sections_in_file(file_ref):
+    # List of tuples
+    # Each tuple: [k, line_no, stripped_line]
+    starts = []
+    # List of section-ending line_nos
+    ends = []
+    # List of section position data to return
+    section_positions = []
+    with open(file_ref, "rb") as f:
+        # Position in the file in bytes
+        k = 0
+        # First line number in the section
+        line_no = 0
+        # Line stripped of beginning and ending white space
+        sline = b''
+        #-----------------------------------------------------------------
+
+        byte = f.read(1)
+        bool_get_line = False
+        bool_beginning_space = False
+        start_loc = 0
+
+        while byte:
+            # New line that is not a section header
+            # ---------------------------------------------------------------------
+            if byte == b"\n" and not bool_get_line:
+                bool_beginning_space = True
+                k = f.tell()
+                line_no = line_no + 1
+
+            # New line that ends a section header So here, we add a new element to
+            # starts[] and clear temp variables for next section header
+            # ---------------------------------------------------------------------
+            elif byte == b"\n" and bool_get_line:
+                bool_get_line = False
+                bool_beginning_space = False
+
+                starts.append((k, line_no, sline))
+                if len(starts) > 1:
+                    ends.append(line_no - 1)
+
+                sline = b''
+                line_no = line_no + 1
+
+            # Flag the beginning of a new section and start gathering its data
+            # ---------------------------------------------------------------------
+            elif bool_beginning_space and byte == b"~":
+                bool_get_line = True
+                bool_beginning_space = False
+                sline = sline + byte
+
+            # Skip beginning spaced when gathering a new section header line
+            # ---------------------------------------------------------------------
+            elif bool_get_line and bool_beginning_space and b.isspace():
+                pass
+
+            # Accumulate the new section header bytes into the sline
+            # ---------------------------------------------------------------------
+            elif bool_get_line:
+                bool_beginning_space = False
+                sline = sline + byte
+
+            byte = f.read(1)
+    ends.append(line_no)
+
+    for j, (k, i, sline) in enumerate(starts):
+        section_positions.append((k, i, ends[j], sline))
+    return section_positions
+
+def find_sections_in_file_old(file_obj):
     """Find LAS sections in a file.
 
     Returns: a list of lists *(k, first_line_no, last_line_no, line]*.
@@ -311,7 +361,7 @@ def find_sections_in_file(file_obj):
         logger.debug("LOC: [{}]".format(file_obj.tell()))
         logger.debug("#--------------------------------------#")
 
-        k += len(line) 
+        k += len(line)
     logger.setLevel(logging.INFO)
     ends.append(i)
     section_positions = []
