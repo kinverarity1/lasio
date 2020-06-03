@@ -335,40 +335,6 @@ def find_sections_in_file(file_ref):
         section_positions.append((k, i, ends[j], sline))
     return section_positions
 
-def find_sections_in_file_old(file_obj):
-    """Find LAS sections in a file.
-
-    Returns: a list of lists *(k, first_line_no, last_line_no, line]*.
-        *k* is the position in the *file_obj* in bytes,
-        *first_line_no* is the first line number of the section (starting
-        from zero), and *line* is the contents of the section title/definition
-        i.e. beginning with ``~`` but stripped of beginning or ending whitespace
-        or line breaks.
-
-    """
-    k = 0
-    starts = []
-    ends = []
-    logger.setLevel(logging.DEBUG)
-    for i, line in enumerate(file_obj):
-        sline = line.strip().strip("\n")
-        if sline.startswith("~"):
-            starts.append((k, i, sline))
-            if len(starts) > 1:
-                ends.append(i - 1)
-        logger.debug("#--------------------------------------#")
-        logger.debug("LINE-NO: [{}], BYTE: [{}], SLINE: [{}]".format(i, k, sline))
-        logger.debug("LOC: [{}]".format(file_obj.tell()))
-        logger.debug("#--------------------------------------#")
-
-        k += len(line)
-    logger.setLevel(logging.INFO)
-    ends.append(i)
-    section_positions = []
-    for j, (k, i, sline) in enumerate(starts):
-        section_positions.append((k, i, ends[j], sline))
-    return section_positions
-
 
 def determine_section_type(section_title):
     """Return the type of the LAS section based on its title
@@ -381,7 +347,7 @@ def determine_section_type(section_title):
     Returns: bool
 
     """
-    stitle = section_title.strip().strip("\n")
+    stitle = section_title.strip()
     if stitle[:2] == "~A":
         return "Data"
     elif stitle[:2] == "~O":
@@ -701,7 +667,6 @@ def parse_header_items_section(
     title = title.strip("\n").strip()
     logger.debug("Line {}: Section title parsed as '{}'".format(line_no + 1, title))
 
-    # import pdb; pdb.set_trace()
     parser = SectionParser(title, version=version)
 
     section = SectionItems()
@@ -728,7 +693,15 @@ def parse_header_items_section(
             if line.startswith('~'):
                 break
             try:
-                values = read_line(line, section_name=parser.section_name2)
+                if parser.section_name2 in ['Version', 'Well', 'Curves', 'Parameter']:
+                    values = read_line(line, section_name=parser.section_name2)
+                else:
+                    values = {
+                        "name": parser.section_name2,
+                        "value": line,
+                        "unit": "",
+                        "descr": "Unparsed line"
+                    }
             except:
                 message = 'Line {} (section {}): "{}"'.format(line_no + 1, title, line)
                 if ignore_header_errors:
@@ -779,13 +752,17 @@ class SectionParser(object):
             self.func = self.metadata
             self.section_name2 = "Version"
         else:
-            raise KeyError("Unknown section name {}".format(title.upper()))
+            # self.curves() creates a default HeaderItem()
+            self.func = self.curves
+            # Remove '~' and capitalize.
+            self.section_name2 = title[1:].lower().capitalize()
+            logger.info("Unknown section name {}".format(title.upper()))
 
         self.version = version
         self.section_name = title
 
         defs = defaults.ORDER_DEFINITIONS
-        section_orders = defs[self.version][self.section_name2]
+        section_orders = defs[self.version].get(self.section_name2, ['value:descr'])
         self.default_order = section_orders[0]  #
         self.orders = {}
         for order, mnemonics in section_orders[1:]:
