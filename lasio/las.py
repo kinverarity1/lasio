@@ -179,16 +179,19 @@ class LASFile(object):
                     if "NULL" in sct_items:
                         provisional_null = sct_items.NULL.value
 
-                    if section_title[1] == "V":
+                    # Translate byte-string to string
+                    section_title_str = section_title.decode(self.encoding)
+
+                    if section_title_str[1] == "V":
                         self.sections["Version"] = sct_items
-                    elif section_title[1] == "W":
+                    elif section_title_str[1] == "W":
                         self.sections["Well"] = sct_items
-                    elif section_title[1] == "C":
+                    elif section_title_str[1] == "C":
                         self.sections["Curves"] = sct_items
-                    elif section_title[1] == "P":
+                    elif section_title_str[1] == "P":
                         self.sections["Parameter"] = sct_items
                     else:
-                        self.sections[section_title[1:]] = sct_items
+                        self.sections[section_title_str[1:]] = sct_items
 
                 # Read free-text LAS header section
                 elif section_type == "Header (other)":

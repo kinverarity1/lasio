@@ -713,12 +713,11 @@ def parse_header_items_section(
                     values["name"] = values["name"].upper()
                 elif mnemonic_case == "lower":
                     values["name"] = values["name"].lower()
+                # Generate item object, one of [HeaderItem, CurveItem, ...]
                 item = parser(**values)
                 logger.debug("Line {}: parsed as {}".format(line_no + 1, item))
                 section.append(item)
         if line_no == line_nos[1]:
-            logger.debug("HERE-1: LineNo: [{}], Lines [{}]".format(line_no, line_nos))
-            # import traceback; traceback.print_stack()
             break
 
     return section
@@ -913,7 +912,7 @@ def read_header_line(line, pattern=None, section_name=None):
         containing a string as value.
 
     """
-    d = {"name": "", "unit": "", "value": "", "descr": ""}
+    line_data = {"name": "", "unit": "", "value": "", "descr": ""}
 
     # Default regular expressions for name, unit, value and desc fields
     name_re = r"\.?(?P<name>[^.]*)\."
@@ -957,13 +956,17 @@ def read_header_line(line, pattern=None, section_name=None):
     # Build full regex pattern
     pattern = name_re + unit_re + value_re + desc_re
 
+    #-----------------------------------------------------------------
+    # Primary function action!
+    # re.match(pattern, line) is where 'line' is parsed.
+    #-----------------------------------------------------------------
     m = re.match(pattern, line)
     if m is None:
         logger.warning("Unable to parse line as LAS header: {}".format(line))
     mdict = m.groupdict()
     for key, value in mdict.items():
-        d[key] = value.strip()
+        line_data[key] = value.strip()
         if key == "unit":
-            if d[key].endswith("."):
-                d[key] = d[key].strip(".")  # see issue #36
-    return d
+            if line_data[key].endswith("."):
+                line_data[key] = line_data[key].strip(".")  # see issue #36
+    return line_data
