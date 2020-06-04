@@ -285,7 +285,7 @@ def find_sections_in_file(file_ref):
 
         byte = f.read(1)
         bool_get_line = False
-        bool_beginning_space = False
+        bool_beginning_space = True
         start_loc = 0
 
         while byte:
@@ -330,7 +330,6 @@ def find_sections_in_file(file_ref):
 
             byte = f.read(1)
     ends.append(line_no)
-
     for j, (k, i, sline) in enumerate(starts):
         section_positions.append((k, i, ends[j], sline))
     return section_positions
