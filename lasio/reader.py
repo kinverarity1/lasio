@@ -266,29 +266,70 @@ def get_encoding(auto, raw):
     return result["encoding"]
 
 
-def find_sections_in_file(file_obj):
-    """Find LAS sections in a file.
-
-    Returns: a list of lists *(k, first_line_no, last_line_no, line]*.
-        *k* is the position in the *file_obj* in bytes,
-        *first_line_no* is the first line number of the section (starting
-        from zero), and *line* is the contents of the section title/definition
-        i.e. beginning with ``~`` but stripped of beginning or ending whitespace
-        or line breaks.
-
-    """
-    k = 0
+def find_sections_in_file(file_ref):
+    # List of tuples
+    # Each tuple: [k, line_no, stripped_line]
     starts = []
+    # List of section-ending line_nos
     ends = []
-    for i, line in enumerate(file_obj):
-        sline = line.strip().strip("\n")
-        if sline.startswith("~"):
-            starts.append((k, i, sline))
-            if len(starts) > 1:
-                ends.append(i - 1)
-        k += len(line)
-    ends.append(i)
+    # List of section position data to return
     section_positions = []
+    with open(file_ref, "rb") as f:
+        # Position in the file in bytes
+        k = 0
+        # First line number in the section
+        line_no = 0
+        # Line stripped of beginning and ending white space
+        sline = b''
+        #-----------------------------------------------------------------
+
+        byte = f.read(1)
+        bool_get_line = False
+        bool_beginning_space = True
+        start_loc = 0
+
+        while byte:
+            # New line that is not a section header
+            # ---------------------------------------------------------------------
+            if byte == b"\n" and not bool_get_line:
+                bool_beginning_space = True
+                k = f.tell()
+                line_no = line_no + 1
+
+            # New line that ends a section header So here, we add a new element to
+            # starts[] and clear temp variables for next section header
+            # ---------------------------------------------------------------------
+            elif byte == b"\n" and bool_get_line:
+                bool_get_line = False
+                bool_beginning_space = False
+
+                starts.append((k, line_no, sline))
+                if len(starts) > 1:
+                    ends.append(line_no - 1)
+
+                sline = b''
+                line_no = line_no + 1
+
+            # Flag the beginning of a new section and start gathering its data
+            # ---------------------------------------------------------------------
+            elif bool_beginning_space and byte == b"~":
+                bool_get_line = True
+                bool_beginning_space = False
+                sline = sline + byte
+
+            # Skip beginning spaced when gathering a new section header line
+            # ---------------------------------------------------------------------
+            elif bool_get_line and bool_beginning_space and b.isspace():
+                pass
+
+            # Accumulate the new section header bytes into the sline
+            # ---------------------------------------------------------------------
+            elif bool_get_line:
+                bool_beginning_space = False
+                sline = sline + byte
+
+            byte = f.read(1)
+    ends.append(line_no)
     for j, (k, i, sline) in enumerate(starts):
         section_positions.append((k, i, ends[j], sline))
     return section_positions
@@ -305,7 +346,7 @@ def determine_section_type(section_title):
     Returns: bool
 
     """
-    stitle = section_title.strip().strip("\n")
+    stitle = section_title.strip()
     if stitle[:2] == "~A":
         return "Data"
     elif stitle[:2] == "~O":
@@ -649,7 +690,15 @@ def parse_header_items_section(
             if line.startswith('~'):
                 break
             try:
-                values = read_line(line, section_name=parser.section_name2)
+                if parser.section_name2 in ['Version', 'Well', 'Curves', 'Parameter']:
+                    values = read_line(line, section_name=parser.section_name2)
+                else:
+                    values = {
+                        "name": parser.section_name2,
+                        "value": line,
+                        "unit": "",
+                        "descr": "Unparsed line"
+                    }
             except:
                 message = 'Line {} (section {}): "{}"'.format(line_no + 1, title, line)
                 if ignore_header_errors:
@@ -661,6 +710,7 @@ def parse_header_items_section(
                     values["name"] = values["name"].upper()
                 elif mnemonic_case == "lower":
                     values["name"] = values["name"].lower()
+                # Generate item object, one of [HeaderItem, CurveItem, ...]
                 item = parser(**values)
                 logger.debug("Line {}: parsed as {}".format(line_no + 1, item))
                 section.append(item)
@@ -698,13 +748,17 @@ class SectionParser(object):
             self.func = self.metadata
             self.section_name2 = "Version"
         else:
-            raise KeyError("Unknown section name {}".format(title.upper()))
+            # self.curves() creates a default HeaderItem()
+            self.func = self.curves
+            # Remove '~' and capitalize.
+            self.section_name2 = title[1:].lower().capitalize()
+            logger.info("Unknown section name {}".format(title.upper()))
 
         self.version = version
         self.section_name = title
 
         defs = defaults.ORDER_DEFINITIONS
-        section_orders = defs[self.version][self.section_name2]
+        section_orders = defs[self.version].get(self.section_name2, ['value:descr'])
         self.default_order = section_orders[0]  #
         self.orders = {}
         for order, mnemonics in section_orders[1:]:
@@ -855,7 +909,7 @@ def read_header_line(line, pattern=None, section_name=None):
         containing a string as value.
 
     """
-    d = {"name": "", "unit": "", "value": "", "descr": ""}
+    line_data = {"name": "", "unit": "", "value": "", "descr": ""}
 
     # Default regular expressions for name, unit, value and desc fields
     name_re = r"\.?(?P<name>[^.]*)\."
@@ -899,13 +953,17 @@ def read_header_line(line, pattern=None, section_name=None):
     # Build full regex pattern
     pattern = name_re + unit_re + value_re + desc_re
 
+    #-----------------------------------------------------------------
+    # Primary function action!
+    # re.match(pattern, line) is where 'line' is parsed.
+    #-----------------------------------------------------------------
     m = re.match(pattern, line)
     if m is None:
         logger.warning("Unable to parse line as LAS header: {}".format(line))
     mdict = m.groupdict()
     for key, value in mdict.items():
-        d[key] = value.strip()
+        line_data[key] = value.strip()
         if key == "unit":
-            if d[key].endswith("."):
-                d[key] = d[key].strip(".")  # see issue #36
-    return d
+            if line_data[key].endswith("."):
+                line_data[key] = line_data[key].strip(".")  # see issue #36
+    return line_data

@@ -139,7 +139,7 @@ class LASFile(object):
             provisional_wrapped = "YES"
             provisional_null = None
 
-            section_positions = reader.find_sections_in_file(file_obj)
+            section_positions = reader.find_sections_in_file(file_ref)
             logger.debug("Found {} sections".format(len(section_positions)))
             if len(section_positions) == 0:
                 raise KeyError("No ~ sections found. Is this a LAS file?")
@@ -148,11 +148,15 @@ class LASFile(object):
             for i, (k, first_line, last_line, section_title) in enumerate(
                 section_positions
             ):
-                section_type = reader.determine_section_type(section_title)
+
+                # Translate byte-string to string
+                section_title_str = section_title.decode(self.encoding)
+
+                section_type = reader.determine_section_type(section_title_str)
                 logger.debug(
                     "Parsing {typ} section at lines {first_line}-{last_line} ({k} bytes) {title}".format(
                         typ=section_type,
-                        title=section_title,
+                        title=section_title_str,
                         first_line=first_line + 1,
                         last_line=last_line + 1,
                         k=k,
@@ -179,16 +183,16 @@ class LASFile(object):
                     if "NULL" in sct_items:
                         provisional_null = sct_items.NULL.value
 
-                    if section_title[1] == "V":
+                    if section_title_str[1] == "V":
                         self.sections["Version"] = sct_items
-                    elif section_title[1] == "W":
+                    elif section_title_str[1] == "W":
                         self.sections["Well"] = sct_items
-                    elif section_title[1] == "C":
+                    elif section_title_str[1] == "C":
                         self.sections["Curves"] = sct_items
-                    elif section_title[1] == "P":
+                    elif section_title_str[1] == "P":
                         self.sections["Parameter"] = sct_items
                     else:
-                        self.sections[section_title[1:]] = sct_items
+                        self.sections[section_title_str[1:]] = sct_items
 
                 # Read free-text LAS header section
                 elif section_type == "Header (other)":
@@ -202,10 +206,10 @@ class LASFile(object):
                             break
                     sct_contents = "\n".join(contents)
 
-                    if section_title[1] == "O":
+                    if section_title_str[1] == "O":
                         self.sections["Other"] = sct_contents
                     else:
-                        self.sections[section_title[1:]] = sct_contents
+                        self.sections[section_title_str[1:]] = sct_contents
 
                 elif section_type == "Data":
                     logger.debug("Storing reference and returning later...")
