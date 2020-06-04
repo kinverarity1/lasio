@@ -148,11 +148,15 @@ class LASFile(object):
             for i, (k, first_line, last_line, section_title) in enumerate(
                 section_positions
             ):
-                section_type = reader.determine_section_type(section_title)
+
+                # Translate byte-string to string
+                section_title_str = section_title.decode(self.encoding)
+
+                section_type = reader.determine_section_type(section_title_str)
                 logger.debug(
                     "Parsing {typ} section at lines {first_line}-{last_line} ({k} bytes) {title}".format(
                         typ=section_type,
-                        title=section_title,
+                        title=section_title_str,
                         first_line=first_line + 1,
                         last_line=last_line + 1,
                         k=k,
@@ -179,9 +183,6 @@ class LASFile(object):
                     if "NULL" in sct_items:
                         provisional_null = sct_items.NULL.value
 
-                    # Translate byte-string to string
-                    section_title_str = section_title.decode(self.encoding)
-
                     if section_title_str[1] == "V":
                         self.sections["Version"] = sct_items
                     elif section_title_str[1] == "W":
@@ -205,10 +206,10 @@ class LASFile(object):
                             break
                     sct_contents = "\n".join(contents)
 
-                    if section_title[1] == "O":
+                    if section_title_str[1] == "O":
                         self.sections["Other"] = sct_contents
                     else:
-                        self.sections[section_title[1:]] = sct_contents
+                        self.sections[section_title_str[1:]] = sct_contents
 
                 elif section_type == "Data":
                     logger.debug("Storing reference and returning later...")
