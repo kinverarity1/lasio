@@ -124,8 +124,6 @@ class LASFile(object):
 
         file_obj = ''
         try:
-            file_obj, self.encoding = reader.open_file(file_ref, **kwargs)
-
             logger.debug(
                 "Fetching substitutions for read_policy {} and null policy {}".format(
                     read_policy, null_policy
@@ -139,12 +137,14 @@ class LASFile(object):
             provisional_wrapped = "YES"
             provisional_null = None
 
-            section_positions = reader.find_sections_in_file(file_ref)
+            section_positions = reader.find_sections_in_file(str(file_ref))
             logger.debug("Found {} sections".format(len(section_positions)))
             if len(section_positions) == 0:
                 raise KeyError("No ~ sections found. Is this a LAS file?")
 
             data_section_indices = []
+            file_obj, self.encoding = reader.open_file(file_ref, **kwargs)
+
             for i, (k, first_line, last_line, section_title) in enumerate(
                 section_positions
             ):
@@ -153,15 +153,27 @@ class LASFile(object):
                 section_title_str = section_title.decode(self.encoding)
 
                 section_type = reader.determine_section_type(section_title_str)
-                logger.debug(
-                    "Parsing {typ} section at lines {first_line}-{last_line} ({k} bytes) {title}".format(
-                        typ=section_type,
-                        title=section_title_str,
-                        first_line=first_line + 1,
-                        last_line=last_line + 1,
-                        k=k,
+                try:
+                    logger.debug(
+                        "Parsing {typ} section at lines {first_line}-{last_line} ({k} bytes) {title}".format(
+                            typ=section_type,
+                            title=section_title_str,
+                            first_line=first_line + 1,
+                            last_line=last_line + 1,
+                            k=k,
+                        )
                     )
-                )
+                # for Python 2.7
+                except UnicodeEncodeError :
+                    logger.debug(
+                        "Parsing {typ} section at lines {first_line}-{last_line} ({k} bytes) {title}".format(
+                            typ=section_type,
+                            title=section_title_str.encode(self.encoding),
+                            first_line=first_line + 1,
+                            last_line=last_line + 1,
+                            k=k,
+                        )
+                    )
 
                 # Read traditional LAS header item section
                 if section_type == "Header items":

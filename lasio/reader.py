@@ -1,4 +1,5 @@
 import codecs
+import io
 import logging
 import os
 import re
@@ -135,7 +136,7 @@ def open_with_codecs(
 
     Keyword Arguments:
         encoding (str): character encoding to open file_ref with, using
-            :func:`codecs.open`.
+            :func:`io.open`.
         encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
             handle errors with encodings (see
             `this section
@@ -193,7 +194,7 @@ def open_with_codecs(
             filename, encoding, encoding_errors
         )
     )
-    file_obj = codecs.open(
+    file_obj = io.open(
         filename, mode="r", encoding=encoding, errors=encoding_errors
     )
     return file_obj, encoding
@@ -203,7 +204,7 @@ def adhoc_test_encoding(filename):
     test_encodings = ["ascii", "windows-1252", "latin-1"]
     for i in test_encodings:
         encoding = i
-        with codecs.open(filename, mode="r", encoding=encoding) as f:
+        with io.open(filename, mode="r", encoding=encoding) as f:
             try:
                 f.readline()
                 break
@@ -664,7 +665,13 @@ def parse_header_items_section(
     line_no = line_nos[0]
     title = file_obj.readline()
     title = title.strip("\n").strip()
-    logger.debug("Line {}: Section title parsed as '{}'".format(line_no + 1, title))
+    try:
+        logger.debug("Line {}: Section title parsed as '{}'".format(line_no + 1, title))
+    except UnicodeEncodeError:
+        logger.debug(
+            "Line {}: Section title parsed as '{}'".format(
+                line_no + 1, title.encode(file_obj.encoding)))
+
 
     parser = SectionParser(title, version=version)
 
@@ -752,7 +759,10 @@ class SectionParser(object):
             self.func = self.curves
             # Remove '~' and capitalize.
             self.section_name2 = title[1:].lower().capitalize()
-            logger.info("Unknown section name {}".format(title.upper()))
+            try:
+                logger.info("Unknown section name {}".format(title.upper()))
+            except UnicodeEncodeError:
+                logger.info("Unknown section name {}".format(title.upper().encode('utf-8')))
 
         self.version = version
         self.section_name = title
