@@ -1,4 +1,5 @@
 import codecs
+import io
 import logging
 import os
 import re
@@ -135,7 +136,7 @@ def open_with_codecs(
 
     Keyword Arguments:
         encoding (str): character encoding to open file_ref with, using
-            :func:`codecs.open`.
+            :func:`io.open`.
         encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
             handle errors with encodings (see
             `this section
@@ -193,7 +194,7 @@ def open_with_codecs(
             filename, encoding, encoding_errors
         )
     )
-    file_obj = codecs.open(
+    file_obj = io.open(
         filename, mode="r", encoding=encoding, errors=encoding_errors
     )
     return file_obj, encoding
@@ -203,7 +204,7 @@ def adhoc_test_encoding(filename):
     test_encodings = ["ascii", "windows-1252", "latin-1"]
     for i in test_encodings:
         encoding = i
-        with codecs.open(filename, mode="r", encoding=encoding) as f:
+        with io.open(filename, mode="r", encoding=encoding) as f:
             try:
                 f.readline()
                 break
@@ -270,27 +271,33 @@ def find_sections_in_file(file_obj):
     """Find LAS sections in a file.
 
     Returns: a list of lists *(k, first_line_no, last_line_no, line]*.
-        *k* is the position in the *file_obj* in bytes,
+        *file_pos* is the position in the *file_obj* in bytes,
         *first_line_no* is the first line number of the section (starting
         from zero), and *line* is the contents of the section title/definition
         i.e. beginning with ``~`` but stripped of beginning or ending whitespace
         or line breaks.
 
     """
-    k = 0
+    file_pos = int(file_obj.tell())
     starts = []
     ends = []
-    for i, line in enumerate(file_obj):
+    line_no = 0
+    line = file_obj.readline()
+    # for i, line in enumerate(file_obj):
+    while line:
         sline = line.strip().strip("\n")
         if sline.startswith("~"):
-            starts.append((k, i, sline))
+            starts.append((file_pos, line_no, sline))
             if len(starts) > 1:
-                ends.append(i - 1)
-        k += len(line)
-    ends.append(i)
+                ends.append(line_no - 1)
+        file_pos = int(file_obj.tell())
+        line = file_obj.readline()
+        line_no = line_no + 1
+
+    ends.append(line_no)
     section_positions = []
-    for j, (k, i, sline) in enumerate(starts):
-        section_positions.append((k, i, ends[j], sline))
+    for j, (file_pos, first_line_no, sline) in enumerate(starts):
+        section_positions.append((file_pos, first_line_no, ends[j], sline))
     return section_positions
 
 
