@@ -254,6 +254,14 @@ class LASFile(object):
                             if len(self.curves) > n_columns:
                                 n_columns_in_arr = n_columns
 
+                        #---------------------------------------------------------------------
+                        # TODO:
+                        # This enables tests/test_read.py::test_barebones_missing_all_sections
+                        # to pass, but may not be the complete or final solution.
+                        #---------------------------------------------------------------------
+                        if len(self.curves) == 0 and n_columns > 0:
+                            n_columns_in_arr = n_columns
+
                         logger.debug(
                             "Data array (size {}) assumed to have {} columns "
                             "({} curves defined)".format(
