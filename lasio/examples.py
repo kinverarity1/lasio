@@ -84,7 +84,10 @@ def open_github_example(
                 encoding = "utf-8"
         else:
             encoding = response.headers.get_content_charset()
-        file_ref = StringIO(response.read().decode(encoding))
+        # newline=None causes StringIO to use universal-newline:
+        # Lines in the input can end in '\n', '\r', or '\r\n', and these are
+        # translated into '\n' before being returned to the caller.
+        file_ref = StringIO(response.read().decode(encoding), newline=None)
     return LASFile(file_ref, **kwargs)
 
 

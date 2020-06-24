@@ -109,7 +109,10 @@ def open_file(file_ref, **encoding_kwargs):
                         encoding = "utf-8"
                 else:
                     encoding = response.headers.get_content_charset()
-                file_ref = StringIO(response.read().decode(encoding))
+                # newline=None causes StringIO to use universal-newline:
+                # Lines in the input can end in '\n', '\r', or '\r\n', and these are
+                # translated into '\n' before being returned to the caller.
+                file_ref = StringIO(response.read().decode(encoding), newline=None)
                 logger.debug("Retrieved data decoded via {}".format(encoding))
         elif len(lines) > 1:  # it's LAS data as a string.
             file_ref = StringIO(file_ref)
