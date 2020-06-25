@@ -96,7 +96,12 @@ def open_file(file_ref, **encoding_kwargs):
 
                 response = urllib2.urlopen(first_line)
                 encoding = response.headers.getparam("charset")
-                file_ref = StringIO(response.read())
+
+                tmp_str = response.read()
+                tmp_list = tmp_str.splitlines()
+                new_str = "\n".join(tmp_list)
+                # file_ref = StringIO(response.read())
+                file_ref = StringIO(new_str)
                 logger.debug("Retrieved data had encoding {}".format(encoding))
             except ImportError:
                 import urllib.request
