@@ -21,6 +21,25 @@ def test_open_url():
              "/1.2/sample_curve_api.las")
 
 
+def test_open_url_different_newlines():
+    las = read("https://raw.githubusercontent.com/dcslagel/"
+             "lasio/add-universal-newline-testcase/tests/examples/2.0/sample_2.0_universal_newline.las")
+    assert las.well.keys() == [
+        'STRT',
+        'STOP',
+        'STEP',
+        'NULL',
+        'COMP',
+        'WELL',
+        'FLD',
+        'LOC',
+        'PROV',
+        'SRVC',
+        'DATE',
+        'UWI'
+    ]
+
+
 def test_open_file_object():
     with open(egfn("sample.las"), mode="r") as f:
         l = read(f)
