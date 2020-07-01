@@ -22,8 +22,9 @@ def test_open_url():
 
 
 def test_open_url_different_newlines():
-    las = read("https://raw.githubusercontent.com/dcslagel/"
-             "lasio/add-universal-newline-testcase/tests/examples/2.0/sample_2.0_universal_newline.las")
+    las = read("https://raw.githubusercontent.com/kinverarity1/"
+               "lasio/master/tests/examples"
+               "/2.0/sample_2.0_universal_newline.las")
     assert las.well.keys() == [
         'STRT',
         'STOP',
