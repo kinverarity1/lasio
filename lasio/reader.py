@@ -705,18 +705,25 @@ class SectionParser(object):
             self.func = self.metadata
             self.section_name2 = "Version"
         else:
-            raise KeyError("Unknown section name {}".format(title.upper()))
+            # raise KeyError("Unknown section name {}".format(title.upper()))
+            print("Unknown section name {}".format(title.upper()))
+            self.func = self.metadata
+            self.section_name2 = title
+            self.default_order = 'value:descr'
+            self.orders = {}
 
         self.version = version
         self.section_name = title
 
         defs = defaults.ORDER_DEFINITIONS
-        section_orders = defs[self.version][self.section_name2]
-        self.default_order = section_orders[0]  #
-        self.orders = {}
-        for order, mnemonics in section_orders[1:]:
-            for mnemonic in mnemonics:
-                self.orders[mnemonic] = order
+
+        if self.section_name2 in defs[self.version]:
+            section_orders = defs[self.version][self.section_name2]
+            self.default_order = section_orders[0]  #
+            self.orders = {}
+            for order, mnemonics in section_orders[1:]:
+                for mnemonic in mnemonics:
+                    self.orders[mnemonic] = order
 
     def __call__(self, **keys):
         """Return the correct object for this type of section.
