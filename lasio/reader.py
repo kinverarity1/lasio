@@ -705,8 +705,7 @@ class SectionParser(object):
             self.func = self.metadata
             self.section_name2 = "Version"
         else:
-            # raise KeyError("Unknown section name {}".format(title.upper()))
-            print("Unknown section name {}".format(title.upper()))
+            logger.info("Unknown section name {}".format(title.upper()))
             self.func = self.metadata
             self.section_name2 = title
             self.default_order = 'value:descr'
