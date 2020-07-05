@@ -20,6 +20,8 @@ the well level. lasio is primarily for reading & writing LAS files.
 
 Note this is *not* a package for reading LiDAR data (also called "LAS files").
 
+**Update**: lasio will [no longer](https://github.com/kinverarity1/lasio/issues/364) support Python 2.7 from August 2020. The last version of lasio with Python 2.7 support will be version 0.26.
+
 ## Documentation
 
 See here for the [complete lasio package
