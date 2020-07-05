@@ -196,8 +196,10 @@ class LASFile(object):
                     line_no = first_line
                     contents = []
                     for line in file_obj:
+                        if line.startswith('~'):
+                            continue
                         line_no += 1
-                        contents.append(line.strip("\n"))
+                        contents.append(line.strip("\n").strip())
                         if line_no == last_line:
                             break
                     sct_contents = "\n".join(contents)
