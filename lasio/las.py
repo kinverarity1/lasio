@@ -236,7 +236,13 @@ class LASFile(object):
 
                     if data.size > 0:
                         # TODO: check whether this treatment of NULLs is correct
-                        arr[arr == provisional_null] = np.nan
+                        logger.debug("~A data {}".format(arr))
+                        if version_NULL:
+                            arr[arr == provisional_null] = np.nan
+                        logger.debug(
+                            "~A after NULL replacement data {}".format(arr)
+                        )
+
 
                         # Provisionally, assume that the number of columns represented
                         # by the data section's array is equal to the number of columns
