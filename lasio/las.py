@@ -255,8 +255,7 @@ class LASFile(object):
                         # section's number of columns instead.
 
                         if provisional_wrapped == "NO":
-                            if len(self.curves) > n_columns:
-                                n_columns_in_arr = n_columns
+                            n_columns_in_arr = n_columns
 
                         #---------------------------------------------------------------------
                         # TODO:
