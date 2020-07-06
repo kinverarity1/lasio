@@ -449,7 +449,7 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
     return sections
 
 
-def inspect_data_section(file_obj, line_nos):
+def inspect_data_section(file_obj, line_nos, regexp_subs):
     """Determine how many columns there are in the data section.
 
     Arguments:
@@ -467,6 +467,8 @@ def inspect_data_section(file_obj, line_nos):
     for i, line in enumerate(file_obj):
         line_no = line_no + 1
         line = line.strip("\n").strip()
+        for pattern, sub_str in regexp_subs:
+            line = re.sub(pattern, sub_str, line)
         n_items = len(line.split())
         logger.debug("Line {}: {} items counted in '{}'".format(line_no + 1, n_items, line))
         item_counts.append(n_items)
