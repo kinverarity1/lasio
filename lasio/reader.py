@@ -449,12 +449,15 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
     return sections
 
 
-def inspect_data_section(file_obj, line_nos):
+def inspect_data_section(file_obj, line_nos, regexp_subs):
     """Determine how many columns there are in the data section.
 
     Arguments:
         file_obj: file-like object open for reading at the beginning of the section
         line_nos (tuple): the first and last line no of the section to read
+        regexp_subs (list): each item should be a tuple of the pattern and
+            substitution string for a call to re.sub() on each line of the
+            data section. See defaults.py READ_SUBS and NULL_SUBS for examples.
 
     Returns: integer number of columns or -1 where they are different.
 
@@ -467,6 +470,8 @@ def inspect_data_section(file_obj, line_nos):
     for i, line in enumerate(file_obj):
         line_no = line_no + 1
         line = line.strip("\n").strip()
+        for pattern, sub_str in regexp_subs:
+            line = re.sub(pattern, sub_str, line)
         n_items = len(line.split())
         logger.debug("Line {}: {} items counted in '{}'".format(line_no + 1, n_items, line))
         item_counts.append(n_items)

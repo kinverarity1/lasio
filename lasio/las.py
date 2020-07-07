@@ -221,7 +221,7 @@ class LASFile(object):
 
                     file_obj.seek(k)
                     n_columns = reader.inspect_data_section(
-                        file_obj, (first_line, last_line)
+                        file_obj, (first_line, last_line), regexp_subs
                     )
 
                     file_obj.seek(k)
@@ -255,8 +255,7 @@ class LASFile(object):
                         # section's number of columns instead.
 
                         if provisional_wrapped == "NO":
-                            if len(self.curves) > n_columns:
-                                n_columns_in_arr = n_columns
+                            n_columns_in_arr = n_columns
 
                         #---------------------------------------------------------------------
                         # TODO:

@@ -1,10 +1,12 @@
 language: python
 python:
-    - "2.7"
     - "3.5"
     - "3.6"
     - "3.7"
     - "3.8"
+before_install:
+  - pip install -U pip
+  - pip install -U pytest
 install:
   - pip install --editable ".[all]"
   - pip install pytest>=3.6 pytest-cov coverage pathlib
