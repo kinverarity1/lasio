@@ -455,6 +455,9 @@ def inspect_data_section(file_obj, line_nos, regexp_subs):
     Arguments:
         file_obj: file-like object open for reading at the beginning of the section
         line_nos (tuple): the first and last line no of the section to read
+        regexp_subs (list): each item should be a tuple of the pattern and
+            substitution string for a call to re.sub() on each line of the
+            data section. See defaults.py READ_SUBS and NULL_SUBS for examples.
 
     Returns: integer number of columns or -1 where they are different.
 
