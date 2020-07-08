@@ -1,4 +1,5 @@
 import codecs
+import io
 import logging
 import os
 import re
@@ -141,7 +142,7 @@ def open_with_codecs(
 
     Keyword Arguments:
         encoding (str): character encoding to open file_ref with, using
-            :func:`codecs.open`.
+            :func:`io.open`.
         encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
             handle errors with encodings (see
             `this section
@@ -199,7 +200,7 @@ def open_with_codecs(
             filename, encoding, encoding_errors
         )
     )
-    file_obj = codecs.open(
+    file_obj = io.open(
         filename, mode="r", encoding=encoding, errors=encoding_errors
     )
     return file_obj, encoding
@@ -209,7 +210,7 @@ def adhoc_test_encoding(filename):
     test_encodings = ["ascii", "windows-1252", "latin-1"]
     for i in test_encodings:
         encoding = i
-        with codecs.open(filename, mode="r", encoding=encoding) as f:
+        with io.open(filename, mode="r", encoding=encoding) as f:
             try:
                 f.readline()
                 break
@@ -272,6 +273,60 @@ def get_encoding(auto, raw):
     return result["encoding"]
 
 
+def find_sections_in_file(file_obj):
+    """Find LAS sections in a file.
+
+    Returns: a list of lists *(k, first_line_no, last_line_no, line]*.
+        *file_pos* is the position in the *file_obj* in bytes,
+        *first_line_no* is the first line number of the section (starting
+        from zero), and *line* is the contents of the section title/definition
+        i.e. beginning with ``~`` but stripped of beginning or ending whitespace
+        or line breaks.
+
+    """
+    file_pos = int(file_obj.tell())
+    starts = []
+    ends = []
+    line_no = 0
+    line = file_obj.readline()
+    # for i, line in enumerate(file_obj):
+    while line:
+        sline = line.strip().strip("\n")
+        if sline.startswith("~"):
+            starts.append((file_pos, line_no, sline))
+            if len(starts) > 1:
+                ends.append(line_no - 1)
+        file_pos = int(file_obj.tell())
+        line = file_obj.readline()
+        line_no = line_no + 1
+
+    ends.append(line_no)
+    section_positions = []
+    for j, (file_pos, first_line_no, sline) in enumerate(starts):
+        section_positions.append((file_pos, first_line_no, ends[j], sline))
+    return section_positions
+
+
+def determine_section_type(section_title):
+    """Return the type of the LAS section based on its title
+
+        >>> determine_section_type("~Curves Section")
+        "Header"
+        >>> determine_section_type("~ASCII")
+        "Data"
+
+    Returns: bool
+
+    """
+    stitle = section_title.strip().strip("\n")
+    if stitle[:2] == "~A":
+        return "Data"
+    elif stitle[:2] == "~O":
+        return "Header (other)"
+    else:
+        return "Header items"
+
+
 def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False):
     """Read file contents into memory.
 
@@ -313,10 +368,17 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
     section_exists = False
 
     for i, line in enumerate(file_obj):
+        logger.debug("Reading line {i}: {line}".format(i=i, line=line.strip("\n")))
         line = line.strip()
         if not line:
             continue
         if line.upper().startswith("~A"):
+            logger.debug(
+                "Line {i}: start of data section {line}".format(
+                    i=i, line=line.strip("\n")
+                )
+            )
+
             # HARD CODED FOR VERSION 1.2 and 2.0; needs review for 3.0
             # We have finished looking at the metadata and need
             # to start reading numerical data.
@@ -356,6 +418,11 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
             break
 
         elif line.startswith("~"):
+            logger.debug(
+                "Line {i}: start of header section {line}".format(
+                    i=i, line=line.strip("\n")
+                )
+            )
             if section_exists:
                 # We have ended a section and need to start the next
                if not sect_title_line is None:
@@ -407,13 +474,49 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
     return sections
 
 
-def read_data_section_iterative(file_obj, regexp_subs, value_null_subs):
+def inspect_data_section(file_obj, line_nos, regexp_subs):
+    """Determine how many columns there are in the data section.
+
+    Arguments:
+        file_obj: file-like object open for reading at the beginning of the section
+        line_nos (tuple): the first and last line no of the section to read
+        regexp_subs (list): each item should be a tuple of the pattern and
+            substitution string for a call to re.sub() on each line of the
+            data section. See defaults.py READ_SUBS and NULL_SUBS for examples.
+
+    Returns: integer number of columns or -1 where they are different.
+
+    """
+    line_no = line_nos[0]
+    title_line = file_obj.readline()
+
+    item_counts = []
+
+    for i, line in enumerate(file_obj):
+        line_no = line_no + 1
+        line = line.strip("\n").strip()
+        for pattern, sub_str in regexp_subs:
+            line = re.sub(pattern, sub_str, line)
+        n_items = len(line.split())
+        logger.debug("Line {}: {} items counted in '{}'".format(line_no + 1, n_items, line))
+        item_counts.append(n_items)
+        if (line_no == line_nos[1]) or (i >= 20):
+            break
+
+    try:
+        assert len(set(item_counts)) == 1
+    except AssertionError:
+        return -1
+    else:
+        return item_counts[0]
+
+
+def read_data_section_iterative(file_obj, line_nos, regexp_subs, value_null_subs):
     """Read data section into memory.
 
     Arguments:
-        file_obj (open file-like object): should be positioned in line-by-line
-            reading mode, with the last line read being the title of the
-            ~ASCII data section.
+        file_obj: file-like object open for reading at the beginning of the section
+        line_nos (tuple): the first and last line no of the section to read
         regexp_subs (list): each item should be a tuple of the pattern and
             substitution string for a call to re.sub() on each line of the
             data section. See defaults.py READ_SUBS and NULL_SUBS for examples.
@@ -425,8 +528,15 @@ def read_data_section_iterative(file_obj, regexp_subs, value_null_subs):
 
     """
 
-    def items(f):
+    title = file_obj.readline()
+
+    def items(f, start_line_no, end_line_no):
+        line_no = start_line_no
         for line in f:
+            line_no += 1
+            logger.debug(
+                "Line {}: reading data '{}'".format(line_no + 1, line.strip("\n").strip())
+            )
             for pattern, sub_str in regexp_subs:
                 line = re.sub(pattern, sub_str, line)
             line = line.replace(chr(26), "")
@@ -435,8 +545,12 @@ def read_data_section_iterative(file_obj, regexp_subs, value_null_subs):
                     yield np.float64(item)
                 except ValueError:
                     yield item
+            if line_no == end_line_no:
+                break
 
-    array = np.array([i for i in items(file_obj)])
+    array = np.array(
+        [i for i in items(file_obj, start_line_no=line_nos[0], end_line_no=line_nos[1])]
+    )
     for value in value_null_subs:
         array[array == value] = np.nan
     return array
@@ -514,14 +628,19 @@ def get_substitutions(read_policy, null_policy):
     return regexp_subs, numerical_subs, version_NULL
 
 
-def parse_header_section(
-    sectdict, version, ignore_header_errors=False, mnemonic_case="preserve"
+def parse_header_items_section(
+    file_obj,
+    line_nos,
+    version,
+    ignore_header_errors=False,
+    mnemonic_case="preserve",
+    ignore_comments=("#",),
 ):
     """Parse a header section dict into a SectionItems containing HeaderItems.
 
     Arguments:
-        sectdict (dict): object returned from
-            :func:`lasio.reader.read_file_contents`
+        file_obj: file-like object open for reading at the beginning of the section
+        line_nos (tuple): the first and last line no of the section to read
         version (float): either 1.2 or 2.0
 
     Keyword Arguments:
@@ -531,13 +650,18 @@ def parse_header_section(
         mnemonic_case (str): 'preserve': keep the case of HeaderItem mnemonics
                              'upper': convert all HeaderItem mnemonics to uppercase
                              'lower': convert all HeaderItem mnemonics to lowercase
+        ignore_comments (False, True, or list): ignore lines starting with these
+            characters; by default True as '#'.
 
     Returns:
         :class:`lasio.SectionItems`
 
     """
-    title = sectdict["title"]
-    assert len(sectdict["lines"]) == len(sectdict["line_nos"])
+    line_no = line_nos[0]
+    title = file_obj.readline()
+    title = title.strip("\n").strip()
+    logger.debug("Line {}: Section title parsed as '{}'".format(line_no + 1, title))
+
     parser = SectionParser(title, version=version)
 
     section = SectionItems()
@@ -545,30 +669,41 @@ def parse_header_section(
     if not mnemonic_case == "preserve":
         section.mnemonic_transforms = True
 
-    for i in range(len(sectdict["lines"])):
-        line = sectdict["lines"][i]
-        j = sectdict["line_nos"][i]
+    for i, line in enumerate(file_obj):
+        line_no = line_no + 1
+        line = line.strip("\n").strip()
         if not line:
-            continue
-        try:
-            values = read_line(line, section_name=parser.section_name2)
-        except:
-            message = 'line {} (section {}): "{}"'.format(
-                # traceback.format_exc().splitlines()[-1].strip('\n'),
-                j,
-                title,
-                line,
+            logger.debug("Line {}: empty, ignoring".format(line_no + 1))
+        elif line[0] in ignore_comments:
+            logger.debug(
+                "Line {}: treating as a comment and ignoring: '{}'".format(
+                    line_no + 1, line
+                )
             )
-            if ignore_header_errors:
-                logger.warning(message)
-            else:
-                raise exceptions.LASHeaderError(message)
         else:
-            if mnemonic_case == "upper":
-                values["name"] = values["name"].upper()
-            elif mnemonic_case == "lower":
-                values["name"] = values["name"].lower()
-            section.append(parser(**values))
+            # We have arrived at a new section so break and return the previous
+            # section's object.
+            if line.startswith('~'):
+                break
+            try:
+                values = read_line(line, section_name=parser.section_name2)
+            except:
+                message = 'Line {} (section {}): "{}"'.format(line_no + 1, title, line)
+                if ignore_header_errors:
+                    logger.warning(message)
+                else:
+                    raise exceptions.LASHeaderError(message)
+            else:
+                if mnemonic_case == "upper":
+                    values["name"] = values["name"].upper()
+                elif mnemonic_case == "lower":
+                    values["name"] = values["name"].lower()
+                item = parser(**values)
+                logger.debug("Line {}: parsed as {}".format(line_no + 1, item))
+                section.append(item)
+        if line_no == line_nos[1]:
+            break
+
     return section
 
 
@@ -599,17 +734,25 @@ class SectionParser(object):
         elif title.upper().startswith("~V"):
             self.func = self.metadata
             self.section_name2 = "Version"
+        else:
+            logger.info("Unknown section name {}".format(title.upper()))
+            self.func = self.metadata
+            self.section_name2 = title
+            self.default_order = 'value:descr'
+            self.orders = {}
 
         self.version = version
         self.section_name = title
 
         defs = defaults.ORDER_DEFINITIONS
-        section_orders = defs[self.version][self.section_name2]
-        self.default_order = section_orders[0]  #
-        self.orders = {}
-        for order, mnemonics in section_orders[1:]:
-            for mnemonic in mnemonics:
-                self.orders[mnemonic] = order
+
+        if self.section_name2 in defs[self.version]:
+            section_orders = defs[self.version][self.section_name2]
+            self.default_order = section_orders[0]  #
+            self.orders = {}
+            for order, mnemonics in section_orders[1:]:
+                for mnemonic in mnemonics:
+                    self.orders[mnemonic] = order
 
     def __call__(self, **keys):
         """Return the correct object for this type of section.
