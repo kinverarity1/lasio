@@ -545,30 +545,31 @@ def parse_header_section(
     if not mnemonic_case == "preserve":
         section.mnemonic_transforms = True
 
-    for i in range(len(sectdict["lines"])):
-        line = sectdict["lines"][i]
-        j = sectdict["line_nos"][i]
-        if not line:
-            continue
-        try:
-            values = read_line(line, section_name=parser.section_name2)
-        except:
-            message = 'line {} (section {}): "{}"'.format(
-                # traceback.format_exc().splitlines()[-1].strip('\n'),
-                j,
-                title,
-                line,
-            )
-            if ignore_header_errors:
-                logger.warning(message)
+    if not title.startswith('~A'):
+        for i in range(len(sectdict["lines"])):
+            line = sectdict["lines"][i]
+            j = sectdict["line_nos"][i]
+            if not line:
+                continue
+            try:
+                values = read_line(line, section_name=parser.section_name2)
+            except:
+                message = 'line {} (section {}): "{}"'.format(
+                    # traceback.format_exc().splitlines()[-1].strip('\n'),
+                    j,
+                    title,
+                    line,
+                )
+                if ignore_header_errors:
+                    logger.warning(message)
+                else:
+                    raise exceptions.LASHeaderError(message)
             else:
-                raise exceptions.LASHeaderError(message)
-        else:
-            if mnemonic_case == "upper":
-                values["name"] = values["name"].upper()
-            elif mnemonic_case == "lower":
-                values["name"] = values["name"].lower()
-            section.append(parser(**values))
+                if mnemonic_case == "upper":
+                    values["name"] = values["name"].upper()
+                elif mnemonic_case == "lower":
+                    values["name"] = values["name"].lower()
+                section.append(parser(**values))
     return section
 
 
