@@ -8,19 +8,26 @@ This is a Python 2.7 and 3.3+ package to read and write Log ASCII Standard
 (LAS) files, used for borehole data such as geophysical, geological, or
 petrophysical logs. It's compatible with versions 1.2 and 2.0 of the LAS file
 specification, published by the [Canadian Well Logging
-Society](https://www.cwls.org/products/#products-las). Support for LAS 3 is [being worked on](https://github.com/kinverarity1/lasio/issues/5). In
+Society](https://www.cwls.org/products/#products-las). Support for LAS 3 is 
+[being worked on](https://github.com/kinverarity1/lasio/issues/5). In
 principle it is designed to read as many types of LAS files as possible,
 including ones containing common errors or non-compliant formatting.
 
-Depending on your particular application you may also want to check out
-[striplog](https://github.com/agile-geoscience/striplog) for
-stratigraphic/lithological data, and
-[welly](https://github.com/agile-geoscience/welly) for dealing with data at
-the well level. lasio is primarily for reading & writing LAS files.
+lasio is primarily for reading & writing data and metadata to and from LAS files. 
+lasio does not mind whether LAS files meet the formal specification before reading
+data from them; check out the project [lascheck](https://github.com/MandarJKulkarni/lascheck)
+for doing that sort of thing. If you are working specifically with lithological or
+stratigraphic data, you may find [striplog](https://github.com/agile-geoscience/striplog)
+helpful, while if you are focused on working at the well level, please take a
+look at [welly](https://github.com/agile-geoscience/welly), which provides
+much more functionality in that area.
 
-Note this is *not* a package for reading LiDAR data (also called "LAS files").
+Note this is not a package for reading LiDAR data (also called "LAS files"); 
+you may want to check out [laspy](https://github.com/laspy/laspy) for that.
 
-**Update**: lasio will [no longer](https://github.com/kinverarity1/lasio/issues/364) support Python 2.7 from August 2020. The last version of lasio with Python 2.7 support will be version 0.26.
+**Update**: lasio will [no longer](https://github.com/kinverarity1/lasio/issues/364) 
+support Python 2.7 from August 2020. The last version of lasio with Python 2.7 support 
+will be version 0.26.
 
 ## Documentation
 
