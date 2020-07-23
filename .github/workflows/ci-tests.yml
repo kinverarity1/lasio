@@ -30,7 +30,4 @@ jobs:
         pip install pytest coverage pytest-cov codecov pathlib
     - name: Test with pytest
       run: |
-        coverage run --branch -m pytest tests
-    - name: Coverage report
-      run: |
-        coverage report --precision=2 --fail-under=80
+        coverage run --branch -m pytest tests --cov-fail-under=80 --cov-branch
