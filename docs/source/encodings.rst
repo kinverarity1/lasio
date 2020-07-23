@@ -37,7 +37,7 @@ packages are installed then lasio will use them by default:
 This may still result in an error, or incorrectly decoded characters.
 
 If you are certain that you have no `"extended characters" <https://en.wikipedia.org/wiki/Extended_ASCII>`__
-(or that you don't care), you can easily speed up lasio's performance by 
+(or that you don't care), you can easily speed up lasio's performance by
 using:
 
 .. code-block:: python

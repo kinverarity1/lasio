@@ -73,7 +73,7 @@ class HeaderItem(OrderedDict):
     def set_session_mnemonic_only(self, value):
         '''Set the mnemonic for session use.
 
-        See source comments for :class:`lasio.las_items.HeaderItem.__init__` 
+        See source comments for :class:`lasio.HeaderItem.__init__`
         for a more in-depth explanation.
 
         '''
@@ -98,13 +98,13 @@ class HeaderItem(OrderedDict):
                 'CurveItem only has restricted items (not %s)' % key)
 
     def __setattr__(self, key, value):
-        
+
         if key == 'mnemonic':
-            
+
             # The user wants to rename the item! This means we must send their
             # new mnemonic to the original_mnemonic attribute. Remember that the
             # mnemonic attribute is for session use only.
-            
+
             self.original_mnemonic = value
             self.set_session_mnemonic_only(self.useful_mnemonic)
         else:
@@ -112,8 +112,8 @@ class HeaderItem(OrderedDict):
 
     def __repr__(self):
         result = (
-            '%s(mnemonic=%s, unit=%s, value=%s, '
-            'descr=%s)' % (
+            '%s(mnemonic="%s", unit="%s", value="%s", '
+            'descr="%s")' % (
                 self.__class__.__name__, self.mnemonic, self.unit, self.value,
                 self.descr))
         if len(result) > 80:
@@ -125,7 +125,7 @@ class HeaderItem(OrderedDict):
         return p.text(self.__repr__())
 
     def __reduce__(self):
-        return self.__class__, (self.mnemonic, self.unit, self.value, 
+        return self.__class__, (self.mnemonic, self.unit, self.value,
                                 self.descr, self.data)
 
     @property
@@ -147,7 +147,7 @@ class CurveItem(HeaderItem):
 
     '''Dictionary/namedtuple-style object for a LAS curve.
 
-    See :class:`lasio.las_items.HeaderItem`` for the (keyword) arguments.
+    See :class:`lasio.HeaderItem`` for the (keyword) arguments.
 
     Keyword Arguments:
         data (array-like, 1-D): the curve's data.
@@ -167,8 +167,8 @@ class CurveItem(HeaderItem):
 
     def __repr__(self):
         return (
-            '%s(mnemonic=%s, unit=%s, value=%s, '
-            'descr=%s, original_mnemonic=%s, data.shape=%s)' % (
+            '%s(mnemonic="%s", unit="%s", value="%s", '
+            'descr="%s", original_mnemonic="%s", data.shape=%s)' % (
                 self.__class__.__name__, self.mnemonic, self.unit, self.value,
                 self.descr, self.original_mnemonic, self.data.shape))
 
@@ -201,7 +201,7 @@ class SectionItems(list):
         rstr_lines = []
         data = [['Mnemonic', 'Unit', 'Value', 'Description'],
                 ['--------', '----', '-----', '-----------']]
-        data += [[str(x) for x in [item.mnemonic, item.unit, item.value, 
+        data += [[str(x) for x in [item.mnemonic, item.unit, item.value,
                                    item.descr]] for item in self]
         col_widths = []
         for i in range(len(data[0])):
@@ -315,20 +315,24 @@ class SectionItems(list):
             key (int, str): either the mnemonic or the index.
             newitem (HeaderItem or str/float/int): the thing to be set.
 
-        If ``newitem`` is a :class:`lasio.las_items.HeaderItem` then the
+        If ``newitem`` is a :class:`lasio.HeaderItem` then the
         existing item will be replaced. Otherwise the existing item's ``value``
         attribute will be replaced.
 
         i.e. this allows us to do
 
+            >>> from lasio import SectionItems, HeaderItem
+            >>> section = SectionItems(
+            ...     [HeaderItem(mnemonic="OPERATOR", value="John")]
+            ... )
             >>> section.OPERATOR
-            HeaderItem(mnemonic='OPERATOR', value='John')
+            HeaderItem(mnemonic=OPERATOR, unit=, value=John, descr=)
             >>> section.OPERATOR = 'Kent'
             >>> section.OPERATOR
-            HeaderItem(mnemonic='OPERATOR', value='Kent')
+            HeaderItem(mnemonic=OPERATOR, unit=, value=Kent, descr=)
 
-        See :meth:`lasio.las_items.SectionItems.set_item` and 
-        :meth:`lasio.las_items.SectionItems.set_item_value`.
+        See :meth:`lasio.SectionItems.set_item` and
+        :meth:`lasio.SectionItems.set_item_value`.
 
         '''
         if isinstance(newitem, HeaderItem):
@@ -339,12 +343,16 @@ class SectionItems(list):
     def __getattr__(self, key):
         '''Provide attribute access via __contains__ e.g.
 
+            >>> from lasio import SectionItems, HeaderItem
+            >>> section = SectionItems(
+            ...     [HeaderItem(mnemonic="VERS", value=1.2)]
+            ... )
             >>> section['VERS']
-            HeaderItem(mnemonic='VERS', ...)
+            HeaderItem(mnemonic=VERS, unit=, value=1.2, descr=)
             >>> 'VERS' in section
             True
             >>> section.VERS
-            HeaderItem(mnemonic='VERS', ...)
+            HeaderItem(mnemonic=VERS, unit=, value=1.2, descr=)
 
         '''
         known_attrs = ['mnemonic_transforms', ]
@@ -354,12 +362,15 @@ class SectionItems(list):
         super(SectionItems, self).__getattr__(key)
 
     def __setattr__(self, key, value):
-        '''Allow access to :meth:`lasio.las_items.SectionItems.__setitem__`
+        '''Allow access to :meth:`lasio.SectionItems.__setitem__`
         via attribute access.
 
         '''
         if key in self:
             self[key] = value
+        elif isinstance(value, HeaderItem) or isinstance(value, CurveItem):
+            assert value.mnemonic == key
+            self.append(value)
         else:
             super(SectionItems, self).__setattr__(key, value)
 
@@ -367,7 +378,7 @@ class SectionItems(list):
         '''Replace an item by comparison of session mnemonics.
 
         Arguments:
-            key (str): the item mnemonic (or HeaderItem with mnemonic) 
+            key (str): the item mnemonic (or HeaderItem with mnemonic)
                 you want to replace.
             newitem (HeaderItem): the new item
 
@@ -378,7 +389,7 @@ class SectionItems(list):
             if self.mnemonic_compare(key, item.mnemonic):
 
                 # This is very important. We replace items where
-                # 'mnemonic' is equal - i.e. we do not check 
+                # 'mnemonic' is equal - i.e. we do not check
                 # against useful_mnemonic or original_mnemonic.
 
                 return super(SectionItems, self).__setitem__(i, newitem)

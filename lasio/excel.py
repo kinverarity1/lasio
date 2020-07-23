@@ -15,7 +15,7 @@ class ExcelConverter(object):
     '''Provide ability to export LAS data into an Excel spreadsheet.
 
     Arguments:
-        las (:class:`lasio.las.LASFile` object)
+        las (:class:`lasio.LASFile` object)
 
     '''
 
@@ -26,7 +26,7 @@ class ExcelConverter(object):
         '''Set LASFile object.
 
         Arguments:
-            las (:class:`lasio.las.LASFile` object)
+            las (:class:`lasio.LASFile` object)
 
         '''
         self.las = las
@@ -39,7 +39,7 @@ class ExcelConverter(object):
         Two sheets are created:
 
         * Header: contains all the header sections and metadata
-        * Curves: contains the data 
+        * Curves: contains the data
 
         '''
         wb = openpyxl.Workbook()
@@ -109,7 +109,7 @@ def main():
 
 
 def get_parser():
-    parser = argparse.ArgumentParser('Convert LAS file to XLSX', 
+    parser = argparse.ArgumentParser('Convert LAS file to XLSX',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('LAS_filename')
     parser.add_argument('XLSX_filename')
@@ -139,7 +139,7 @@ def main_bulk():
 
 
 def get_bulk_parser():
-    parser = argparse.ArgumentParser('Convert LAS files to XLSX', 
+    parser = argparse.ArgumentParser('Convert LAS files to XLSX',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('-g', '--glob', default='*.las', help='Match LAS files with this pattern')
     parser.add_argument('-r', '--recursive', action='store_true', help='Recurse through subfolders.', default=False)

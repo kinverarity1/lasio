@@ -60,13 +60,12 @@ Take this sample LAS 2.0 file:
     1669.875   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
     1669.750   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
 
-And we can use ``lasio`` to convert it to LAS 1.2:
+And we can use lasio to convert it to LAS 1.2:
 
-.. code-block:: ipython
+.. code-block:: python
 
-    In [31]: las = lasio.read("tests/examples/2.0/sample_2.0.las")
-
-    In [33]: las.write('example-as-v1.2.las', version=1.2)
+    >>> las = lasio.examples.open("2.0/sample_2.0.las")
+    >>> las.write('example-as-v1.2.las', version=1.2)
 
 .. code-block:: none
     :linenos:
@@ -217,26 +216,22 @@ header:
 
 .. code-block:: ipython
 
-    In [26]: las.version
-    Out[26]:
+    >>> las.version
     [HeaderItem(mnemonic=VERS, unit=, value=1.2, descr=CWLS log ASCII Standard -VERSION 1.20, original_mnemonic=VERS),
      HeaderItem(mnemonic=WRAP, unit=, value=YES, descr=Multiple lines per depth step, original_mnemonic=WRAP)]
-
-    In [27]: las.version.WRAP = 'NO'
-
-    In [28]: las.version.WRAP
-    Out[28]: HeaderItem(mnemonic=WRAP, unit=, value=NO, descr=Multiple lines per depth step, original_mnemonic=WRAP)
-
-    In [29]: las.write('example-unwrapped.las')
+    >>> las.version.WRAP = 'NO'
+    >>> las.version.WRAP
+    HeaderItem(mnemonic=WRAP, unit=, value=NO, descr=Multiple lines per depth step, original_mnemonic=WRAP)
+    >>> las.write('example-unwrapped.las')
     WARNING:lasio.writer:[v1.2] line #58 has 396 chars (>256)
     WARNING:lasio.writer:[v1.2] line #59 has 396 chars (>256)
     WARNING:lasio.writer:[v1.2] line #60 has 396 chars (>256)
     WARNING:lasio.writer:[v1.2] line #61 has 396 chars (>256)
     WARNING:lasio.writer:[v1.2] line #62 has 396 chars (>256)
 
-We get warnings because the LAS 1.2 standard doesn't allow writing lines longer
-than 256 characters. ``lasio`` provides the warning but still produces the long
-lines:
+We get warnings because the LAS 1.2 standard doesn't allow writing lines
+longer than 256 characters. lasio provides the warning but still produces the
+long lines:
 
 .. code-block:: none
     :linenos:
@@ -306,11 +301,9 @@ lines:
 
 If we decide to write the file in LAS 2.0 format, the warnings will go away:
 
-.. code-block:: ipython
+.. code-block:: python
 
-    In [23]: las.write('example-version-2.0.las', version=2.0)
-
-    In [24]:
+    >>> las.write('example-version-2.0.las', version=2.0)
 
 .. code-block:: none
     :linenos:

@@ -1,16 +1,14 @@
 Building a LAS file from scratch
 ================================
 
-When you create a LASFile from scratch, it comes with some default metadata:
+When you create a :class:`lasio.LASFile` from scratch, it comes with some
+default metadata:
 
-.. code-block:: ipython
+.. code-block:: python
 
-    In [5]: import lasio
-
-    In [6]: las = lasio.LASFile()
-
-    In [7]: las.header
-    Out[7]:
+    >>> import lasio
+    >>> las = lasio.LASFile()
+    >>> las.header
     {'Curves': [],
      'Other': '',
      'Parameter': [],
@@ -36,49 +34,41 @@ When you create a LASFile from scratch, it comes with some default metadata:
 
 In our case, let's set the correct date:
 
-.. code-block:: ipython
+.. code-block:: python
 
-    In [8]: from datetime import datetime
-
-    In [9]: las.well.DATE = str(datetime.today())
+    >>> from datetime import datetime
+    >>> las.well.DATE = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
 
 And add some new header fields:
 
-.. code-block:: ipython
+.. code-block:: python
 
-    In [10]: las.params['ENG'] = lasio.HeaderItem('ENG', value='Kent Inverarity')
-
-    In [11]: las.params['LMF'] = lasio.HeaderItem('LMF', value='GL')
-
-    In [12]: las.other = 'Example of how to create a LAS file from scratch using lasio'
+    >>> las.params['ENG'] = lasio.HeaderItem('ENG', value='Kent Inverarity')
+    >>> las.params['LMF'] = lasio.HeaderItem('LMF', value='GL')
+    >>> las.other = 'Example of how to create a LAS file from scratch using lasio'
 
 We will invent some data for a curve:
 
-.. code-block:: ipython
+.. code-block:: python
 
-    In [1]: import numpy as np
-
-    In [2]: depths = np.arange(10, 50, 0.5)
-
-    In [3]: synth = np.log10(depths)*5+np.random.random(len(depths))
-
-    In [4]: synth[:8] = np.nan
+    >>> import numpy as np
+    >>> depths = np.arange(10, 50, 0.5)
+    >>> synth = np.log10(depths)*5+np.random.random(len(depths))
+    >>> synth[:8] = np.nan
 
 \...add these to the LASFile object:
 
-.. code-block:: ipython
+.. code-block:: python
 
-    In [13]: las.add_curve('DEPT', depths, unit='m')
-
-    In [14]: las.add_curve('SYNTH', synth, descr='fake data')
+    >>> las.add_curve('DEPT', depths, unit='m')
+    >>> las.add_curve('SYNTH', synth, descr='fake data')
 
 And write the result to files:
 
-.. code-block:: ipython
+.. code-block:: python
 
-    In [16]: las.write('scratch_v1.2.las', version=1.2)
-
-    In [15]: las.write('scratch_v2.las', version=2)
+    >>> las.write('scratch_v1.2.las', version=1.2)
+    >>> las.write('scratch_v2.las', version=2)
 
 Here is the resulting scratch_v1.2.las:
 
@@ -94,24 +84,24 @@ Here is the resulting scratch_v1.2.las:
     STOP.m           49.5 : STOP DEPTH
     STEP.m            0.5 : STEP
     NULL.        -9999.25 : NULL VALUE
-    COMP.         COMPANY : 
-    WELL.            WELL : 
-    FLD .           FIELD : 
-    LOC .        LOCATION : 
-    PROV.        PROVINCE : 
-    CNTY.          COUNTY : 
-    STAT.           STATE : 
-    CTRY.         COUNTRY : 
-    SRVC. SERVICE COMPANY : 
+    COMP.         COMPANY :
+    WELL.            WELL :
+    FLD .           FIELD :
+    LOC .        LOCATION :
+    PROV.        PROVINCE :
+    CNTY.          COUNTY :
+    STAT.           STATE :
+    CTRY.         COUNTRY :
+    SRVC. SERVICE COMPANY :
     DATE.            DATE : 2017-11-04 15:33:20.963287
-    UWI .  UNIQUE WELL ID : 
-    API .      API NUMBER : 
+    UWI .  UNIQUE WELL ID :
+    API .      API NUMBER :
     ~Curves ----------------------------------------------------
-    DEPT .m  : 
+    DEPT .m  :
     SYNTH.   : fake data
     ~Params ----------------------------------------------------
-    ENG. Kent Inverarity : 
-    LMF.              GL : 
+    ENG. Kent Inverarity :
+    LMF.              GL :
     ~Other -----------------------------------------------------
     Example of how to create a LAS file from scratch using lasio
     ~ASCII -----------------------------------------------------
@@ -223,11 +213,11 @@ and scratch_v2.las:
     UWI .                            : UNIQUE WELL ID
     API .                            : API NUMBER
     ~Curves ----------------------------------------------------
-    DEPT .m  : 
+    DEPT .m  :
     SYNTH.   : fake data
     ~Params ----------------------------------------------------
-    ENG. Kent Inverarity : 
-    LMF.              GL : 
+    ENG. Kent Inverarity :
+    LMF.              GL :
     ~Other -----------------------------------------------------
     Example of how to create a LAS file from scratch using lasio
     ~ASCII -----------------------------------------------------

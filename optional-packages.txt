@@ -1,5 +1,0 @@
-pandas
-cchardet
-chardet
-openpyxl
-argparse

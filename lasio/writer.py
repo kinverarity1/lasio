@@ -3,6 +3,8 @@ import textwrap
 
 import numpy as np
 
+from copy import deepcopy
+
 from .las_items import HeaderItem, CurveItem, SectionItems, OrderedDict
 from . import defaults
 from . import exceptions
@@ -19,6 +21,7 @@ def write(
     STOP=None,
     STEP=None,
     fmt="%.5f",
+    column_fmt=None,
     len_numeric_field=None,
     data_width=79,
     header_width=60,
@@ -26,9 +29,9 @@ def write(
     """Write a LAS files.
 
     Arguments:
-        las (:class:`lasio.las.LASFile`)
+        las (:class:`lasio.LASFile`)
         file_object (file-like object open for writing): output
-        version (float or None): version of written file, either 1.2 or 2. 
+        version (float or None): version of written file, either 1.2 or 2.
             If this is None, ``las.version.VERS.value`` will be used.
         wrap (bool or None): whether to wrap the output data section.
             If this is None, ``las.version.WRAP.value`` will be used.
@@ -43,19 +46,30 @@ def write(
             be estimated from the first two rows of the first column.
         fmt (str): Python string formatting operator for numeric data to be
             used.
+        column_fmt (dict or None): use this to set a different format string
+            for specific columns from the data ndarray. E.g. to use ``'%.3f'``
+            for the depth column and ``'%.2f'`` for all the other columns,
+            you would use ``fmt='%.2f', column_fmt={0: '%.3f'}``.
         len_numeric_field (int): width of each numeric field column (must be
             greater than than all the formatted numeric values in the file).
         data_width (79): width of data field in characters
 
-    Creating an output file is not the only side-effect of this function. It 
+    Creating an output file is not the only side-effect of this function. It
     will also modify the STRT, STOP and STEP HeaderItems so that they correctly
     reflect the ~Data section's units and the actual first, last, and interval
-    values. 
+    values.
 
-    You should avoid calling this function directly - instead use the 
-    :meth:`lasio.las.LASFile.write` method.
+    However, passing a version to this write() function only changes the version
+    of the object written to. Example: las.write(myfile, version=2).
+    Lasio's internal-las-object version will remain separate and defined by
+    las.version.VERS.value
+
+    You should avoid calling this function directly - instead use the
+    :meth:`lasio.LASFile.write` method.
 
     """
+    if column_fmt is None:
+        column_fmt = {}
     if wrap is None:
         wrap = las.version["WRAP"] == "YES"
     elif wrap is True:
@@ -66,15 +80,17 @@ def write(
         las.version["WRAP"] = HeaderItem("WRAP", "", "NO", "One line per depth step")
     lines = []
 
+    version_section_to_write = deepcopy(las.version)
+    
     assert version in (1.2, 2, None)
     if version is None:
         version = las.version["VERS"].value
     if version == 1.2:
-        las.version["VERS"] = HeaderItem(
+        version_section_to_write.VERS = HeaderItem(
             "VERS", "", 1.2, "CWLS LOG ASCII STANDARD - VERSION 1.2"
         )
     elif version == 2:
-        las.version["VERS"] = HeaderItem(
+        version_section_to_write.VERS = HeaderItem(
             "VERS", "", 2.0, "CWLS log ASCII Standard -VERSION 2.0"
         )
 
@@ -83,7 +99,11 @@ def write(
     if STOP is None:
         STOP = las.index[-1]
     if STEP is None:
-        STEP = las.index[1] - las.index[0]  # Faster than np.gradient
+        if (
+            STOP != STRT
+        ):  # prevents an error being thrown in the case of only a single sample being written
+            STEP = las.index[1] - las.index[0]  # Faster than np.gradient
+
     las.well["STRT"].value = STRT
     las.well["STOP"].value = STOP
     las.well["STEP"].value = STEP
@@ -102,11 +122,11 @@ def write(
     # get_formatter_function ( ** get_section_widths )
 
     # ~Version
-    logger.debug("LASFile.write Version section")
+    logger.debug("LASFile.write Version section, Version: %s" % (version))
     lines.append("~Version ".ljust(header_width, "-"))
     order_func = get_section_order_function("Version", version)
-    section_widths = get_section_widths("Version", las.version, version, order_func)
-    for header_item in las.version.values():
+    section_widths = get_section_widths("Version", version_section_to_write, version, order_func)
+    for header_item in version_section_to_write.values():
         mnemonic = header_item.original_mnemonic
         # logger.debug('LASFile.write ' + str(header_item))
         order = order_func(mnemonic)
@@ -149,6 +169,7 @@ def write(
         lines.append(line)
 
     # ~Params
+    logger.debug("LASFile.write Params section")
     lines.append("~Params ".ljust(header_width, "-"))
     order_func = get_section_order_function("Parameter", version)
     section_widths = get_section_widths("Parameter", las.params, version, order_func)
@@ -160,9 +181,11 @@ def write(
         lines.append(line)
 
     # ~Other
+    logger.debug("LASFile.write Other section")
     lines.append("~Other ".ljust(header_width, "-"))
     lines += las.other.splitlines()
 
+    logger.debug("LASFile.write ASCII section")
     lines.append("~ASCII ".ljust(header_width, "-"))
 
     file_object.write("\n".join(lines))
@@ -172,11 +195,15 @@ def write(
     # data_arr = np.column_stack([c.data for c in las.curves])
     data_arr = las.data
     nrows, ncols = data_arr.shape
+    logger.debug("Data section shape: {}".format((nrows, ncols)))
 
+    logger.debug("len_numeric_field = {}".format(len_numeric_field))
     if len_numeric_field is None:
+        logger.debug("Calculating len_numeric_field. fmt = {}".format(fmt))
         len_numeric_field = 10
         test_fmt = fmt % np.pi
-        while len(test_fmt) < (len_numeric_field - 1):
+        while len(test_fmt) > (len_numeric_field - 1):
+            logger.debug("test_fmt = {}".format(test_fmt))
             len_numeric_field += 1
 
     def format_data_section_line(n, fmt, l=len_numeric_field, spacer=" "):
@@ -191,9 +218,13 @@ def write(
     twrapper = textwrap.TextWrapper(width=data_width)
 
     for i in range(nrows):
+        logger.debug("Writing data array row {} of {}".format(i + 1, nrows))
         depth_slice = ""
         for j in range(ncols):
-            depth_slice += format_data_section_line(data_arr[i, j], fmt)
+            col_fmt = fmt
+            if j in column_fmt:
+                col_fmt = column_fmt[j]
+            depth_slice += format_data_section_line(data_arr[i, j], col_fmt)
 
         if wrap:
             lines = twrapper.wrap(depth_slice)
@@ -204,7 +235,7 @@ def write(
             lines = [depth_slice]
 
         for line in lines:
-            if las.version["VERS"].value == 1.2 and len(line) > 255:
+            if version_section_to_write.VERS == 1.2 and len(line) > 255:
                 logger.warning(
                     "[v1.2] line #{} has {} chars (>256)".format(
                         line_counter + 1, len(line)
@@ -227,8 +258,8 @@ def get_formatter_function(order, left_width=None, middle_width=None):
             first period from the left and the first colon from the left.
 
     Returns:
-        A function which takes a header item 
-        (e.g. :class:`lasio.las_items.HeaderItem`) as its single argument and 
+        A function which takes a header item
+        (e.g. :class:`lasio.HeaderItem`) as its single argument and
         which in turn returns a string which is the correctly formatted LAS
         header line.
 
@@ -270,7 +301,7 @@ def get_section_order_function(
         order_definitions (dict): see source of defaults.py for more information
 
     Returns:
-        A function which takes a mnemonic (str) as its only argument, and 
+        A function which takes a mnemonic (str) as its only argument, and
         in turn returns the order 'value:descr' or 'descr:value'.
 
     """
