@@ -3,11 +3,7 @@
 
 name: Python CI
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -30,4 +26,4 @@ jobs:
         pip install pytest coverage pytest-cov codecov pathlib
     - name: Test with pytest
       run: |
-        coverage run --branch -m pytest tests --cov-fail-under=80 --cov-branch
+        pytest --cov-fail-under=80 --cov-branch
