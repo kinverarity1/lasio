@@ -274,16 +274,19 @@ def get_formatter_function(order, left_width=None, middle_width=None):
         + " " * (middle_width - len(str(unit)) - len(right_hand_item))
         + right_hand_item
     )
+    def nonetype_to_str(value):
+        return "" if value is None else value
+
     if order == "descr:value":
         return lambda item: "%s.%s : %s" % (
             mnemonic_func(item.original_mnemonic),
             middle_func(str(item.unit), str(item.descr)),
-            item.value,
+            nonetype_to_str(item.value),
         )
     elif order == "value:descr":
         return lambda item: "%s.%s : %s" % (
             mnemonic_func(item.original_mnemonic),
-            middle_func(str(item.unit), str(item.value)),
+            middle_func(str(item.unit), str(nonetype_to_str(item.value))),
             item.descr,
         )
 
