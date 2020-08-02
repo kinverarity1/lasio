@@ -638,3 +638,18 @@ between 625 metres and 615 metres to be invalid.
  1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
  1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
 '''
+
+
+def test_write_empty_text_value():
+    las = read(egfn("sample.las"))
+    las.well.well.value = ""
+    las.well.comp.value = None
+    las.write('test.las', version=2.0)
+
+    las2 = read("test.las")
+    assert las2.well.well.value == ""
+    assert las2.well.well.unit == ""
+    assert las2.well.comp.value == ""
+    assert las2.well.comp.unit == ""
+
+    os.remove('test.las')
