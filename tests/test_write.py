@@ -457,7 +457,7 @@ WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
 STRT.M                  1670.0 : START DEPTH
 STOP.M                  1670.0 : STOP DEPTH
-STEP.M                    None : STEP
+STEP.M                       0 : STEP
 NULL.                  -999.25 : NULL VALUE
 COMP.     ANY OIL COMPANY INC. : COMPANY
 WELL.                  AAAAA_2 : WELL
