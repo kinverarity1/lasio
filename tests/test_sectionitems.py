@@ -127,6 +127,7 @@ def test_mnemonic_case_comparison_upper():
 def test_mnemonic_case_comparison_lower():
     las = lasio.read(egfn('mnemonic_case.las'), mnemonic_case='lower')
     assert 'DEPT' in las.curves
+    assert las.well.null.value == -999.25
 
 def test_missing_sectionitems_mnemonic():
     las = lasio.read(egfn('sample.las'))

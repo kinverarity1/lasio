@@ -289,7 +289,7 @@ def test_comma_decimal_mark_params():
 def test_missing_a_section():
     las = lasio.read(egfn("missing_a_section.las"))
     assert las.data.size == 0
-
+    
 
 def test_blank_line_in_header():
     las = lasio.read(egfn("blank_line.las"))
@@ -369,6 +369,7 @@ def test_index_unit_equals_f():
     las = lasio.read(egfn("autodepthindex_M.las"), index_unit="f")
     assert (las.depth_ft == las.index).all()
 
+
 def test_index_unit_equals_m():
     las = lasio.read(egfn("autodepthindex_M.las"), index_unit="m")
     assert (las.depth_ft[1:] != las.index[1:]).all()
@@ -377,6 +378,7 @@ def test_index_unit_equals_m():
 def test_read_incorrect_shape():
     with pytest.raises(ValueError):
         lasio.read(egfn("sample_lastcolblanked.las"))
+
 
 def test_dot_delimiter_issue_264():
     l = lasio.read(stegfn("1.2", "issue-264-dot-delimiter.las"))
@@ -387,20 +389,9 @@ def test_dot_delimiter_issue_264():
         "GAMMA",
         "I. RES.",
     ]
-    assert [c.unit for c in l.curves] == [
-        "FT",
-        "M/MIN",
-        "MS/M",
-        "CPS",
-        "OHM-M",
-    ]
-    assert [c.value for c in l.curves] == [
-        "",
-        "",
-        "",
-        "",
-        "",
-    ]
+    assert [c.unit for c in l.curves] == ["FT", "M/MIN", "MS/M", "CPS", "OHM-M"]
+    assert [c.value for c in l.curves] == ["", "", "", "", ""]
+
 
 def test_issue_201_non_delimiter_colon_start():
     las = lasio.read(egfn("colon_pick_start.las"))
@@ -409,9 +400,30 @@ def test_issue_201_non_delimiter_colon_start():
     assert las.params["TIML"].value == "23:15 23-JAN-2001"
     assert las.params["TIML"].descr == "Time Logger: At Bottom"
 
+
 def test_issue_201_non_delimiter_colon_end():
     las = lasio.read(egfn("colon_pick_end.las"))
     assert las.params["TCS"].descr == "Time Circ. Stopped"
     assert las.params["TIML"].unit == "hh:mm"
     assert las.params["TIML"].value == "23:15 23-JAN-2001"
     assert las.params["TIML"].descr == "Time Logger At Bottom:"
+
+
+def test_header_only_file():
+    las = lasio.read(egfn("header_only.las"))
+    assert las.well.STRT.value == 9000.0
+    assert las.well.STOP.value == 10000.0
+    assert las.curves[0].mnemonic == "DEPT"
+    assert las.curves[0].unit == "ft"
+    assert las.curves[12].mnemonic == "WPHI_FIT[1]"
+    assert len(las.curves) == 21
+
+
+def test_read_cyrillic_depth_unit():
+    las = lasio.read(egfn("sample_cyrillic_depth_unit.las"))
+    assert las.index_unit == "M"
+
+def test_section_parser_num_except_pass():
+    sp = lasio.reader.SectionParser("~C")
+    assert sp.num(None) == None
+

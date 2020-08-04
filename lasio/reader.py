@@ -3,7 +3,6 @@ import io
 import logging
 import os
 import re
-import textwrap
 import traceback
 
 import numpy as np
@@ -28,7 +27,6 @@ except ImportError:
 else:
     from StringIO import StringIO
 
-from . import defaults
 from . import exceptions
 from .las_items import HeaderItem, CurveItem, SectionItems, OrderedDict
 
@@ -99,7 +97,12 @@ def open_file(file_ref, **encoding_kwargs):
 
                 response = urllib2.urlopen(first_line)
                 encoding = response.headers.getparam("charset")
-                file_ref = StringIO(response.read())
+
+                tmp_str = response.read()
+                tmp_list = tmp_str.splitlines()
+                new_str = "\n".join(tmp_list)
+                # file_ref = StringIO(response.read())
+                file_ref = StringIO(new_str)
                 logger.debug("Retrieved data had encoding {}".format(encoding))
             except ImportError:
                 import urllib.request
@@ -112,7 +115,10 @@ def open_file(file_ref, **encoding_kwargs):
                         encoding = "utf-8"
                 else:
                     encoding = response.headers.get_content_charset()
-                file_ref = StringIO(response.read().decode(encoding))
+                # newline=None causes StringIO to use universal-newline:
+                # Lines in the input can end in '\n', '\r', or '\r\n', and these are
+                # translated into '\n' before being returned to the caller.
+                file_ref = StringIO(response.read().decode(encoding), newline=None)
                 logger.debug("Retrieved data decoded via {}".format(encoding))
         elif len(lines) > 1:  # it's LAS data as a string.
             file_ref = StringIO(file_ref)
@@ -376,13 +382,18 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
             # HARD CODED FOR VERSION 1.2 and 2.0; needs review for 3.0
             # We have finished looking at the metadata and need
             # to start reading numerical data.
+
             if not sect_title_line is None:
-                sections[sect_title_line] = {
-                    "section_type": "header",
-                    "title": sect_title_line,
-                    "lines": sect_lines,
-                    "line_nos": sect_line_nos,
-                }
+               sections[sect_title_line] = {
+                   "section_type": "header",
+                   "title": sect_title_line,
+                   "lines": sect_lines,
+                   "line_nos": sect_line_nos,
+               }
+               sect_lines = []
+               sect_line_nos = []
+
+
             if not ignore_data:
                 try:
                     data = read_data_section_iterative(
@@ -402,6 +413,8 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
                     "array": data,
                 }
                 logger.debug('Data section ["array"].shape = {}'.format(data.shape))
+
+            section_exists = False
             break
 
         elif line.startswith("~"):
@@ -412,14 +425,15 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
             )
             if section_exists:
                 # We have ended a section and need to start the next
-                sections[sect_title_line] = {
-                    "section_type": "header",
-                    "title": sect_title_line,
-                    "lines": sect_lines,
-                    "line_nos": sect_line_nos,
-                }
-                sect_lines = []
-                sect_line_nos = []
+               if not sect_title_line is None:
+                   sections[sect_title_line] = {
+                       "section_type": "header",
+                       "title": sect_title_line,
+                       "lines": sect_lines,
+                       "line_nos": sect_line_nos,
+                   }
+                   sect_lines = []
+                   sect_line_nos = []
             else:
                 # We are entering into a section for the first time
                 section_exists = True
@@ -431,6 +445,17 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
             if not line.startswith("#"):  # ignore commented-out lines.. for now.
                 sect_lines.append(line)
                 sect_line_nos.append(i + 1)
+
+    # If the file had header data only, and is truncated before the ~A section
+    # we need to save the last header section.
+    if section_exists and not sect_title_line is None:
+        sections[sect_title_line] = {
+            "section_type": "header",
+            "title": sect_title_line,
+            "lines": sect_lines,
+            "line_nos": sect_line_nos,
+        }
+
 
     # Find the number of columns in the data section(s). This is only
     # useful if WRAP = NO, but we do it for all since we don't yet know
@@ -867,6 +892,9 @@ def read_header_line(line, pattern=None, section_name=None):
 
     Arguments:
         line (str): line from a LAS header section
+        section_name (str): Name of the section the 'line' is from. The default
+        value is None.
+
 
     Returns:
         A dictionary with keys 'name', 'unit', 'value', and 'descr', each
@@ -874,6 +902,44 @@ def read_header_line(line, pattern=None, section_name=None):
 
     """
     d = {"name": "", "unit": "", "value": "", "descr": ""}
+
+    # Set defaults for local variables.
+    patterns = []
+    m = None
+
+    if pattern is None:
+        patterns = configure_metadata_patterns(line, section_name)
+    else: # pattern was passed in on function call
+        patterns.append(pattern)
+
+    for pattern in patterns:
+        # Attempt to parse the section line's name(mnemonic), unit, value and
+        # descr fields with the given pattern.
+        m = re.match(pattern, line)
+        if m is not None:
+            break
+
+    mdict = m.groupdict()
+    for key, value in mdict.items():
+        d[key] = value.strip()
+        if key == "unit":
+            if d[key].endswith("."):
+                d[key] = d[key].strip(".")  # see issue #36
+    return d
+
+def configure_metadata_patterns(line, section_name):
+    """Configure regular-expression patterns to parse section meta-data lines.
+
+    Arguments:
+        line (str): line from LAS header section
+        section_name (str): Name of the section the 'line' is from.
+
+    Returns:
+        An array of regular-expression strings (patterns).
+    """
+
+    # Default return value
+    patterns = []
 
     # Default regular expressions for name, unit, value and desc fields
     name_re = r"\.?(?P<name>[^.]*)\."
@@ -883,7 +949,7 @@ def read_header_line(line, pattern=None, section_name=None):
 
     # Alternate regular expressions for special cases
     value_without_colon_delimiter_re = r"(?P<value>[^:]*)"
-    value_re_for_param_section = (
+    value_with_time_colon_re = (
         r"(?P<value>.*?)(?:(?<!( [0-2][0-3]| hh| HH)):(?!([0-5][0-9]|mm|MM)))"
     )
     name_with_dots_re = r"\.?(?P<name>[^.].*[.])\."
@@ -893,37 +959,32 @@ def read_header_line(line, pattern=None, section_name=None):
     # 1. missing colon delimiter and description field
     # 2. double_dots '..' caused by mnemonic abbreviation (with period)
     #    next to the dot delimiter.
-    if pattern is None:
-        if not ":" in line:
-            # If there isn't a colon delimiter then there isn't
-            # a description field either.
-            value_re = value_without_colon_delimiter_re
-            desc_re = no_desc_re
+    if not ":" in line:
+        # If there isn't a colon delimiter then there isn't
+        # a description field either.
+        value_re = value_without_colon_delimiter_re
+        desc_re = no_desc_re
 
-            if ".." in line and section_name == "Curves":
+        if ".." in line and section_name == "Curves":
+            name_re = name_with_dots_re
+    else:
+        if ".." in line and section_name == "Curves":
+            double_dot = line.find("..")
+            desc_colon = line.rfind(":")
+
+            # Check that a double_dot is not in the
+            # description string.
+            if double_dot < desc_colon:
                 name_re = name_with_dots_re
-        else:
-            if ".." in line and section_name == "Curves":
-                double_dot = line.find("..")
-                desc_colon = line.rfind(":")
 
-                # Check that a double_dot in not in the
-                # description string.
-                if double_dot < desc_colon:
-                    name_re = name_with_dots_re
-            if section_name == "Parameter":
-                value_re = value_re_for_param_section
+    if section_name == "Parameter":
+        # Search for a value entry with a time-value first.
+        pattern = name_re + unit_re + value_with_time_colon_re + desc_re
+        patterns.append(pattern)
 
-    # Build full regex pattern
+    # Add the regular pattern for all section_names
+    # for the Parameter section this will run after time-value pattern
     pattern = name_re + unit_re + value_re + desc_re
+    patterns.append(pattern)
 
-    m = re.match(pattern, line)
-    if m is None:
-        logger.warning("Unable to parse line as LAS header: {}".format(line))
-    mdict = m.groupdict()
-    for key, value in mdict.items():
-        d[key] = value.strip()
-        if key == "unit":
-            if d[key].endswith("."):
-                d[key] = d[key].strip(".")  # see issue #36
-    return d
+    return patterns
