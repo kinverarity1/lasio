@@ -1,6 +1,22 @@
 List of changes
 ===============================
 
+Version 0.26 (31 August 2020)
+-----------------------------
+- This is the final version which works on Python 2.7 (#364)
+- Fix #333 (header lines not parsed when colon is in description; #335)
+- Fix #359 (sections not found when leading whitespace in line; #360, #361)
+- Fix #350 (bug with NULL; #352)
+- Fix #339 (0.1IN not recognised as index unit; #340, #349)
+- Fix #31 (add command-line script to convert between LAS versions; #329)
+- Fix #75 (add Cyrillic variant for metres; #330)
+- Fix #326 (Support header-only LAS files--don't lose the last header section before a missing ~A section)
+- Improve documentation regarding deleting items and curves (#315, #325)
+- Add deprecation markers (#331)
+- Align json.dumps and LASFile.to_json() (#328)
+- Fixes and updates to setup.py relating to the adoption of setuptools_scm (#312, #317, #318)
+- Clean up and background changes related to future LAS 3.0 support: #334, #337, #338, #341, #342, #346, #348, #372
+
 Version 0.25.1 (1 May 2020)
 -------------------------------------------
 - Shift to setuptools_scm (#311)
