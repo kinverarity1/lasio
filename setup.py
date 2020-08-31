@@ -3,8 +3,8 @@
 from setuptools import setup
 import os
 
-EXTRA_REQS = ("pandas", "cchardet", "openpyxl", "argparse")
-TEST_REQS = ("pytest>=3.6", "pytest-cov", "coverage", "codecov", "pathlib")
+EXTRA_REQS = ("pandas", "cchardet", "openpyxl")
+TEST_REQS = ("pytest>=3.6", "pytest-cov", "coverage", "codecov")
 
 setup(
     name="lasio",
