@@ -42,12 +42,12 @@ def version():
 
     '''
     Else set a sensible default version
-    0.25.0 was the most recent version before this change so it is being
-    used as teh default basline.
+    0.26.0 was the most recent version before this change so it is being
+    used as the default basline.
     '''
     if not las_version.strip():
         las_version = (
-            "0.25.0.dev0+unknown-post-dist-version.{}".format(ver_date)
+            "0.26.0.dev0+unknown-post-dist-version.{}".format(ver_date)
         )
 
     return las_version
@@ -72,7 +72,7 @@ def _get_vcs_version():
             stderr=subprocess.STDOUT,
         ).strip()
 
-    except subprocess.CalledProcessError:
+    except:# subprocess.CalledProcessError:   # https://github.com/kinverarity1/lasio/issues/380
         pass
 
     # Convert byte string to text string
