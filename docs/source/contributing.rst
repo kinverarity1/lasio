@@ -22,7 +22,7 @@ MIT License. It has grown over the years through the wonderful work of all these
 * `trqmorgan <https://github.com/trqmorgan>`__
 * `VelizarVESSELINOV <https://github.com/VelizarVESSELINOV>`__
 
-Thank you also to everyone everyone who has helped via email, in discussions
+Thank you also to everyone who has helped via email, in discussions
 on GitHub, and on `software underground <https://swung.slack.com>`__!
 
 Your help is very welcome! No contribution is too small. You can help with the
@@ -46,10 +46,10 @@ Places you can help
 * Example LAS files: if you have an
   interesting/difficult/silly/standards-challenged LAS file (any version) you
   would be willing to share with me, please do so! Email it to me at
-  `kinverarity@hotmail.com <kinverarity@hotmail.com>`__. The more examples I can
+  `kinverarity@hotmail.com <kinverarity@hotmail.com>`__. The more examples we can
   incorporate into lasio’s regression testing, the better. If you have concerns
   about privacy, I’d suggest obfuscating with find-and-replace on various alpha
-  (or numeric) characters before sending it on, or deleting any sensitive header
+  (or numeric) characters before sending it on, and/or deleting any sensitive header
   lines.
 
 Email

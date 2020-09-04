@@ -3,8 +3,8 @@
 from setuptools import setup
 import os
 
-EXTRA_REQS = ("pandas", "cchardet", "openpyxl", "argparse")
-TEST_REQS = ("pytest>=3.6", "pytest-cov", "coverage", "codecov", "pathlib")
+EXTRA_REQS = ("pandas", "cchardet", "openpyxl")
+TEST_REQS = ("pytest>=3.6", "pytest-cov", "coverage", "codecov")
 
 setup(
     name="lasio",
@@ -29,7 +29,6 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
         "Operating System :: OS Independent",
-        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.2",
         "Programming Language :: Python :: 3.3",
@@ -44,6 +43,7 @@ setup(
     ],
     keywords="science geophysics io",
     packages=("lasio",),
+    python_requires=">=3",
     install_requires=("numpy",),
     extras_require={"all": EXTRA_REQS, "test": (EXTRA_REQS, TEST_REQS)},
     tests_require=(TEST_REQS),

@@ -4,7 +4,7 @@
 
 Read and write Log ASCII Standard files with Python.
 
-This is a Python 2.7 and 3.3+ package to read and write Log ASCII Standard
+This is a Python 3.3+ package to read and write Log ASCII Standard
 (LAS) files, used for borehole data such as geophysical, geological, or
 petrophysical logs. It's compatible with versions 1.2 and 2.0 of the LAS file
 specification, published by the [Canadian Well Logging
@@ -25,9 +25,9 @@ much more functionality in that area.
 Note this is not a package for reading LiDAR data (also called "LAS files"); 
 you may want to check out [laspy](https://github.com/laspy/laspy) for that.
 
-**Update**: lasio will [no longer](https://github.com/kinverarity1/lasio/issues/364) 
-support Python 2.7 from August 2020. The last version of lasio with Python 2.7 support 
-will be version 0.26.
+lasio  [stopped](https://github.com/kinverarity1/lasio/issues/364) 
+supporting Python 2.7 in August 2020. The final version of lasio with Python 2.7 support 
+is version 0.26.
 
 ## Documentation
 
