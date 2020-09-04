@@ -1,6 +1,10 @@
 List of changes
 ===============================
 
+Version 0.27 (4 September 2020)
+-------------------------------
+- Fix #380 (install failed without git installed; #382)
+
 Version 0.26 (31 August 2020)
 -----------------------------
 - This is the final version which works on Python 2.7 (#364)
