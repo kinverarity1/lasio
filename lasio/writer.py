@@ -248,12 +248,23 @@ def write(
 
 
 def standardize_value(value, unit=None):
-    # If an internal representation of a metadata mnemonic has a unit
-    # indicator and a zero value, empty string, or NoneType, then on
-    # lasio.write(...) the value should write a 0 for the value field
-    # instead of "None" or "".
+    """Ensure that 0 is written instead of 'None' for numeric header lines.
+    
+    Args:
+        value (anything): object to be written into the value field
+            of the LAS header line.
+        unit (str): unit for header line.
+        
+    Returns: either 0 (integer) or a string.
+    
+    If an internal representation of a metadata mnemonic has a unit
+    indicator and a value of zero, an empty string, or None, then on
+    lasio.write(...) the value written should be 0 for the value field
+    instead of "None" or "".
+    
+    """
     # value != 0 prevents overwriting a 0.0 value with 0.
-    if unit and not value and value != 0:
+    if (unit) and (not value) and (value != 0):
         value = 0
     if value is None:
         value = ""
