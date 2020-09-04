@@ -146,6 +146,7 @@ def write(
     section_widths = get_section_widths("Well", las.well, version, order_func)
     # logger.debug('LASFile.write well section_widths=%s' % section_widths)
     for header_item in las.well.values():
+        header_item.value = standardize_value(header_item.value, header_item.unit)
         mnemonic = header_item.original_mnemonic
         order = order_func(mnemonic)
         logger.debug(
@@ -174,6 +175,7 @@ def write(
     order_func = get_section_order_function("Parameter", version)
     section_widths = get_section_widths("Parameter", las.params, version, order_func)
     for header_item in las.params.values():
+        header_item.value = standardize_value(header_item.value, header_item.unit)
         mnemonic = header_item.original_mnemonic
         order = order_func(mnemonic)
         formatter_func = get_formatter_function(order, **section_widths)
@@ -245,6 +247,30 @@ def write(
             line_counter += 1
 
 
+def standardize_value(value, unit=None):
+    """Ensure that 0 is written instead of 'None' for numeric header lines.
+    
+    Args:
+        value (anything): object to be written into the value field
+            of the LAS header line.
+        unit (str): unit for header line.
+        
+    Returns: either 0 (integer) or a string.
+    
+    If an internal representation of a metadata mnemonic has a unit
+    indicator and a value of zero, an empty string, or None, then on
+    lasio.write(...) the value written should be 0 for the value field
+    instead of "None" or "".
+    
+    """
+    # value != 0 prevents overwriting a 0.0 value with 0.
+    if (unit) and (not value) and (value != 0):
+        value = 0
+    if value is None:
+        value = ""
+    return value
+
+
 def get_formatter_function(order, left_width=None, middle_width=None):
     """Create function to format a LAS header item for output.
 
@@ -274,6 +300,7 @@ def get_formatter_function(order, left_width=None, middle_width=None):
         + " " * (middle_width - len(str(unit)) - len(right_hand_item))
         + right_hand_item
     )
+
     if order == "descr:value":
         return lambda item: "%s.%s : %s" % (
             mnemonic_func(item.original_mnemonic),
