@@ -3,7 +3,7 @@ lasio - Log ASCII Standard (LAS) files in Python
 
 |License|
 
-lasio is a Python 2/3 package to read and write Log ASCII Standard (LAS)
+lasio is a Python 3 package to read and write Log ASCII Standard (LAS)
 files, used for borehole data such as geophysical, geological, or
 petrophysical logs. It’s compatible with versions 1.2 and 2.0 of the LAS
 file specification, published by the `Canadian Well Logging Society`_.
@@ -18,6 +18,8 @@ reading & writing LAS files.
 
 Note this is *not* a package for reading LiDAR data, which is also stored
 in "LAS" files.
+
+The final version of lasio with Python 2.7 support is v0.26.
 
 .. _Canadian Well Logging Society: http://www.cwls.org/las
 .. _striplog: https://github.com/agile-geoscience/striplog
