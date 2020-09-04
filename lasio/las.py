@@ -87,6 +87,7 @@ class LASFile(object):
         read_policy="default",
         null_policy="strict",
         ignore_header_errors=False,
+        ignore_comments=("#",),
         mnemonic_case="upper",
         index_unit=None,
         **kwargs
@@ -104,6 +105,8 @@ class LASFile(object):
                 just the header metadata. False by default.
             ignore_header_errors (bool): ignore LASHeaderErrors (False by
                 default)
+            ignore_comments (tuple/str): ignore comments beginning with characters
+                e.g. ``("#", '"')``
             mnemonic_case (str): 'preserve': keep the case of HeaderItem mnemonics
                                  'upper': convert all HeaderItem mnemonics to uppercase
                                  'lower': convert all HeaderItem mnemonics to lowercase
@@ -114,178 +117,185 @@ class LASFile(object):
 
         """
 
-        file_obj, self.encoding = reader.open_file(file_ref, **kwargs)
+        logger.debug("Reading {}...".format(str(file_ref)))
 
-        regexp_subs, value_null_subs, version_NULL = reader.get_substitutions(
-            read_policy, null_policy
-        )
-
+        file_obj = ''
         try:
-            self.raw_sections = reader.read_file_contents(
-                file_obj, regexp_subs, value_null_subs, ignore_data=ignore_data
+            file_obj, self.encoding = reader.open_file(file_ref, **kwargs)
+
+            logger.debug(
+                "Fetching substitutions for read_policy {} and null policy {}".format(
+                    read_policy, null_policy
+                )
             )
+            regexp_subs, value_null_subs, version_NULL = reader.get_substitutions(
+                read_policy, null_policy
+            )
+
+            provisional_version = 2.0
+            provisional_wrapped = "YES"
+            provisional_null = None
+
+            section_positions = reader.find_sections_in_file(file_obj)
+            logger.debug("Found {} sections".format(len(section_positions)))
+            if len(section_positions) == 0:
+                raise KeyError("No ~ sections found. Is this a LAS file?")
+
+            data_section_indices = []
+            for i, (k, first_line, last_line, section_title) in enumerate(
+                section_positions
+            ):
+                section_type = reader.determine_section_type(section_title)
+                logger.debug(
+                    "Parsing {typ} section at lines {first_line}-{last_line} ({k} bytes) {title}".format(
+                        typ=section_type,
+                        title=section_title,
+                        first_line=first_line + 1,
+                        last_line=last_line + 1,
+                        k=k,
+                    )
+                )
+
+                # Read traditional LAS header item section
+                if section_type == "Header items":
+                    file_obj.seek(k)
+                    sct_items = reader.parse_header_items_section(
+                        file_obj,
+                        line_nos=(first_line, last_line),
+                        version=provisional_version,
+                        ignore_header_errors=ignore_header_errors,
+                        mnemonic_case=mnemonic_case,
+                        ignore_comments=ignore_comments,
+                    )
+
+                    # Update provisional statuses
+                    if "VERS" in sct_items:
+                        provisional_version = sct_items.VERS.value
+                    if "WRAP" in sct_items:
+                        provisional_wrapped = sct_items.WRAP.value
+                    if "NULL" in sct_items:
+                        provisional_null = sct_items.NULL.value
+
+                    if section_title[1] == "V":
+                        self.sections["Version"] = sct_items
+                    elif section_title[1] == "W":
+                        self.sections["Well"] = sct_items
+                    elif section_title[1] == "C":
+                        self.sections["Curves"] = sct_items
+                    elif section_title[1] == "P":
+                        self.sections["Parameter"] = sct_items
+                    else:
+                        self.sections[section_title[1:]] = sct_items
+
+                # Read free-text LAS header section
+                elif section_type == "Header (other)":
+                    file_obj.seek(k)
+                    line_no = first_line
+                    contents = []
+                    for line in file_obj:
+                        if line.startswith('~'):
+                            continue
+                        line_no += 1
+                        contents.append(line.strip("\n").strip())
+                        if line_no == last_line:
+                            break
+                    sct_contents = "\n".join(contents)
+
+                    if section_title[1] == "O":
+                        self.sections["Other"] = sct_contents
+                    else:
+                        self.sections[section_title[1:]] = sct_contents
+
+                elif section_type == "Data":
+                    logger.debug("Storing reference and returning later...")
+                    data_section_indices.append(i)
+
+            if not ignore_data:
+                for k, first_line, last_line, section_title in [
+                    section_positions[i] for i in data_section_indices
+                ]:
+                    logger.debug("Reading data section {}".format(section_title))
+
+                    file_obj.seek(k)
+                    n_columns = reader.inspect_data_section(
+                        file_obj, (first_line, last_line), regexp_subs
+                    )
+
+                    file_obj.seek(k)
+                    arr = reader.read_data_section_iterative(
+                        file_obj, (first_line, last_line), regexp_subs, value_null_subs
+                    )
+                    logger.debug("Read ndarray {arrshape}".format(arrshape=arr.shape))
+
+                    # This is so we can check data size and use self.set_data(data, truncate=False)
+                    # in cases of data.size is zero.
+                    data = arr
+
+                    if data.size > 0:
+                        # TODO: check whether this treatment of NULLs is correct
+                        logger.debug("~A data {}".format(arr))
+                        if version_NULL:
+                            arr[arr == provisional_null] = np.nan
+                        logger.debug(
+                            "~A after NULL replacement data {}".format(arr)
+                        )
+
+
+                        # Provisionally, assume that the number of columns represented
+                        # by the data section's array is equal to the number of columns
+                        # defined in the Curves/Definition section.
+
+                        n_columns_in_arr = len(self.curves)
+
+                        # If we are told the file is unwrapped, then we assume that each
+                        # column detected is a column, and we ignore the Curves/Definition
+                        # section's number of columns instead.
+
+                        if provisional_wrapped == "NO":
+                            n_columns_in_arr = n_columns
+
+                        #---------------------------------------------------------------------
+                        # TODO:
+                        # This enables tests/test_read.py::test_barebones_missing_all_sections
+                        # to pass, but may not be the complete or final solution.
+                        #---------------------------------------------------------------------
+                        if len(self.curves) == 0 and n_columns > 0:
+                            n_columns_in_arr = n_columns
+
+                        logger.debug(
+                            "Data array (size {}) assumed to have {} columns "
+                            "({} curves defined)".format(
+                                arr.shape, n_columns_in_arr, len(self.curves)
+                            )
+                        )
+
+                        # We attempt to reshape the 1D array read in from
+                        # the data section so that it can be assigned to curves.
+                        try:
+                            data = np.reshape(arr, (-1, n_columns_in_arr))
+                        except ValueError as exception:
+                            error_message = "Cannot reshape ~A data size {0} into {1} columns".format(
+                                arr.shape, n_columns_in_arr
+                            )
+                            if sys.version_info.major < 3:
+                                exception.message = error_message
+                                raise exception
+                            else:
+                                raise ValueError(error_message).with_traceback(
+                                    exception.__traceback__
+                                )
+
+                    self.set_data(data, truncate=False)
         finally:
             if hasattr(file_obj, "close"):
                 file_obj.close()
 
-        if len(self.raw_sections) == 0:
-            raise KeyError("No ~ sections found. Is this a LAS file?")
+            # TODO: reimplement these warnings!!
 
-        def add_section(pattern, name, **sect_kws):
-            raw_section = self.match_raw_section(pattern)
-            drop = []
-            if raw_section:
-                self.sections[name] = reader.parse_header_section(
-                    raw_section, **sect_kws
-                )
-                drop.append(raw_section["title"])
-            else:
-                logger.warning(
-                    "Header section %s regexp=%s was not found." % (name, pattern)
-                )
-            for key in drop:
-                self.raw_sections.pop(key)
+            ###### logger.warning("No data section (regexp='~A') found")
+            ###### logger.warning("No numerical data found inside ~A section")
 
-        add_section(
-            "~V",
-            "Version",
-            version=1.2,
-            ignore_header_errors=ignore_header_errors,
-            mnemonic_case=mnemonic_case,
-        )
-
-        # Establish version and wrap values if possible.
-
-        try:
-            version = self.version["VERS"].value
-        except KeyError:
-            logger.warning("VERS item not found in the ~V section.")
-            version = None
-
-        try:
-            wrap = self.version["WRAP"].value
-        except KeyError:
-            logger.warning("WRAP item not found in the ~V section")
-            wrap = None
-
-        # Validate version.
-        #
-        # If VERS was missing and version = None, then the file will be read in
-        # as if version were 2.0. But there will be no VERS HeaderItem, meaning
-        # that las.write(..., version=None) will fail with a KeyError. But
-        # las.write(..., version=1.2) will work because a new VERS HeaderItem
-        # will be created.
-
-        try:
-            assert version in (1.2, 2, None)
-        except AssertionError:
-            if version < 2:
-                version = 1.2
-            else:
-                version = 2
-        else:
-            if version is None:
-                logger.info("Assuming that LAS VERS is 2.0")
-                version = 2
-
-        add_section(
-            "~W",
-            "Well",
-            version=version,
-            ignore_header_errors=ignore_header_errors,
-            mnemonic_case=mnemonic_case,
-        )
-
-        # Establish NULL value if possible.
-
-        try:
-            null = self.well["NULL"].value
-        except KeyError:
-            logger.warning("NULL item not found in the ~W section")
-            null = None
-
-        add_section(
-            "~C",
-            "Curves",
-            version=version,
-            ignore_header_errors=ignore_header_errors,
-            mnemonic_case=mnemonic_case,
-        )
-        add_section(
-            "~P",
-            "Parameter",
-            version=version,
-            ignore_header_errors=ignore_header_errors,
-            mnemonic_case=mnemonic_case,
-        )
-        s = self.match_raw_section("~O")
-
-        drop = []
-        if s:
-            self.sections["Other"] = "\n".join(s["lines"])
-            drop.append(s["title"])
-        for key in drop:
-            self.raw_sections.pop(key)
-
-        # Deal with nonstandard sections that some operators and/or
-        # service companies (eg IHS) insist on adding.
-        drop = []
-        for s in self.raw_sections.values():
-            if s["section_type"] == "header":
-                logger.warning("Found nonstandard LAS section: " + s["title"])
-                self.sections[s["title"][1:]] = "\n".join(s["lines"])
-                drop.append(s["title"])
-        for key in drop:
-            self.raw_sections.pop(key)
-
-        if not ignore_data:
-            drop = []
-            s = self.match_raw_section("~A")
-            s_valid = True
-            if s is None:
-                logger.warning("No data section (regexp='~A') found")
-                s_valid = False
-            try:
-                if s["ncols"] is None:
-                    logger.warning("No numerical data found inside ~A section")
-                    s_valid = False
-            except:
-                pass
-
-            if s_valid:
-                arr = s["array"]
-                logger.debug("~A data.shape {}".format(arr.shape))
-                if version_NULL:
-                    arr[arr == null] = np.nan
-                logger.debug(
-                    "~A after NULL replacement data.shape {}".format(arr.shape)
-                )
-
-                n_curves = len(self.curves)
-                n_arr_cols = len(self.curves)  # provisional pending below check
-                logger.debug("n_curves=%d ncols=%d" % (n_curves, s["ncols"]))
-                if wrap == "NO":
-                    if s["ncols"] > n_curves:
-                        n_arr_cols = s["ncols"]
-                try:
-                    data = np.reshape(arr, (-1, n_arr_cols))
-                except ValueError as e:
-                    err_msg = (
-                        "cannot reshape ~A array of "
-                        "size {arr_shape} into "
-                        "{n_arr_cols} columns".format(
-                            arr_shape=arr.shape, n_arr_cols=n_arr_cols
-                        )
-                    )
-                    if sys.version_info.major < 3:
-                        e.message = err_msg
-                        raise e
-                    else:
-                        raise ValueError(err_msg).with_traceback(e.__traceback__)
-                self.set_data(data, truncate=False)
-                drop.append(s["title"])
-            for key in drop:
-                self.raw_sections.pop(key)
+        # Understand the depth/index unit.
 
         if "m" in str(index_unit):
             index_unit = "m"
@@ -667,7 +677,7 @@ class LASFile(object):
             data = data[:, len(self.curves)]
 
         # Extend curves list if necessary.
-        while data.shape[1] > len(self.curves):
+        while data.size > 0 and (data.shape[1] > len(self.curves)):
             self.curves.append(CurveItem(""))
 
         if not names:
@@ -678,9 +688,10 @@ class LASFile(object):
                 names.append("")
         logger.debug("set_data. names to use: {}".format(names))
 
-        for i, curve in enumerate(self.curves):
-            curve.mnemonic = names[i]
-            curve.data = data[:, i]
+        if data.size > 0:
+            for i, curve in enumerate(self.curves):
+                curve.mnemonic = names[i]
+                curve.data = data[:, i]
 
         self.curves.assign_duplicate_suffixes()
 

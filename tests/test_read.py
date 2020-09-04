@@ -288,8 +288,8 @@ def test_comma_decimal_mark_params():
 
 def test_missing_a_section():
     las = lasio.read(egfn("missing_a_section.las"))
-    assert not las.data.size > 0
-
+    assert las.data.size == 0
+    
 
 def test_blank_line_in_header():
     las = lasio.read(egfn("blank_line.las"))
