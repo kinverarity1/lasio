@@ -142,6 +142,13 @@ class LASFile(object):
                 raise KeyError("No ~ sections found. Is this a LAS file?")
 
             data_section_indices = []
+            # This is a transitional data_section_indicies till the las30 data
+            # reading can handle 1.2 and 2.0 data, then it will be merged back
+            # into data_section_indices
+            las30_data_section_indices = []
+
+            las3_section_indicators = ['_DATA', '_PARAMETER', '_DEFINITION']
+
             for i, (k, first_line, last_line, section_title) in enumerate(
                 section_positions
             ):
@@ -176,7 +183,13 @@ class LASFile(object):
                     if "NULL" in sct_items:
                         provisional_null = sct_items.NULL.value
 
-                    if section_title[1] == "V":
+                    # las3 sections can contain _Data, _Parameter or _Definition
+                    las3_section = any([section_str in section_title[1:].upper()
+                         for section_str in las3_section_indicators])
+
+                    if las3_section:
+                        self.sections[section_title[1:]] = sct_items
+                    elif section_title[1] == "V":
                         self.sections["Version"] = sct_items
                     elif section_title[1] == "W":
                         self.sections["Well"] = sct_items
@@ -209,6 +222,13 @@ class LASFile(object):
                 elif section_type == "Data":
                     logger.debug("Storing reference and returning later...")
                     data_section_indices.append(i)
+
+                # Initial stub for parsing las30 data. This is probably a
+                # transitional section that will merge with 1.2/2.0 data
+                # parsing once fully functional
+                elif section_type == "Las30_Data":
+                    logger.debug("Storing Las30_Data reference and returning later...")
+                    las30_data_section_indices.append(i)
 
             if not ignore_data:
                 for k, first_line, last_line, section_title in [

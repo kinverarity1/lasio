@@ -323,6 +323,10 @@ def determine_section_type(section_title):
         return "Data"
     elif stitle[:2] == "~O":
         return "Header (other)"
+    # las30 transitional code till data parsing is robust for ~A and '_Data'
+    # sections
+    elif stitle.find('_Data') > -1:
+        return "Las30_Data"
     else:
         return "Header items"
 
@@ -722,7 +726,14 @@ class SectionParser(object):
     """
 
     def __init__(self, title, version=1.2):
-        if title.upper().startswith("~C"):
+        las3_section_indicators = ['_DATA', '_PARAMETER', '_DEFINITION']
+
+        if any([section_str in title.upper() for section_str in las3_section_indicators]):
+            self.func = self.metadata
+            self.section_name2 = title
+            self.default_order = 'value:descr'
+            self.orders = {}
+        elif title.upper().startswith("~C"):
             self.func = self.curves
             self.section_name2 = "Curves"
         elif title.upper().startswith("~P"):
