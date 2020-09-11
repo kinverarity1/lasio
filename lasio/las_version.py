@@ -59,7 +59,7 @@ def _get_vcs_version(version_cmd=[]):
     # semver examples: 'v0.0.0', 'v0.25.0'
     semver_regex = re.compile(r'^v\d+\.\d+\.\d+')
     # major_minor examples: 'v0.0', 'v0.25'
-    major_minor_regex = re.compile(r'^v\d+\.\d+(?!\.\d+)') 
+    major_minor_regex = re.compile(r'^v\d+\.\d+(?!\.\d+)')
     split_regex = re.compile('-')
     local_las_version = ''
     tmpstr = ''
@@ -75,7 +75,7 @@ def _get_vcs_version(version_cmd=[]):
     This cmd will find the most recent tag starting with 'v' on the current
     branch.
     '''
-    try:    
+    try:
         tmpbytes = subprocess.check_output(
             version_cmd,
             stderr=subprocess.STDOUT,
