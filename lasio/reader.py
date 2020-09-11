@@ -323,6 +323,10 @@ def determine_section_type(section_title):
         return "Data"
     elif stitle[:2] == "~O":
         return "Header (other)"
+    # This is las3 transitional code till data parsing is robust for ~A and
+    # '_Data' sections
+    elif re.search('_Data', stitle):
+        return "Las3_Data"
     else:
         return "Header items"
 
@@ -722,7 +726,24 @@ class SectionParser(object):
     """
 
     def __init__(self, title, version=1.2):
-        if title.upper().startswith("~C"):
+        las3_section_indicators = ['_DATA', '_PARAMETER', '_DEFINITION']
+
+        is_like_las3_section = any([section_str in title.upper()
+             for section_str in las3_section_indicators]
+        )
+
+        # On the first call to SectionParser ~Version hasn't been parsed.  So
+        # the version number will report the default. Although the ~Version
+        # section is supposed to be the first section, there can be las files
+        # in the wild that don't have the ~Version or doesn't have it first. In
+        # those cases a Las3 file would end up parsed as a Las2 file or
+        # partially parsed as a Las2 file.
+        if version == 3.0 and is_like_las3_section:
+            self.func = self.metadata
+            self.section_name2 = title
+            self.default_order = 'value:descr'
+            self.orders = {}
+        elif title.upper().startswith("~C"):
             self.func = self.curves
             self.section_name2 = "Curves"
         elif title.upper().startswith("~P"):
