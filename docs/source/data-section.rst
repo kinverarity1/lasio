@@ -1,6 +1,14 @@
 Data section
 ============
 
+Ignoring commented-out lines
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sometimes data sections have comment line inside them. By default lasio will ignore
+any lines starting with the "#" character within the data section. You can
+control this using the ``remove_data_line_filter='#'`` argument to
+:meth:`lasio.LASFile.read`.
+
 Handling errors
 ~~~~~~~~~~~~~~~
 

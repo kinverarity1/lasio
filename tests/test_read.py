@@ -289,7 +289,7 @@ def test_comma_decimal_mark_params():
 def test_missing_a_section():
     las = lasio.read(egfn("missing_a_section.las"))
     assert las.data.size == 0
-    
+
 
 def test_blank_line_in_header():
     las = lasio.read(egfn("blank_line.las"))
@@ -423,7 +423,12 @@ def test_read_cyrillic_depth_unit():
     las = lasio.read(egfn("sample_cyrillic_depth_unit.las"))
     assert las.index_unit == "M"
 
+
 def test_section_parser_num_except_pass():
     sp = lasio.reader.SectionParser("~C")
     assert sp.num(None) == None
 
+
+def test_skip_comments_in_data_section():
+    l = lasio.read(egfn("skip_data_section_comments.las"))
+    assert (l.curves[0].data == [0.3, 0.4, 0.5, 0.6]).all()

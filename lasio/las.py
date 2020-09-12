@@ -90,6 +90,7 @@ class LASFile(object):
         ignore_comments=("#",),
         mnemonic_case="upper",
         index_unit=None,
+        remove_data_line_filter="#",
         **kwargs
     ):
         """Read a LAS file.
@@ -106,11 +107,17 @@ class LASFile(object):
             ignore_header_errors (bool): ignore LASHeaderErrors (False by
                 default)
             ignore_comments (tuple/str): ignore comments beginning with characters
-                e.g. ``("#", '"')``
+                e.g. ``("#", '"')`` in header sections
             mnemonic_case (str): 'preserve': keep the case of HeaderItem mnemonics
                                  'upper': convert all HeaderItem mnemonics to uppercase
                                  'lower': convert all HeaderItem mnemonics to lowercase
             index_unit (str): Optionally force-set the index curve's unit to "m" or "ft"
+            remove_data_line_filter (str, func): string or function for removing/ignoring lines
+                in the data section e.g. a function which accepts a string (a line from the
+                data section) and returns either True (do not parse the line) or False
+                (parse the line). If this argument is a string it will instead be converted
+                to a function which rejects all lines starting with that value e.g. ``"#"``
+                will be converted to ``lambda line: line.strip().startswith("#")``
 
         See :func:`lasio.reader.open_with_codecs` for additional keyword
         arguments which help to manage issues relate to character encodings.
@@ -119,7 +126,7 @@ class LASFile(object):
 
         logger.debug("Reading {}...".format(str(file_ref)))
 
-        file_obj = ''
+        file_obj = ""
         try:
             file_obj, self.encoding = reader.open_file(file_ref, **kwargs)
 
@@ -147,7 +154,7 @@ class LASFile(object):
             # into data_section_indices
             las3_data_section_indices = []
 
-            las3_section_indicators = ['_DATA', '_PARAMETER', '_DEFINITION']
+            las3_section_indicators = ["_DATA", "_PARAMETER", "_DEFINITION"]
 
             for i, (k, first_line, last_line, section_title) in enumerate(
                 section_positions
@@ -184,8 +191,12 @@ class LASFile(object):
                         provisional_null = sct_items.NULL.value
 
                     # las3 sections can contain _Data, _Parameter or _Definition
-                    las3_section = any([section_str in section_title[1:].upper()
-                         for section_str in las3_section_indicators])
+                    las3_section = any(
+                        [
+                            section_str in section_title[1:].upper()
+                            for section_str in las3_section_indicators
+                        ]
+                    )
 
                     if provisional_version == 3.0 and las3_section:
                         self.sections[section_title[1:]] = sct_items
@@ -206,7 +217,7 @@ class LASFile(object):
                     line_no = first_line
                     contents = []
                     for line in file_obj:
-                        if line.startswith('~'):
+                        if line.startswith("~"):
                             continue
                         line_no += 1
                         contents.append(line.strip("\n").strip())
@@ -238,12 +249,19 @@ class LASFile(object):
 
                     file_obj.seek(k)
                     n_columns = reader.inspect_data_section(
-                        file_obj, (first_line, last_line), regexp_subs
+                        file_obj,
+                        (first_line, last_line),
+                        regexp_subs,
+                        remove_line_filter=remove_data_line_filter,
                     )
 
                     file_obj.seek(k)
                     arr = reader.read_data_section_iterative(
-                        file_obj, (first_line, last_line), regexp_subs, value_null_subs
+                        file_obj,
+                        (first_line, last_line),
+                        regexp_subs,
+                        value_null_subs,
+                        remove_line_filter=remove_data_line_filter,
                     )
                     logger.debug("Read ndarray {arrshape}".format(arrshape=arr.shape))
 
@@ -256,10 +274,7 @@ class LASFile(object):
                         logger.debug("~A data {}".format(arr))
                         if version_NULL:
                             arr[arr == provisional_null] = np.nan
-                        logger.debug(
-                            "~A after NULL replacement data {}".format(arr)
-                        )
-
+                        logger.debug("~A after NULL replacement data {}".format(arr))
 
                         # Provisionally, assume that the number of columns represented
                         # by the data section's array is equal to the number of columns
@@ -274,11 +289,11 @@ class LASFile(object):
                         if provisional_wrapped == "NO":
                             n_columns_in_arr = n_columns
 
-                        #---------------------------------------------------------------------
+                        # ---------------------------------------------------------------------
                         # TODO:
                         # This enables tests/test_read.py::test_barebones_missing_all_sections
                         # to pass, but may not be the complete or final solution.
-                        #---------------------------------------------------------------------
+                        # ---------------------------------------------------------------------
                         if len(self.curves) == 0 and n_columns > 0:
                             n_columns_in_arr = n_columns
 
