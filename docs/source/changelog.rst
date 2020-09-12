@@ -1,6 +1,16 @@
 List of changes
 ===============================
 
+Version 0.28 (12 September 2020)
+--------------------------------
+- Major re-write of reader code working towards LAS 3.0 support (#327; #347, #345, #353, #355, #358, #367, #368, #369)
+- Fix #377 (writing "None" as the value instead of ""; #377)
+- Fix #373 (enable GitHub Actions CI testing on MacOS, Windows, Ubuntu; #374, #387)
+- Fix #363 (parse composite units such as "1000 lbf" correctly; #390)
+- Fix #319 (allow skipping comment lines in data sections; #391)
+- Avoid unnecessary exceptions on reading LAS 3.0 data sections (#385)
+- Fix broken ReadTheDocs build
+
 Version 0.27 (4 September 2020)
 -------------------------------
 - Fix #380 (install failed without git installed; #382)
