@@ -13,12 +13,7 @@ Reading LAS files
 .. automethod:: lasio.LASFile.match_raw_section
 .. autofunction:: lasio.reader.read_data_section_iterative
 .. autofunction:: lasio.reader.get_substitutions
-.. autofunction:: lasio.reader.parse_header_section
 .. autoclass:: lasio.reader.SectionParser
-.. autoclass:: lasio.reader.SectionParser.__call__
-.. autoclass:: lasio.reader.SectionParser.num
-.. autoclass:: lasio.reader.SectionParser.metadata
-.. autoclass:: lasio.reader.SectionParser.curves
 .. autofunction:: lasio.reader.read_header_line
 .. autoclass:: lasio.HeaderItem
 .. automethod:: lasio.HeaderItem.set_session_mnemonic_only
