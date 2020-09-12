@@ -962,11 +962,16 @@ def configure_metadata_patterns(line, section_name):
     # Default return value
     patterns = []
 
-    # Default regular expressions for name, unit, value and desc fields
+    # Default regular expressions for name, value and desc fields
     name_re = r"\.?(?P<name>[^.]*)\."
-    unit_re = r"(?P<unit>[^\s]*)"
     value_re = r"(?P<value>.*):"
     desc_re = r"(?P<descr>.*)"
+
+    # Default regular expression for unit field. Note that we
+    # attempt to match "1000 psi" as a special case which allows
+    # a single whitespace character, in contradiction to the LAS specification
+    # See GitHub issue #363 for details.
+    unit_re = r"(?P<unit>([0-9]+\s)?[^\s]*)"
 
     # Alternate regular expressions for special cases
     value_without_colon_delimiter_re = r"(?P<value>[^:]*)"
