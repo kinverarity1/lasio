@@ -200,9 +200,7 @@ def open_with_codecs(
             filename, encoding, encoding_errors
         )
     )
-    file_obj = io.open(
-        filename, mode="r", encoding=encoding, errors=encoding_errors
-    )
+    file_obj = io.open(filename, mode="r", encoding=encoding, errors=encoding_errors)
     return file_obj, encoding
 
 
@@ -325,13 +323,15 @@ def determine_section_type(section_title):
         return "Header (other)"
     # This is las3 transitional code till data parsing is robust for ~A and
     # '_Data' sections
-    elif re.search('_Data', stitle):
+    elif re.search("_Data", stitle):
         return "Las3_Data"
     else:
         return "Header items"
 
 
-def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False):
+def read_file_contents(
+    file_obj, regexp_subs, value_null_subs, ignore_data=False, remove_line_filter="#"
+):
     """Read file contents into memory.
 
     Arguments:
@@ -341,6 +341,12 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
         null_subs (bool): True will substitute ``numpy.nan`` for invalid values
         ignore_data (bool): if True, do not read in the numerical data in the
             ~ASCII section
+        remove_line_filter (str, func): string or function for removing/ignoring lines
+            in the data section e.g. a function which accepts a string (a line from the
+            data section) and returns either True (do not parse the line) or False
+            (parse the line). If this argument is a string it will instead be converted
+            to a function which rejects all lines starting with that value e.g. ``"#"``
+            will be converted to ``lambda line: line.strip().startswith("#")``
 
     Returns:
         OrderedDict
@@ -388,20 +394,22 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
             # to start reading numerical data.
 
             if not sect_title_line is None:
-               sections[sect_title_line] = {
-                   "section_type": "header",
-                   "title": sect_title_line,
-                   "lines": sect_lines,
-                   "line_nos": sect_line_nos,
-               }
-               sect_lines = []
-               sect_line_nos = []
-
+                sections[sect_title_line] = {
+                    "section_type": "header",
+                    "title": sect_title_line,
+                    "lines": sect_lines,
+                    "line_nos": sect_line_nos,
+                }
+                sect_lines = []
+                sect_line_nos = []
 
             if not ignore_data:
                 try:
                     data = read_data_section_iterative(
-                        file_obj, regexp_subs, value_null_subs
+                        file_obj,
+                        regexp_subs,
+                        value_null_subs,
+                        remove_line_filter=remove_line_filter,
                     )
                 except KeyboardInterrupt:
                     raise
@@ -429,15 +437,15 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
             )
             if section_exists:
                 # We have ended a section and need to start the next
-               if not sect_title_line is None:
-                   sections[sect_title_line] = {
-                       "section_type": "header",
-                       "title": sect_title_line,
-                       "lines": sect_lines,
-                       "line_nos": sect_line_nos,
-                   }
-                   sect_lines = []
-                   sect_line_nos = []
+                if not sect_title_line is None:
+                    sections[sect_title_line] = {
+                        "section_type": "header",
+                        "title": sect_title_line,
+                        "lines": sect_lines,
+                        "line_nos": sect_line_nos,
+                    }
+                    sect_lines = []
+                    sect_line_nos = []
             else:
                 # We are entering into a section for the first time
                 section_exists = True
@@ -460,7 +468,6 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
             "line_nos": sect_line_nos,
         }
 
-
     # Find the number of columns in the data section(s). This is only
     # useful if WRAP = NO, but we do it for all since we don't yet know
     # what the wrap setting is.
@@ -478,7 +485,28 @@ def read_file_contents(file_obj, regexp_subs, value_null_subs, ignore_data=False
     return sections
 
 
-def inspect_data_section(file_obj, line_nos, regexp_subs):
+def convert_remove_line_filter(filt):
+    """Ensure that the line filter is a function.
+
+    Arguments:
+        filt (str, func): string or function for removing/ignoring lines
+            in the data section e.g. a function which accepts a string (a line from the
+            data section) and returns either True (do not parse the line) or False
+            (parse the line). If this argument is a string it will instead be converted
+            to a function which rejects all lines starting with that value e.g. ``"#"``
+            will be converted to ``lambda line: line.strip().startswith("#")``
+
+    Returns: function which takes a string (a data section line) and returns True
+        or False.
+
+    """
+    if isinstance(filt, str):
+        value = str(filt)
+        filt = lambda line: line.strip().startswith(value)
+    return filt
+
+
+def inspect_data_section(file_obj, line_nos, regexp_subs, remove_line_filter="#"):
     """Determine how many columns there are in the data section.
 
     Arguments:
@@ -487,10 +515,18 @@ def inspect_data_section(file_obj, line_nos, regexp_subs):
         regexp_subs (list): each item should be a tuple of the pattern and
             substitution string for a call to re.sub() on each line of the
             data section. See defaults.py READ_SUBS and NULL_SUBS for examples.
+        remove_line_filter (str, func): string or function for removing/ignoring lines
+            in the data section e.g. a function which accepts a string (a line from the
+            data section) and returns either True (do not parse the line) or False
+            (parse the line). If this argument is a string it will instead be converted
+            to a function which rejects all lines starting with that value e.g. ``"#"``
+            will be converted to ``lambda line: line.strip().startswith("#")``
 
     Returns: integer number of columns or -1 where they are different.
 
     """
+    remove_line_filter = convert_remove_line_filter(remove_line_filter)
+
     line_no = line_nos[0]
     title_line = file_obj.readline()
 
@@ -499,13 +535,18 @@ def inspect_data_section(file_obj, line_nos, regexp_subs):
     for i, line in enumerate(file_obj):
         line_no = line_no + 1
         line = line.strip("\n").strip()
-        for pattern, sub_str in regexp_subs:
-            line = re.sub(pattern, sub_str, line)
-        n_items = len(line.split())
-        logger.debug("Line {}: {} items counted in '{}'".format(line_no + 1, n_items, line))
-        item_counts.append(n_items)
-        if (line_no == line_nos[1]) or (i >= 20):
-            break
+        if remove_line_filter(line):
+            continue
+        else:
+            for pattern, sub_str in regexp_subs:
+                line = re.sub(pattern, sub_str, line)
+            n_items = len(line.split())
+            logger.debug(
+                "Line {}: {} items counted in '{}'".format(line_no + 1, n_items, line)
+            )
+            item_counts.append(n_items)
+            if (line_no == line_nos[1]) or (i >= 20):
+                break
 
     try:
         assert len(set(item_counts)) == 1
@@ -515,7 +556,9 @@ def inspect_data_section(file_obj, line_nos, regexp_subs):
         return item_counts[0]
 
 
-def read_data_section_iterative(file_obj, line_nos, regexp_subs, value_null_subs):
+def read_data_section_iterative(
+    file_obj, line_nos, regexp_subs, value_null_subs, remove_line_filter
+):
     """Read data section into memory.
 
     Arguments:
@@ -526,11 +569,20 @@ def read_data_section_iterative(file_obj, line_nos, regexp_subs, value_null_subs
             data section. See defaults.py READ_SUBS and NULL_SUBS for examples.
         value_null_subs (list): list of numerical values to be replaced by
             numpy.nan values.
+        remove_line_filter (str or func): string or function for removing/ignoring lines
+            in the data section e.g. a function which accepts a string (a line from the
+            data section) and returns either True (do not parse the line) or False
+            (parse the line). If this argument is a string it will instead be converted
+            to a function which rejects all lines starting with that value e.g. ``"#"``
+            will be converted to ``lambda line: line.strip().startswith("#")``
+
 
     Returns:
         A 1-D numpy ndarray.
 
     """
+
+    remove_line_filter = convert_remove_line_filter(remove_line_filter)
 
     title = file_obj.readline()
 
@@ -539,18 +591,23 @@ def read_data_section_iterative(file_obj, line_nos, regexp_subs, value_null_subs
         for line in f:
             line_no += 1
             logger.debug(
-                "Line {}: reading data '{}'".format(line_no + 1, line.strip("\n").strip())
+                "Line {}: reading data '{}'".format(
+                    line_no + 1, line.strip("\n").strip()
+                )
             )
-            for pattern, sub_str in regexp_subs:
-                line = re.sub(pattern, sub_str, line)
-            line = line.replace(chr(26), "")
-            for item in line.split():
-                try:
-                    yield np.float64(item)
-                except ValueError:
-                    yield item
-            if line_no == end_line_no:
-                break
+            if remove_line_filter(line):
+                continue
+            else:
+                for pattern, sub_str in regexp_subs:
+                    line = re.sub(pattern, sub_str, line)
+                line = line.replace(chr(26), "")
+                for item in line.split():
+                    try:
+                        yield np.float64(item)
+                    except ValueError:
+                        yield item
+                if line_no == end_line_no:
+                    break
 
     array = np.array(
         [i for i in items(file_obj, start_line_no=line_nos[0], end_line_no=line_nos[1])]
@@ -687,7 +744,7 @@ def parse_header_items_section(
         else:
             # We have arrived at a new section so break and return the previous
             # section's object.
-            if line.startswith('~'):
+            if line.startswith("~"):
                 break
             try:
                 values = read_line(line, section_name=parser.section_name2)
@@ -726,10 +783,10 @@ class SectionParser(object):
     """
 
     def __init__(self, title, version=1.2):
-        las3_section_indicators = ['_DATA', '_PARAMETER', '_DEFINITION']
+        las3_section_indicators = ["_DATA", "_PARAMETER", "_DEFINITION"]
 
-        is_like_las3_section = any([section_str in title.upper()
-             for section_str in las3_section_indicators]
+        is_like_las3_section = any(
+            [section_str in title.upper() for section_str in las3_section_indicators]
         )
 
         # On the first call to SectionParser ~Version hasn't been parsed.  So
@@ -741,7 +798,7 @@ class SectionParser(object):
         if version == 3.0 and is_like_las3_section:
             self.func = self.metadata
             self.section_name2 = title
-            self.default_order = 'value:descr'
+            self.default_order = "value:descr"
             self.orders = {}
         elif title.upper().startswith("~C"):
             self.func = self.curves
@@ -759,7 +816,7 @@ class SectionParser(object):
             logger.info("Unknown section name {}".format(title.upper()))
             self.func = self.metadata
             self.section_name2 = title
-            self.default_order = 'value:descr'
+            self.default_order = "value:descr"
             self.orders = {}
 
         self.version = version
@@ -930,7 +987,7 @@ def read_header_line(line, pattern=None, section_name=None):
 
     if pattern is None:
         patterns = configure_metadata_patterns(line, section_name)
-    else: # pattern was passed in on function call
+    else:  # pattern was passed in on function call
         patterns.append(pattern)
 
     for pattern in patterns:
@@ -947,6 +1004,7 @@ def read_header_line(line, pattern=None, section_name=None):
             if d[key].endswith("."):
                 d[key] = d[key].strip(".")  # see issue #36
     return d
+
 
 def configure_metadata_patterns(line, section_name):
     """Configure regular-expression patterns to parse section meta-data lines.
