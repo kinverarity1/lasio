@@ -57,3 +57,11 @@ def test_pattern_arg():
     assert result["name"] == "DEPT"
     assert result["unit"] == "M"
     assert result["value"] == ""
+
+def test_unit_with_space():
+    line = "HKLA            .1000 lbf                                  :(RT)"
+    result = read_header_line(line, section_name="Parameter")
+    assert result["name"] == "HKLA"
+    assert result["unit"] == "1000 lbf"
+    assert result["value"] == ""
+    assert result["descr"] == "(RT)"
