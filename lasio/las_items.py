@@ -116,10 +116,9 @@ class HeaderItem(OrderedDict):
             'descr="%s")' % (
                 self.__class__.__name__, self.mnemonic, self.unit, self.value,
                 self.descr))
-        if len(result) > 80:
-            return result[:76] + '...)'
-        else:
-            return result
+        while len(result) > 80:
+            result = result[:-3] + result[-2:]
+        return result
 
     def _repr_pretty_(self, p, cycle):
         return p.text(self.__repr__())
