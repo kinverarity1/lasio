@@ -1,5 +1,8 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+# This workflow will install Python dependencies, run tests and lint with a
+# variety of Python versions
+#
+# For more information see:
+# https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
 name: Python CI 
 
@@ -22,9 +25,9 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install --editable ".[all]" 
-        pip install pytest>=3.6 pytest-cov coverage pathlib 
+        python -m pip install --upgrade pip setuptools wheel
+        pip install ".[all]"
+        pip install pytest>=3.6 pytest-cov coverage pathlib
     - name: Test with pytest
       run: |
         pytest
