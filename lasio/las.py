@@ -256,13 +256,22 @@ class LASFile(object):
                     )
 
                     file_obj.seek(k)
-                    arr = reader.read_data_section_iterative(
-                        file_obj,
-                        (first_line, last_line),
-                        regexp_subs,
-                        value_null_subs,
-                        remove_line_filter=remove_data_line_filter,
-                    )
+                    # Notes see 2d9e43c3 and e960998f for 'try' background
+                    try:
+                        arr = reader.read_data_section_iterative(
+                            file_obj,
+                            (first_line, last_line),
+                            regexp_subs,
+                            value_null_subs,
+                            remove_line_filter=remove_data_line_filter,
+                        )
+                    except KeyboardInterrupt:
+                        raise
+                    except:
+                        raise exceptions.LASDataError(
+                            traceback.format_exc()[:-1]
+                            + " in data section beginning line {}".format(i + 1)
+                        )
                     logger.debug("Read ndarray {arrshape}".format(arrshape=arr.shape))
 
                     # This is so we can check data size and use self.set_data(data, truncate=False)
