@@ -1052,7 +1052,7 @@ def configure_metadata_patterns(line, section_name):
         if ".." in line and section_name == "Curves":
             name_re = name_with_dots_re
     else:
-        if ".." in line and section_name == "Curves":
+        if re.search(r'[^ ]\.\.', line) and section_name == "Curves":
             double_dot = line.find("..")
             desc_colon = line.rfind(":")
 

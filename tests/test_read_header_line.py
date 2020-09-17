@@ -21,6 +21,10 @@ def test_cyrillic_depth_unit():
     result = read_header_line(line, section_name="Curves")
     assert result["unit"] == u"метер"
 
+def test_unit_stat_with_dot():
+    line = u" TDEP  ..1IN                      :  0.1-in"
+    result = read_header_line(line, section_name="Curves")
+    assert result["unit"] == u".1IN"
 
 def test_value_field_with_num_colon():
     line = "RUN . 01: RUN NUMBER"
