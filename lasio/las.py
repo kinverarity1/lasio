@@ -1,8 +1,5 @@
 from __future__ import print_function
 
-# Standard library packages
-import codecs
-
 try:  # will work in Python 3
     from collections.abc import Sequence
 except ImportError:  # Support Python 2.7

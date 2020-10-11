@@ -657,7 +657,7 @@ def get_substitutions(read_policy, null_policy):
                 if sub in subs:
                     all_subs += subs[sub]
                 if sub == "NULL":
-                    logger.debug("located substition for LAS.version.NULL as True")
+                    logger.debug("located substitution for LAS.version.NULL as True")
                     version_NULL = True
         else:
             all_subs = []
