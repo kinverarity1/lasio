@@ -217,11 +217,12 @@ header:
 .. code-block:: ipython
 
     >>> las.version
-    [HeaderItem(mnemonic=VERS, unit=, value=1.2, descr=CWLS log ASCII Standard -VERSION 1.20, original_mnemonic=VERS),
-     HeaderItem(mnemonic=WRAP, unit=, value=YES, descr=Multiple lines per depth step, original_mnemonic=WRAP)]
+    [HeaderItem(mnemonic="VERS", unit="", value="1.2", descr="CWLS log ASCII Standa"),
+     HeaderItem(mnemonic="WRAP", unit="", value="YES", descr="Multiple lines per de")]
+
     >>> las.version.WRAP = 'NO'
     >>> las.version.WRAP
-    HeaderItem(mnemonic=WRAP, unit=, value=NO, descr=Multiple lines per depth step, original_mnemonic=WRAP)
+    HeaderItem(mnemonic="WRAP", unit="", value="NO", descr="Multiple lines per dep")
     >>> las.write('example-unwrapped.las')
     WARNING:lasio.writer:[v1.2] line #58 has 396 chars (>256)
     WARNING:lasio.writer:[v1.2] line #59 has 396 chars (>256)

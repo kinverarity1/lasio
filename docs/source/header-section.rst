@@ -43,12 +43,12 @@ For example:
 .. code-block:: python
 
     >>> las.sections['Version']
-    [HeaderItem(mnemonic=VERS, unit=, value=2.0, descr=CWLS LOG ASCII STANDARD - VERSION 2.0, original_mnemonic=VERS),
-     HeaderItem(mnemonic=WRAP, unit=, value=NO, descr=ONE LINE PER DEPTH STEP, original_mnemonic=WRAP)]
+    [HeaderItem(mnemonic="VERS", unit="", value="2.0", descr="CWLS LOG ASCII STANDA"),
+     HeaderItem(mnemonic="WRAP", unit="", value="NO", descr="ONE LINE PER DEPTH STE")]
 
     >>> las.version
-    [HeaderItem(mnemonic=VERS, unit=, value=2.0, descr=CWLS LOG ASCII STANDARD - VERSION 2.0, original_mnemonic=VERS),
-     HeaderItem(mnemonic=WRAP, unit=, value=NO, descr=ONE LINE PER DEPTH STEP, original_mnemonic=WRAP)]
+    [HeaderItem(mnemonic="VERS", unit="", value="2.0", descr="CWLS LOG ASCII STANDA"),
+     HeaderItem(mnemonic="WRAP", unit="", value="NO", descr="ONE LINE PER DEPTH STE")]
 
 Sections themselves are represented by :class:`lasio.SectionItems`
 objects. This is a ``list`` which has been extended to allow you to access the
@@ -57,13 +57,11 @@ items within by their mnemonic:
 .. code-block:: python
 
     >>> las.version.VERS
-    HeaderItem(mnemonic=VERS, unit=, value=2.0, descr=CWLS LOG ASCII STANDARD - VERSION 2.0, original_mnemonic=VERS)
+    HeaderItem(mnemonic="VERS", unit="", value="2.0", descr="CWLS LOG ASCII STANDA")
     >>> las.version['VERS']
-    HeaderItem(mnemonic=VERS, unit=, value=2.0, descr=CWLS LOG ASCII STANDARD - VERSION 2.0, original_mnemonic=VERS)
+    HeaderItem(mnemonic="VERS", unit="", value="2.0", descr="CWLS LOG ASCII STANDA")
     >>> las.version[0]
-    HeaderItem(mnemonic=VERS, unit=, value=2.0, descr=CWLS LOG ASCII STANDARD - VERSION 2.0, original_mnemonic=VERS)
-    >>> id(Out[209]), id(Out[210]), id(Out[211])
-    (250964032, 250964032, 250964032)
+    HeaderItem(mnemonic="VERS", unit="", value="2.0", descr="CWLS LOG ASCII STANDA")
 
 As you can see, either attribute-style or item-style access is fine.
 
@@ -72,20 +70,20 @@ Let's take a look at the next special section, ``~W``:
 .. code-block:: python
 
     >>> las.well
-    [HeaderItem(mnemonic=STRT, unit=M, value=0.05, descr=FIRST INDEX VALUE, original_mnemonic=STRT),
-     HeaderItem(mnemonic=STOP, unit=M, value=136.6, descr=LAST INDEX VALUE, original_mnemonic=STOP),
-     HeaderItem(mnemonic=STEP, unit=M, value=0.05, descr=STEP, original_mnemonic=STEP),
-     HeaderItem(mnemonic=NULL, unit=, value=-99999, descr=NULL VALUE, original_mnemonic=NULL),
-     HeaderItem(mnemonic=COMP, unit=, value=, descr=COMP, original_mnemonic=COMP),
-     HeaderItem(mnemonic=WELL, unit=, value=Scorpio E1, descr=WELL, original_mnemonic=WELL),
-     HeaderItem(mnemonic=FLD, unit=, value=, descr=, original_mnemonic=FLD),
-     HeaderItem(mnemonic=LOC, unit=, value=Mt Eba, descr=LOC, original_mnemonic=LOC),
-     HeaderItem(mnemonic=SRVC, unit=, value=, descr=, original_mnemonic=SRVC),
-     HeaderItem(mnemonic=CTRY, unit=, value=, descr=, original_mnemonic=CTRY),
-     HeaderItem(mnemonic=STAT, unit=, value=SA, descr=STAT, original_mnemonic=STAT),
-     HeaderItem(mnemonic=CNTY, unit=, value=, descr=, original_mnemonic=CNTY),
-     HeaderItem(mnemonic=DATE, unit=, value=15/03/2015, descr=DATE, original_mnemonic=DATE),
-     HeaderItem(mnemonic=UWI, unit=, value=6038-187, descr=WUNT, original_mnemonic=UWI)]
+     [HeaderItem(mnemonic="STRT", unit="M", value="0.05", descr="FIRST INDEX VALUE"),
+      HeaderItem(mnemonic="STOP", unit="M", value="136.6", descr="LAST INDEX VALUE"),
+      HeaderItem(mnemonic="STEP", unit="M", value="0.05", descr="STEP"),
+      HeaderItem(mnemonic="NULL", unit="", value="-99999", descr="NULL VALUE"),
+      HeaderItem(mnemonic="COMP", unit="", value="", descr="COMP"),
+      HeaderItem(mnemonic="WELL", unit="", value="Scorpio E1", descr="WELL"),
+      HeaderItem(mnemonic="FLD", unit="", value="", descr=""),
+      HeaderItem(mnemonic="LOC", unit="", value="Mt Eba", descr="LOC"),
+      HeaderItem(mnemonic="SRVC", unit="", value="", descr=""),
+      HeaderItem(mnemonic="CTRY", unit="", value="", descr=""),
+      HeaderItem(mnemonic="STAT", unit="", value="SA", descr="STAT"),
+      HeaderItem(mnemonic="CNTY", unit="", value="", descr=""),
+      HeaderItem(mnemonic="DATE", unit="", value="15/03/2015", descr="DATE"),
+      HeaderItem(mnemonic="UWI", unit="", value="6038-187", descr="WUNT")]
 
 The CTRY item is blank. We will set it:
 
@@ -93,7 +91,7 @@ The CTRY item is blank. We will set it:
 
     >>> las.well.CTRY = 'Australia'
     >>> las.well.CTRY
-    HeaderItem(mnemonic=CTRY, unit=, value=Australia, descr=, original_mnemonic=CTRY)
+    HeaderItem(mnemonic="CTRY", unit="", value="Australia", descr="")
 
 Notice that :class:`lasio.SectionItems` plays a little trick here. It actually
 sets the ``header_item.value`` attribute, instead of replacing the entire
@@ -104,18 +102,18 @@ You can set any of the attributes directly. Let's take an example from the ``~C`
 .. code-block:: python
 
     >>> las.curves
-    [CurveItem(mnemonic=DEPT, unit=M, value=, descr=DEPTH, original_mnemonic=DEPT, data.shape=(121,)),
-     CurveItem(mnemonic=CALI, unit=MM, value=, descr=CALI, original_mnemonic=CALI, data.shape=(121,)),
-     CurveItem(mnemonic=DFAR, unit=G/CM3, value=, descr=DFAR, original_mnemonic=DFAR, data.shape=(121,)),
-     CurveItem(mnemonic=DNEAR, unit=G/CM3, value=, descr=DNEAR, original_mnemonic=DNEAR, data.shape=(121,)),
-     CurveItem(mnemonic=GAMN, unit=GAPI, value=, descr=GAMN, original_mnemonic=GAMN, data.shape=(121,)),
-     CurveItem(mnemonic=NEUT, unit=CPS, value=, descr=NEUT, original_mnemonic=NEUT, data.shape=(121,)),
-     CurveItem(mnemonic=PR, unit=OHM/M, value=, descr=PR, original_mnemonic=PR, data.shape=(121,)),
-     CurveItem(mnemonic=SP, unit=MV, value=, descr=SP, original_mnemonic=SP, data.shape=(121,)),
-     CurveItem(mnemonic=COND, unit=MS/M, value=, descr=COND, original_mnemonic=COND, data.shape=(121,))]
+    [CurveItem(mnemonic="DEPT", unit="M", value="", descr="DEPTH", original_mnemonic="DEPT", data.shape=(121,)),
+     CurveItem(mnemonic="CALI", unit="MM", value="", descr="CALI", original_mnemonic="CALI", data.shape=(121,)),
+     CurveItem(mnemonic="DFAR", unit="G/CM3", value="", descr="DFAR", original_mnemonic="DFAR", data.shape=(121,)),
+     CurveItem(mnemonic="DNEAR", unit="G/CM3", value="", descr="DNEAR", original_mnemonic="DNEAR", data.shape=(121,)),
+     CurveItem(mnemonic="GAMN", unit="GAPI", value="", descr="GAMN", original_mnemonic="GAMN", data.shape=(121,)),
+     CurveItem(mnemonic="NEUT", unit="CPS", value="", descr="NEUT", original_mnemonic="NEUT", data.shape=(121,)),
+     CurveItem(mnemonic="PR", unit="OHM/M", value="", descr="PR", original_mnemonic="PR", data.shape=(121,)),
+     CurveItem(mnemonic="SP", unit="MV", value="", descr="SP", original_mnemonic="SP", data.shape=(121,)),
+     CurveItem(mnemonic="COND", unit="MS/M", value="", descr="COND", original_mnemonic="COND", data.shape=(121,))]
     >>> las.curves.PR.unit = 'ohmm'
     >>> las.curves.PR
-    CurveItem(mnemonic=PR, unit=ohmm, value=, descr=PR, original_mnemonic=PR, data.shape=(121,))
+    CurveItem(mnemonic="PR", unit="ohmm", value="", descr="PR", original_mnemonic="PR", data.shape=(121,))
 
 Now let's look more closely at how to manipulate and add or remove items from
 a section.
@@ -124,29 +122,29 @@ a section.
 
     In [195]: las.params
     Out[195]:
-    [HeaderItem(mnemonic=BS, unit=, value=216 mm, descr=BS, original_mnemonic=BS),
-     HeaderItem(mnemonic=JOBN, unit=, value=, descr=JOBN, original_mnemonic=JOBN),
-     HeaderItem(mnemonic=WPMT, unit=, value=, descr=WPMT, original_mnemonic=WPMT),
-     HeaderItem(mnemonic=AGL, unit=, value=, descr=AGL, original_mnemonic=AGL),
-     HeaderItem(mnemonic=PURP, unit=, value=Cased hole stratigraphy, descr=PURP, original_mnemonic=PURP),
-     HeaderItem(mnemonic=X, unit=, value=560160, descr=X, original_mnemonic=X),
-     HeaderItem(mnemonic=CSGL, unit=, value=0 m - 135 m, descr=CSGL, original_mnemonic=CSGL),
-     HeaderItem(mnemonic=UNIT, unit=, value=, descr=UNIT, original_mnemonic=UNIT),
-     HeaderItem(mnemonic=Y, unit=, value=6686430, descr=Y, original_mnemonic=Y),
-     HeaderItem(mnemonic=TDL, unit=, value=135.2 m, descr=TDL, original_mnemonic=TDL),
-     HeaderItem(mnemonic=PROD, unit=, value=, descr=PROD, original_mnemonic=PROD),
-     HeaderItem(mnemonic=MUD, unit=, value=Water, descr=MUD, original_mnemonic=MUD),
-     HeaderItem(mnemonic=CSGS, unit=, value=100 mm, descr=CSGS, original_mnemonic=CSGS),
-     HeaderItem(mnemonic=ENG, unit=, value=, descr=ENG, original_mnemonic=ENG),
-     HeaderItem(mnemonic=STEP, unit=, value=5 cm, descr=STEP, original_mnemonic=STEP),
-     HeaderItem(mnemonic=FluidLevel, unit=, value=54 m, descr=FluidLevel, original_mnemonic=FluidLevel),
-     HeaderItem(mnemonic=CSGT, unit=, value=PVC, descr=CSGT, original_mnemonic=CSGT),
-     HeaderItem(mnemonic=WIT, unit=, value=, descr=WIT, original_mnemonic=WIT),
-     HeaderItem(mnemonic=EREF, unit=, value=, descr=EREF, original_mnemonic=EREF),
-     HeaderItem(mnemonic=PROJ, unit=, value=, descr=PROJ, original_mnemonic=PROJ),
-     HeaderItem(mnemonic=ZONE, unit=, value=53J, descr=ZONE, original_mnemonic=ZONE),
-     HeaderItem(mnemonic=DREF, unit=, value=GL, descr=DREF, original_mnemonic=DREF),
-     HeaderItem(mnemonic=TDD, unit=, value=136 m, descr=TDD, original_mnemonic=TDD)]
+    [HeaderItem(mnemonic="BS", unit="", value="216 mm", descr="BS"),
+     HeaderItem(mnemonic="JOBN", unit="", value="", descr="JOBN"),
+     HeaderItem(mnemonic="WPMT", unit="", value="", descr="WPMT"),
+     HeaderItem(mnemonic="AGL", unit="", value="", descr="AGL"),
+     HeaderItem(mnemonic="PURP", unit="", value="Cased hole stratigraphy", descr="P"),
+     HeaderItem(mnemonic="X", unit="", value="560160", descr="X"),
+     HeaderItem(mnemonic="CSGL", unit="", value="0 m - 135 m", descr="CSGL"),
+     HeaderItem(mnemonic="UNIT", unit="", value="", descr="UNIT"),
+     HeaderItem(mnemonic="Y", unit="", value="6686430", descr="Y"),
+     HeaderItem(mnemonic="TDL", unit="", value="135.2 m", descr="TDL"),
+     HeaderItem(mnemonic="PROD", unit="", value="", descr="PROD"),
+     HeaderItem(mnemonic="MUD", unit="", value="Water", descr="MUD"),
+     HeaderItem(mnemonic="CSGS", unit="", value="100 mm", descr="CSGS"),
+     HeaderItem(mnemonic="ENG", unit="", value="", descr="ENG"),
+     HeaderItem(mnemonic="STEP", unit="", value="5 cm", descr="STEP"),
+     HeaderItem(mnemonic="FLUIDLEVEL", unit="", value="54 m", descr="FluidLevel"),
+     HeaderItem(mnemonic="CSGT", unit="", value="PVC", descr="CSGT"),
+     HeaderItem(mnemonic="WIT", unit="", value="", descr="WIT"),
+     HeaderItem(mnemonic="EREF", unit="", value="", descr="EREF"),
+     HeaderItem(mnemonic="PROJ", unit="", value="", descr="PROJ"),
+     HeaderItem(mnemonic="ZONE", unit="", value="53J", descr="ZONE"),
+     HeaderItem(mnemonic="DREF", unit="", value="GL", descr="DREF"),
+     HeaderItem(mnemonic="TDD", unit="", value="136 m", descr="TDD")]
 
 We want to rename the DREF mnemonic as LMF. We can do so by changing the
 ``header_item.mnemonic`` attribute.
@@ -155,29 +153,29 @@ We want to rename the DREF mnemonic as LMF. We can do so by changing the
 
     >>> las.params.DREF.mnemonic = 'LMF'
     >>> las.params
-    [HeaderItem(mnemonic=BS, unit=, value=216 mm, descr=BS, original_mnemonic=BS),
-     HeaderItem(mnemonic=JOBN, unit=, value=, descr=JOBN, original_mnemonic=JOBN),
-     HeaderItem(mnemonic=WPMT, unit=, value=, descr=WPMT, original_mnemonic=WPMT),
-     HeaderItem(mnemonic=AGL, unit=, value=, descr=AGL, original_mnemonic=AGL),
-     HeaderItem(mnemonic=PURP, unit=, value=Cased hole stratigraphy, descr=PURP, original_mnemonic=PURP),
-     HeaderItem(mnemonic=X, unit=, value=560160, descr=X, original_mnemonic=X),
-     HeaderItem(mnemonic=CSGL, unit=, value=0 m - 135 m, descr=CSGL, original_mnemonic=CSGL),
-     HeaderItem(mnemonic=UNIT, unit=, value=, descr=UNIT, original_mnemonic=UNIT),
-     HeaderItem(mnemonic=Y, unit=, value=6686430, descr=Y, original_mnemonic=Y),
-     HeaderItem(mnemonic=TDL, unit=, value=135.2 m, descr=TDL, original_mnemonic=TDL),
-     HeaderItem(mnemonic=PROD, unit=, value=, descr=PROD, original_mnemonic=PROD),
-     HeaderItem(mnemonic=MUD, unit=, value=Water, descr=MUD, original_mnemonic=MUD),
-     HeaderItem(mnemonic=CSGS, unit=, value=100 mm, descr=CSGS, original_mnemonic=CSGS),
-     HeaderItem(mnemonic=ENG, unit=, value=, descr=ENG, original_mnemonic=ENG),
-     HeaderItem(mnemonic=STEP, unit=, value=5 cm, descr=STEP, original_mnemonic=STEP),
-     HeaderItem(mnemonic=FluidLevel, unit=, value=54 m, descr=FluidLevel, original_mnemonic=FluidLevel),
-     HeaderItem(mnemonic=CSGT, unit=, value=PVC, descr=CSGT, original_mnemonic=CSGT),
-     HeaderItem(mnemonic=WIT, unit=, value=, descr=WIT, original_mnemonic=WIT),
-     HeaderItem(mnemonic=EREF, unit=, value=, descr=EREF, original_mnemonic=EREF),
-     HeaderItem(mnemonic=PROJ, unit=, value=, descr=PROJ, original_mnemonic=PROJ),
-     HeaderItem(mnemonic=ZONE, unit=, value=53J, descr=ZONE, original_mnemonic=ZONE),
-     HeaderItem(mnemonic=LMF, unit=, value=GL, descr=DREF, original_mnemonic=LMF),
-     HeaderItem(mnemonic=TDD, unit=, value=136 m, descr=TDD, original_mnemonic=TDD)]
+    [HeaderItem(mnemonic="BS", unit="", value="216 mm", descr="BS"),
+     HeaderItem(mnemonic="JOBN", unit="", value="", descr="JOBN"),
+     HeaderItem(mnemonic="WPMT", unit="", value="", descr="WPMT"),
+     HeaderItem(mnemonic="AGL", unit="", value="", descr="AGL"),
+     HeaderItem(mnemonic="PURP", unit="", value="Cased hole stratigraphy", descr="P"),
+     HeaderItem(mnemonic="X", unit="", value="560160", descr="X"),
+     HeaderItem(mnemonic="CSGL", unit="", value="0 m - 135 m", descr="CSGL"),
+     HeaderItem(mnemonic="UNIT", unit="", value="", descr="UNIT"),
+     HeaderItem(mnemonic="Y", unit="", value="6686430", descr="Y"),
+     HeaderItem(mnemonic="TDL", unit="", value="135.2 m", descr="TDL"),
+     HeaderItem(mnemonic="PROD", unit="", value="", descr="PROD"),
+     HeaderItem(mnemonic="MUD", unit="", value="Water", descr="MUD"),
+     HeaderItem(mnemonic="CSGS", unit="", value="100 mm", descr="CSGS"),
+     HeaderItem(mnemonic="ENG", unit="", value="", descr="ENG"),
+     HeaderItem(mnemonic="STEP", unit="", value="5 cm", descr="STEP"),
+     HeaderItem(mnemonic="FLUIDLEVEL", unit="", value="54 m", descr="FluidLevel"),
+     HeaderItem(mnemonic="CSGT", unit="", value="PVC", descr="CSGT"),
+     HeaderItem(mnemonic="WIT", unit="", value="", descr="WIT"),
+     HeaderItem(mnemonic="EREF", unit="", value="", descr="EREF"),
+     HeaderItem(mnemonic="PROJ", unit="", value="", descr="PROJ"),
+     HeaderItem(mnemonic="ZONE", unit="", value="53J", descr="ZONE"),
+     HeaderItem(mnemonic="LMF", unit="", value="GL", descr="DREF"),
+     HeaderItem(mnemonic="TDD", unit="", value="136 m", descr="TDD")]
 
 And now we need to add a new mnemonic.
 
@@ -185,30 +183,30 @@ And now we need to add a new mnemonic.
 
     >>> las.params.DRILL = lasio.HeaderItem(mnemonic='DRILL', value='John Smith', descr='Driller on site')
     >>> las.params
-    [HeaderItem(mnemonic=BS, unit=, value=216 mm, descr=BS, original_mnemonic=BS),
-     HeaderItem(mnemonic=JOBN, unit=, value=, descr=JOBN, original_mnemonic=JOBN),
-     HeaderItem(mnemonic=WPMT, unit=, value=, descr=WPMT, original_mnemonic=WPMT),
-     HeaderItem(mnemonic=AGL, unit=, value=, descr=AGL, original_mnemonic=AGL),
-     HeaderItem(mnemonic=PURP, unit=, value=Cased hole stratigraphy, descr=PURP, original_mnemonic=PURP),
-     HeaderItem(mnemonic=X, unit=, value=560160, descr=X, original_mnemonic=X),
-     HeaderItem(mnemonic=CSGL, unit=, value=0 m - 135 m, descr=CSGL, original_mnemonic=CSGL),
-     HeaderItem(mnemonic=UNIT, unit=, value=, descr=UNIT, original_mnemonic=UNIT),
-     HeaderItem(mnemonic=Y, unit=, value=6686430, descr=Y, original_mnemonic=Y),
-     HeaderItem(mnemonic=TDL, unit=, value=135.2 m, descr=TDL, original_mnemonic=TDL),
-     HeaderItem(mnemonic=PROD, unit=, value=, descr=PROD, original_mnemonic=PROD),
-     HeaderItem(mnemonic=MUD, unit=, value=Water, descr=MUD, original_mnemonic=MUD),
-     HeaderItem(mnemonic=CSGS, unit=, value=100 mm, descr=CSGS, original_mnemonic=CSGS),
-     HeaderItem(mnemonic=ENG, unit=, value=, descr=ENG, original_mnemonic=ENG),
-     HeaderItem(mnemonic=STEP, unit=, value=5 cm, descr=STEP, original_mnemonic=STEP),
-     HeaderItem(mnemonic=FluidLevel, unit=, value=54 m, descr=FluidLevel, original_mnemonic=FluidLevel),
-     HeaderItem(mnemonic=CSGT, unit=, value=PVC, descr=CSGT, original_mnemonic=CSGT),
-     HeaderItem(mnemonic=WIT, unit=, value=, descr=WIT, original_mnemonic=WIT),
-     HeaderItem(mnemonic=EREF, unit=, value=, descr=EREF, original_mnemonic=EREF),
-     HeaderItem(mnemonic=PROJ, unit=, value=, descr=PROJ, original_mnemonic=PROJ),
-     HeaderItem(mnemonic=ZONE, unit=, value=53J, descr=ZONE, original_mnemonic=ZONE),
-     HeaderItem(mnemonic=LMF, unit=, value=GL, descr=DREF, original_mnemonic=LMF),
-     HeaderItem(mnemonic=TDD, unit=, value=136 m, descr=TDD, original_mnemonic=TDD),
-     HeaderItem(mnemonic=DRILL, unit=, value=John Smith, descr=Driller on site, original_mnemonic=DRILL)]
+    [HeaderItem(mnemonic="BS", unit="", value="216 mm", descr="BS"),
+     HeaderItem(mnemonic="JOBN", unit="", value="", descr="JOBN"),
+     HeaderItem(mnemonic="WPMT", unit="", value="", descr="WPMT"),
+     HeaderItem(mnemonic="AGL", unit="", value="", descr="AGL"),
+     HeaderItem(mnemonic="PURP", unit="", value="Cased hole stratigraphy", descr="P"),
+     HeaderItem(mnemonic="X", unit="", value="560160", descr="X"),
+     HeaderItem(mnemonic="CSGL", unit="", value="0 m - 135 m", descr="CSGL"),
+     HeaderItem(mnemonic="UNIT", unit="", value="", descr="UNIT"),
+     HeaderItem(mnemonic="Y", unit="", value="6686430", descr="Y"),
+     HeaderItem(mnemonic="TDL", unit="", value="135.2 m", descr="TDL"),
+     HeaderItem(mnemonic="PROD", unit="", value="", descr="PROD"),
+     HeaderItem(mnemonic="MUD", unit="", value="Water", descr="MUD"),
+     HeaderItem(mnemonic="CSGS", unit="", value="100 mm", descr="CSGS"),
+     HeaderItem(mnemonic="ENG", unit="", value="", descr="ENG"),
+     HeaderItem(mnemonic="STEP", unit="", value="5 cm", descr="STEP"),
+     HeaderItem(mnemonic="FLUIDLEVEL", unit="", value="54 m", descr="FluidLevel"),
+     HeaderItem(mnemonic="CSGT", unit="", value="PVC", descr="CSGT"),
+     HeaderItem(mnemonic="WIT", unit="", value="", descr="WIT"),
+     HeaderItem(mnemonic="EREF", unit="", value="", descr="EREF"),
+     HeaderItem(mnemonic="PROJ", unit="", value="", descr="PROJ"),
+     HeaderItem(mnemonic="ZONE", unit="", value="53J", descr="ZONE"),
+     HeaderItem(mnemonic="LMF", unit="", value="GL", descr="DREF"),
+     HeaderItem(mnemonic="TDD", unit="", value="136 m", descr="TDD"),
+     HeaderItem(mnemonic="DRILL", unit="", value="John Smith", descr="Driller on si")]
 
 Bingo.
 
@@ -224,14 +222,15 @@ There are methods intended for removing curves. Say you want to remove the PR cu
 .. code-block:: python
 
     >>> las.delete_curve("PR")
-    [CurveItem(mnemonic=DEPT, unit=M, value=, descr=DEPTH, original_mnemonic=DEPT, data.shape=(121,)),
-     CurveItem(mnemonic=CALI, unit=MM, value=, descr=CALI, original_mnemonic=CALI, data.shape=(121,)),
-     CurveItem(mnemonic=DFAR, unit=G/CM3, value=, descr=DFAR, original_mnemonic=DFAR, data.shape=(121,)),
-     CurveItem(mnemonic=DNEAR, unit=G/CM3, value=, descr=DNEAR, original_mnemonic=DNEAR, data.shape=(121,)),
-     CurveItem(mnemonic=GAMN, unit=GAPI, value=, descr=GAMN, original_mnemonic=GAMN, data.shape=(121,)),
-     CurveItem(mnemonic=NEUT, unit=CPS, value=, descr=NEUT, original_mnemonic=NEUT, data.shape=(121,)),
-     CurveItem(mnemonic=SP, unit=MV, value=, descr=SP, original_mnemonic=SP, data.shape=(121,)),
-     CurveItem(mnemonic=COND, unit=MS/M, value=, descr=COND, original_mnemonic=COND, data.shape=(121,))]
+    [CurveItem(mnemonic="DEPT", unit="M", value="", descr="DEPTH", original_mnemonic="DEPT", data.shape=(121,)),
+     CurveItem(mnemonic="CALI", unit="MM", value="", descr="CALI", original_mnemonic="CALI", data.shape=(121,)),
+     CurveItem(mnemonic="DFAR", unit="G/CM3", value="", descr="DFAR", original_mnemonic="DFAR", data.shape=(121,)),
+     CurveItem(mnemonic="DNEAR", unit="G/CM3", value="", descr="DNEAR", original_mnemonic="DNEAR", data.shape=(121,)),
+     CurveItem(mnemonic="GAMN", unit="GAPI", value="", descr="GAMN", original_mnemonic="GAMN", data.shape=(121,)),
+     CurveItem(mnemonic="NEUT", unit="CPS", value="", descr="NEUT", original_mnemonic="NEUT", data.shape=(121,)),
+     CurveItem(mnemonic="SP", unit="MV", value="", descr="SP", original_mnemonic="SP", data.shape=(121,)),
+     CurveItem(mnemonic="COND", unit="MS/M", value="", descr="COND", original_mnemonic="COND", data.shape=(121,))]
+
 
 .. warning:: Common mistake!
 
@@ -247,9 +246,9 @@ section:
     ...        las.delete_curve(curve.mnemonic)
     ... 
     >>> las.curves
-    [CurveItem(mnemonic=DEPT, unit=M, value=, descr=DEPTH, original_mnemonic=DEPT, data.shape=(121,)),
-     CurveItem(mnemonic=DFAR, unit=G/CM3, value=, descr=DFAR, original_mnemonic=DFAR, data.shape=(121,)),
-     CurveItem(mnemonic=DNEAR, unit=G/CM3, value=, descr=DNEAR, original_mnemonic=DNEAR, data.shape=(121,))]
+    [CurveItem(mnemonic="DEPT", unit="M", value="", descr="DEPTH", original_mnemonic="DEPT", data.shape=(121,)),
+     CurveItem(mnemonic="DFAR", unit="G/CM3", value="", descr="DFAR", original_mnemonic="DFAR", data.shape=(121,)),
+     CurveItem(mnemonic="DNEAR", unit="G/CM3", value="", descr="DNEAR", original_mnemonic="DNEAR", data.shape=(121,))]
     
 Handling errors
 ---------------
@@ -326,14 +325,14 @@ Only a warning is issued, and the rest of the LAS file loads OK:
     >>> las.params
     []
     >>> las.curves
-    [CurveItem(mnemonic=DEPT, unit=M, value=, descr=1  DEPTH, original_mnemonic=DEPT, data.shape=(3,)),
-     CurveItem(mnemonic=DT, unit=US/M, value=, descr=2  SONIC TRANSIT TIME, original_mnemonic=DT, data.shape=(3,)),
-     CurveItem(mnemonic=RHOB, unit=K/M3, value=, descr=3  BULK DENSITY, original_mnemonic=RHOB, data.shape=(3,)),
-     CurveItem(mnemonic=NPHI, unit=V/V, value=, descr=4   NEUTRON POROSITY, original_mnemonic=NPHI, data.shape=(3,)),
-     CurveItem(mnemonic=SFLU, unit=OHMM, value=, descr=5  RXO RESISTIVITY, original_mnemonic=SFLU, data.shape=(3,)),
-     CurveItem(mnemonic=SFLA, unit=OHMM, value=, descr=6  SHALLOW RESISTIVITY, original_mnemonic=SFLA, data.shape=(3,)),
-     CurveItem(mnemonic=ILM, unit=OHMM, value=, descr=7  MEDIUM RESISTIVITY, original_mnemonic=ILM, data.shape=(3,)),
-     CurveItem(mnemonic=ILD, unit=OHMM, value=, descr=8  DEEP RESISTIVITY, original_mnemonic=ILD, data.shape=(3,))
+    [CurveItem(mnemonic="DEPT", unit="M", value="", descr="1  DEPTH", original_mnemonic="DEPT", data.shape=(3,)),
+     CurveItem(mnemonic="DT", unit="US/M", value="", descr="2  SONIC TRANSIT TIME", original_mnemonic="DT", data.shape=(3,)),
+     CurveItem(mnemonic="RHOB", unit="K/M3", value="", descr="3  BULK DENSITY", original_mnemonic="RHOB", data.shape=(3,)),
+     CurveItem(mnemonic="NPHI", unit="V/V", value="", descr="4   NEUTRON POROSITY", original_mnemonic="NPHI", data.shape=(3,)),
+     CurveItem(mnemonic="SFLU", unit="OHMM", value="", descr="5  RXO RESISTIVITY", original_mnemonic="SFLU", data.shape=(3,)),
+     CurveItem(mnemonic="SFLA", unit="OHMM", value="", descr="6  SHALLOW RESISTIVITY", original_mnemonic="SFLA", data.shape=(3,)),
+     CurveItem(mnemonic="ILM", unit="OHMM", value="", descr="7  MEDIUM RESISTIVITY", original_mnemonic="ILM", data.shape=(3,)),
+     CurveItem(mnemonic="ILD", unit="OHMM", value="", descr="8  DEEP RESISTIVITY", original_mnemonic="ILD", data.shape=(3,))
     ]
 
 Handling duplicate mnemonics
@@ -360,17 +359,17 @@ lasio distinguishes between these duplicates:
 
     >>> las = lasio.read('tests/examples/mnemonic_duplicate2.las')
     >>> las.curves
-    [CurveItem(mnemonic=DEPT, unit=M, value=, descr=1  DEPTH, original_mnemonic=DEPT, data.shape=(3,)),
-     CurveItem(mnemonic=DT, unit=US/M, value=, descr=2  SONIC TRANSIT TIME, original_mnemonic=DT, data.shape=(3,)),
-     CurveItem(mnemonic=RHOB, unit=K/M3, value=, descr=3  BULK DENSITY, original_mnemonic=RHOB, data.shape=(3,)),
-     CurveItem(mnemonic=NPHI, unit=V/V, value=, descr=4   NEUTRON POROSITY, original_mnemonic=NPHI, data.shape=(3,)),
-     CurveItem(mnemonic=RXO, unit=OHMM, value=, descr=5  RXO RESISTIVITY, original_mnemonic=RXO, data.shape=(3,)),
-     CurveItem(mnemonic=RES:1, unit=OHMM, value=, descr=6  SHALLOW RESISTIVITY, original_mnemonic=RES, data.shape=(3,)),
-     CurveItem(mnemonic=RES:2, unit=OHMM, value=, descr=7  MEDIUM RESISTIVITY, original_mnemonic=RES, data.shape=(3,)),
-     CurveItem(mnemonic=RES:3, unit=OHMM, value=, descr=8  DEEP RESISTIVITY, original_mnemonic=RES, data.shape=(3,))
+    [CurveItem(mnemonic="DEPT", unit="M", value="", descr="1  DEPTH", original_mnemonic="DEPT", data.shape=(3,)),
+     CurveItem(mnemonic="DT", unit="US/M", value="", descr="2  SONIC TRANSIT TIME", original_mnemonic="DT", data.shape=(3,)),
+     CurveItem(mnemonic="RHOB", unit="K/M3", value="", descr="3  BULK DENSITY", original_mnemonic="RHOB", data.shape=(3,)),
+     CurveItem(mnemonic="NPHI", unit="V/V", value="", descr="4   NEUTRON POROSITY", original_mnemonic="NPHI", data.shape=(3,)),
+     CurveItem(mnemonic="RXO", unit="OHMM", value="", descr="5  RXO RESISTIVITY", original_mnemonic="RXO", data.shape=(3,)),
+     CurveItem(mnemonic="RES:1", unit="OHMM", value="", descr="6  SHALLOW RESISTIVITY", original_mnemonic="RES", data.shape=(3,)),
+     CurveItem(mnemonic="RES:2", unit="OHMM", value="", descr="7  MEDIUM RESISTIVITY", original_mnemonic="RES", data.shape=(3,)),
+     CurveItem(mnemonic="RES:3", unit="OHMM", value="", descr="8  DEEP RESISTIVITY", original_mnemonic="RES", data.shape=(3,))
     ]
     >>> las.curves['RES:2']
-    CurveItem(mnemonic=RES:2, unit=OHMM, value=, descr=7  MEDIUM RESISTIVITY, original_mnemonic=RES, data.shape=(3,))
+    CurveItem(mnemonic="RES:2", unit="OHMM", value="", descr="7  MEDIUM RESISTIVITY", original_mnemonic="RES", data.shape=(3,))
 
 It remembers the original mnemonic, so when you write the file back out, they come back:
 
@@ -431,22 +430,22 @@ preserve the original formatting if that is what you prefer.
 
     >>> las = lasio.read('tests/examples/mnemonic_case.las')
     >>> las.curves
-    [CurveItem(mnemonic=DEPT, unit=M, value=, descr=1  DEPTH, original_mnemonic=DEPT, data.shape=(3,)),
-     CurveItem(mnemonic=SFLU:1, unit=K/M3, value=, descr=3  BULK DENSITY, original_mnemonic=SFLU, data.shape=(3,)),
-     CurveItem(mnemonic=NPHI, unit=V/V, value=, descr=4   NEUTRON POROSITY, original_mnemonic=NPHI, data.shape=(3,)),
-     CurveItem(mnemonic=SFLU:2, unit=OHMM, value=, descr=5  RXO RESISTIVITY, original_mnemonic=SFLU, data.shape=(3,)),
-     CurveItem(mnemonic=SFLU:3, unit=OHMM, value=, descr=6  SHALLOW RESISTIVITY, original_mnemonic=SFLU, data.shape=(3,)),
-     CurveItem(mnemonic=SFLU:4, unit=OHMM, value=, descr=7  MEDIUM RESISTIVITY, original_mnemonic=SFLU, data.shape=(3,)),
-     CurveItem(mnemonic=SFLU:5, unit=OHMM, value=, descr=8  DEEP RESISTIVITY, original_mnemonic=SFLU, data.shape=(3,))
+    [CurveItem(mnemonic="DEPT", unit="M", value="", descr="1  DEPTH", original_mnemonic="DEPT", data.shape=(3,)),
+     CurveItem(mnemonic="SFLU:1", unit="K/M3", value="", descr="3  BULK DENSITY", original_mnemonic="SFLU", data.shape=(3,)),
+     CurveItem(mnemonic="NPHI", unit="V/V", value="", descr="4   NEUTRON POROSITY", original_mnemonic="NPHI", data.shape=(3,)),
+     CurveItem(mnemonic="SFLU:2", unit="OHMM", value="", descr="5  RXO RESISTIVITY", original_mnemonic="SFLU", data.shape=(3,)),
+     CurveItem(mnemonic="SFLU:3", unit="OHMM", value="", descr="6  SHALLOW RESISTIVITY", original_mnemonic="SFLU", data.shape=(3,)),
+     CurveItem(mnemonic="SFLU:4", unit="OHMM", value="", descr="7  MEDIUM RESISTIVITY", original_mnemonic="SFLU", data.shape=(3,)),
+     CurveItem(mnemonic="SFLU:5", unit="OHMM", value="", descr="8  DEEP RESISTIVITY", original_mnemonic="SFLU", data.shape=(3,))
     ]
     >>> las = lasio.read('tests/examples/mnemonic_case.las', mnemonic_case='preserve')
     >>> las.curves
-    [CurveItem(mnemonic=Dept, unit=M, value=, descr=1  DEPTH, original_mnemonic=Dept, data.shape=(3,)),
-     CurveItem(mnemonic=Sflu, unit=K/M3, value=, descr=3  BULK DENSITY, original_mnemonic=Sflu, data.shape=(3,)),
-     CurveItem(mnemonic=NPHI, unit=V/V, value=, descr=4   NEUTRON POROSITY, original_mnemonic=NPHI, data.shape=(3,)),
-     CurveItem(mnemonic=SFLU:1, unit=OHMM, value=, descr=5  RXO RESISTIVITY, original_mnemonic=SFLU, data.shape=(3,)),
-     CurveItem(mnemonic=SFLU:2, unit=OHMM, value=, descr=6  SHALLOW RESISTIVITY, original_mnemonic=SFLU, data.shape=(3,)),
-     CurveItem(mnemonic=sflu, unit=OHMM, value=, descr=7  MEDIUM RESISTIVITY, original_mnemonic=sflu, data.shape=(3,)),
-     CurveItem(mnemonic=SfLu, unit=OHMM, value=, descr=8  DEEP RESISTIVITY, original_mnemonic=SfLu, data.shape=(3,))
+    [CurveItem(mnemonic="Dept", unit="M", value="", descr="1  DEPTH", original_mnemonic="Dept", data.shape=(3,)),
+     CurveItem(mnemonic="Sflu", unit="K/M3", value="", descr="3  BULK DENSITY", original_mnemonic="Sflu", data.shape=(3,)),
+     CurveItem(mnemonic="NPHI", unit="V/V", value="", descr="4   NEUTRON POROSITY", original_mnemonic="NPHI", data.shape=(3,)),
+     CurveItem(mnemonic="SFLU:1", unit="OHMM", value="", descr="5  RXO RESISTIVITY", original_mnemonic="SFLU", data.shape=(3,)),
+     CurveItem(mnemonic="SFLU:2", unit="OHMM", value="", descr="6  SHALLOW RESISTIVITY", original_mnemonic="SFLU", data.shape=(3,)),
+     CurveItem(mnemonic="sflu", unit="OHMM", value="", descr="7  MEDIUM RESISTIVITY", original_mnemonic="sflu", data.shape=(3,)),
+     CurveItem(mnemonic="SfLu", unit="OHMM", value="", descr="8  DEEP RESISTIVITY", original_mnemonic="SfLu", data.shape=(3,))
     ]
 

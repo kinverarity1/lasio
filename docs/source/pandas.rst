@@ -125,16 +125,16 @@ and check that it's all there:
 
     >>> las.set_data(df)
     >>> las.curves
-    [CurveItem(mnemonic=DEPT, unit=M, value=, descr=DEPTH, original_mnemonic=DEPT, data.shape=(2732,)),
-     CurveItem(mnemonic=CALI, unit=MM, value=, descr=CALI, original_mnemonic=CALI, data.shape=(2732,)),
-     CurveItem(mnemonic=DFAR, unit=G/CM3, value=, descr=DFAR, original_mnemonic=DFAR, data.shape=(2732,)),
-     CurveItem(mnemonic=DNEAR, unit=G/CM3, value=, descr=DNEAR, original_mnemonic=DNEAR, data.shape=(2732,)),
-     CurveItem(mnemonic=GAMN, unit=GAPI, value=, descr=GAMN, original_mnemonic=GAMN, data.shape=(2732,)),
-     CurveItem(mnemonic=NEUT, unit=CPS, value=, descr=NEUT, original_mnemonic=NEUT, data.shape=(2732,)),
-     CurveItem(mnemonic=PR, unit=OHM/M, value=, descr=PR, original_mnemonic=PR, data.shape=(2732,)),
-     CurveItem(mnemonic=SP, unit=MV, value=, descr=SP, original_mnemonic=SP, data.shape=(2732,)),
-     CurveItem(mnemonic=COND, unit=MS/M, value=, descr=COND, original_mnemonic=COND, data.shape=(2732,)),
-     CurveItem(mnemonic=GAMN_avg, unit=, value=, descr=, original_mnemonic=GAMN_avg, data.shape=(2732,))]
+    [CurveItem(mnemonic="DEPT", unit="M", value="", descr="DEPTH", original_mnemonic="DEPT", data.shape=(2732,)),
+     CurveItem(mnemonic="CALI", unit="MM", value="", descr="CALI", original_mnemonic="CALI", data.shape=(2732,)),
+     CurveItem(mnemonic="DFAR", unit="G/CM3", value="", descr="DFAR", original_mnemonic="DFAR", data.shape=(2732,)),
+     CurveItem(mnemonic="DNEAR", unit="G/CM3", value="", descr="DNEAR", original_mnemonic="DNEAR", data.shape=(2732,)),
+     CurveItem(mnemonic="GAMN", unit="GAPI", value="", descr="GAMN", original_mnemonic="GAMN", data.shape=(2732,)),
+     CurveItem(mnemonic="NEUT", unit="CPS", value="", descr="NEUT", original_mnemonic="NEUT", data.shape=(2732,)),
+     CurveItem(mnemonic="PR", unit="OHM/M", value="", descr="PR", original_mnemonic="PR", data.shape=(2732,)),
+     CurveItem(mnemonic="SP", unit="MV", value="", descr="SP", original_mnemonic="SP", data.shape=(2732,)),
+     CurveItem(mnemonic="COND", unit="MS/M", value="", descr="COND", original_mnemonic="COND", data.shape=(2732,)),
+     CurveItem(mnemonic="GAMN_avg", unit="", value="", descr="", original_mnemonic="GAMN_avg", data.shape=(2732,))]
     >>> las.df().describe()
                   CALI         DFAR        DNEAR         GAMN         NEUT  \
     count  2732.000000  2701.000000  2701.000000  2491.000000  2492.000000
