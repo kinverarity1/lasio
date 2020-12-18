@@ -20,8 +20,8 @@ of the standard LAS sections can be accessed as an attribute:
 .. code-block:: python
 
     >>> las.version
-    [HeaderItem(mnemonic=VERS, unit=, value=2.0, descr=CWLS Log ASCII Standard -V...),
-     HeaderItem(mnemonic=WRAP, unit=, value=YES, descr=Multiple lines per depth step)]
+    [HeaderItem(mnemonic="VERS", unit=, value="2.0", descr="CWLS Log ASCII Standard -V...),
+     HeaderItem(mnemonic="WRAP", unit=, value="YES", descr="Multiple lines per depth ...)]
 
 Each LAS section is represented as a :class:`lasio.SectionItems` object. The
 others, for LAS 2.0 files, are present as ``las.well``, ``las.curves``, and
