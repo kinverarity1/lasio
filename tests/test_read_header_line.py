@@ -15,7 +15,6 @@ def test_time_str_and_colon_in_desc():
     assert result["value"] == "23:15 23-JAN-2001"
     assert result["descr"] == "Time Logger: At Bottom"
 
-
 def test_cyrillic_depth_unit():
     line = u" DEPT.метер                      :  1  DEPTH"
     result = read_header_line(line, section_name="Curves")
@@ -24,7 +23,53 @@ def test_cyrillic_depth_unit():
 def test_unit_stat_with_dot():
     line = u" TDEP  ..1IN                      :  0.1-in"
     result = read_header_line(line, section_name="Curves")
+    assert result["name"] == u"TDEP"
     assert result["unit"] == u".1IN"
+
+# Look at this one
+def test_unit_stat_with_dot_2():
+    line = u"TDEP.. 1IN :0.1-ft Frame Depth {F13.4}"
+    result = read_header_line(line, section_name="Curves")
+    assert result["name"] == u"TDEP."
+    # Expected:
+    assert result["unit"] == u"1IN"
+    # Current
+    # assert result["unit"] == u""
+
+# Look at this one
+def test_unit_stat_with_dot_3():
+    line = u"TDEP. . .1IN :0.1-ft Frame Depth {F13.4}"
+    result = read_header_line(line, section_name="Curves")
+
+    # Expected:
+    assert result["name"] == u"TDEP."
+    # Current
+    # assert result["name"] == u"TDEP"
+
+    # Expected:
+    assert result["unit"] == u".1IN"
+    # Current
+    # assert result["unit"] == u""
+
+def test_unit_stat_with_dot_4():
+    line = u"TDEP..1IN :0.1-ft Frame Depth {F13.4}"
+    result = read_header_line(line, section_name="Curves")
+    assert result["name"] == u"TDEP."
+    assert result["unit"] == u"1IN"
+
+# Look at this one
+def test_unit_stat_with_dot_5():
+    line = u"TDEP. .1IN :0.1-ft Frame Depth {F13.4}"
+    result = read_header_line(line, section_name="Curves")
+    # Expected:
+    assert result["name"] == u"TDEP."
+    # Current
+    # assert result["name"] == u"TDEP"
+
+    # Expected:
+    assert result["unit"] == u"1IN"
+    # Current
+    # assert result["unit"] == u""
 
 def test_value_field_with_num_colon():
     line = "RUN . 01: RUN NUMBER"
