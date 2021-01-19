@@ -23,6 +23,8 @@ def write(
     fmt="%.5f",
     column_fmt=None,
     len_numeric_field=None,
+    lhs_spacer=" ",
+    spacer=" ",
     data_width=79,
     header_width=60,
 ):
@@ -52,7 +54,14 @@ def write(
             you would use ``fmt='%.2f', column_fmt={0: '%.3f'}``.
         len_numeric_field (int): width of each numeric field column (must be
             greater than than all the formatted numeric values in the file).
+            If it is None, the maximum necessary value will be used automatically
+            (i.e. all columns will have the same width). If it is -1, then
+            the columns will not have consistent widths. You can combine
+            -1 with the *fmt* keyword argument to control column widths closely.
         data_width (79): width of data field in characters
+        lhs_spacer (str): string which goes on left hand side of data
+            section - by default it is `" "`.
+        spacer (str): string which goes between each column of the data section
 
     Creating an output file is not the only side-effect of this function. It
     will also modify the STRT, STOP and STEP HeaderItems so that they correctly
@@ -81,7 +90,7 @@ def write(
     lines = []
 
     version_section_to_write = deepcopy(las.version)
-    
+
     assert version in (1.2, 2, None)
     if version is None:
         version = las.version["VERS"].value
@@ -99,7 +108,7 @@ def write(
     if STOP is None:
         STOP = las.index[-1]
     if STEP is None:
-        if STOP != STRT:  
+        if STOP != STRT:
             # prevents an error being thrown in the case of only a single sample being written
             STEP = las.index[1] - las.index[0]  # Faster than np.gradient
 
@@ -207,14 +216,19 @@ def write(
             logger.debug("test_fmt = {}".format(test_fmt))
             len_numeric_field += 1
 
-    def format_data_section_line(n, fmt, l=len_numeric_field, spacer=" "):
+    def format_data_section_line(n, fmt, l=len_numeric_field, spacing_chars=" "):
         try:
             if np.isnan(n):
-                return spacer + str(las.well["NULL"].value).rjust(l)
+                value = str(las.well["NULL"].value)
             else:
-                return spacer + (fmt % n).rjust(l)
+                value = (fmt % n)
         except TypeError:
-            return spacer + str(n).rjust(l)
+            value = str(n)
+        if not l is -1:
+            result = value.rjust(l)
+        else:
+            result = value
+        return spacing_chars + result
 
     twrapper = textwrap.TextWrapper(width=data_width)
 
@@ -225,7 +239,11 @@ def write(
             col_fmt = fmt
             if j in column_fmt:
                 col_fmt = column_fmt[j]
-            depth_slice += format_data_section_line(data_arr[i, j], col_fmt)
+            if j == 0:
+                left_spacing = lhs_spacer
+            else:
+                left_spacing = spacer
+            depth_slice += format_data_section_line(data_arr[i, j], col_fmt, spacing_chars=left_spacing)
 
         if wrap:
             lines = twrapper.wrap(depth_slice)
@@ -248,19 +266,19 @@ def write(
 
 def standardize_value(value, unit=None):
     """Ensure that 0 is written instead of 'None' for numeric header lines.
-    
+
     Args:
         value (anything): object to be written into the value field
             of the LAS header line.
         unit (str): unit for header line.
-        
+
     Returns: either 0 (integer) or a string.
-    
+
     If an internal representation of a metadata mnemonic has a unit
     indicator and a value of zero, an empty string, or None, then on
     lasio.write(...) the value written should be 0 for the value field
     instead of "None" or "".
-    
+
     """
     # value != 0 prevents overwriting a 0.0 value with 0.
     if (unit) and (not value) and (value != 0):
