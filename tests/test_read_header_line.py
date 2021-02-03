@@ -16,6 +16,14 @@ def test_time_str_and_colon_in_desc():
     assert result["descr"] == "Time Logger: At Bottom"
 
 
+def test_time_str_and_colon_in_desc_2():
+    # https://github.com/kinverarity1/lasio/issues/419
+    line = "STRT.DateTime 2012-09-16T07:44:12-05:00 : START DEPTH"
+    result = read_header_line(line, section_name="Well")
+    assert result["value"] == "2012-09-16T07:44:12-05:00"
+    assert result["descr"] == "START DEPTH"
+
+
 def test_cyrillic_depth_unit():
     line = u" DEPT.метер                      :  1  DEPTH"
     result = read_header_line(line, section_name="Curves")
