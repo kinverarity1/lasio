@@ -22,6 +22,7 @@ def test_time_str_and_colon_in_desc_2():
     result = read_header_line(line, section_name="Well")
     assert result["value"] == "2012-09-16T07:44:12-05:00"
     assert result["descr"] == "START DEPTH"
+    assert result["unit"] == "DateTime"
 
 
 def test_cyrillic_depth_unit():
