@@ -8,14 +8,14 @@ way to install is using pip.
 
     $ pip install lasio
 
-This will make sure that the dependency `numpy`_ is installed as well.
+This will make sure that the dependencies `numpy`_ and `pandas`_ are installed as
+well.
 
 The final version of lasio with Python 2.7 support is v0.26.
 
 There are some other packages which lasio will use to
-provide extra functionality if they are installed (`pandas`_,
-`cChardet`_ and/or `chardet`_, and `openpyxl`_). I
-recommend installing these with:
+provide extra functionality if they are installed (`cChardet`_ and/or `chardet`_,
+and `openpyxl`_). I recommend installing these with:
 
 .. code-block::
 

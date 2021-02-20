@@ -3,7 +3,7 @@
 from setuptools import setup
 import os
 
-EXTRA_REQS = ("pandas", "cchardet", "openpyxl")
+EXTRA_REQS = ("cchardet", "openpyxl")
 TEST_REQS = ("pytest>=3.6", "pytest-cov", "coverage", "codecov")
 
 setup(
@@ -44,7 +44,7 @@ setup(
     keywords="science geophysics io",
     packages=("lasio",),
     python_requires=">=3",
-    install_requires=("numpy",),
+    install_requires=("numpy", "pandas"),
     extras_require={"all": EXTRA_REQS, "test": (EXTRA_REQS, TEST_REQS)},
     tests_require=(TEST_REQS),
     entry_points={

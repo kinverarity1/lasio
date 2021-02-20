@@ -36,14 +36,14 @@ documentation](https://lasio.readthedocs.io/en/latest/).
 
 ## Quick start
 
-For the minimum working requirements, you'll need numpy installed. Install
-lasio with:
+For the minimum working requirements, you'll need numpy and pandas installed. 
+Install lasio with:
 
 ```bash
 $ pip install lasio
 ```
 
-To make sure you have everything, use this to ensure pandas, cchardet, and
+To make sure you have everything, use this to ensure cchardet, and
 openpyxl are also installed:
 
 ```bash
