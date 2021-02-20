@@ -350,6 +350,12 @@ def convert_remove_line_filter(filt):
     return filt
 
 
+def split_on_whitespace(s):
+    # return s.split() # does not handle quoted substrings (#271)
+    # return shlex.split(s) # too slow
+    return [''.join(t) for t in re.findall(r"""([^\s"']+)|"([^"]*)"|'([^']*)'""", s)]
+
+
 def inspect_data_section(file_obj, line_nos, regexp_subs, remove_line_filter="#"):
     """Determine how many columns there are in the data section.
 
@@ -384,7 +390,7 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, remove_line_filter="#"
         else:
             for pattern, sub_str in regexp_subs:
                 line = re.sub(pattern, sub_str, line)
-            n_items = len(line.split())
+            n_items = len(split_on_whitespace(line))
             logger.debug(
                 "Line {}: {} items counted in '{}'".format(line_no + 1, n_items, line)
             )
@@ -445,7 +451,7 @@ def read_data_section_iterative(
                 for pattern, sub_str in regexp_subs:
                     line = re.sub(pattern, sub_str, line)
                 line = line.replace(chr(26), "")
-                for item in line.split():
+                for item in split_on_whitespace(line):
                     try:
                         yield np.float64(item)
                     except ValueError:
