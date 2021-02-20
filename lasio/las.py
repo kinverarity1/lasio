@@ -137,8 +137,8 @@ class LASFile(object):
             regexp_subs, value_null_subs, version_NULL = reader.get_substitutions(
                 read_policy, null_policy
             )
-            logger.debug(f"Found regexp subs: {regexp_subs}")
-            logger.debug(f"Found value NULL subs: {value_null_subs}")
+            logger.debug("Found regexp subs: {0}".format(regexp_subs))
+            logger.debug("Found value NULL subs: {0}".format(value_null_subs))
 
             provisional_version = 2.0
             provisional_wrapped = "YES"
@@ -198,7 +198,9 @@ class LASFile(object):
                         if version_NULL:
                             value_null_subs.append(provisional_null)
                             logger.debug(
-                                f"Adding {provisional_null} to the value -> NULL substitution list because version_NULL is True"
+                                "Adding {0} to the value -> NULL substitution list because version_NULL is True".format(
+                                    provisional_null
+                                )
                             )
 
                     # las3 sections can contain _Data, _Parameter or _Definition

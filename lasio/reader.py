@@ -500,8 +500,8 @@ def read_data_section_iterative_into_dataframe(
 
     """
     logger.debug("Reading data section iteratively into dataframe")
-    logger.debug(f"\tregexp_subs = {regexp_subs}")
-    logger.debug(f"\tvalue_null_subs = {value_null_subs}")
+    logger.debug("\tregexp_subs = {0}".format(regexp_subs))
+    logger.debug("\tvalue_null_subs = {0}".format(value_null_subs))
     import pandas as pd
 
     if wrapped:
@@ -512,8 +512,8 @@ def read_data_section_iterative_into_dataframe(
             file_obj, line_nos, regexp_subs, value_null_subs, remove_line_filter
         )
 
-        logger.debug(f"Array shape: {arr.shape}")
-        logger.debug(f"Attempt to reshape into: (-1, {n_cols})")
+        logger.debug("Array shape: {0}".format(arr.shape))
+        logger.debug("Attempt to reshape into: (-1, {0})".format(n_cols))
 
         try:
             arr = np.reshape(arr, (-1, n_cols))
@@ -571,7 +571,7 @@ def read_data_section_iterative_into_dataframe(
         df = df.rename_axis("")
 
     for value in value_null_subs:
-        logger.debug(f"Replacing {type(value)}, {value} with np.nan")
+        logger.debug("Replacing {0}, {1} with np.nan".format(type(value), value))
         df[df == value] = np.nan
 
     return df
