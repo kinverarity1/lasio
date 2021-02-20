@@ -432,3 +432,8 @@ def test_section_parser_num_except_pass():
 def test_skip_comments_in_data_section():
     l = lasio.read(egfn("skip_data_section_comments.las"))
     assert (l.curves[0].data == [0.3, 0.4, 0.5, 0.6]).all()
+
+
+def test_quoted_substrings_in_data_section():
+    l = lasio.read(egfn("lasio_issue_271.las"))
+    assert (l.curves[2].data == ["pick_alpha", "pick_beta", "pick gamma", "pick delta", "pick_epsilon"]).all()
