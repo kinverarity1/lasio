@@ -353,7 +353,7 @@ def convert_remove_line_filter(filt):
 def split_on_whitespace(s):
     # return s.split() # does not handle quoted substrings (#271)
     # return shlex.split(s) # too slow
-    return [''.join(t) for t in re.findall(r"""([^\s"']+)|"([^"]*)"|'([^']*)'""", s)]
+    return ["".join(t) for t in re.findall(r"""([^\s"']+)|"([^"]*)"|'([^']*)'""", s)]
 
 
 def inspect_data_section(file_obj, line_nos, regexp_subs, remove_line_filter="#"):
@@ -465,6 +465,116 @@ def read_data_section_iterative(
     for value in value_null_subs:
         array[array == value] = np.nan
     return array
+
+
+def read_data_section_iterative_into_dataframe(
+    file_obj,
+    line_nos,
+    wrapped,
+    n_cols,
+    regexp_subs,
+    value_null_subs,
+    remove_line_filter,
+):
+    """Read data section into memory as a pandas DataFrame.
+
+    Arguments:
+        file_obj: file-like object open for reading at the beginning of the section
+        line_nos (tuple): the first and last line no of the section to read
+        wrapped (bool): is the data section unwrapped or wrapped?
+        n_cols (int): number of columns
+        regexp_subs (list): each item should be a tuple of the pattern and
+            substitution string for a call to re.sub() on each line of the
+            data section. See defaults.py READ_SUBS and NULL_SUBS for examples.
+        value_null_subs (list): list of numerical values to be replaced by
+            numpy.nan values.
+        remove_line_filter (str or func): string or function for removing/ignoring lines
+            in the data section e.g. a function which accepts a string (a line from the
+            data section) and returns either True (do not parse the line) or False
+            (parse the line). If this argument is a string it will instead be converted
+            to a function which rejects all lines starting with that value e.g. ``"#"``
+            will be converted to ``lambda line: line.strip().startswith("#")``
+
+    Returns: pandas.DataFrame with the first column of the data section set
+        as the index. Column names are set to the empty string.
+
+    """
+    logger.debug("Reading data section iteratively into dataframe")
+    logger.debug(f"\tregexp_subs = {regexp_subs}")
+    logger.debug(f"\tvalue_null_subs = {value_null_subs}")
+    import pandas as pd
+
+    if wrapped:
+
+        # Wrapped, therefore using read_data_section_iterative
+        # Because we don't know how many rows of the array there will be.
+        arr = read_data_section_iterative(
+            file_obj, line_nos, regexp_subs, value_null_subs, remove_line_filter
+        )
+
+        logger.debug(f"Array shape: {arr.shape}")
+        logger.debug(f"Attempt to reshape into: (-1, {n_cols})")
+
+        try:
+            arr = np.reshape(arr, (-1, n_cols))
+        except ValueError as exception:
+            error_message = "Cannot reshape ~A data size {0} into {1} columns".format(
+                arr.shape, n_cols
+            )
+            if sys.version_info.major < 3:
+                exception.message = error_message
+                raise exception
+            else:
+                raise ValueError(error_message).with_traceback(exception.__traceback__)
+
+        df = pd.DataFrame(arr[:, 1:], index=arr[:, 0])
+        df.columns = ["" for c in df.columns]
+        df = df.rename_axis("")
+
+        return df
+
+    remove_line_filter = convert_remove_line_filter(remove_line_filter)
+
+    title = file_obj.readline()
+
+    def items(f, start_line_no, end_line_no):
+        line_no = start_line_no
+        for line in f:
+            line_no += 1
+            line_items = []
+            logger.debug(
+                "Line {}: reading data '{}'".format(
+                    line_no + 1, line.strip("\n").strip()
+                )
+            )
+            if remove_line_filter(line):
+                continue
+            else:
+                for pattern, sub_str in regexp_subs:
+                    line = re.sub(pattern, sub_str, line)
+                line = line.replace(chr(26), "")
+                for item in split_on_whitespace(line):
+                    try:
+                        line_items.append(np.float64(item))
+                    except ValueError:
+                        line_items.append(item)
+                if line_no == end_line_no:
+                    break
+            yield line_items
+
+    row_generator = items(file_obj, start_line_no=line_nos[0], end_line_no=line_nos[1])
+
+    df = pd.DataFrame(row_generator)
+    if len(df):
+        df = df.set_index(df.columns[0])
+        df.columns = ["" for c in df.columns]
+        df = df.rename_axis("")
+
+    for value in value_null_subs:
+        logger.debug(f"Replacing {type(value)}, {value} with np.nan")
+        df[df == value] = np.nan
+
+    return df
 
 
 def get_substitutions(read_policy, null_policy):

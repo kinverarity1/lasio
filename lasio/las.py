@@ -10,6 +10,7 @@ import json
 import logging
 import re
 import sys
+import traceback
 
 # get basestring in py3
 
@@ -27,6 +28,7 @@ else:
 # Required third-party packages available on PyPi:
 
 import numpy as np
+import pandas as pd
 
 # internal lasio imports
 
@@ -88,7 +90,7 @@ class LASFile(object):
         mnemonic_case="upper",
         index_unit=None,
         remove_data_line_filter="#",
-        **kwargs
+        **kwargs,
     ):
         """Read a LAS file.
 
@@ -135,6 +137,8 @@ class LASFile(object):
             regexp_subs, value_null_subs, version_NULL = reader.get_substitutions(
                 read_policy, null_policy
             )
+            logger.debug(f"Found regexp subs: {regexp_subs}")
+            logger.debug(f"Found value NULL subs: {value_null_subs}")
 
             provisional_version = 2.0
             provisional_wrapped = "YES"
@@ -186,6 +190,16 @@ class LASFile(object):
                         provisional_wrapped = sct_items.WRAP.value
                     if "NULL" in sct_items:
                         provisional_null = sct_items.NULL.value
+
+                        # If null policy includes 'NULL' (stored as a boolean
+                        # in version_NULL), then we need
+                        # to convert values which match the file's specification
+                        # of NULL (stored in variable provisional_null)
+                        if version_NULL:
+                            value_null_subs.append(provisional_null)
+                            logger.debug(
+                                f"Adding {provisional_null} to the value -> NULL substitution list because version_NULL is True"
+                            )
 
                     # las3 sections can contain _Data, _Parameter or _Definition
                     las3_section = any(
@@ -252,12 +266,20 @@ class LASFile(object):
                         remove_line_filter=remove_data_line_filter,
                     )
 
+                    # If we cannot detect the number of columns, it's probably
+                    # wrapped; we need an estimate, so let's use the number of
+                    # curves instead.
+                    if n_columns == -1:
+                        n_columns = len(self.curves)
+
                     file_obj.seek(k)
                     # Notes see 2d9e43c3 and e960998f for 'try' background
                     try:
-                        arr = reader.read_data_section_iterative(
+                        df = reader.read_data_section_iterative_into_dataframe(
                             file_obj,
                             (first_line, last_line),
+                            provisional_wrapped == "YES",
+                            n_columns,
                             regexp_subs,
                             value_null_subs,
                             remove_line_filter=remove_data_line_filter,
@@ -269,64 +291,18 @@ class LASFile(object):
                             traceback.format_exc()[:-1]
                             + " in data section beginning line {}".format(i + 1)
                         )
-                    logger.debug("Read ndarray {arrshape}".format(arrshape=arr.shape))
+                    logger.debug(
+                        "Successfully read data section as dataframe: {arrshape}".format(
+                            arrshape=df.shape
+                        )
+                    )
 
-                    # This is so we can check data size and use self.set_data(data, truncate=False)
-                    # in cases of data.size is zero.
-                    data = arr
-
-                    if data.size > 0:
-                        # TODO: check whether this treatment of NULLs is correct
-                        logger.debug("~A data {}".format(arr))
-                        if version_NULL:
-                            arr[arr == provisional_null] = np.nan
-                        logger.debug("~A after NULL replacement data {}".format(arr))
-
-                        # Provisionally, assume that the number of columns represented
-                        # by the data section's array is equal to the number of columns
-                        # defined in the Curves/Definition section.
-
-                        n_columns_in_arr = len(self.curves)
-
-                        # If we are told the file is unwrapped, then we assume that each
-                        # column detected is a column, and we ignore the Curves/Definition
-                        # section's number of columns instead.
-
-                        if provisional_wrapped == "NO":
-                            n_columns_in_arr = n_columns
-
-                        # ---------------------------------------------------------------------
-                        # TODO:
-                        # This enables tests/test_read.py::test_barebones_missing_all_sections
-                        # to pass, but may not be the complete or final solution.
-                        # ---------------------------------------------------------------------
-                        if len(self.curves) == 0 and n_columns > 0:
-                            n_columns_in_arr = n_columns
-
-                        logger.debug(
-                            "Data array (size {}) assumed to have {} columns "
-                            "({} curves defined)".format(
-                                arr.shape, n_columns_in_arr, len(self.curves)
-                            )
+                    if len(df) == 0:
+                        df = pd.DataFrame(
+                            columns=[c.original_mnemonic for c in self.curves[1:]]
                         )
 
-                        # We attempt to reshape the 1D array read in from
-                        # the data section so that it can be assigned to curves.
-                        try:
-                            data = np.reshape(arr, (-1, n_columns_in_arr))
-                        except ValueError as exception:
-                            error_message = "Cannot reshape ~A data size {0} into {1} columns".format(
-                                arr.shape, n_columns_in_arr
-                            )
-                            if sys.version_info.major < 3:
-                                exception.message = error_message
-                                raise exception
-                            else:
-                                raise ValueError(error_message).with_traceback(
-                                    exception.__traceback__
-                                )
-
-                    self.set_data(data, truncate=False)
+                    self.set_data(df, truncate=False)
         finally:
             if hasattr(file_obj, "close"):
                 file_obj.close()
@@ -707,6 +683,8 @@ class LASFile(object):
         except ImportError:
             pass
         else:
+            if not names:
+                names = [c.original_mnemonic for c in self.curves]
             if isinstance(array_like, pd.DataFrame):
                 return self.set_data_from_df(
                     array_like, **dict(names=names, truncate=False)
@@ -799,9 +777,7 @@ class LASFile(object):
 
     @property
     def index(self):
-        """Return data from the first column of the LAS file data (depth/time).
-
-        """
+        """Return data from the first column of the LAS file data (depth/time)."""
         return self.curves[0].data
 
     @property

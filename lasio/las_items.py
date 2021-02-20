@@ -36,7 +36,7 @@ class HeaderItem(OrderedDict):
         # or unique - 'X11124' - or perhaps invalid??
         # It will be used only when exporting.
 
-        self.original_mnemonic = mnemonic
+        self.original_mnemonic = str(mnemonic)
 
         # We also need to store a more useful mnemonic, which will be used
         # (technically not, but read on) for people to access the curve while
@@ -77,7 +77,7 @@ class HeaderItem(OrderedDict):
         for a more in-depth explanation.
 
         '''
-        super(HeaderItem, self).__setattr__('mnemonic', value)
+        super(HeaderItem, self).__setattr__('mnemonic', str(value))
 
     def __getitem__(self, key):
         '''Provide item dictionary-like access.'''
@@ -105,7 +105,7 @@ class HeaderItem(OrderedDict):
             # new mnemonic to the original_mnemonic attribute. Remember that the
             # mnemonic attribute is for session use only.
 
-            self.original_mnemonic = value
+            self.original_mnemonic = str(value)
             self.set_session_mnemonic_only(self.useful_mnemonic)
         else:
             super(HeaderItem, self).__setattr__(key, value)
