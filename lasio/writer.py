@@ -224,7 +224,8 @@ def write(
                 value = (fmt % n)
         except TypeError:
             value = str(n)
-        if not l is -1:
+
+        if l != -1:
             result = value.rjust(l)
         else:
             result = value
