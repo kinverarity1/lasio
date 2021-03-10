@@ -93,18 +93,6 @@ def open_file(file_ref, **encoding_kwargs):
         if URL_REGEXP.match(first_line):  # it's a URL
             logger.info("Loading URL {}".format(first_line))
             try:
-                import urllib2
-
-                response = urllib2.urlopen(first_line)
-                encoding = response.headers.getparam("charset")
-
-                tmp_str = response.read()
-                tmp_list = tmp_str.splitlines()
-                new_str = "\n".join(tmp_list)
-                # file_ref = StringIO(response.read())
-                file_ref = StringIO(new_str)
-                logger.debug("Retrieved data had encoding {}".format(encoding))
-            except ImportError:
                 import urllib.request
 
                 response = urllib.request.urlopen(file_ref)
@@ -120,6 +108,19 @@ def open_file(file_ref, **encoding_kwargs):
                 # translated into '\n' before being returned to the caller.
                 file_ref = StringIO(response.read().decode(encoding), newline=None)
                 logger.debug("Retrieved data decoded via {}".format(encoding))
+            except ImportError:
+                # deprecated: was part of python 2.7 support
+                import urllib2
+
+                response = urllib2.urlopen(first_line)
+                encoding = response.headers.getparam("charset")
+
+                tmp_str = response.read()
+                tmp_list = tmp_str.splitlines()
+                new_str = "\n".join(tmp_list)
+                # file_ref = StringIO(response.read())
+                file_ref = StringIO(new_str)
+                logger.debug("Retrieved data had encoding {}".format(encoding))
         elif len(lines) > 1:  # it's LAS data as a string.
             file_ref = StringIO(file_ref)
         else:  # it must be a filename
@@ -353,7 +354,7 @@ def convert_remove_line_filter(filt):
 def split_on_whitespace(s):
     # return s.split() # does not handle quoted substrings (#271)
     # return shlex.split(s) # too slow
-    return [''.join(t) for t in re.findall(r"""([^\s"']+)|"([^"]*)"|'([^']*)'""", s)]
+    return ["".join(t) for t in re.findall(r"""([^\s"']+)|"([^"]*)"|'([^']*)'""", s)]
 
 
 def inspect_data_section(file_obj, line_nos, regexp_subs, remove_line_filter="#"):
