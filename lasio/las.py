@@ -73,6 +73,7 @@ class LASFile(object):
             "Parameter": default_items["Parameter"],
             "Other": str(default_items["Other"]),
         }
+        self._sections = []
 
         if not (file_ref is None):
             self.read(file_ref, **read_kwargs)
@@ -167,6 +168,13 @@ class LASFile(object):
                     )
                 )
 
+                section = {
+                    "first_line": first_line,
+                    "last_line": last_line,
+                    "title": section_title,
+                    "type": section_type,
+                }
+
                 # Read traditional LAS header item section
                 if section_type == "Header items":
                     file_obj.seek(k)
@@ -178,6 +186,8 @@ class LASFile(object):
                         mnemonic_case=mnemonic_case,
                         ignore_comments=ignore_comments,
                     )
+                    section['items'] = sct_items
+                    self._sections.append(section)
 
                     # Update provisional statuses
                     if "VERS" in sct_items:
@@ -221,6 +231,9 @@ class LASFile(object):
                         if line_no == last_line:
                             break
                     sct_contents = "\n".join(contents)
+
+                    section['contents'] = sct_contents
+                    self._sections.append(section)
 
                     if section_title[1] == "O":
                         self.sections["Other"] = sct_contents
