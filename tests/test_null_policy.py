@@ -107,3 +107,8 @@ def test_null_policy_runon_ok_1():
 def test_null_policy_runon_ok_2():
     las = read(egfn("null_policy_runon.las"), read_policy='default')
     assert las['C05'][2] == -19508.961
+
+def test_null_policy_small_non_zero_neg_nums():
+    las = read(stegfn("2.0", "sample_2.0-small-neg-values.las"), null_policy="aggressive")
+    assert las['RHOB'][0] == -0.0733
+    assert numpy.isnan(las['RHOB'][1])
