@@ -653,3 +653,27 @@ def test_write_empty_text_value():
     assert las2.well.comp.unit == ""
 
     os.remove('test.las')
+
+def test_step_unchanged_by_write():
+    las = read(egfn("2.0/sample_2.0.las"))
+    las.well["UWI"] = "123456789"
+    las.write("test.las", version=2.0)
+    assert las.well["STEP"].value == "-0.125"
+
+    os.remove("test.las")
+
+
+def test_step_unchanged_by_write_2():
+    testfn = "test.las"
+    dstart = 10
+    dstop = 12
+    dstep = 0.51
+
+    las = lasio.las.LASFile()
+
+    depths = np.arange(dstart, dstop, dstep)
+    las.add_curve("DEPTH", depths, unit="m")
+    las.write(testfn, version=2.0)
+    assert las.well["STEP"].value == "0.51"
+
+    os.remove(testfn)
