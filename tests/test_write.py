@@ -665,15 +665,15 @@ def test_step_unchanged_by_write():
 
 def test_step_unchanged_by_write_2():
     testfn = "test.las"
-    dstart = 10
-    dstop = 12
-    dstep = 0.51
+    dstart = 205.283
+    dstop = 1740.1034
+    dstep = 0.1524
 
     las = lasio.las.LASFile()
 
     depths = np.arange(dstart, dstop, dstep)
     las.add_curve("DEPTH", depths, unit="m")
     las.write(testfn, version=2.0)
-    assert las.well["STEP"].value == "0.51"
+    assert las.well["STEP"].value == "0.1524"
 
     os.remove(testfn)
