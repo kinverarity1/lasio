@@ -108,11 +108,26 @@ def write(
     if STOP is None:
         STOP = las.index[-1]
     if STEP is None:
+        # prevents an error being thrown in the case of only a single sample being written
         if STOP != STRT:
-            # prevents an error being thrown in the case of only a single sample being written
+            # Try to keep the level of precision that the original data had.
             # Example: 0.51 -> "51" -> len("51") -> 2
             # So we'll make STEP with a fractional len of '2' after the decimal
-            fraction_len = len(str(las.index[1]).split(".")[1])
+            try:
+                fraction_len_0 = len(str(las.index[0]).split(".")[1])
+            except:
+                fraction_len_0 = 0
+
+            try:
+                fraction_len_1 = len(str(las.index[1]).split(".")[1])
+            except:
+                fraction_len_1 = 0
+
+            if fraction_len_0 >= fraction_len_1:
+                fractional_len = fraction_len_0
+            else:
+                fraction_len = fraction_len_1
+
             # Faster than np.gradient
             raw_step = las.index[1] - las.index[0]
             STEP = "{:.{flen}f}".format(raw_step, flen=fraction_len)
