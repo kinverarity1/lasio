@@ -46,7 +46,7 @@ WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
 STRT.M   1670.0 : START DEPTH
 STOP.M  1669.75 : STOP DEPTH
-STEP.M   -0.125 : STEP
+STEP.M -0.12500 : STEP
 NULL.   -999.25 : NULL VALUE
 COMP.       ANY : COMPANY
 WELL.   AAAAA_2 : WELL
@@ -95,7 +95,7 @@ WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
 STRT.M                                                         1670.0 : START DEPTH
 STOP.M                                                        1669.75 : STOP DEPTH
-STEP.M                                                         -0.125 : STEP
+STEP.M                                                       -0.12500 : STEP
 NULL.                                                         -999.25 : NULL VALUE
 COMP.                                            ANY OIL COMPANY INC. : COMPANY
 WELL.                                                         AAAAA_2 : WELL
@@ -150,7 +150,7 @@ WRAP.  NO : One line per depth step
 ~Well ------------------------------------------------------
 STRT.M                  1670.0 : 
 STOP.M                 1669.75 : 
-STEP.M                  -0.125 : 
+STEP.M                -0.12500 : 
 NULL.                  -999.25 : 
 COMP.   # ANY OIL COMPANY LTD. : COMPANY
 WELL.   ANY ET AL OIL WELL #12 : WELL
@@ -211,7 +211,7 @@ WRAP.  NO : One line per depth step
 ~Well ------------------------------------------------------
 STRT.M                  1670.0 : 
 STOP.M                 1669.75 : 
-STEP.M                  -0.125 : 
+STEP.M                -0.12500 : 
 NULL.                  -999.25 : 
 COMP.   # ANY OIL COMPANY LTD. : COMPANY
 WELL.   ANY ET AL OIL WELL #12 : WELL
@@ -255,7 +255,7 @@ WRAP.  NO : One line per depth step
 ~Well ------------------------------------------------------
 STRT.M                  1670.0 : 
 STOP.M                 1669.75 : 
-STEP.M                  -0.125 : 
+STEP.M                -0.12500 : 
 NULL.                  -999.25 : 
 COMP.   # ANY OIL COMPANY LTD. : COMPANY
 WELL.   ANY ET AL OIL WELL #12 : WELL
@@ -300,7 +300,7 @@ WRAP.  NO : One line per depth step
 ~Well ------------------------------------------------------
 STRT.FT                 1670.0 : 
 STOP.FT                1669.75 : 
-STEP.FT                 -0.125 : 
+STEP.FT               -0.12500 : 
 NULL.                  -999.25 : 
 COMP.   # ANY OIL COMPANY LTD. : COMPANY
 WELL.   ANY ET AL OIL WELL #12 : WELL
@@ -402,7 +402,7 @@ WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
 STRT.M                  1670.0 : 
 STOP.M                 1669.75 : 
-STEP.M                  -0.125 : 
+STEP.M                -0.12500 : 
 NULL.                  -999.25 : 
 COMP.   # ANY OIL COMPANY LTD. : COMPANY
 WELL.   ANY ET AL OIL WELL #12 : WELL
@@ -505,7 +505,7 @@ WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
 STRT.M                  1670.0 : 
 STOP.M                 1669.75 : 
-STEP.M                  -0.125 : 
+STEP.M                -0.12500 : 
 NULL.                  -999.25 : 
 COMP.   # ANY OIL COMPANY LTD. : COMPANY
 WELL.   ANY ET AL OIL WELL #12 : WELL
@@ -554,7 +554,7 @@ WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
 STRT.M                  1670.0 : 
 STOP.M                 1669.75 : 
-STEP.M                  -0.125 : 
+STEP.M                -0.12500 : 
 NULL.                  -999.25 : 
 COMP.   # ANY OIL COMPANY LTD. : COMPANY
 WELL.   ANY ET AL OIL WELL #12 : WELL
@@ -602,7 +602,7 @@ WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
 STRT.M         1670.0 : START DEPTH
 STOP.M        1669.75 : STOP DEPTH
-STEP.M         -0.125 : STEP
+STEP.M       -0.12500 : STEP
 NULL.         -999.25 : NULL VALUE
 COMP.         COMPANY : ANY OIL COMPANY INC.
 WELL.            WELL : AAAAA_2
