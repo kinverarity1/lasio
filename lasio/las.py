@@ -208,15 +208,15 @@ class LASFile(object):
                     if provisional_version == 3.0 and las3_section:
                         self.sections[section_title[1:]] = sct_items
                     elif section_title[1] == "V":
-                        self.sections["Version"] = sct_items
+                        self.sections["Version"].update(sct_items)
                     elif section_title[1] == "W":
-                        self.sections["Well"] = sct_items
+                        self.sections["Well"].update(sct_items)
                     elif section_title[1] == "C":
-                        self.sections["Curves"] = sct_items
+                        self.sections["Curves"].update(sct_items)
                     elif section_title[1] == "P":
-                        self.sections["Parameter"] = sct_items
+                        self.sections["Parameter"].update(sct_items)
                     else:
-                        self.sections[section_title[1:]] = sct_items
+                        self.sections[section_title[1:]].update(sct_items)
 
                 # Read free-text LAS header section
                 elif section_type == "Header (other)":
@@ -236,9 +236,14 @@ class LASFile(object):
                     self._sections.append(section)
 
                     if section_title[1] == "O":
-                        self.sections["Other"] = sct_contents
+                        dict_title = "Other"
                     else:
-                        self.sections[section_title[1:]] = sct_contents
+                        dict_title = section_title[1:]
+                    existing_sct = self.sections.get(dict_title, None)
+                    if existing_sct:
+                        self.sections[dict_title] = existing_sct + "\n" + sct_contents
+                    else:
+                        self.sections[dict_title] = sct_contents
 
                 elif section_type == "Data":
                     logger.debug("Storing reference and returning later...")

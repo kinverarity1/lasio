@@ -354,11 +354,12 @@ class SectionItems(list):
             HeaderItem(mnemonic=VERS, unit=, value=1.2, descr=)
 
         '''
+        logger.debug('__getattr__ key={}'.format(key))
         known_attrs = ['mnemonic_transforms', ]
         if not key in known_attrs:
             if key in self:
                 return self[key]
-        super(SectionItems, self).__getattr__(key)
+        raise AttributeError("SectionItems object has no attribute '{}'".format(self, key))
 
     def __setattr__(self, key, value):
         '''Allow access to :meth:`lasio.SectionItems.__setitem__`
@@ -457,3 +458,10 @@ class SectionItems(list):
     @json.setter
     def json(self, value):
         raise Exception('Cannot set objects from JSON')
+
+    def update(self, items, method="append"):
+        for item in items:
+            if method == "append":
+                self.append(item)
+            elif method == "replace":
+                self.set_item(item)
