@@ -24,7 +24,7 @@ WRAP. YES : Multiple lines per depth step
 ~Well ------------------------------------------------------
 STRT.M                   910.0 : 
 STOP.M                   909.5 : 
-STEP.M                  -0.125 : 
+STEP.M                -0.12500 : 
 NULL.                  -999.25 : Null value
 COMP.     ANY OIL COMPANY INC. : COMPANY
 WELL.    ANY ET AL XX-XX-XX-XX : WELL
@@ -119,7 +119,7 @@ WRAP.  NO : One line per depth step
 ~Well ------------------------------------------------------
 STRT.M                   910.0 : 
 STOP.M                   909.5 : 
-STEP.M                  -0.125 : 
+STEP.M                -0.12500 : 
 NULL.                  -999.25 : Null value
 COMP.     ANY OIL COMPANY INC. : COMPANY
 WELL.    ANY ET AL XX-XX-XX-XX : WELL

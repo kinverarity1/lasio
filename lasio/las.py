@@ -214,6 +214,8 @@ class LASFile(object):
                     line_no = first_line
                     contents = []
                     for line in file_obj:
+                        if line.startswith("~") and line_no == last_line:
+                            break
                         if line.startswith("~"):
                             continue
                         line_no += 1

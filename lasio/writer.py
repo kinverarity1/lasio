@@ -108,9 +108,10 @@ def write(
     if STOP is None:
         STOP = las.index[-1]
     if STEP is None:
+        # prevents an error being thrown in the case of only a single sample being written
         if STOP != STRT:
-            # prevents an error being thrown in the case of only a single sample being written
-            STEP = las.index[1] - las.index[0]  # Faster than np.gradient
+            raw_step = las.index[1] - las.index[0]
+            STEP = fmt % raw_step
 
     las.well["STRT"].value = STRT
     las.well["STOP"].value = STOP
@@ -224,7 +225,8 @@ def write(
                 value = (fmt % n)
         except TypeError:
             value = str(n)
-        if not l is -1:
+
+        if l != -1:
             result = value.rjust(l)
         else:
             result = value
