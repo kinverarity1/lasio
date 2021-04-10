@@ -1,4 +1,6 @@
-import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+import os, sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import pytest
 import numpy as np
@@ -17,13 +19,14 @@ egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
 def test_write_sect_widths_12(capsys):
     las = lasio.read(egfn("sample_write_sect_widths_12.las"))
     las.write(sys.stdout, version=1.2)
-    assert capsys.readouterr()[0] == open(egfn('test_write_sect_widths_12.txt')).read()
+    assert capsys.readouterr()[0] == open(egfn("test_write_sect_widths_12.txt")).read()
+
 
 def test_write_to_filename():
     las = read(egfn("sample_write_sect_widths_12.las"))
-    las.write('test.las', version=1.2)
-    assert os.path.isfile('test.las')
-    os.remove('test.las')
+    las.write("test.las", version=1.2)
+    assert os.path.isfile("test.las")
+    os.remove("test.las")
 
 
 def test_write_sect_widths_12_curves():
@@ -40,7 +43,9 @@ def test_write_sect_widths_20_narrow():
     s = StringIO()
     l.write(s, version=2)
     s.seek(0)
-    assert s.read() == """~Version ---------------------------------------------------
+    assert (
+        s.read()
+        == """~Version ---------------------------------------------------
 VERS. 2.0 : CWLS log ASCII Standard -VERSION 2.0
 WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
@@ -82,6 +87,7 @@ between 625 metres and 615 metres to be invalid.
  1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
  1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
 """
+    )
 
 
 def test_write_sect_widths_20_wide():
@@ -89,7 +95,9 @@ def test_write_sect_widths_20_wide():
     s = StringIO()
     l.write(s, version=2)
     s.seek(0)
-    assert s.read() == """~Version ---------------------------------------------------
+    assert (
+        s.read()
+        == """~Version ---------------------------------------------------
 VERS. 2.0 : CWLS log ASCII Standard -VERSION 2.0
 WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
@@ -131,10 +139,13 @@ between 625 metres and 615 metres to be invalid.
  1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
  1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
 """
+    )
+
 
 def test_write_sample_empty_params():
     l = read(egfn("sample_write_empty_params.las"))
     l.write(StringIO(), version=2)
+
 
 def test_df_curve_addition_on_export():
     l = read(egfn("sample.las"))
@@ -144,7 +155,9 @@ def test_df_curve_addition_on_export():
     s = StringIO()
     l.write(s, version=2, wrap=False, fmt="%.5f")
     s.seek(0)
-    assert s.read() == """~Version ---------------------------------------------------
+    assert (
+        s.read()
+        == """~Version ---------------------------------------------------
 VERS. 2.0 : CWLS log ASCII Standard -VERSION 2.0
 WRAP.  NO : One line per depth step
 ~Well ------------------------------------------------------
@@ -186,6 +199,8 @@ between 625 meters and 615 meters to be invalid.
  1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000    9.46970
  1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000    9.46970
 """
+    )
+
 
 def test_write_xlsx():
     l = read(egfn("sample.las"))
@@ -194,18 +209,22 @@ def test_write_xlsx():
     e.write(xlsxfn)
     os.remove(xlsxfn)
 
+
 def test_export_xlsx():
     l = read(egfn("sample.las"))
     xlsxfn = "test2.xlsx"
     l.to_excel(xlsxfn)
     os.remove(xlsxfn)
 
+
 def test_multi_curve_mnemonics_rewrite():
-    l = read(egfn('sample_issue105_a.las'))
+    l = read(egfn("sample_issue105_a.las"))
     s = StringIO()
     l.write(s, version=2, wrap=False, fmt="%.5f")
     s.seek(0)
-    assert s.read() == '''~Version ---------------------------------------------------
+    assert (
+        s.read()
+        == """~Version ---------------------------------------------------
 VERS. 2.0 : CWLS log ASCII Standard -VERSION 2.0
 WRAP.  NO : One line per depth step
 ~Well ------------------------------------------------------
@@ -242,14 +261,18 @@ between 625 meters and 615 meters to be invalid.
  1670.00000    1.00000   10.00000  100.00000    0.10000
  1669.87500    2.00000   20.00000  200.00000    0.20000
  1669.75000    3.00000   30.00000  300.00000    0.30000
-'''
+"""
+    )
+
 
 def test_multi_curve_missing_mnemonics_rewrite():
-    l = read(egfn('sample_issue105_b.las'))
+    l = read(egfn("sample_issue105_b.las"))
     s = StringIO()
     l.write(s, version=2, wrap=False, fmt="%.5f")
     s.seek(0)
-    assert s.read() == '''~Version ---------------------------------------------------
+    assert (
+        s.read()
+        == """~Version ---------------------------------------------------
 VERS. 2.0 : CWLS log ASCII Standard -VERSION 2.0
 WRAP.  NO : One line per depth step
 ~Well ------------------------------------------------------
@@ -286,15 +309,19 @@ between 625 meters and 615 meters to be invalid.
  1670.00000    1.00000   10.00000  100.00000    0.10000
  1669.87500    2.00000   20.00000  200.00000    0.20000
  1669.75000    3.00000   30.00000  300.00000    0.30000
-'''
+"""
+    )
+
 
 def test_write_units():
     l = read(egfn("sample.las"))
-    l.curves[0].unit = 'FT'
+    l.curves[0].unit = "FT"
     s = StringIO()
     l.write(s, version=2, wrap=False, fmt="%.5f")
     s.seek(0)
-    assert s.read() == '''~Version ---------------------------------------------------
+    assert (
+        s.read()
+        == """~Version ---------------------------------------------------
 VERS. 2.0 : CWLS log ASCII Standard -VERSION 2.0
 WRAP.  NO : One line per depth step
 ~Well ------------------------------------------------------
@@ -334,69 +361,81 @@ between 625 meters and 615 meters to be invalid.
  1670.00000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
  1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
  1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
-'''
+"""
+    )
+
 
 def test_to_csv_units_None():
     las = read(egfn("sample.las"))
-    las.to_csv('test.csv', units_loc=None)
-    csv_output = open('test.csv', 'r').readlines()
-    proof_output = open(egfn('sample.las_units-none.csv'), 'r').readlines()
-    os.remove('test.csv')
+    las.to_csv("test.csv", units_loc=None)
+    csv_output = open("test.csv", "r").readlines()
+    proof_output = open(egfn("sample.las_units-none.csv"), "r").readlines()
+    os.remove("test.csv")
     assert csv_output[0] == proof_output[0]
     # assert csv_output[1] == proof_output[1]
+
 
 def test_to_csv_units_line():
     las = read(egfn("sample.las"))
-    las.to_csv('test.csv', units_loc='line')
-    csv_output = open('test.csv', 'r').readlines()
-    proof_output = open(egfn('sample.las_units-line.csv'), 'r').readlines()
-    os.remove('test.csv')
+    las.to_csv("test.csv", units_loc="line")
+    csv_output = open("test.csv", "r").readlines()
+    proof_output = open(egfn("sample.las_units-line.csv"), "r").readlines()
+    os.remove("test.csv")
     assert csv_output[0] == proof_output[0]
     assert csv_output[1] == proof_output[1]
 
+
 def test_to_csv_units_parentheses():
     las = read(egfn("sample.las"))
-    las.to_csv('test.csv', units_loc='()')
-    csv_output = open('test.csv', 'r').readlines()
-    proof_output = open(egfn('sample.las_units-parentheses.csv'), 'r').readlines()
-    os.remove('test.csv')
+    las.to_csv("test.csv", units_loc="()")
+    csv_output = open("test.csv", "r").readlines()
+    proof_output = open(egfn("sample.las_units-parentheses.csv"), "r").readlines()
+    os.remove("test.csv")
     assert csv_output[0] == proof_output[0]
+
 
 def test_to_csv_units_brackets():
     las = read(egfn("sample.las"))
-    las.to_csv('test.csv', units_loc='[]')
-    csv_output = open('test.csv', 'r').readlines()
-    proof_output = open(egfn('sample.las_units-brackets.csv'), 'r').readlines()
-    os.remove('test.csv')
+    las.to_csv("test.csv", units_loc="[]")
+    csv_output = open("test.csv", "r").readlines()
+    proof_output = open(egfn("sample.las_units-brackets.csv"), "r").readlines()
+    os.remove("test.csv")
     assert csv_output[0] == proof_output[0]
     # assert csv_output[1] == proof_output[1]
 
+
 def test_to_csv_specify_mnemonics():
     las = read(egfn("sample.las"))
-    las.to_csv('test.csv', mnemonics=[str(i) for i in range(len(las.curves))])
-    csv_output = open('test.csv', 'r').readlines()
-    assert csv_output[0] == '0,1,2,3,4,5,6,7\n'
-    os.remove('test.csv')
+    las.to_csv("test.csv", mnemonics=[str(i) for i in range(len(las.curves))])
+    csv_output = open("test.csv", "r").readlines()
+    assert csv_output[0] == "0,1,2,3,4,5,6,7\n"
+    os.remove("test.csv")
+
 
 def test_to_csv_specify_units():
     las = read(egfn("sample.las"))
-    las.to_csv('test.csv', units=[str(i) for i in range(len(las.curves))])
-    csv_output = open('test.csv', 'r').readlines()
-    assert csv_output[1] == '0,1,2,3,4,5,6,7\n'
-    os.remove('test.csv')
+    las.to_csv("test.csv", units=[str(i) for i in range(len(las.curves))])
+    csv_output = open("test.csv", "r").readlines()
+    assert csv_output[1] == "0,1,2,3,4,5,6,7\n"
+    os.remove("test.csv")
 
 
 def test_rename_and_write_curve_mnemonic():
     l = read(egfn("sample.las"))
     for curve in l.curves:
-        if curve.mnemonic != 'DEPT':
+        if curve.mnemonic != "DEPT":
             curve.mnemonic = "New_" + curve.mnemonic
     for curve in l.curves:
-        print('mnemonic=%s original_mnemonic=%s' % (curve.mnemonic, curve.original_mnemonic))
+        print(
+            "mnemonic=%s original_mnemonic=%s"
+            % (curve.mnemonic, curve.original_mnemonic)
+        )
     s = StringIO()
     l.write(s, version=2)
     s.seek(0)
-    assert s.read() == '''~Version ---------------------------------------------------
+    assert (
+        s.read()
+        == """~Version ---------------------------------------------------
 VERS. 2.0 : CWLS log ASCII Standard -VERSION 2.0
 WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
@@ -436,22 +475,27 @@ between 625 meters and 615 meters to be invalid.
  1670.00000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
  1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
  1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
-'''
+"""
+    )
+
 
 def test_write_large_depths():
     las = lasio.read(egfn("sample.las"))
     las.curves[0].data *= 10.5 + 0.1
-    las.write('write_large_depths.las')
-    las2 = lasio.read('write_large_depths.las')
-    os.remove('write_large_depths.las')
+    las.write("write_large_depths.las")
+    las2 = lasio.read("write_large_depths.las")
+    os.remove("write_large_depths.las")
     assert np.all(las.curves[0].data == las2.curves[0].data)
+
 
 def test_write_single_step():
     las = lasio.read(egfn("single_step_20.las"))
     s = StringIO()
     las.write(s, version=2)
     s.seek(0)
-    assert s.read() == '''~Version ---------------------------------------------------
+    assert (
+        s.read()
+        == """~Version ---------------------------------------------------
 VERS. 2.0 : CWLS log ASCII Standard -VERSION 2.0
 WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
@@ -490,7 +534,8 @@ Note: The logging tools became stuck at 625 metres causing the data
 between 625 metres and 615 metres to be invalid.
 ~ASCII -----------------------------------------------------
  1670.00000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
-'''
+"""
+    )
 
 
 def test_write_12_to_20_ver_in_mem_is_12():
@@ -499,7 +544,9 @@ def test_write_12_to_20_ver_in_mem_is_12():
     las.write(s, version=2)
     s.seek(0)
     assert las.version.VERS.value == 1.2
-    assert s.read() == '''~Version ---------------------------------------------------
+    assert (
+        s.read()
+        == """~Version ---------------------------------------------------
 VERS. 2.0 : CWLS log ASCII Standard -VERSION 2.0
 WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
@@ -539,7 +586,9 @@ between 625 meters and 615 meters to be invalid.
  1670.00000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
  1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
  1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
-'''
+"""
+    )
+
 
 def test_write_12_to_20_ver():
     las = read(egfn("1.2/sample.las"))
@@ -548,7 +597,9 @@ def test_write_12_to_20_ver():
     las.write(s)
     s.seek(0)
     assert las.version.VERS.value != 1.2
-    assert s.read() == '''~Version ---------------------------------------------------
+    assert (
+        s.read()
+        == """~Version ---------------------------------------------------
 VERS. 2.0 : CWLS log ASCII Standard -VERSION 2.0
 WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
@@ -588,7 +639,8 @@ between 625 meters and 615 meters to be invalid.
  1670.00000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
  1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
  1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
-'''
+"""
+    )
 
 
 def test_write_20_to_12_ver_in_mem_is_20():
@@ -596,7 +648,9 @@ def test_write_20_to_12_ver_in_mem_is_20():
     s = StringIO()
     las.write(s, version=1.2)
     s.seek(0)
-    assert s.read() == '''~Version ---------------------------------------------------
+    assert (
+        s.read()
+        == """~Version ---------------------------------------------------
 VERS. 1.2 : CWLS LOG ASCII STANDARD - VERSION 1.2
 WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
@@ -637,14 +691,15 @@ between 625 metres and 615 metres to be invalid.
  1670.00000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
  1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
  1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
-'''
+"""
+    )
 
 
 def test_write_empty_text_value():
     las = read(egfn("sample.las"))
     las.well.well.value = ""
     las.well.comp.value = None
-    las.write('test.las', version=2.0)
+    las.write("test.las", version=2.0)
 
     las2 = read("test.las")
     assert las2.well.well.value == ""
@@ -652,7 +707,8 @@ def test_write_empty_text_value():
     assert las2.well.comp.value == ""
     assert las2.well.comp.unit == ""
 
-    os.remove('test.las')
+    os.remove("test.las")
+
 
 def test_step_unchanged_by_write():
     las = read(egfn("2.0/sample_2.0.las"))

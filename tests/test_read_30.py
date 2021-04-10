@@ -22,15 +22,12 @@ def test_read_v30_sample():
     assert las.version[0].descr == "CWLS LOG ASCII STANDARD -VERSION 3.0"
 
 
-
-
 def test_read_v30_sample_v20_sections_are_empty():
     """
     Verify 'Curves' doesn't read 'Core_*' sections
     Verify 'Parameter' doesn't read 'Performations_*' sections
     """
     las = lasio.read(stegfn("3.0", "sample_3.0.las"))
-    assert not las.sections['Curves']
-    assert not las.sections['Parameter']
-    assert las.sections['Perforations_Definition'][0].mnemonic == "PERFT:1"
-
+    assert not las.sections["Curves"]
+    assert not las.sections["Parameter"]
+    assert las.sections["Perforations_Definition"][0].mnemonic == "PERFT:1"

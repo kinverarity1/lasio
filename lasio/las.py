@@ -801,9 +801,7 @@ class LASFile(object):
 
     @property
     def index(self):
-        """Return data from the first column of the LAS file data (depth/time).
-
-        """
+        """Return data from the first column of the LAS file data (depth/time)."""
         return self.curves[0].data
 
     @property

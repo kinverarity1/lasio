@@ -1,4 +1,6 @@
-import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+import os, sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from pprint import pformat
 
@@ -13,21 +15,17 @@ test_dir = os.path.dirname(__file__)
 
 egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
 
-stegfn = lambda vers, fn: os.path.join(
-    os.path.dirname(__file__), "examples", vers, fn
-)
+stegfn = lambda vers, fn: os.path.join(os.path.dirname(__file__), "examples", vers, fn)
 
 
 def test_repr():
-    h = lasio.las_items.HeaderItem(
-        'MN', unit='m', value=20, descr='test testing')
+    h = lasio.las_items.HeaderItem("MN", unit="m", value=20, descr="test testing")
 
     assert h.__repr__() == pformat(h)
 
 
 def test_useful_mnemonic_setter_not_allowed():
-    h = lasio.las_items.HeaderItem(
-        'MN', unit='m', value=20, descr='test testing')
+    h = lasio.las_items.HeaderItem("MN", unit="m", value=20, descr="test testing")
 
     # Writing to useful_mnemonic is prevented by exception.
     with pytest.raises(ValueError):
@@ -35,12 +33,11 @@ def test_useful_mnemonic_setter_not_allowed():
 
 
 def test_mmenomic_names_behavior():
-    h = lasio.las_items.HeaderItem(
-        'MN', unit='m', value=20, descr='test testing')
+    h = lasio.las_items.HeaderItem("MN", unit="m", value=20, descr="test testing")
 
     # mnemonic is not changed
-    h['mnemonic'] = "ZZZ"
-    assert h['mnemonic'] == "MN"
+    h["mnemonic"] = "ZZZ"
+    assert h["mnemonic"] == "MN"
     assert h.mnemonic == "MN"
     assert h.useful_mnemonic == "MN"
 
@@ -50,20 +47,18 @@ def test_mmenomic_names_behavior():
 
 
 def test_getitem():
-    h = lasio.las_items.HeaderItem(
-        'MN', unit='m', value=20, descr='test testing')
+    h = lasio.las_items.HeaderItem("MN", unit="m", value=20, descr="test testing")
 
     assert h["mnemonic"] == "MN"
     assert h["original_mnemonic"] == "MN"
     assert h["useful_mnemonic"] == "MN"
     assert h["unit"] == "m"
     with pytest.raises(KeyError):
-        h['notakey']
+        h["notakey"]
 
 
 def test_header_json():
-    h = lasio.las_items.HeaderItem(
-        'MN', unit='m', value=20, descr='test testing')
+    h = lasio.las_items.HeaderItem("MN", unit="m", value=20, descr="test testing")
 
     # HeaderItem transformed to json string that includes
     # object type and property key/values.
@@ -73,9 +68,9 @@ def test_header_json():
     result = json.loads(myjson)
 
     for key in result.keys():
-        if key == '_type':
+        if key == "_type":
             # type of the object this json came from
-            assert result[key] == 'HeaderItem'
+            assert result[key] == "HeaderItem"
         else:
             # data key/values: mnemonic, name, value, descr
             assert result[key] == h[key]

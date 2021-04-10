@@ -134,7 +134,9 @@ def write(
     logger.debug("LASFile.write Version section, Version: %s" % (version))
     lines.append("~Version ".ljust(header_width, "-"))
     order_func = get_section_order_function("Version", version)
-    section_widths = get_section_widths("Version", version_section_to_write, version, order_func)
+    section_widths = get_section_widths(
+        "Version", version_section_to_write, version, order_func
+    )
     for header_item in version_section_to_write.values():
         mnemonic = header_item.original_mnemonic
         # logger.debug('LASFile.write ' + str(header_item))
@@ -222,7 +224,7 @@ def write(
             if np.isnan(n):
                 value = str(las.well["NULL"].value)
             else:
-                value = (fmt % n)
+                value = fmt % n
         except TypeError:
             value = str(n)
 
@@ -245,7 +247,9 @@ def write(
                 left_spacing = lhs_spacer
             else:
                 left_spacing = spacer
-            depth_slice += format_data_section_line(data_arr[i, j], col_fmt, spacing_chars=left_spacing)
+            depth_slice += format_data_section_line(
+                data_arr[i, j], col_fmt, spacing_chars=left_spacing
+            )
 
         if wrap:
             lines = twrapper.wrap(depth_slice)

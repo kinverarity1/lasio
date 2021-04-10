@@ -1,4 +1,6 @@
-import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+import os, sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 
 import pytest
@@ -12,32 +14,38 @@ test_dir = os.path.dirname(__file__)
 
 egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
 
+
 def test_open_pathlib_object():
     l = read(Path(egfn("sample.las")))
 
+
 def test_open_url():
-    l = read("https://raw.githubusercontent.com/kinverarity1/"
-             "lasio/master/standards/examples"
-             "/1.2/sample_curve_api.las")
+    l = read(
+        "https://raw.githubusercontent.com/kinverarity1/"
+        "lasio/master/standards/examples"
+        "/1.2/sample_curve_api.las"
+    )
 
 
 def test_open_url_different_newlines():
-    las = read("https://raw.githubusercontent.com/kinverarity1/"
-               "lasio/master/tests/examples"
-               "/2.0/sample_2.0_universal_newline.las")
+    las = read(
+        "https://raw.githubusercontent.com/kinverarity1/"
+        "lasio/master/tests/examples"
+        "/2.0/sample_2.0_universal_newline.las"
+    )
     assert las.well.keys() == [
-        'STRT',
-        'STOP',
-        'STEP',
-        'NULL',
-        'COMP',
-        'WELL',
-        'FLD',
-        'LOC',
-        'PROV',
-        'SRVC',
-        'DATE',
-        'UWI'
+        "STRT",
+        "STOP",
+        "STEP",
+        "NULL",
+        "COMP",
+        "WELL",
+        "FLD",
+        "LOC",
+        "PROV",
+        "SRVC",
+        "DATE",
+        "UWI",
     ]
 
 
@@ -56,7 +64,8 @@ def test_open_incorrect_filename():
 
 
 def test_open_string():
-    l = read("""~VERSION INFORMATION
+    l = read(
+        """~VERSION INFORMATION
  VERS.                  1.2:   CWLS LOG ASCII STANDARD -VERSION 1.2
  WRAP.                  NO:   ONE LINE PER DEPTH STEP
 ~WELL INFORMATION BLOCK
@@ -102,4 +111,5 @@ def test_open_string():
 1670.000   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
 1669.875   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
 1669.750   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
-""")
+"""
+    )
