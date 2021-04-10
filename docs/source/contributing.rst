@@ -116,7 +116,7 @@ Then to run all the tests::
 
   $ pytest
 
-Before publishing your changes please make the code is formatted using `black <https://github.com/psf/black>`__:
+Before publishing your changes please make the code is formatted using `black <https://github.com/psf/black>`__::
 
   $ black .
 
