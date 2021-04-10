@@ -9,6 +9,7 @@ MIT License. It has grown over the years through the wonderful work of all these
 * `ae3e <https://github.com/ae3e>`__
 * `ahjulstad <https://github.com/ahjulstad>`__
 * `dagrha <https://github.com/dagrha>`__
+* `dbhart <https://github.com/dbhart>`__
 * `dcslagel <https://github.com/dcslagel>`__
 * `Fry484 <https://github.com/Fry484>`__
 * `JustinGOSSES <https://github.com/JustinGOSSES>`__
@@ -35,6 +36,11 @@ Places you can help
 * Please don’t hesitate to open a
   `GitHub issue <https://github.com/kinverarity1/lasio/issues/new>`__
   for any problems you are having with lasio, or any ideas for improvements.
+  There are templates to guide you in how to file a 
+  `bug report <https://github.com/kinverarity1/lasio/issues/new?assignees=&labels=bug&template=bug_report.md&title=>`__,
+  or a `request for a new feature or improvement <https://github.com/kinverarity1/lasio/issues/new?assignees=&labels=&template=feature_request.md&title=>`__.
+  If you are not sure whether your issue fits under these categories, please
+  go ahead and `raise <https://github.com/kinverarity1/lasio/issues/new>`__ one anyway!
 
 * Please feel free to contribute suggested changes. The easiest method is to
   fork lasio on GitHub and
@@ -51,6 +57,92 @@ Places you can help
   about privacy, I’d suggest obfuscating with find-and-replace on various alpha
   (or numeric) characters before sending it on, and/or deleting any sensitive header
   lines.
+
+How to make contributions
+-------------------------
+
+Contributions are always welcome to the code, documentation, or example
+notebooks. If you are making a contribution, please make sure you are
+working off the latest GitHub master. You will want to make your contributions
+in a branch taken from `master`, and then when you want to share your changes,
+you can publish them by "pushing" your branch to your GitHub fork of the lasio
+repository, and opening a PR (pull request) here.
+
+First, create a fork of the lasio repository using the GitHub website. Then
+clone your fork locally to your computer:
+
+```
+$ git clone https://github.com/your-username/lasio
+$ cd lasio
+```
+
+Your fork will be called the "origin" repository - you'll need to know this for
+when you push/pull changes to and from your computer.
+
+Now also add the kinverarity1/lasio repository as the "upstream" repository. This is so that
+when other people make changes to kinverarity1/lasio, you can "pull" those changes into
+your local copy.
+
+```
+$ git remote add upstream https://github.com/kinverarity1/lasio
+```
+
+To update the `master` branch of the local copy you have of your fork from the "upstream" repository:
+
+```
+$ git checkout master
+$ git pull upstream master
+```
+
+And to update the GitHub fork from your local copy:
+
+```
+$ git checkout master
+$ git push origin master
+```
+
+Making changes to the code
+~~~~~~~~~~~~~~~~~~~
+
+First, start by making sure your local copy is using the latest copy of code from "upstream" master (see above).
+Then create a branch - you can call it whatever is meaningful to you. We switch to `master` so that
+your changes are relative to the latest copy of the code in `master`.
+
+```
+$ git checkout master
+$ git checkout -b your-branch-name
+Switched to a new branch 'your-branch-name'
+
+(your-branch-name) $
+```
+
+Then you can make your changes. To test them, make sure you have an "editable"
+installation of lasio in your Python environment. Shift to the root folder
+of the repository and run:
+
+```
+$ pip install -e .
+```
+
+Then to run all the tests:
+
+```
+$ pytest
+```
+
+Before publishing your changes please make the code is formatted using `black <https://github.com/psf/black>`__:
+
+```
+$ black .
+```
+
+Then you can push your changes to your fork:
+
+```
+$ git push origin your-branch-name
+```
+
+And follow the instructions on your fork's GitHub page to open a pull request (PR) for lasio!
 
 Email
 -----
