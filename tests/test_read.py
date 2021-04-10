@@ -436,7 +436,10 @@ def test_skip_comments_in_data_section():
 
 def test_quoted_substrings_in_data_section():
     l = lasio.read(egfn("lasio_issue_271.las"))
-    assert (l.curves[2].data == ["pick_alpha", "pick_beta", "pick gamma", "pick delta", "pick_epsilon"]).all()
+    assert (
+        l.curves[2].data
+        == ["pick_alpha", "pick_beta", "pick gamma", "pick delta", "pick_epsilon"]
+    ).all()
 
 
 def test_read_v2_sample_empty_other_section():

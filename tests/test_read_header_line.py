@@ -30,10 +30,12 @@ def test_cyrillic_depth_unit():
     result = read_header_line(line, section_name="Curves")
     assert result["unit"] == u"метер"
 
+
 def test_unit_stat_with_dot():
     line = u" TDEP  ..1IN                      :  0.1-in"
     result = read_header_line(line, section_name="Curves")
     assert result["unit"] == u".1IN"
+
 
 def test_value_field_with_num_colon():
     line = "RUN . 01: RUN NUMBER"
@@ -48,11 +50,13 @@ def test_non_delimiter_colon_in_desc():
     assert result["value"] == ""
     assert result["descr"] == "Survey quality: GOOD or BAD versus criteria"
 
+
 def test_dot_in_name():
     """issue_264"""
     line = "I. Res..OHM-M                  "
     result = read_header_line(line, section_name="Curves")
     assert result["name"] == "I. Res."
+
 
 def test_pattern_arg():
     line = "DEPT.M                      :  1  DEPTH"
@@ -70,6 +74,7 @@ def test_pattern_arg():
     assert result["name"] == "DEPT"
     assert result["unit"] == "M"
     assert result["value"] == ""
+
 
 def test_unit_with_space():
     line = "HKLA            .1000 lbf                                  :(RT)"
