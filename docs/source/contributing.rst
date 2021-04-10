@@ -77,6 +77,9 @@ clone your fork locally to your computer::
 Your fork will be called the "origin" repository - you'll need to know this for
 when you push/pull changes to and from your computer.
 
+Adding kinverarity1/lasio as "upstream"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Now also add the kinverarity1/lasio repository as the "upstream" repository. This is so that
 when other people make changes to kinverarity1/lasio, you can "pull" those changes into
 your local copy::
@@ -92,9 +95,17 @@ And to update the GitHub fork from your local copy::
 
   $ git checkout master
   $ git push origin master
+  
+Making sure you have necessary development dependencies
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+There are some additional packages you needing for running unit/regression tests (`pytest`) and
+formatting Python code (`black`). You can install these easily by using::
+
+  $ pip install --editable .[test]
 
 Making changes to the code
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 First, start by making sure your local copy is using the latest copy of code from "upstream" master (see above).
 Then create a branch - you can call it whatever is meaningful to you. We switch to `master` so that
@@ -125,6 +136,29 @@ Then you can push your changes to your fork::
   $ git push origin your-branch-name
 
 And follow the instructions on your fork's GitHub page to open a pull request (PR) for lasio!
+
+Making changes to the documentation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Just as valuable as changes to the code, are changes or improvements to the 
+`Sphinx documentation <>`__! If you would like to help in this regard, you will
+need Sphinx and IPython installed::
+
+  $ pip install sphinx IPython
+
+Then create a new branch as above. The documentation is written in RestructuredText,
+and can be found in the `docs/source` subfolder of the lasio repository. If you
+have any changes, you can build a local copy of the HTML repository to test how it
+looks. First change into the docs folder::
+
+  $ cd docs
+
+Then run this to generate a local copy of the HTML docs in the `build/html` folder::
+
+  $ make clean
+  $ make html
+  
+Once you are happy, please publish your branch and open a PR in the same way as above.
 
 Email
 -----
