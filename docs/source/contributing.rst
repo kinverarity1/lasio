@@ -141,7 +141,7 @@ Making changes to the documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Just as valuable as changes to the code, are changes or improvements to the 
-`Sphinx documentation <>`__! If you would like to help in this regard, you will
+`Sphinx documentation <https://lasio.readthedocs.io/en/latest/>`__! If you would like to help in this regard, you will
 need Sphinx and IPython installed::
 
   $ pip install sphinx IPython
