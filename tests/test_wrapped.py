@@ -1,16 +1,19 @@
-import os, sys; sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+import os, sys
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from lasio import read
 
 from lasio.reader import StringIO
 
 egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
-stegfn = lambda vers, fn: os.path.join(
-    os.path.dirname(__file__), "examples", vers, fn)
+stegfn = lambda vers, fn: os.path.join(os.path.dirname(__file__), "examples", vers, fn)
+
 
 def test_wrapped():
     fn = egfn("1001178549.las")
     l = read(fn)
+
 
 def test_write_wrapped():
     fn = stegfn("1.2", "sample_wrapped.las")
@@ -18,13 +21,15 @@ def test_write_wrapped():
     s = StringIO()
     l.write(s, version=2.0, wrap=True, fmt="%.5f")
     s.seek(0)
-    assert s.read() == """~Version ---------------------------------------------------
+    assert (
+        s.read()
+        == """~Version ---------------------------------------------------
 VERS. 2.0 : CWLS log ASCII Standard -VERSION 2.0
 WRAP. YES : Multiple lines per depth step
 ~Well ------------------------------------------------------
 STRT.M                   910.0 : 
 STOP.M                   909.5 : 
-STEP.M                  -0.125 : 
+STEP.M                -0.12500 : 
 NULL.                  -999.25 : Null value
 COMP.     ANY OIL COMPANY INC. : COMPANY
 WELL.    ANY ET AL XX-XX-XX-XX : WELL
@@ -106,6 +111,8 @@ LSWB.      : 35 Flag -Limit SWB
 0.81740    0.00000    0.15370    0.00000    8.48630    0.00000    0.00000
 0.00000
 """
+    )
+
 
 def test_write_unwrapped():
     fn = stegfn("1.2", "sample_wrapped.las")
@@ -113,13 +120,15 @@ def test_write_unwrapped():
     s = StringIO()
     l.write(s, version=2, wrap=False, fmt="%.5f")
     s.seek(0)
-    assert s.read() == """~Version ---------------------------------------------------
+    assert (
+        s.read()
+        == """~Version ---------------------------------------------------
 VERS. 2.0 : CWLS log ASCII Standard -VERSION 2.0
 WRAP.  NO : One line per depth step
 ~Well ------------------------------------------------------
 STRT.M                   910.0 : 
 STOP.M                   909.5 : 
-STEP.M                  -0.125 : 
+STEP.M                -0.12500 : 
 NULL.                  -999.25 : Null value
 COMP.     ANY OIL COMPANY INC. : COMPANY
 WELL.    ANY ET AL XX-XX-XX-XX : WELL
@@ -176,3 +185,4 @@ LSWB.      : 35 Flag -Limit SWB
   909.62500    -999.25 2644.36500    0.27650   18.48310   18.48310   13.41590   12.69000   -1.50100   93.39990  201.58260   -6.58610    -999.25    -999.25    4.38220    -999.25    1.58260 2955.35280 2955.35280   -1.50100   89.71420    0.15900    0.03840    0.15900    0.27650    0.15900   11.86000    0.32100    0.96670    0.00000    0.15380    0.00000   11.86000    0.00000    0.00000    0.00000
   909.50000    -999.25 2586.28220    0.29960   13.91870   13.91870   12.91950   12.70160   -1.49160   98.12140  201.71260   -4.55740    -999.25    -999.25    3.59670    -999.25    1.71260 2953.59400 2953.59400   -1.49160   94.26700    0.18800    0.07230    0.18800    0.29960    0.18800    8.48630    0.44900    0.81740    0.00000    0.15370    0.00000    8.48630    0.00000    0.00000    0.00000
 """
+    )

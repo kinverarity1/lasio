@@ -30,8 +30,9 @@ copyright = u"2013-2020, Kent Inverarity and contributors"
 author = u"Kent Inverarity and contributors"
 
 from pkg_resources import get_distribution
-release = get_distribution('lasio').version
-version = '.'.join(release.split('.')[:2])
+
+release = get_distribution("lasio").version
+version = ".".join(release.split(".")[:2])
 
 language = None
 

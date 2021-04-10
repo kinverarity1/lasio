@@ -49,10 +49,22 @@ ORDER_DEFINITIONS = {
             ("Version", ["value:descr"]),
             (
                 "Well",
-                ["descr:value", ("value:descr", [
-                    "STRT", "STOP", "STEP", "NULL",
-                    "strt", "stop", "step", "null"
-                ])],
+                [
+                    "descr:value",
+                    (
+                        "value:descr",
+                        [
+                            "STRT",
+                            "STOP",
+                            "STEP",
+                            "NULL",
+                            "strt",
+                            "stop",
+                            "step",
+                            "null",
+                        ],
+                    ),
+                ],
             ),
             ("Curves", ["value:descr"]),
             ("Parameter", ["value:descr"]),
@@ -169,7 +181,10 @@ NULL_SUBS = {
         (re.compile(r"(-?1\.#IND)[ ]"), "NaN "),
         (re.compile(r"[ ](-?1\.#IND[0-9]*)"), " NaN"),
     ],
-    "-0.0": [(re.compile(r"(-0\.0)[ ]"), "NaN "), (re.compile(r"[ ](-0\.0)"), " NaN")],
+    "-0.0": [
+        (re.compile(r"(-0\.0)[ ]"), "NaN "),
+        (re.compile(r"[ ](-0\.00*[^1-9])"), " NaN"),
+    ],
     "numbers-only": [
         (re.compile(r"([^ 0-9.\-+]+)[ ]"), "NaN "),
         (re.compile(r"[ ]([^ 0-9.\-+]+)"), " NaN"),

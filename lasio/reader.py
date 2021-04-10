@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import traceback
+import urllib.request
 
 import numpy as np
 
@@ -92,34 +93,20 @@ def open_file(file_ref, **encoding_kwargs):
         first_line = lines[0]
         if URL_REGEXP.match(first_line):  # it's a URL
             logger.info("Loading URL {}".format(first_line))
-            try:
-                import urllib2
 
-                response = urllib2.urlopen(first_line)
-                encoding = response.headers.getparam("charset")
-
-                tmp_str = response.read()
-                tmp_list = tmp_str.splitlines()
-                new_str = "\n".join(tmp_list)
-                # file_ref = StringIO(response.read())
-                file_ref = StringIO(new_str)
-                logger.debug("Retrieved data had encoding {}".format(encoding))
-            except ImportError:
-                import urllib.request
-
-                response = urllib.request.urlopen(file_ref)
-                if response.headers.get_content_charset() is None:
-                    if "encoding" in encoding_kwargs:
-                        encoding = encoding_kwargs["encoding"]
-                    else:
-                        encoding = "utf-8"
+            response = urllib.request.urlopen(file_ref)
+            if response.headers.get_content_charset() is None:
+                if "encoding" in encoding_kwargs:
+                    encoding = encoding_kwargs["encoding"]
                 else:
-                    encoding = response.headers.get_content_charset()
-                # newline=None causes StringIO to use universal-newline:
-                # Lines in the input can end in '\n', '\r', or '\r\n', and these are
-                # translated into '\n' before being returned to the caller.
-                file_ref = StringIO(response.read().decode(encoding), newline=None)
-                logger.debug("Retrieved data decoded via {}".format(encoding))
+                    encoding = "utf-8"
+            else:
+                encoding = response.headers.get_content_charset()
+            # newline=None causes StringIO to use universal-newline:
+            # Lines in the input can end in '\n', '\r', or '\r\n', and these are
+            # translated into '\n' before being returned to the caller.
+            file_ref = StringIO(response.read().decode(encoding), newline=None)
+            logger.debug("Retrieved data decoded via {}".format(encoding))
         elif len(lines) > 1:  # it's LAS data as a string.
             file_ref = StringIO(file_ref)
         else:  # it must be a filename
@@ -1012,7 +999,7 @@ def configure_metadata_patterns(line, section_name):
         if ".." in line and section_name == "Curves":
             name_re = name_with_dots_re
     else:
-        if ".." in line and section_name == "Curves":
+        if re.search(r"[^ ]\.\.", line) and section_name == "Curves":
             double_dot = line.find("..")
             desc_colon = line.rfind(":")
 
