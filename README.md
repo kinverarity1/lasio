@@ -138,6 +138,13 @@ things.
 See the [package documentation](https://lasio.readthedocs.io/en/latest/) for
 more details.
 
+## Contributing
+
+Contributions are invited and welcome.
+
+See [Contributing](https://lasio.readthedocs.io/en/latest/contributing.html) for how to get started.
+
+
 ## License
 
 MIT
