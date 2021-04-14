@@ -217,6 +217,3 @@ Version 0.2 (2015-07-08)
 --------------------------------------------
  - Tidied code and published on PyPI
 
-
- .. _`#437`: https://github.com/kinverarity1/lasio/issues/437
- 

@@ -8,6 +8,7 @@ MIT License. It has grown over the years through the wonderful work of all these
 * `adamwulf <https://github.com/adamwulf>`__
 * `ae3e <https://github.com/ae3e>`__
 * `ahjulstad <https://github.com/ahjulstad>`__
+* `eimerej <https://github.com/eimerej>`_
 * `dagrha <https://github.com/dagrha>`__
 * `dbhart <https://github.com/dbhart>`__
 * `dcslagel <https://github.com/dcslagel>`__
