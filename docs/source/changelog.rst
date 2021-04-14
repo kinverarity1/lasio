@@ -1,6 +1,30 @@
 List of changes
 ===============================
 
+Version 0.29 (14 April 2021)
+------------------------------
+- Fix #404 (lasio changes STEP with imprecise floating-point number behaviour; #432)
+- Add option ``len_numeric_field=-1``, ``lhs_spacer=" "``, and ``spacer=" "`` to writer.py:write (see #412; PR #418)
+- Fix #271 (Read quoted strings in data section properly; #423)
+- Fix #427 (Change null_policy to handle small non-zero values; #429)
+- Fix #417 (Fix parsing for empty ~Other section; #430)
+- Fix #402 (fixes issue when unit starts with dot; #403)
+- Fix #395 (Update doc examples to reflect new HeaderItem repr; #410)
+- Fix #426 (Update urllib.request to be the preferred urllib; #428)
+- Add check for pushed tag version to version tests (#396)
+- Update GitHub Action Python CI testing (#399, #400)
+- Improve ``las_items.py:HeaderItem.__repr__`` truncation logic (#397)
+- Remove codecs import (unused) and fix typo (#406)
+- Exclude LAS files from GitHubs Language Stats (#411)
+- Re-add try-except check around call to reader.read_data_section_iterative() (#401)
+- Remove reader.py:read_file_contents - unused code (see #401; #393)
+- Add test for timestring with colon in ~Well section (see #419 - PR #420)
+- Fix SyntaxWarning in writer.py (#425)
+- Add bugfix and feature request issue templates to GitHub repository
+- Apply ``black`` code style to all Python files (#438, #398)
+- Update `demo notebook for using logging levels <>`_ with current behaviour
+- Update `contributing guide <https://github.com/kinverarity1/lasio/blob/master/docs/source/contributing.rst>`_ (#437, #441)
+
 Version 0.28 (12 September 2020)
 --------------------------------
 - Major re-write of reader code working towards LAS 3.0 support (#327; #347, #345, #353, #355, #358, #367, #368, #369)
@@ -192,3 +216,7 @@ Version 0.3 (2015-07-23)
 Version 0.2 (2015-07-08)
 --------------------------------------------
  - Tidied code and published on PyPI
+
+
+ .. _`#437`: https://github.com/kinverarity1/lasio/issues/437
+ 
