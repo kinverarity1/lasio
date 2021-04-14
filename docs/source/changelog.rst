@@ -22,7 +22,7 @@ Version 0.29 (14 April 2021)
 - Fix SyntaxWarning in writer.py (`#425`_)
 - Add bugfix and feature request issue templates to GitHub repository
 - Apply ``black`` code style to all Python files (`#438`_, `#398`_)
-- Update `demo notebook for using logging levels <>`_ with current behaviour
+- Update `demo notebook for using logging levels <https://github.com/kinverarity1/lasio/blob/master/notebooks/set%20logging%20level%20for%20lasio.ipynb>`_ with current behaviour
 - Update `contributing guide <https://github.com/kinverarity1/lasio/blob/master/docs/source/contributing.rst>`_ (`#437`_, `#441`_)
 
 Version 0.28 (12 September 2020)
@@ -217,142 +217,140 @@ Version 0.2 (2015-07-08)
 --------------------------------------------
  - Tidied code and published on PyPI
 
- .. `#404`_: https://github.com/kinverarity1/lasio/issues/404
- .. `#432`_: https://github.com/kinverarity1/lasio/issues/432
- .. `#412`_: https://github.com/kinverarity1/lasio/issues/412
- .. `#418`_: https://github.com/kinverarity1/lasio/issues/418
- .. `#271`_: https://github.com/kinverarity1/lasio/issues/271
- .. `#423`_: https://github.com/kinverarity1/lasio/issues/423
- .. `#427`_: https://github.com/kinverarity1/lasio/issues/427
- .. `#429`_: https://github.com/kinverarity1/lasio/issues/429
- .. `#417`_: https://github.com/kinverarity1/lasio/issues/417
- .. `#430`_: https://github.com/kinverarity1/lasio/issues/430
- .. `#402`_: https://github.com/kinverarity1/lasio/issues/402
- .. `#403`_: https://github.com/kinverarity1/lasio/issues/403
- .. `#395`_: https://github.com/kinverarity1/lasio/issues/395
- .. `#410`_: https://github.com/kinverarity1/lasio/issues/410
- .. `#426`_: https://github.com/kinverarity1/lasio/issues/426
- .. `#428`_: https://github.com/kinverarity1/lasio/issues/428
- .. `#396`_: https://github.com/kinverarity1/lasio/issues/396
- .. `#399`_: https://github.com/kinverarity1/lasio/issues/399
- .. `#400`_: https://github.com/kinverarity1/lasio/issues/400
- .. `#397`_: https://github.com/kinverarity1/lasio/issues/397
- .. `#406`_: https://github.com/kinverarity1/lasio/issues/406
- .. `#411`_: https://github.com/kinverarity1/lasio/issues/411
- .. `#401`_: https://github.com/kinverarity1/lasio/issues/401
- .. `#401`_: https://github.com/kinverarity1/lasio/issues/401
- .. `#393`_: https://github.com/kinverarity1/lasio/issues/393
- .. `#419`_: https://github.com/kinverarity1/lasio/issues/419
- .. `#420`_: https://github.com/kinverarity1/lasio/issues/420
- .. `#425`_: https://github.com/kinverarity1/lasio/issues/425
- .. `#438`_: https://github.com/kinverarity1/lasio/issues/438
- .. `#398`_: https://github.com/kinverarity1/lasio/issues/398
- .. `#437`_: https://github.com/kinverarity1/lasio/issues/437
- .. `#441`_: https://github.com/kinverarity1/lasio/issues/441
- .. `#327`_: https://github.com/kinverarity1/lasio/issues/327
- .. `#347`_: https://github.com/kinverarity1/lasio/issues/347
- .. `#345`_: https://github.com/kinverarity1/lasio/issues/345
- .. `#353`_: https://github.com/kinverarity1/lasio/issues/353
- .. `#355`_: https://github.com/kinverarity1/lasio/issues/355
- .. `#358`_: https://github.com/kinverarity1/lasio/issues/358
- .. `#367`_: https://github.com/kinverarity1/lasio/issues/367
- .. `#368`_: https://github.com/kinverarity1/lasio/issues/368
- .. `#369`_: https://github.com/kinverarity1/lasio/issues/369
- .. `#377`_: https://github.com/kinverarity1/lasio/issues/377
- .. `#377`_: https://github.com/kinverarity1/lasio/issues/377
- .. `#373`_: https://github.com/kinverarity1/lasio/issues/373
- .. `#374`_: https://github.com/kinverarity1/lasio/issues/374
- .. `#387`_: https://github.com/kinverarity1/lasio/issues/387
- .. `#363`_: https://github.com/kinverarity1/lasio/issues/363
- .. `#390`_: https://github.com/kinverarity1/lasio/issues/390
- .. `#319`_: https://github.com/kinverarity1/lasio/issues/319
- .. `#391`_: https://github.com/kinverarity1/lasio/issues/391
- .. `#385`_: https://github.com/kinverarity1/lasio/issues/385
- .. `#380`_: https://github.com/kinverarity1/lasio/issues/380
- .. `#382`_: https://github.com/kinverarity1/lasio/issues/382
- .. `#364`_: https://github.com/kinverarity1/lasio/issues/364
- .. `#333`_: https://github.com/kinverarity1/lasio/issues/333
- .. `#335`_: https://github.com/kinverarity1/lasio/issues/335
- .. `#359`_: https://github.com/kinverarity1/lasio/issues/359
- .. `#360`_: https://github.com/kinverarity1/lasio/issues/360
- .. `#361`_: https://github.com/kinverarity1/lasio/issues/361
- .. `#350`_: https://github.com/kinverarity1/lasio/issues/350
- .. `#352`_: https://github.com/kinverarity1/lasio/issues/352
- .. `#339`_: https://github.com/kinverarity1/lasio/issues/339
- .. `#340`_: https://github.com/kinverarity1/lasio/issues/340
- .. `#349`_: https://github.com/kinverarity1/lasio/issues/349
- .. `#31`_: https://github.com/kinverarity1/lasio/issues/31
- .. `#329`_: https://github.com/kinverarity1/lasio/issues/329
- .. `#75`_: https://github.com/kinverarity1/lasio/issues/75
- .. `#330`_: https://github.com/kinverarity1/lasio/issues/330
- .. `#326`_: https://github.com/kinverarity1/lasio/issues/326
- .. `#315`_: https://github.com/kinverarity1/lasio/issues/315
- .. `#325`_: https://github.com/kinverarity1/lasio/issues/325
- .. `#331`_: https://github.com/kinverarity1/lasio/issues/331
- .. `#328`_: https://github.com/kinverarity1/lasio/issues/328
- .. `#312`_: https://github.com/kinverarity1/lasio/issues/312
- .. `#317`_: https://github.com/kinverarity1/lasio/issues/317
- .. `#318`_: https://github.com/kinverarity1/lasio/issues/318
- .. `#334`_: https://github.com/kinverarity1/lasio/issues/334
- .. `#337`_: https://github.com/kinverarity1/lasio/issues/337
- .. `#338`_: https://github.com/kinverarity1/lasio/issues/338
- .. `#341`_: https://github.com/kinverarity1/lasio/issues/341
- .. `#342`_: https://github.com/kinverarity1/lasio/issues/342
- .. `#346`_: https://github.com/kinverarity1/lasio/issues/346
- .. `#348`_: https://github.com/kinverarity1/lasio/issues/348
- .. `#372`_: https://github.com/kinverarity1/lasio/issues/372
- .. `#311`_: https://github.com/kinverarity1/lasio/issues/311
- .. `#321`_: https://github.com/kinverarity1/lasio/issues/321
- .. `#182`_: https://github.com/kinverarity1/lasio/issues/182
- .. `#310`_: https://github.com/kinverarity1/lasio/issues/310
- .. `#284`_: https://github.com/kinverarity1/lasio/issues/284
- .. `#293`_: https://github.com/kinverarity1/lasio/issues/293
- .. `#296`_: https://github.com/kinverarity1/lasio/issues/296
- .. `#278`_: https://github.com/kinverarity1/lasio/issues/278
- .. `#286`_: https://github.com/kinverarity1/lasio/issues/286
- .. `#258`_: https://github.com/kinverarity1/lasio/issues/258
- .. `#292`_: https://github.com/kinverarity1/lasio/issues/292
- .. `#277`_: https://github.com/kinverarity1/lasio/issues/277
- .. `#264`_: https://github.com/kinverarity1/lasio/issues/264
- .. `#201`_: https://github.com/kinverarity1/lasio/issues/201
- .. `#298`_: https://github.com/kinverarity1/lasio/issues/298
- .. `#302`_: https://github.com/kinverarity1/lasio/issues/302
- .. `#300`_: https://github.com/kinverarity1/lasio/issues/300
- .. `#303`_: https://github.com/kinverarity1/lasio/issues/303
- .. `#304`_: https://github.com/kinverarity1/lasio/issues/304
- .. `#256`_: https://github.com/kinverarity1/lasio/issues/256
- .. `#259`_: https://github.com/kinverarity1/lasio/issues/259
- .. `#262`_: https://github.com/kinverarity1/lasio/issues/262
- .. `#252`_: https://github.com/kinverarity1/lasio/issues/252
- .. `#249`_: https://github.com/kinverarity1/lasio/issues/249
- .. `#236`_: https://github.com/kinverarity1/lasio/issues/236
- .. `#237`_: https://github.com/kinverarity1/lasio/issues/237
- .. `#239`_: https://github.com/kinverarity1/lasio/issues/239
- .. `#233`_: https://github.com/kinverarity1/lasio/issues/233
- .. `#226`_: https://github.com/kinverarity1/lasio/issues/226
- .. `#227`_: https://github.com/kinverarity1/lasio/issues/227
- .. `#221`_: https://github.com/kinverarity1/lasio/issues/221
- .. `#225`_: https://github.com/kinverarity1/lasio/issues/225
- .. `#223`_: https://github.com/kinverarity1/lasio/issues/223
- .. `#92`_: https://github.com/kinverarity1/lasio/issues/92
- .. `#209`_: https://github.com/kinverarity1/lasio/issues/209
- .. `#213`_: https://github.com/kinverarity1/lasio/issues/213
- .. `#218`_: https://github.com/kinverarity1/lasio/issues/218
- .. `#216`_: https://github.com/kinverarity1/lasio/issues/216
- .. `#214`_: https://github.com/kinverarity1/lasio/issues/214
- .. `#160`_: https://github.com/kinverarity1/lasio/issues/160
- .. `#155`_: https://github.com/kinverarity1/lasio/issues/155
- .. `#142`_: https://github.com/kinverarity1/lasio/issues/142
- .. `#135`_: https://github.com/kinverarity1/lasio/issues/135
- .. `#153`_: https://github.com/kinverarity1/lasio/issues/153
- .. `#81`_: https://github.com/kinverarity1/lasio/issues/81
- .. `#71`_: https://github.com/kinverarity1/lasio/issues/71
- .. `#210`_: https://github.com/kinverarity1/lasio/issues/210
- .. `#84`_: https://github.com/kinverarity1/lasio/issues/84
- .. `#85`_: https://github.com/kinverarity1/lasio/issues/85
- .. `#78`_: https://github.com/kinverarity1/lasio/issues/78
- .. `#17`_: https://github.com/kinverarity1/lasio/issues/17
- .. `#167`_: https://github.com/kinverarity1/lasio/issues/167
- .. `#168`_: https://github.com/kinverarity1/lasio/issues/168
- .. `#164`_: https://github.com/kinverarity1/lasio/issues/164
- .. `#141`_: https://github.com/kinverarity1/lasio/issues/141
+.. _#17: https://github.com/kinverarity1/lasio/issues/17
+.. _#31: https://github.com/kinverarity1/lasio/issues/31
+.. _#71: https://github.com/kinverarity1/lasio/issues/71
+.. _#75: https://github.com/kinverarity1/lasio/issues/75
+.. _#78: https://github.com/kinverarity1/lasio/issues/78
+.. _#81: https://github.com/kinverarity1/lasio/issues/81
+.. _#84: https://github.com/kinverarity1/lasio/issues/84
+.. _#85: https://github.com/kinverarity1/lasio/issues/85
+.. _#92: https://github.com/kinverarity1/lasio/issues/92
+.. _#135: https://github.com/kinverarity1/lasio/issues/135
+.. _#141: https://github.com/kinverarity1/lasio/issues/141
+.. _#142: https://github.com/kinverarity1/lasio/issues/142
+.. _#153: https://github.com/kinverarity1/lasio/issues/153
+.. _#155: https://github.com/kinverarity1/lasio/issues/155
+.. _#160: https://github.com/kinverarity1/lasio/issues/160
+.. _#164: https://github.com/kinverarity1/lasio/issues/164
+.. _#167: https://github.com/kinverarity1/lasio/issues/167
+.. _#168: https://github.com/kinverarity1/lasio/issues/168
+.. _#182: https://github.com/kinverarity1/lasio/issues/182
+.. _#201: https://github.com/kinverarity1/lasio/issues/201
+.. _#209: https://github.com/kinverarity1/lasio/issues/209
+.. _#210: https://github.com/kinverarity1/lasio/issues/210
+.. _#213: https://github.com/kinverarity1/lasio/issues/213
+.. _#214: https://github.com/kinverarity1/lasio/issues/214
+.. _#216: https://github.com/kinverarity1/lasio/issues/216
+.. _#218: https://github.com/kinverarity1/lasio/issues/218
+.. _#221: https://github.com/kinverarity1/lasio/issues/221
+.. _#223: https://github.com/kinverarity1/lasio/issues/223
+.. _#225: https://github.com/kinverarity1/lasio/issues/225
+.. _#226: https://github.com/kinverarity1/lasio/issues/226
+.. _#227: https://github.com/kinverarity1/lasio/issues/227
+.. _#233: https://github.com/kinverarity1/lasio/issues/233
+.. _#236: https://github.com/kinverarity1/lasio/issues/236
+.. _#237: https://github.com/kinverarity1/lasio/issues/237
+.. _#239: https://github.com/kinverarity1/lasio/issues/239
+.. _#249: https://github.com/kinverarity1/lasio/issues/249
+.. _#252: https://github.com/kinverarity1/lasio/issues/252
+.. _#256: https://github.com/kinverarity1/lasio/issues/256
+.. _#258: https://github.com/kinverarity1/lasio/issues/258
+.. _#259: https://github.com/kinverarity1/lasio/issues/259
+.. _#262: https://github.com/kinverarity1/lasio/issues/262
+.. _#264: https://github.com/kinverarity1/lasio/issues/264
+.. _#271: https://github.com/kinverarity1/lasio/issues/271
+.. _#277: https://github.com/kinverarity1/lasio/issues/277
+.. _#278: https://github.com/kinverarity1/lasio/issues/278
+.. _#284: https://github.com/kinverarity1/lasio/issues/284
+.. _#286: https://github.com/kinverarity1/lasio/issues/286
+.. _#292: https://github.com/kinverarity1/lasio/issues/292
+.. _#293: https://github.com/kinverarity1/lasio/issues/293
+.. _#296: https://github.com/kinverarity1/lasio/issues/296
+.. _#298: https://github.com/kinverarity1/lasio/issues/298
+.. _#300: https://github.com/kinverarity1/lasio/issues/300
+.. _#302: https://github.com/kinverarity1/lasio/issues/302
+.. _#303: https://github.com/kinverarity1/lasio/issues/303
+.. _#304: https://github.com/kinverarity1/lasio/issues/304
+.. _#310: https://github.com/kinverarity1/lasio/issues/310
+.. _#311: https://github.com/kinverarity1/lasio/issues/311
+.. _#312: https://github.com/kinverarity1/lasio/issues/312
+.. _#315: https://github.com/kinverarity1/lasio/issues/315
+.. _#317: https://github.com/kinverarity1/lasio/issues/317
+.. _#318: https://github.com/kinverarity1/lasio/issues/318
+.. _#319: https://github.com/kinverarity1/lasio/issues/319
+.. _#321: https://github.com/kinverarity1/lasio/issues/321
+.. _#325: https://github.com/kinverarity1/lasio/issues/325
+.. _#326: https://github.com/kinverarity1/lasio/issues/326
+.. _#327: https://github.com/kinverarity1/lasio/issues/327
+.. _#328: https://github.com/kinverarity1/lasio/issues/328
+.. _#329: https://github.com/kinverarity1/lasio/issues/329
+.. _#330: https://github.com/kinverarity1/lasio/issues/330
+.. _#331: https://github.com/kinverarity1/lasio/issues/331
+.. _#333: https://github.com/kinverarity1/lasio/issues/333
+.. _#334: https://github.com/kinverarity1/lasio/issues/334
+.. _#335: https://github.com/kinverarity1/lasio/issues/335
+.. _#337: https://github.com/kinverarity1/lasio/issues/337
+.. _#338: https://github.com/kinverarity1/lasio/issues/338
+.. _#339: https://github.com/kinverarity1/lasio/issues/339
+.. _#340: https://github.com/kinverarity1/lasio/issues/340
+.. _#341: https://github.com/kinverarity1/lasio/issues/341
+.. _#342: https://github.com/kinverarity1/lasio/issues/342
+.. _#345: https://github.com/kinverarity1/lasio/issues/345
+.. _#346: https://github.com/kinverarity1/lasio/issues/346
+.. _#347: https://github.com/kinverarity1/lasio/issues/347
+.. _#348: https://github.com/kinverarity1/lasio/issues/348
+.. _#349: https://github.com/kinverarity1/lasio/issues/349
+.. _#350: https://github.com/kinverarity1/lasio/issues/350
+.. _#352: https://github.com/kinverarity1/lasio/issues/352
+.. _#353: https://github.com/kinverarity1/lasio/issues/353
+.. _#355: https://github.com/kinverarity1/lasio/issues/355
+.. _#358: https://github.com/kinverarity1/lasio/issues/358
+.. _#359: https://github.com/kinverarity1/lasio/issues/359
+.. _#360: https://github.com/kinverarity1/lasio/issues/360
+.. _#361: https://github.com/kinverarity1/lasio/issues/361
+.. _#363: https://github.com/kinverarity1/lasio/issues/363
+.. _#364: https://github.com/kinverarity1/lasio/issues/364
+.. _#367: https://github.com/kinverarity1/lasio/issues/367
+.. _#368: https://github.com/kinverarity1/lasio/issues/368
+.. _#369: https://github.com/kinverarity1/lasio/issues/369
+.. _#372: https://github.com/kinverarity1/lasio/issues/372
+.. _#373: https://github.com/kinverarity1/lasio/issues/373
+.. _#374: https://github.com/kinverarity1/lasio/issues/374
+.. _#377: https://github.com/kinverarity1/lasio/issues/377
+.. _#380: https://github.com/kinverarity1/lasio/issues/380
+.. _#382: https://github.com/kinverarity1/lasio/issues/382
+.. _#385: https://github.com/kinverarity1/lasio/issues/385
+.. _#387: https://github.com/kinverarity1/lasio/issues/387
+.. _#390: https://github.com/kinverarity1/lasio/issues/390
+.. _#391: https://github.com/kinverarity1/lasio/issues/391
+.. _#393: https://github.com/kinverarity1/lasio/issues/393
+.. _#395: https://github.com/kinverarity1/lasio/issues/395
+.. _#396: https://github.com/kinverarity1/lasio/issues/396
+.. _#397: https://github.com/kinverarity1/lasio/issues/397
+.. _#398: https://github.com/kinverarity1/lasio/issues/398
+.. _#399: https://github.com/kinverarity1/lasio/issues/399
+.. _#400: https://github.com/kinverarity1/lasio/issues/400
+.. _#401: https://github.com/kinverarity1/lasio/issues/401
+.. _#402: https://github.com/kinverarity1/lasio/issues/402
+.. _#403: https://github.com/kinverarity1/lasio/issues/403
+.. _#404: https://github.com/kinverarity1/lasio/issues/404
+.. _#406: https://github.com/kinverarity1/lasio/issues/406
+.. _#410: https://github.com/kinverarity1/lasio/issues/410
+.. _#411: https://github.com/kinverarity1/lasio/issues/411
+.. _#412: https://github.com/kinverarity1/lasio/issues/412
+.. _#417: https://github.com/kinverarity1/lasio/issues/417
+.. _#418: https://github.com/kinverarity1/lasio/issues/418
+.. _#419: https://github.com/kinverarity1/lasio/issues/419
+.. _#420: https://github.com/kinverarity1/lasio/issues/420
+.. _#423: https://github.com/kinverarity1/lasio/issues/423
+.. _#425: https://github.com/kinverarity1/lasio/issues/425
+.. _#426: https://github.com/kinverarity1/lasio/issues/426
+.. _#427: https://github.com/kinverarity1/lasio/issues/427
+.. _#428: https://github.com/kinverarity1/lasio/issues/428
+.. _#429: https://github.com/kinverarity1/lasio/issues/429
+.. _#430: https://github.com/kinverarity1/lasio/issues/430
+.. _#432: https://github.com/kinverarity1/lasio/issues/432
+.. _#437: https://github.com/kinverarity1/lasio/issues/437
+.. _#438: https://github.com/kinverarity1/lasio/issues/438
+.. _#441: https://github.com/kinverarity1/lasio/issues/441

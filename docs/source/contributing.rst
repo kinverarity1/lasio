@@ -145,7 +145,7 @@ Just as valuable as changes to the code, are changes or improvements to the
 `Sphinx documentation <https://lasio.readthedocs.io/en/latest/>`__! If you would like to help in this regard, you will
 need Sphinx and IPython installed::
 
-  $ pip install sphinx IPython
+  $ pip install sphinx IPython sphinx_rtd_theme
 
 Then create a new branch as above. The documentation is written in RestructuredText,
 and can be found in the `docs/source` subfolder of the lasio repository. If you
