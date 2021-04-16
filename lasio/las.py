@@ -368,6 +368,33 @@ class LASFile(object):
                 logger.warning("Conflicting index units found: {}".format(matches))
                 self.index_unit = None
 
+    def update_start_stop_step(self, STRT=None, STOP=None, STEP=None, fmt="%.5f"):
+        """Configure or Change STRT, STOP, and STEP values
+        """
+        if STRT is None:
+            STRT = self.index[0]
+        if STOP is None:
+            STOP = self.index[-1]
+        if STEP is None:
+            # prevents an error being thrown in the case of only a single sample being written
+            if STOP != STRT:
+                raw_step = self.index[1] - self.index[0]
+                STEP = fmt % raw_step
+
+        self.well["STRT"].value = STRT
+        self.well["STOP"].value = STOP
+        self.well["STEP"].value = STEP
+
+        # Check units
+        if self.curves[0].unit:
+            unit = self.curves[0].unit
+        else:
+            unit = self.well["STRT"].unit
+        self.well["STRT"].unit = unit
+        self.well["STOP"].unit = unit
+        self.well["STEP"].unit = unit
+        self.curves[0].unit = unit
+
     def write(self, file_ref, **kwargs):
         """Write LAS file to disk.
 
