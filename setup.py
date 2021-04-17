@@ -4,7 +4,7 @@ from setuptools import setup
 import os
 
 EXTRA_REQS = ("pandas", "cchardet", "openpyxl")
-TEST_REQS = ("pytest>=3.6", "pytest-cov", "coverage", "codecov")
+TEST_REQS = ("pytest>=3.6", "pytest-cov", "coverage", "codecov", "pytest-benchmark")
 
 setup(
     name="lasio",
