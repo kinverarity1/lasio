@@ -103,7 +103,15 @@ def write(
             "VERS", "", 2.0, "CWLS log ASCII Standard -VERSION 2.0"
         )
 
-    las.update_start_stop_step()
+    # -------------------------------------------------------------------------
+    # TODO: recheck this, it hasn't been validated for the case of a new las
+    # file created by Lasio
+    # -------------------------------------------------------------------------
+    # if there is a curve index name and the index curve has changed
+    # then update the step variables
+    # -------------------------------------------------------------------------
+    if las.index_name and not (las.index_org==las[las.index_name]).all():  
+        las.update_start_stop_step()
 
     # Write each section.
     # get_formatter_function ( ** get_section_widths )

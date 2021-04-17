@@ -65,6 +65,8 @@ class LASFile(object):
         super(LASFile, self).__init__()
         self._text = ""
         self.index_unit = None
+        self.index_name = None
+        self.index_org = None
         default_items = defaults.get_default_items()
         self.sections = {
             "Version": default_items["Version"],
@@ -367,6 +369,10 @@ class LASFile(object):
             else:
                 logger.warning("Conflicting index units found: {}".format(matches))
                 self.index_unit = None
+
+        if len(self.curves) > 0:
+            self.index_name = self.curves[0].mnemonic
+            self.index_org = self[self.index_name].copy()
 
     def update_start_stop_step(self, STRT=None, STOP=None, STEP=None, fmt="%.5f"):
         """Configure or Change STRT, STOP, and STEP values
