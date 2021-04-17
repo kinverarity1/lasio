@@ -10,6 +10,7 @@ import json
 import logging
 import re
 import sys
+import traceback
 
 # get basestring in py3
 
@@ -369,8 +370,7 @@ class LASFile(object):
                 self.index_unit = None
 
     def update_start_stop_step(self, STRT=None, STOP=None, STEP=None, fmt="%.5f"):
-        """Configure or Change STRT, STOP, and STEP values
-        """
+        """Configure or Change STRT, STOP, and STEP values"""
         if STRT is None:
             STRT = self.index[0]
         if STOP is None:

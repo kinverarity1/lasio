@@ -7,6 +7,7 @@ import traceback
 import urllib.request
 
 import numpy as np
+import pandas as pd
 
 from . import defaults
 
@@ -423,32 +424,11 @@ def read_data_section_iterative(
 
     title = file_obj.readline()
 
-    def items(f, start_line_no, end_line_no):
-        line_no = start_line_no
-        for line in f:
-            line_no += 1
-            logger.debug(
-                "Line {}: reading data '{}'".format(
-                    line_no + 1, line.strip("\n").strip()
-                )
-            )
-            if remove_line_filter(line):
-                continue
-            else:
-                for pattern, sub_str in regexp_subs:
-                    line = re.sub(pattern, sub_str, line)
-                line = line.replace(chr(26), "")
-                for item in split_on_whitespace(line):
-                    try:
-                        yield np.float64(item)
-                    except ValueError:
-                        yield item
-                if line_no == end_line_no:
-                    break
+    nrows = (line_nos[1] - line_nos[0]) + 1
 
-    array = np.array(
-        [i for i in items(file_obj, start_line_no=line_nos[0], end_line_no=line_nos[1])]
-    )
+    logger.debug("Read data section using pd.read_csv")
+    array = pd.read_csv(file_obj, skiprows=0, header=None, nrows=nrows, delim_whitespace=True).values
+
     for value in value_null_subs:
         array[array == value] = np.nan
     return array
