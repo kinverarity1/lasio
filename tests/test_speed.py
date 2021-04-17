@@ -19,5 +19,8 @@ stegfn = lambda vers, fn: os.path.join(os.path.dirname(__file__), "examples", ve
 logger = logging.getLogger(__name__)
 
 
-def test_read_v12_sample_big():
-    l = lasio.read(stegfn("1.2", "sample_big.las"))
+def read_file():
+    las = lasio.read(stegfn("1.2", "sample_big.las"))
+
+def test_read_v12_sample_big(benchmark):
+    benchmark(read_file)
