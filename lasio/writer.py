@@ -103,29 +103,7 @@ def write(
             "VERS", "", 2.0, "CWLS log ASCII Standard -VERSION 2.0"
         )
 
-    if STRT is None:
-        STRT = las.index[0]
-    if STOP is None:
-        STOP = las.index[-1]
-    if STEP is None:
-        # prevents an error being thrown in the case of only a single sample being written
-        if STOP != STRT:
-            raw_step = las.index[1] - las.index[0]
-            STEP = fmt % raw_step
-
-    las.well["STRT"].value = STRT
-    las.well["STOP"].value = STOP
-    las.well["STEP"].value = STEP
-
-    # Check units
-    if las.curves[0].unit:
-        unit = las.curves[0].unit
-    else:
-        unit = las.well["STRT"].unit
-    las.well["STRT"].unit = unit
-    las.well["STOP"].unit = unit
-    las.well["STEP"].unit = unit
-    las.curves[0].unit = unit
+    las.update_start_stop_step()
 
     # Write each section.
     # get_formatter_function ( ** get_section_widths )
