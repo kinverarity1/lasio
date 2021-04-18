@@ -7,7 +7,6 @@ import traceback
 import urllib.request
 
 import numpy as np
-import pandas as pd
 
 from . import defaults
 
@@ -394,7 +393,7 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, remove_line_filter="#"
         return item_counts[0]
 
 
-def read_data_section_iterative(
+def read_data_section_iterative_normal_engine(
     file_obj, line_nos, regexp_subs, value_null_subs, remove_line_filter
 ):
     """Read data section into memory.
@@ -419,15 +418,85 @@ def read_data_section_iterative(
         A 1-D numpy ndarray.
 
     """
-
+    logger.debug("Parsing data section with normal reader")
     remove_line_filter = convert_remove_line_filter(remove_line_filter)
+
+    title = file_obj.readline()
+
+    def items(f, start_line_no, end_line_no):
+        line_no = start_line_no
+        for line in f:
+            line_no += 1
+            logger.debug(
+                "Line {}: reading data '{}'".format(
+                    line_no + 1, line.strip("\n").strip()
+                )
+            )
+            if remove_line_filter(line):
+                continue
+            else:
+                for pattern, sub_str in regexp_subs:
+                    line = re.sub(pattern, sub_str, line)
+                line = line.replace(chr(26), "")
+                for item in split_on_whitespace(line):
+                    try:
+                        yield np.float64(item)
+                    except ValueError:
+                        yield item
+                if line_no == end_line_no:
+                    break
+
+    array = np.array(
+        [i for i in items(file_obj, start_line_no=line_nos[0], end_line_no=line_nos[1])]
+    )
+    for value in value_null_subs:
+        array[array == value] = np.nan
+    return array
+
+
+def read_data_section_iterative_pandas_engine(
+    file_obj, line_nos, regexp_subs, value_null_subs, remove_startswith=None
+):
+    """Read data section into memory.
+
+    Arguments:
+        file_obj: file-like object open for reading at the beginning of the section
+        line_nos (tuple): the first and last line no of the section to read
+        regexp_subs (list): each item should be a tuple of the pattern and
+            substitution string for a call to re.sub() on each line of the
+            data section. See defaults.py READ_SUBS and NULL_SUBS for examples.
+        value_null_subs (list): list of numerical values to be replaced by
+            numpy.nan values.
+        remove_startswith (str): reject all lines starting with that value e.g. ``"#"``
+
+
+    Returns:
+        A 1-D numpy ndarray.
+
+    """
+    import pandas as pd
+
+    logger.debug(f"regexp_subs: {regexp_subs}")
+    na_str_values = [pattern for pattern, sub in regexp_subs]
+    na_str_values = []
 
     title = file_obj.readline()
 
     nrows = (line_nos[1] - line_nos[0]) + 1
 
     logger.debug("Read data section using pd.read_csv")
-    array = pd.read_csv(file_obj, skiprows=0, header=None, nrows=nrows, delim_whitespace=True).values
+    kws = {}
+    if remove_startswith:
+        kws["comment"] = remove_startswith
+    array = pd.read_csv(
+        file_obj,
+        skiprows=0,
+        header=None,
+        nrows=nrows,
+        delim_whitespace=True,
+        na_values=na_str_values,
+        **kws,
+    ).values
 
     for value in value_null_subs:
         array[array == value] = np.nan

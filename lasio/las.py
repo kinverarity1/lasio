@@ -81,15 +81,18 @@ class LASFile(object):
     def read(
         self,
         file_ref,
-        ignore_data=False,
-        read_policy="default",
-        null_policy="strict",
         ignore_header_errors=False,
         ignore_comments=("#",),
         mnemonic_case="upper",
+        ignore_data=False,
+        engine="normal",
+        pandas_engine_error="retry",
+        pandas_engine_wrapped_error=True,
+        read_policy="default",
+        null_policy="strict",
         index_unit=None,
         remove_data_line_filter="#",
-        **kwargs
+        **kwargs,
     ):
         """Read a LAS file.
 
@@ -98,10 +101,6 @@ class LASFile(object):
                 object, or a string containing the contents of a file.
 
         Keyword Arguments:
-            null_policy (str or list): see
-                http://lasio.readthedocs.io/en/latest/data-section.html#handling-invalid-data-indicators-automatically
-            ignore_data (bool): if True, do not read in any of the actual data,
-                just the header metadata. False by default.
             ignore_header_errors (bool): ignore LASHeaderErrors (False by
                 default)
             ignore_comments (tuple/str): ignore comments beginning with characters
@@ -109,13 +108,28 @@ class LASFile(object):
             mnemonic_case (str): 'preserve': keep the case of HeaderItem mnemonics
                                  'upper': convert all HeaderItem mnemonics to uppercase
                                  'lower': convert all HeaderItem mnemonics to lowercase
-            index_unit (str): Optionally force-set the index curve's unit to "m" or "ft"
+            ignore_data (bool): if True, do not read in any of the actual data,
+                just the header metadata. False by default.
+            engine (str): "normal": parse data section with normal Python+numpy reader
+                (quite slow); "pandas": parse data section with `pandas.read_csv`
+                (fast, but read_policy and null_policy are ignored and
+                 remove_data_line_filter can only accept a single character to
+                 ignore lines based on the first character).
+            pandas_engine_error (str): what to do when the pandas engine encounters
+                an exception? Either "error": raise the exception; or "retry":
+                attempt to re-read the data section using the normal reader.
+            pandas_engine_wrapped_error (bool): raise Exception if pandas engine is
+                used to read a wrapped LAS file, default True.
+            read_policy (): TODO
+            null_policy (str or list): see
+                http://lasio.readthedocs.io/en/latest/data-section.html#handling-invalid-data-indicators-automatically
             remove_data_line_filter (str, func): string or function for removing/ignoring lines
                 in the data section e.g. a function which accepts a string (a line from the
                 data section) and returns either True (do not parse the line) or False
                 (parse the line). If this argument is a string it will instead be converted
                 to a function which rejects all lines starting with that value e.g. ``"#"``
                 will be converted to ``lambda line: line.strip().startswith("#")``
+            index_unit (str): Optionally force-set the index curve's unit to "m" or "ft"
 
         See :func:`lasio.reader.open_with_codecs` for additional keyword
         arguments which help to manage issues relate to character encodings.
@@ -123,6 +137,20 @@ class LASFile(object):
         """
 
         logger.debug("Reading {}...".format(str(file_ref)))
+
+        # Options specific to the pandas reader.
+        if engine == "pandas":
+            if isinstance(remove_data_line_filter, str):
+                remove_startswith = remove_data_line_filter
+                logger.debug(
+                    f"Setting remove_startswith = '{remove_startswith}' for pandas engine"
+                )
+            else:
+                logger.debug(
+                    f"Not setting remove_startswith for pandas engine "
+                    f" (don't understand {remove_data_line_filter}"
+                )
+                remove_startswith = []
 
         file_obj = ""
         try:
@@ -256,22 +284,59 @@ class LASFile(object):
                     )
 
                     file_obj.seek(k)
+
+                    # Read data section.
                     # Notes see 2d9e43c3 and e960998f for 'try' background
-                    try:
-                        arr = reader.read_data_section_iterative(
-                            file_obj,
-                            (first_line, last_line),
-                            regexp_subs,
-                            value_null_subs,
-                            remove_line_filter=remove_data_line_filter,
-                        )
-                    except KeyboardInterrupt:
-                        raise
-                    except:
-                        raise exceptions.LASDataError(
-                            traceback.format_exc()[:-1]
-                            + " in data section beginning line {}".format(i + 1)
-                        )
+                    if engine == "pandas":
+                        run_normal_engine = False
+
+                        # Issue a warning if pandas engine attempt to read wrapped file
+                        if provisional_wrapped == "YES":
+                            msg = f"{file_obj} is wrapped but engine='pandas' doesn't support wrapped files"
+                            if pandas_engine_wrapped_error:
+                                raise exceptions.LASDataError(msg)
+                            else:
+                                logger.warning(msg)
+
+                        try:
+                            arr = reader.read_data_section_iterative_pandas_engine(
+                                file_obj,
+                                (first_line, last_line),
+                                regexp_subs,
+                                value_null_subs,
+                                remove_startswith=remove_startswith,
+                            )
+                        except KeyboardInterrupt:
+                            raise
+                        except:
+                            if pandas_engine_error == "error":
+                                raise exceptions.LASDataError(
+                                    traceback.format_exc()[:-1]
+                                    + " in data section beginning line {}".format(i + 1)
+                                )
+                            elif pandas_engine_error == "retry":
+                                run_normal_engine = True
+
+                    elif engine == "normal":
+                        run_normal_engine = True
+
+                    if run_normal_engine:
+                        try:
+                            arr = reader.read_data_section_iterative_normal_engine(
+                                file_obj,
+                                (first_line, last_line),
+                                regexp_subs,
+                                value_null_subs,
+                                remove_line_filter=remove_data_line_filter,
+                            )
+                        except KeyboardInterrupt:
+                            raise
+                        except:
+                            raise exceptions.LASDataError(
+                                traceback.format_exc()[:-1]
+                                + " in data section beginning line {}".format(i + 1)
+                            )
+
                     logger.debug("Read ndarray {arrshape}".format(arrshape=arr.shape))
 
                     # This is so we can check data size and use self.set_data(data, truncate=False)
