@@ -85,7 +85,7 @@ class LASFile(object):
         ignore_comments=("#",),
         mnemonic_case="upper",
         ignore_data=False,
-        engine="normal",
+        engine="pandas",
         pandas_engine_error="retry",
         pandas_engine_wrapped_error=True,
         read_policy="default",

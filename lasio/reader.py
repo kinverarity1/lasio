@@ -488,6 +488,8 @@ def read_data_section_iterative_pandas_engine(
     kws = {}
     if remove_startswith:
         kws["comment"] = remove_startswith
+    array = np.genfromtxt(file_obj)
+    """
     array = pd.read_csv(
         file_obj,
         skiprows=0,
@@ -497,6 +499,7 @@ def read_data_section_iterative_pandas_engine(
         na_values=na_str_values,
         **kws,
     ).values
+    """
 
     for value in value_null_subs:
         array[array == value] = np.nan
