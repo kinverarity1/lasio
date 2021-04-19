@@ -110,8 +110,8 @@ def write(
     # if there is a curve index name and the index curve has changed
     # then update the step variables
     # -------------------------------------------------------------------------
-    if las.index_name and not (las.index_org==las[las.index_name]).all():  
-        las.update_start_stop_step()
+    if not (las.index_initial==las.index).all():  
+        las.update_start_stop_step(STRT, STOP, STEP)
 
     # Write each section.
     # get_formatter_function ( ** get_section_widths )
