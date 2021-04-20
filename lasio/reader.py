@@ -435,9 +435,9 @@ def read_data_section_iterative(
             if remove_line_filter(line):
                 continue
             else:
-                for pattern, sub_str in regexp_subs:
-                    line = re.sub(pattern, sub_str, line)
-                line = line.replace(chr(26), "")
+                # for pattern, sub_str in regexp_subs:
+                #     line = re.sub(pattern, sub_str, line)
+                # line = line.replace(chr(26), "")
                 for item in split_on_whitespace(line):
                     try:
                         yield np.float64(item)
