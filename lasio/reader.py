@@ -278,10 +278,10 @@ def find_sections_in_file(file_obj):
     while line:
         sline = line.strip().strip("\n")
         if sline.startswith("~"):
+            file_pos = int(file_obj.tell())
             starts.append((file_pos, line_no, sline))
             if len(starts) > 1:
                 ends.append(line_no - 1)
-        file_pos = int(file_obj.tell())
         line = file_obj.readline()
         line_no = line_no + 1
 
