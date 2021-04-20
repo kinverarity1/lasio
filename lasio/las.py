@@ -66,6 +66,7 @@ class LASFile(object):
         super(LASFile, self).__init__()
         self._text = ""
         self.index_unit = None
+        self.index_initial = None
         default_items = defaults.get_default_items()
         self.sections = {
             "Version": default_items["Version"],
@@ -85,7 +86,7 @@ class LASFile(object):
         ignore_comments=("#",),
         mnemonic_case="upper",
         ignore_data=False,
-        engine="pandas",
+        engine="numpy",
         pandas_engine_error="retry",
         pandas_engine_wrapped_error=True,
         read_policy="default",
@@ -287,7 +288,22 @@ class LASFile(object):
 
                     # Read data section.
                     # Notes see 2d9e43c3 and e960998f for 'try' background
-                    if engine == "pandas":
+                    run_normal_engine = False
+                    if engine == "numpy":
+                        run_normal_engine = False
+                        try:
+                            arr = reader.read_data_section_iterative_numpy_engine(
+                                file_obj,
+                                (first_line, last_line)
+                            )
+                        except KeyboardInterrupt:
+                            raise
+                        except:
+                            raise exceptions.LASDataError(
+                                traceback.format_exc()[:-1]
+                                + " in data section beginning line {}".format(i + 1)
+                            )
+                    elif engine == "pandas":
                         run_normal_engine = False
 
                         # Issue a warning if pandas engine attempt to read wrapped file
@@ -433,6 +449,9 @@ class LASFile(object):
             else:
                 logger.warning("Conflicting index units found: {}".format(matches))
                 self.index_unit = None
+
+        if len(self.curves) > 0:
+            self.index_initial = self.index.copy()
 
     def update_start_stop_step(self, STRT=None, STOP=None, STEP=None, fmt="%.5f"):
         """Configure or Change STRT, STOP, and STEP values"""

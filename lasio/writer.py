@@ -103,7 +103,23 @@ def write(
             "VERS", "", 2.0, "CWLS log ASCII Standard -VERSION 2.0"
         )
 
-    las.update_start_stop_step()
+    # -------------------------------------------------------------------------
+    # If an initial curve index was not read from a las file (las.index_initial)
+    # or the curve index has changed during processing
+    # or if the STOP value doesn't match the final index value
+    # then update the step variables before writing to a new las file object.
+    # -------------------------------------------------------------------------
+    index_changed = False
+    stop_is_different = False
+
+    if las.index_initial is not None:
+        index_changed = not (las.index_initial == las.index).all()
+        stop_is_different = las.index_initial[-1] != las.well.STOP.value
+    else:
+        index_changed = True
+
+    if index_changed or stop_is_different:
+        las.update_start_stop_step(STRT, STOP, STEP)
 
     # Write each section.
     # get_formatter_function ( ** get_section_widths )

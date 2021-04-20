@@ -454,6 +454,33 @@ def read_data_section_iterative_normal_engine(
     return array
 
 
+def read_data_section_iterative_numpy_engine(file_obj, line_nos):
+    """Read data section into memory.
+
+    Arguments:
+        file_obj: file-like object open for reading at the beginning of the section
+        line_nos (tuple): the first and last line no of the section to read
+
+
+    Returns:
+        A numpy ndarray.
+    """
+
+    first_line = line_nos[0] + 1
+    last_line = line_nos[1]
+    max_rows = last_line - first_line
+
+    file_obj.seek(0)
+
+    array = np.genfromtxt(
+        file_obj,
+        skip_header=first_line,
+        max_rows=max_rows,
+        names=None
+    )
+    return array
+
+
 def read_data_section_iterative_pandas_engine(
     file_obj, line_nos, regexp_subs, value_null_subs, remove_startswith=None
 ):
@@ -488,8 +515,6 @@ def read_data_section_iterative_pandas_engine(
     kws = {}
     if remove_startswith:
         kws["comment"] = remove_startswith
-    array = np.genfromtxt(file_obj)
-    """
     array = pd.read_csv(
         file_obj,
         skiprows=0,
@@ -499,7 +524,6 @@ def read_data_section_iterative_pandas_engine(
         na_values=na_str_values,
         **kws,
     ).values
-    """
 
     for value in value_null_subs:
         array[array == value] = np.nan
