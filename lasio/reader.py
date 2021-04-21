@@ -473,10 +473,7 @@ def read_data_section_iterative_numpy_engine(file_obj, line_nos):
     file_obj.seek(0)
 
     array = np.genfromtxt(
-        file_obj,
-        skip_header=first_line,
-        max_rows=max_rows,
-        names=None
+        file_obj, skip_header=first_line, max_rows=max_rows, names=None
     )
     return array
 
