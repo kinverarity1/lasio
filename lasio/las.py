@@ -87,6 +87,7 @@ class LASFile(object):
         mnemonic_case="upper",
         ignore_data=False,
         engine="numpy",
+        use_normal_engine_for_wrapped=True,
         pandas_engine_error="retry",
         pandas_engine_wrapped_error=True,
         read_policy="default",
@@ -269,6 +270,16 @@ class LASFile(object):
                     las3_data_section_indices.append(i)
 
             if not ignore_data:
+
+                # Check whether file is wrapped and if so, attempt to use the
+                # normal engine.
+                if provisional_wrapped == "YES":
+                    if engine != "normal":
+                        logger.warning("Only engine='normal' can read wrapped files")
+                        if use_normal_engine_for_wrapped:
+                            engine = "normal"
+
+                # Check for the number of columns in each data section.
                 for k, first_line, last_line, section_title in [
                     section_positions[i] for i in data_section_indices
                 ]:
