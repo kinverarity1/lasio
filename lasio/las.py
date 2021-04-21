@@ -93,7 +93,7 @@ class LASFile(object):
         null_policy="strict",
         index_unit=None,
         remove_data_line_filter="#",
-        **kwargs
+        **kwargs,
     ):
         """Read a LAS file.
 
@@ -111,16 +111,14 @@ class LASFile(object):
                                  'lower': convert all HeaderItem mnemonics to lowercase
             ignore_data (bool): if True, do not read in any of the actual data,
                 just the header metadata. False by default.
-            engine (str): "normal": parse data section with normal Python+numpy reader
-                (quite slow); "pandas": parse data section with `pandas.read_csv`
-                (fast, but read_policy and null_policy are ignored and
-                 remove_data_line_filter can only accept a single character to
-                 ignore lines based on the first character).
-            pandas_engine_error (str): what to do when the pandas engine encounters
-                an exception? Either "error": raise the exception; or "retry":
-                attempt to re-read the data section using the normal reader.
-            pandas_engine_wrapped_error (bool): raise Exception if pandas engine is
-                used to read a wrapped LAS file, default True.
+            engine (str): "normal": parse data section with normal Python reader
+                (quite slow); "numpy": parse data section with `numpy.genfromtxt` (fast).
+                By default the engine is "numpy".
+            use_normal_engine_for_wrapped (bool): if header metadata indicates that
+                the file is wrapped, always use the 'normal' engine. Default is True.
+                The only reason you should use False is if speed is a very high priority
+                and you had files with metadata that incorrectly indicates they are
+                wrapped.
             read_policy (): TODO
             null_policy (str or list): see
                 http://lasio.readthedocs.io/en/latest/data-section.html#handling-invalid-data-indicators-automatically
@@ -139,16 +137,16 @@ class LASFile(object):
 
         logger.debug("Reading {}...".format(str(file_ref)))
 
-        # Options specific to the pandas reader.
-        if engine == "pandas":
+        # Options specific to the numpy reader.
+        if engine == "numpy":
             if isinstance(remove_data_line_filter, str):
                 remove_startswith = remove_data_line_filter
                 logger.debug(
-                    f"Setting remove_startswith = '{remove_startswith}' for pandas engine"
+                    f"Setting remove_startswith = '{remove_startswith}' for numpy engine"
                 )
             else:
                 logger.debug(
-                    f"Not setting remove_startswith for pandas engine "
+                    f"Not setting remove_startswith for numpy engine "
                     f" (don't understand {remove_data_line_filter}"
                 )
                 remove_startswith = []
@@ -288,13 +286,14 @@ class LASFile(object):
 
                     # Read data section.
                     # Notes see 2d9e43c3 and e960998f for 'try' background
+
                     run_normal_engine = False
+
+                    # Attempt to read the data section
                     if engine == "numpy":
-                        run_normal_engine = False
                         try:
                             arr = reader.read_data_section_iterative_numpy_engine(
-                                file_obj,
-                                (first_line, last_line)
+                                file_obj, (first_line, last_line)
                             )
                         except KeyboardInterrupt:
                             raise
@@ -303,36 +302,6 @@ class LASFile(object):
                                 traceback.format_exc()[:-1]
                                 + " in data section beginning line {}".format(i + 1)
                             )
-                    elif engine == "pandas":
-                        run_normal_engine = False
-
-                        # Issue a warning if pandas engine attempt to read wrapped file
-                        if provisional_wrapped == "YES":
-                            msg = f"{file_obj} is wrapped but engine='pandas' doesn't support wrapped files"
-                            if pandas_engine_wrapped_error:
-                                raise exceptions.LASDataError(msg)
-                            else:
-                                logger.warning(msg)
-
-                        try:
-                            arr = reader.read_data_section_iterative_pandas_engine(
-                                file_obj,
-                                (first_line, last_line),
-                                regexp_subs,
-                                value_null_subs,
-                                remove_startswith=remove_startswith,
-                            )
-                        except KeyboardInterrupt:
-                            raise
-                        except:
-                            if pandas_engine_error == "error":
-                                raise exceptions.LASDataError(
-                                    traceback.format_exc()[:-1]
-                                    + " in data section beginning line {}".format(i + 1)
-                                )
-                            elif pandas_engine_error == "retry":
-                                run_normal_engine = True
-
                     elif engine == "normal":
                         run_normal_engine = True
 
