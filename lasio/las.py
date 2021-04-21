@@ -373,12 +373,16 @@ class LASFile(object):
             self.index_initial = self.index.copy()
 
     def update_start_stop_step(self, STRT=None, STOP=None, STEP=None, fmt="%.5f"):
-        """Configure or Change STRT, STOP, and STEP values
-        """
+        """Configure or Change STRT, STOP, and STEP values"""
+
+        # If we are getting STRT and STOP from the data then format them to a
+        # standard precision.
+        # If they are passed in with values, don't format them because we
+        # assume they are at the user's expected precision.
         if STRT is None:
-            STRT = self.index[0]
+            STRT = fmt % self.index[0]
         if STOP is None:
-            STOP = self.index[-1]
+            STOP = fmt % self.index[-1]
         if STEP is None:
             # prevents an error being thrown in the case of only a single sample being written
             if STOP != STRT:
@@ -389,6 +393,7 @@ class LASFile(object):
         self.well["STOP"].value = STOP
         self.well["STEP"].value = STEP
 
+    def update_units(self):
         # Check units
         if self.curves[0].unit:
             unit = self.curves[0].unit

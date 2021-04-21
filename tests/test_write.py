@@ -51,7 +51,7 @@ WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
 STRT.M   1670.0 : START DEPTH
 STOP.M  1669.75 : STOP DEPTH
-STEP.M -0.12500 : STEP
+STEP.M   -0.125 : STEP
 NULL.   -999.25 : NULL VALUE
 COMP.       ANY : COMPANY
 WELL.   AAAAA_2 : WELL
@@ -103,7 +103,7 @@ WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
 STRT.M                                                         1670.0 : START DEPTH
 STOP.M                                                        1669.75 : STOP DEPTH
-STEP.M                                                       -0.12500 : STEP
+STEP.M                                                         -0.125 : STEP
 NULL.                                                         -999.25 : NULL VALUE
 COMP.                                            ANY OIL COMPANY INC. : COMPANY
 WELL.                                                         AAAAA_2 : WELL
@@ -163,7 +163,7 @@ WRAP.  NO : One line per depth step
 ~Well ------------------------------------------------------
 STRT.M                  1670.0 : 
 STOP.M                 1669.75 : 
-STEP.M                -0.12500 : 
+STEP.M                  -0.125 : 
 NULL.                  -999.25 : 
 COMP.   # ANY OIL COMPANY LTD. : COMPANY
 WELL.   ANY ET AL OIL WELL #12 : WELL
@@ -230,7 +230,7 @@ WRAP.  NO : One line per depth step
 ~Well ------------------------------------------------------
 STRT.M                  1670.0 : 
 STOP.M                 1669.75 : 
-STEP.M                -0.12500 : 
+STEP.M                  -0.125 : 
 NULL.                  -999.25 : 
 COMP.   # ANY OIL COMPANY LTD. : COMPANY
 WELL.   ANY ET AL OIL WELL #12 : WELL
@@ -278,7 +278,7 @@ WRAP.  NO : One line per depth step
 ~Well ------------------------------------------------------
 STRT.M                  1670.0 : 
 STOP.M                 1669.75 : 
-STEP.M                -0.12500 : 
+STEP.M                  -0.125 : 
 NULL.                  -999.25 : 
 COMP.   # ANY OIL COMPANY LTD. : COMPANY
 WELL.   ANY ET AL OIL WELL #12 : WELL
@@ -327,7 +327,7 @@ WRAP.  NO : One line per depth step
 ~Well ------------------------------------------------------
 STRT.FT                 1670.0 : 
 STOP.FT                1669.75 : 
-STEP.FT               -0.12500 : 
+STEP.FT                 -0.125 : 
 NULL.                  -999.25 : 
 COMP.   # ANY OIL COMPANY LTD. : COMPANY
 WELL.   ANY ET AL OIL WELL #12 : WELL
@@ -441,7 +441,7 @@ WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
 STRT.M                  1670.0 : 
 STOP.M                 1669.75 : 
-STEP.M                -0.12500 : 
+STEP.M                  -0.125 : 
 NULL.                  -999.25 : 
 COMP.   # ANY OIL COMPANY LTD. : COMPANY
 WELL.   ANY ET AL OIL WELL #12 : WELL
@@ -552,7 +552,7 @@ WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
 STRT.M                  1670.0 : 
 STOP.M                 1669.75 : 
-STEP.M                -0.12500 : 
+STEP.M                  -0.125 : 
 NULL.                  -999.25 : 
 COMP.   # ANY OIL COMPANY LTD. : COMPANY
 WELL.   ANY ET AL OIL WELL #12 : WELL
@@ -605,7 +605,7 @@ WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
 STRT.M                  1670.0 : 
 STOP.M                 1669.75 : 
-STEP.M                -0.12500 : 
+STEP.M                  -0.125 : 
 NULL.                  -999.25 : 
 COMP.   # ANY OIL COMPANY LTD. : COMPANY
 WELL.   ANY ET AL OIL WELL #12 : WELL
@@ -656,7 +656,7 @@ WRAP.  NO : ONE LINE PER DEPTH STEP
 ~Well ------------------------------------------------------
 STRT.M         1670.0 : START DEPTH
 STOP.M        1669.75 : STOP DEPTH
-STEP.M       -0.12500 : STEP
+STEP.M         -0.125 : STEP
 NULL.         -999.25 : NULL VALUE
 COMP.         COMPANY : ANY OIL COMPANY INC.
 WELL.            WELL : AAAAA_2
@@ -714,7 +714,7 @@ def test_step_unchanged_by_write():
     las = read(egfn("2.0/sample_2.0.las"))
     las.well["UWI"] = "123456789"
     las.write("test.las", version=2.0)
-    assert las.well["STEP"].value == "-0.12500"
+    assert las.well["STEP"].value == -0.125
 
     os.remove("test.las")
 
@@ -731,5 +731,15 @@ def test_step_unchanged_by_write_2():
     las.add_curve("DEPTH", depths, unit="m")
     las.write(testfn, version=2.0)
     assert las.well["STEP"].value == "0.15240"
+
+    os.remove(testfn)
+
+
+def test_wrong_stop_value():
+    testfn = "test.las"
+    las = read(egfn("2.0/sample_2.0_wrong_stop_value.las"))
+    las.write(testfn, version=2.0)
+    assert las.well["STOP"].value == "1669.75000"
+    assert las.well["STEP"].value == "-0.12500"
 
     os.remove(testfn)

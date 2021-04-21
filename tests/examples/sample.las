@@ -5,7 +5,7 @@
 #MNEM.UNIT       DATA TYPE    INFORMATION
 #---------    -------------   ------------------------------
  STRT.M        1670.000000:
- STOP.M        1660.000000:
+ STOP.M        1669.750000:
  STEP.M            -0.1250:
  NULL.           -999.2500:
  COMP.             COMPANY:   # ANY OIL COMPANY LTD.
