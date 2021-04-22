@@ -303,22 +303,23 @@ class LASFile(object):
                     # Attempt to read the data section
                     if engine == "numpy":
                         try:
-                            arr = reader.read_data_section_iterative_numpy_engine(
+                            arr = reader.read_data_section_numpy_engine(
                                 file_obj, (first_line, last_line)
                             )
                         except KeyboardInterrupt:
                             raise
-                        except:
-                            raise exceptions.LASDataError(
-                                traceback.format_exc()[:-1]
-                                + " in data section beginning line {}".format(i + 1)
-                            )
+                        except ValueError as err:
+                            # If there is a ValueError, numpy-engine failed to read the data.
+                            # So configure to re-try data-read with the normal-engine.
+                            run_normal_engine = True
+                            file_obj.seek(k)
+
                     elif engine == "normal":
                         run_normal_engine = True
 
                     if run_normal_engine:
                         try:
-                            arr = reader.read_data_section_iterative_normal_engine(
+                            arr = reader.read_data_section_normal_engine(
                                 file_obj,
                                 (first_line, last_line),
                                 regexp_subs,

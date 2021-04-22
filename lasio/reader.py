@@ -393,7 +393,7 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, remove_line_filter="#"
         return item_counts[0]
 
 
-def read_data_section_iterative_normal_engine(
+def read_data_section_normal_engine(
     file_obj, line_nos, regexp_subs, value_null_subs, remove_line_filter
 ):
     """Read data section into memory.
@@ -454,7 +454,7 @@ def read_data_section_iterative_normal_engine(
     return array
 
 
-def read_data_section_iterative_numpy_engine(file_obj, line_nos):
+def read_data_section_numpy_engine(file_obj, line_nos):
     """Read data section into memory.
 
     Arguments:
