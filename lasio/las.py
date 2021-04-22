@@ -379,15 +379,21 @@ class LASFile(object):
         # standard precision.
         # If they are passed in with values, don't format them because we
         # assume they are at the user's expected precision.
-        if STRT is None:
-            STRT = fmt % self.index[0]
-        if STOP is None:
-            STOP = fmt % self.index[-1]
-        if STEP is None:
-            # prevents an error being thrown in the case of only a single sample being written
-            if STOP != STRT:
-                raw_step = self.index[1] - self.index[0]
-                STEP = fmt % raw_step
+
+        # If the 'try' fails because self.index doesn't exist or is empty
+        # then use the default or parameter values for STRT, STOP, and STEP.
+        try:
+            if STRT is None:
+                STRT = fmt % self.index[0]
+            if STOP is None:
+                STOP = fmt % self.index[-1]
+            if STEP is None:
+                # prevents an error being thrown in the case of only a single sample being written
+                if STOP != STRT:
+                    raw_step = self.index[1] - self.index[0]
+                    STEP = fmt % raw_step
+        except IndexError:
+            pass
 
         self.well["STRT"].value = STRT
         self.well["STOP"].value = STOP
@@ -395,14 +401,17 @@ class LASFile(object):
 
     def update_units(self):
         # Check units
-        if self.curves[0].unit:
+        if self.curves and self.curves[0].unit:
             unit = self.curves[0].unit
         else:
             unit = self.well["STRT"].unit
         self.well["STRT"].unit = unit
         self.well["STOP"].unit = unit
         self.well["STEP"].unit = unit
-        self.curves[0].unit = unit
+        # Check that curves exists to avoid throwing an expection.
+        # to write to an non-existant object.
+        if self.curves:
+            self.curves[0].unit = unit
 
     def write(self, file_ref, **kwargs):
         """Write LAS file to disk.

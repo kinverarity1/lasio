@@ -743,3 +743,40 @@ def test_wrong_stop_value():
     assert las.well["STEP"].value == "-0.12500"
 
     os.remove(testfn)
+
+
+def test_write_empty_las():
+    las = lasio.las.LASFile()
+
+    s = StringIO()
+    las.write(s, version=2.0)
+    s.seek(0)
+    assert (
+        s.read()
+        == """~Version ---------------------------------------------------
+VERS.   2.0 : CWLS log ASCII Standard -VERSION 2.0
+WRAP.    NO : One line per depth step
+DLM . SPACE : Column Data Section Delimiter
+~Well ------------------------------------------------------
+STRT.m       0 : START DEPTH
+STOP.m       0 : STOP DEPTH
+STEP.m       0 : STEP
+NULL. -9999.25 : NULL VALUE
+COMP.          : COMPANY
+WELL.          : WELL
+FLD .          : FIELD
+LOC .          : LOCATION
+PROV.          : PROVINCE
+CNTY.          : COUNTY
+STAT.          : STATE
+CTRY.          : COUNTRY
+SRVC.          : SERVICE COMPANY
+DATE.          : DATE
+UWI .          : UNIQUE WELL ID
+API .          : API NUMBER
+~Curve Information -----------------------------------------
+~Params ----------------------------------------------------
+~Other -----------------------------------------------------
+~ASCII -----------------------------------------------------
+"""
+    )
