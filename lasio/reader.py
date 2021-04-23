@@ -454,7 +454,7 @@ def read_data_section_normal_engine(
     return array
 
 
-def read_data_section_numpy_engine(file_obj, line_nos):
+def read_data_section_numpy_engine(file_obj, line_nos, null_policy):
     """Read data section into memory.
 
     Arguments:
@@ -472,8 +472,31 @@ def read_data_section_numpy_engine(file_obj, line_nos):
 
     file_obj.seek(0)
 
+    if isinstance(null_policy, str):
+        # TODO:
+        # This is a temporary solution until numpy-reader and null_policies are
+        # fully aligned.
+        if null_policy in ("aggressive", "all"):
+            raise ValueError
+        missing = defaults.NULL_POLICIES[null_policy]
+    elif isinstance(null_policy, list):
+        # TODO:
+        # Align numpy-reader and null_policies
+        # missing = null_policy
+        raise ValueError
+    else:
+        missing = defaults.NULL_POLICIES["none"]
+
+    # TODO: Finish/Correct the usemask/missing_values implementation.
+    #       We are currently passing a list to missing_values but it looks like
+    #       missing_values only actually processes one item.
     array = np.genfromtxt(
-        file_obj, skip_header=first_line, max_rows=max_rows, names=None
+        file_obj,
+        skip_header=first_line,
+        max_rows=max_rows,
+        names=None,
+        usemask=True,
+        missing_values=missing,
     )
     return array
 
