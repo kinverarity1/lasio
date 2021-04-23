@@ -412,7 +412,8 @@ class LASFile(object):
         self.well["STOP"].value = STOP
         self.well["STEP"].value = STEP
 
-    def update_units(self):
+    def update_units_from_index_curve(self):
+        """Align STRT/STOP/STEP header item units with the index curve's units."""
         # Check units
         if self.curves and self.curves[0].unit:
             unit = self.curves[0].unit

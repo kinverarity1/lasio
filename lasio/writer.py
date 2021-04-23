@@ -121,7 +121,7 @@ def write(
     if index_changed or stop_is_different:
         las.update_start_stop_step(STRT, STOP, STEP)
 
-    las.update_units()
+    las.update_units_from_index_curve()
 
     # Write each section.
     # get_formatter_function ( ** get_section_widths )
