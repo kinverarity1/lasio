@@ -121,6 +121,8 @@ def write(
     if index_changed or stop_is_different:
         las.update_start_stop_step(STRT, STOP, STEP)
 
+    las.update_units_from_index_curve()
+
     # Write each section.
     # get_formatter_function ( ** get_section_widths )
 
@@ -199,10 +201,16 @@ def write(
     file_object.write("\n")
     line_counter = len(lines)
 
+    # Set empty defaults for nrows and ncols
+    nrows, ncols = (0, 0)
+
     # data_arr = np.column_stack([c.data for c in las.curves])
-    data_arr = las.data
-    nrows, ncols = data_arr.shape
-    logger.debug("Data section shape: {}".format((nrows, ncols)))
+    try:
+        data_arr = las.data
+        nrows, ncols = data_arr.shape
+        logger.debug("Data section shape: {}".format((nrows, ncols)))
+    except ValueError as err:
+        logger.debug("Data section is empty")
 
     logger.debug("len_numeric_field = {}".format(len_numeric_field))
     if len_numeric_field is None:

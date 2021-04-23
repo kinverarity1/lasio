@@ -5,7 +5,7 @@
 #MNEM.UNIT              DATA                       DESCRIPTION
 #----- -----            ----------               -------------------------
 STRT    .M              1670.0000                :START DEPTH
-STOP    .M              1660.0000                :STOP DEPTH
+STOP    .M              1669.7500                :STOP DEPTH
 STEP    .M              -0.1250                  :STEP 
 NULL    .               -999.25                  :NULL VALUE
 COMP    .       ANY OIL COMPANY INC.             :COMPANY
