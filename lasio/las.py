@@ -373,7 +373,20 @@ class LASFile(object):
             self.index_initial = self.index.copy()
 
     def update_start_stop_step(self, STRT=None, STOP=None, STEP=None, fmt="%.5f"):
-        """Configure or Change STRT, STOP, and STEP values"""
+        """Configure or change STRT, STOP, and STEP values on the LASFile object.
+
+        Keyword Arguments:
+            STRT, STOP, STEP (str, int, float): value to set on the relevant
+                header item in the ~Well section - can be any
+                data type.
+            fmt (str): Python format string for formatting the STRT/STOP/STEP
+                value in the situation where any of those keyword arguments
+                are None
+
+        If STRT/STOP/STEP are not passed to this method, they will be automatically
+        calculated from the index curve.
+
+        """
 
         # If we are getting STRT and STOP from the data then format them to a
         # standard precision.
