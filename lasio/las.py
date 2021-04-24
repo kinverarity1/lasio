@@ -86,9 +86,9 @@ class LASFile(object):
         null_policy="strict",
         ignore_header_errors=False,
         ignore_comments=("#",),
+        ignore_data_comments='#',
         mnemonic_case="upper",
         index_unit=None,
-        remove_data_line_filter="#",
         **kwargs
     ):
         """Read a LAS file.
@@ -104,18 +104,14 @@ class LASFile(object):
                 just the header metadata. False by default.
             ignore_header_errors (bool): ignore LASHeaderErrors (False by
                 default)
-            ignore_comments (tuple/str): ignore comments beginning with characters
-                e.g. ``("#", '"')`` in header sections
+            ignore_comments (sequence/str): ignore lines beginning with these
+                characters e.g. ``("#", '"')`` in header sections.
+            ignore_data_comments (str): ignore lines beginning with this
+                character in data sections only.
             mnemonic_case (str): 'preserve': keep the case of HeaderItem mnemonics
                                  'upper': convert all HeaderItem mnemonics to uppercase
                                  'lower': convert all HeaderItem mnemonics to lowercase
             index_unit (str): Optionally force-set the index curve's unit to "m" or "ft"
-            remove_data_line_filter (str, func): string or function for removing/ignoring lines
-                in the data section e.g. a function which accepts a string (a line from the
-                data section) and returns either True (do not parse the line) or False
-                (parse the line). If this argument is a string it will instead be converted
-                to a function which rejects all lines starting with that value e.g. ``"#"``
-                will be converted to ``lambda line: line.strip().startswith("#")``
 
         See :func:`lasio.reader.open_with_codecs` for additional keyword
         arguments which help to manage issues relate to character encodings.
@@ -124,6 +120,18 @@ class LASFile(object):
 
         logger.debug("Reading {}...".format(str(file_ref)))
 
+        # Determine which lines to ignore:
+        if ignore_comments is None:
+            ignore_comments = []
+        if isinstance(ignore_comments, str):
+            ignore_comments = [ignore_comments]
+
+        logger.debug(
+            "Ignore header lines beginning with {}".format(ignore_comments)
+        )
+        logger.debug("Ignore data lines beginning with {}".format(ignore_data_comments))
+
+        # Attempt to read file
         file_obj = ""
         try:
             file_obj, self.encoding = reader.open_file(file_ref, **kwargs)
@@ -252,7 +260,7 @@ class LASFile(object):
                         file_obj,
                         (first_line, last_line),
                         regexp_subs,
-                        remove_line_filter=remove_data_line_filter,
+                        ignore_comments=ignore_data_comments,
                     )
 
                     file_obj.seek(k)
@@ -263,7 +271,7 @@ class LASFile(object):
                             (first_line, last_line),
                             regexp_subs,
                             value_null_subs,
-                            remove_line_filter=remove_data_line_filter,
+                            ignore_comments=ignore_data_comments,
                         )
                     except KeyboardInterrupt:
                         raise
