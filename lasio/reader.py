@@ -316,34 +316,13 @@ def determine_section_type(section_title):
         return "Header items"
 
 
-def convert_remove_line_filter(filt):
-    """Ensure that the line filter is a function.
-
-    Arguments:
-        filt (str, func): string or function for removing/ignoring lines
-            in the data section e.g. a function which accepts a string (a line from the
-            data section) and returns either True (do not parse the line) or False
-            (parse the line). If this argument is a string it will instead be converted
-            to a function which rejects all lines starting with that value e.g. ``"#"``
-            will be converted to ``lambda line: line.strip().startswith("#")``
-
-    Returns: function which takes a string (a data section line) and returns True
-        or False.
-
-    """
-    if isinstance(filt, str):
-        value = str(filt)
-        filt = lambda line: line.strip().startswith(value)
-    return filt
-
-
 def split_on_whitespace(s):
     # return s.split() # does not handle quoted substrings (#271)
     # return shlex.split(s) # too slow
     return ["".join(t) for t in re.findall(r"""([^\s"']+)|"([^"]*)"|'([^']*)'""", s)]
 
 
-def inspect_data_section(file_obj, line_nos, regexp_subs, remove_line_filter="#"):
+def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_comments="#"):
     """Determine how many columns there are in the data section.
 
     Arguments:
@@ -352,17 +331,11 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, remove_line_filter="#"
         regexp_subs (list): each item should be a tuple of the pattern and
             substitution string for a call to re.sub() on each line of the
             data section. See defaults.py READ_SUBS and NULL_SUBS for examples.
-        remove_line_filter (str, func): string or function for removing/ignoring lines
-            in the data section e.g. a function which accepts a string (a line from the
-            data section) and returns either True (do not parse the line) or False
-            (parse the line). If this argument is a string it will instead be converted
-            to a function which rejects all lines starting with that value e.g. ``"#"``
-            will be converted to ``lambda line: line.strip().startswith("#")``
+        ignore_comments (str): lines beginning with this character will be ignored
 
     Returns: integer number of columns or -1 where they are different.
 
     """
-    remove_line_filter = convert_remove_line_filter(remove_line_filter)
 
     line_no = line_nos[0]
     title_line = file_obj.readline()
@@ -372,7 +345,7 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, remove_line_filter="#"
     for i, line in enumerate(file_obj):
         line_no = line_no + 1
         line = line.strip("\n").strip()
-        if remove_line_filter(line):
+        if line.strip().startswith(ignore_comments):
             continue
         else:
             for pattern, sub_str in regexp_subs:
@@ -394,7 +367,7 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, remove_line_filter="#"
 
 
 def read_data_section_iterative(
-    file_obj, line_nos, regexp_subs, value_null_subs, remove_line_filter
+    file_obj, line_nos, regexp_subs, value_null_subs, ignore_comments
 ):
     """Read data section into memory.
 
@@ -406,20 +379,13 @@ def read_data_section_iterative(
             data section. See defaults.py READ_SUBS and NULL_SUBS for examples.
         value_null_subs (list): list of numerical values to be replaced by
             numpy.nan values.
-        remove_line_filter (str or func): string or function for removing/ignoring lines
-            in the data section e.g. a function which accepts a string (a line from the
-            data section) and returns either True (do not parse the line) or False
-            (parse the line). If this argument is a string it will instead be converted
-            to a function which rejects all lines starting with that value e.g. ``"#"``
-            will be converted to ``lambda line: line.strip().startswith("#")``
+        ignore_comments (str): lines beginning with this character will be ignored
 
 
     Returns:
         A 1-D numpy ndarray.
 
     """
-
-    remove_line_filter = convert_remove_line_filter(remove_line_filter)
 
     title = file_obj.readline()
 
@@ -432,7 +398,7 @@ def read_data_section_iterative(
                     line_no + 1, line.strip("\n").strip()
                 )
             )
-            if remove_line_filter(line):
+            if line.strip().startswith(ignore_comments):
                 continue
             else:
                 for pattern, sub_str in regexp_subs:
