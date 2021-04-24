@@ -270,6 +270,7 @@ class LASFile(object):
                             regexp_subs,
                             value_null_subs,
                             ignore_comments=ignore_data_comments,
+                            n_columns=n_columns,
                         )
                     except KeyboardInterrupt:
                         raise
@@ -278,7 +279,11 @@ class LASFile(object):
                             traceback.format_exc()[:-1]
                             + " in data section beginning line {}".format(i + 1)
                         )
-                    logger.debug("Read ndarray {arrshape}".format(arrshape=arr.shape))
+                    logger.debug(
+                        "Read ndarray {arrshape} from data section".format(
+                            arrshape=arr.shape
+                        )
+                    )
 
                     # This is so we can check data size and use self.set_data(data, truncate=False)
                     # in cases of data.size is zero.
