@@ -143,12 +143,12 @@ class LASFile(object):
             if isinstance(remove_data_line_filter, str):
                 remove_startswith = remove_data_line_filter
                 logger.debug(
-                    f"Setting remove_startswith = '{remove_startswith}' for numpy engine"
+                    "Setting remove_startswith = '{}' for numpy engine".format(remove_startswith)
                 )
             else:
                 logger.debug(
-                    f"Not setting remove_startswith for numpy engine "
-                    f" (don't understand {remove_data_line_filter}"
+                    "Not setting remove_startswith for numpy engine "
+                    " (don't understand {}".format(remove_startswith)
                 )
                 remove_startswith = []
 
