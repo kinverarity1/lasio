@@ -86,7 +86,7 @@ class LASFile(object):
         null_policy="strict",
         ignore_header_errors=False,
         ignore_comments=("#",),
-        ignore_data_comments='#',
+        ignore_data_comments="#",
         mnemonic_case="upper",
         index_unit=None,
         **kwargs
@@ -126,9 +126,7 @@ class LASFile(object):
         if isinstance(ignore_comments, str):
             ignore_comments = [ignore_comments]
 
-        logger.debug(
-            "Ignore header lines beginning with {}".format(ignore_comments)
-        )
+        logger.debug("Ignore header lines beginning with {}".format(ignore_comments))
         logger.debug("Ignore data lines beginning with {}".format(ignore_data_comments))
 
         # Attempt to read file
