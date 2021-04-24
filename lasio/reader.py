@@ -316,32 +316,13 @@ def determine_section_type(section_title):
         return "Header items"
 
 
-def convert_ignore_comments(comments):
-    """Convert ignore_comments to a function for checking whether a line is a comment.
-
-    Arguments:
-        comments (str, sequence of strings): strings which if they occur at the
-            beginning of a line in the LAS file, the line should be considered as
-            a comment
-
-    Returns: function which takes a string (a data section line) and returns True
-        (line is a comment) or False (line is legitimate data and should be read)
-
-    """
-    if isinstance(comments, str):
-        comments = [comments]
-
-    func = lambda line: len([True for c in comments if line.strip().startswith(c)])
-    return func
-
-
 def split_on_whitespace(s):
     # return s.split() # does not handle quoted substrings (#271)
     # return shlex.split(s) # too slow
     return ["".join(t) for t in re.findall(r"""([^\s"']+)|"([^"]*)"|'([^']*)'""", s)]
 
 
-def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_comments='#'):
+def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_comments="#"):
     """Determine how many columns there are in the data section.
 
     Arguments:
