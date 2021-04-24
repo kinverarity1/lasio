@@ -367,7 +367,7 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_comments="#"):
 
 
 def read_data_section_iterative(
-    file_obj, line_nos, regexp_subs, value_null_subs, ignore_comments
+    file_obj, line_nos, regexp_subs, value_null_subs, ignore_comments, n_columns
 ):
     """Read data section into memory.
 
@@ -380,12 +380,14 @@ def read_data_section_iterative(
         value_null_subs (list): list of numerical values to be replaced by
             numpy.nan values.
         ignore_comments (str): lines beginning with this character will be ignored
-
+        n_columns (int, None): expected number of columns, or None/-1 if unknown
 
     Returns:
         A 1-D numpy ndarray.
 
     """
+    if n_columns == -1:
+        n_columns = None
 
     title = file_obj.readline()
 
@@ -412,11 +414,30 @@ def read_data_section_iterative(
                 if line_no == end_line_no:
                     break
 
+    logger.debug("Reading complete data section...")
     array = np.array(
         [i for i in items(file_obj, start_line_no=line_nos[0], end_line_no=line_nos[1])]
     )
     for value in value_null_subs:
         array[array == value] = np.nan
+    logger.debug("Successfully read {} items in data section".format(len(array)))
+
+    if not n_columns is None:
+        logger.debug(
+            "Attempting to re-shape into 2D array with {} columns".format(n_columns)
+        )
+        try:
+            array = np.reshape(array, (-1, n_columns))
+        except ValueError as exception:
+            error_message = "Cannot reshape ~A data size {0} into {1} columns".format(
+                array.shape, n_columns
+            )
+            if sys.version_info.major < 3:
+                exception.message = error_message
+                raise exception
+            else:
+                raise ValueError(error_message).with_traceback(exception.__traceback__)
+
     return array
 
 
