@@ -471,3 +471,11 @@ def test_sample_dtypes_specified_as_dict():
     assert isinstance(las.curves[2].data[0], float)
     # NPHI_FLOAT -> str by specification
     assert isinstance(las.curves[3].data[0], str)
+
+
+def test_sample_dtypes_specified_as_false():
+    las = lasio.examples.open("sample_str_in_data.las", read_policy=[], dtypes=False)
+    assert isinstance(las.curves[0].data[0], str)
+    assert isinstance(las.curves[1].data[0], str)
+    assert isinstance(las.curves[2].data[0], str)
+    assert isinstance(las.curves[3].data[0], str)
