@@ -389,8 +389,7 @@ def read_data_section_iterative(
             `float`, `str`, `datetime`). If you specify 'auto', then this function
             will attempt to convert each column to a float and if that fails,
             the column will be returned as a string. If you specify False, no
-            conversion of data types will be attempt at all. If `n_columns` is
-            None/-1, then this argument will be ignored.
+            conversion of data types will be attempt at all.
 
     Returns: generator which yields the data as a 1D ndarray for each column at a time.
 
@@ -453,6 +452,12 @@ def read_data_section_iterative(
             else:
                 raise ValueError(error_message).with_traceback(exception.__traceback__)
 
+    # Identify how many columns have actually been found.
+    if len(array.shape) < 2:
+        arr_n_cols = 0
+    else:
+        arr_n_cols = array.shape[1]
+
     # Identify what the appropriate data types should be for each column based on the first
     # row of the data.
     if dtypes == "auto":
@@ -460,12 +465,8 @@ def read_data_section_iterative(
             dtypes = identify_dtypes_from_data(array[0, :])
         else:
             dtypes = []
-
-    # Identify how many columns have actually been found.
-    if len(array.shape) < 2:
-        arr_n_cols = 0
-    else:
-        arr_n_cols = array.shape[1]
+    elif dtypes is False:
+        dtypes = [str for n in range(arr_n_cols)]
 
     # Iterate over each column, convert to the appropriate dtype (if possible)
     # and then yield the data column.
