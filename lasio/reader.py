@@ -362,13 +362,15 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_comments="#"):
     try:
         assert len(set(item_counts)) == 1
     except AssertionError:
+        logger.debug("Inconsistent number of columns {}".format(item_counts))
         return -1
     else:
+        logger.debug("Consistently found {} columns".format(item_counts[0]))
         return item_counts[0]
 
 
 def read_data_section_iterative(
-    file_obj, line_nos, regexp_subs, value_null_subs, ignore_comments, n_columns
+    file_obj, line_nos, regexp_subs, value_null_subs, ignore_comments, n_columns, dtypes
 ):
     """Read data section into memory.
 
@@ -381,14 +383,21 @@ def read_data_section_iterative(
         value_null_subs (list): list of numerical values to be replaced by
             numpy.nan values.
         ignore_comments (str): lines beginning with this character will be ignored
-        n_columns (int, None): expected number of columns, or None/-1 if unknown
+        n_columns (int): expected number of columns
+        dtypes (list, "auto", False): list of expected data types for each column,
+            (each data type can be specified as e.g. `int`,
+            `float`, `str`, `datetime`). If you specify 'auto', then this function
+            will attempt to convert each column to a float and if that fails,
+            the column will be returned as a string. If you specify False, no
+            conversion of data types will be attempt at all. If `n_columns` is
+            None/-1, then this argument will be ignored.
 
-    Returns:
-        A 1-D numpy ndarray.
+    Returns: generator which yields the data as a 1D ndarray for each column at a time.
 
     """
-    if n_columns == -1:
-        n_columns = None
+    logger.debug(
+        "Attempting to read {} columns between lines {}".format(n_columns, line_nos)
+    )
 
     title = file_obj.readline()
 
@@ -421,12 +430,17 @@ def read_data_section_iterative(
     )
     for value in value_null_subs:
         array[array == value] = np.nan
-    logger.debug("Successfully read {} items in data section".format(len(array)))
 
-    if not n_columns is None:
-        logger.debug(
-            "Attempting to re-shape into 2D array with {} columns".format(n_columns)
-        )
+    logger.debug("Read {} items in data section".format(len(array)))
+
+    # Cater for situations where the data section is empty.
+    if len(array) == 0:
+        logger.warning("Data section is empty therefore setting n_columns to zero")
+        n_columns = 0
+
+    # Re-shape the 1D array to a 2D array.
+    if n_columns > 0:
+        logger.debug("Attempt re-shape to {} columns".format(n_columns))
         try:
             array = np.reshape(array, (-1, n_columns))
         except ValueError as exception:
@@ -439,7 +453,61 @@ def read_data_section_iterative(
             else:
                 raise ValueError(error_message).with_traceback(exception.__traceback__)
 
-    return array
+    # Identify what the appropriate data types should be for each column based on the first
+    # row of the data.
+    if dtypes == "auto":
+        if len(array) > 0:
+            dtypes = identify_dtypes_from_data(array[0, :])
+        else:
+            dtypes = []
+
+    # Identify how many columns have actually been found.
+    if len(array.shape) < 2:
+        arr_n_cols = 0
+    else:
+        arr_n_cols = array.shape[1]
+
+    # Iterate over each column, convert to the appropriate dtype (if possible)
+    # and then yield the data column.
+    for col_idx in range(arr_n_cols):
+        curve_arr = array[:, col_idx]
+        curve_dtype = dtypes[col_idx]
+        try:
+            curve_arr = curve_arr.astype(curve_dtype, copy=False)
+        except ValueError:
+            logger.warning(
+                "Could not convert curve #{} to {}".format(col_idx, curve_dtype)
+            )
+        else:
+            logger.debug(
+                "Converted curve {} to {} ({})".format(col_idx, curve_dtype, curve_arr)
+            )
+        yield curve_arr
+
+
+def identify_dtypes_from_data(row):
+    """Identify which columns should be 'str' and which 'float'.
+
+    Args:
+        row (1D ndarray): first row of data section
+
+    Returns: list of [float, float, str, ...] etc
+
+    """
+    logger.debug("Creating auto dtype spec from first line of data array")
+    dtypes_list = []
+    for i in range(len(row)):
+        value = row[i]
+        try:
+            value_converted = float(value)
+        except:
+            dtypes_list.append(str)
+        else:
+            dtypes_list.append(float)
+        logger.debug(
+            "Column {}: value {} -> dtype {}".format(i, value, dtypes_list[-1])
+        )
+    return dtypes_list
 
 
 def get_substitutions(read_policy, null_policy):
