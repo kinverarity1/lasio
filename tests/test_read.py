@@ -11,6 +11,7 @@ import pytest
 from numbers import Number
 
 import lasio
+import lasio.examples
 
 test_dir = os.path.dirname(__file__)
 
@@ -446,3 +447,27 @@ def test_read_v2_sample_empty_other_section():
     las = lasio.read(stegfn("2.0", "sample_2.0_empty_other_section.las"))
     assert las.other == ""
     assert las.data[0][0] == 1670.0
+
+
+def test_sample_dtypes_specified():
+    las = lasio.examples.open(
+        "sample_str_in_data.las", read_policy=[], dtypes=[float, str, int, float]
+    )
+    # DT_STR
+    assert isinstance(las.curves[1].data[0], str)
+    # RHOB_INT
+    # assert isinstance(las.curves[2].data[0], int)
+    # The above fails because dtypes are fun - instead we check the opposite:
+    assert not isinstance(las.curves[2].data[0], float)
+    # NPHI_FLOAT
+    assert isinstance(las.curves[3].data[0], float)
+
+
+def test_sample_dtypes_specified_as_dict():
+    las = lasio.examples.open(
+        "sample_str_in_data.las", read_policy=[], dtypes={"NPHI_FLOAT": str}
+    )
+    # RHOB_INT -> float by default
+    assert isinstance(las.curves[2].data[0], float)
+    # NPHI_FLOAT -> str by specification
+    assert isinstance(las.curves[3].data[0], str)
