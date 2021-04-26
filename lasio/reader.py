@@ -497,8 +497,7 @@ def identify_dtypes_from_data(row):
     """
     logger.debug("Creating auto dtype spec from first line of data array")
     dtypes_list = []
-    for i in range(len(row)):
-        value = row[i]
+    for i, value in enumerate(row):
         try:
             value_converted = float(value)
         except:
