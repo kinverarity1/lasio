@@ -302,28 +302,30 @@ class LASFile(object):
                         )
 
                     # Assign data to curves.
-                    n = 0
+                    curve_idx = 0
                     for curve_arr in curves_data_gen:
 
                         # Do not replace nulls in the index curve.
-                        if version_NULL and curve_arr.dtype == float and n != 0:
+                        if version_NULL and curve_arr.dtype == float and curve_idx != 0:
                             logger.debug(
                                 "Replacing {} with nan in {}-th curve".format(
-                                    provisional_null, n
+                                    provisional_null, curve_idx
                                 )
                             )
                             curve_arr[curve_arr == provisional_null] = np.nan
 
                         logger.debug(
-                            "Assigning data {} to curve #{}".format(curve_arr, n)
+                            "Assigning data {} to curve #{}".format(
+                                curve_arr, curve_idx
+                            )
                         )
-                        if n < len(self.curves):
-                            self.curves[n].data = curve_arr
+                        if curve_idx < len(self.curves):
+                            self.curves[curve_idx].data = curve_arr
                         else:
                             logger.debug("Creating new curve")
                             curve = CurveItem(mnemonic="", data=curve_arr)
                             self.curves.append(curve)
-                        n += 1
+                        curve_idx += 1
 
         finally:
             if hasattr(file_obj, "close"):
