@@ -10,6 +10,7 @@ import json
 import logging
 import re
 import sys
+import traceback
 
 # get basestring in py3
 
@@ -89,6 +90,7 @@ class LASFile(object):
         ignore_data_comments="#",
         mnemonic_case="upper",
         index_unit=None,
+        dtypes="auto",
         **kwargs
     ):
         """Read a LAS file.
@@ -112,6 +114,13 @@ class LASFile(object):
                                  'upper': convert all HeaderItem mnemonics to uppercase
                                  'lower': convert all HeaderItem mnemonics to lowercase
             index_unit (str): Optionally force-set the index curve's unit to "m" or "ft"
+            dtypes ("auto", dict or list): specify the data types for each curve in the
+                ~ASCII data section. If "auto", each curve will be converted to floats if
+                possible and remain as str if not. If a dict you can specify only the
+                curve mnemonics you want to convert as a key. If a list, please specify
+                data types for each curve in order. Note that the conversion currently
+                only occurs via numpy.ndarray.astype() and therefore only a few simple
+                casts will work e.g. `int`, `float`, `str`.
 
         See :func:`lasio.reader.open_with_codecs` for additional keyword
         arguments which help to manage issues relate to character encodings.
@@ -261,16 +270,28 @@ class LASFile(object):
                         ignore_comments=ignore_data_comments,
                     )
 
+                    # How many curves should the reader attempt to find?
+                    reader_n_columns = n_columns
+                    if reader_n_columns == -1:
+                        reader_n_columns = len(self.curves)
+
                     file_obj.seek(k)
+
+                    # Convert dtypes passed as dict into list for all columns
+                    # defaulting to float for any not specified.
+                    if isinstance(dtypes, dict):
+                        dtypes = [dtypes.get(c.mnemonic, float) for c in self.curves]
+
                     # Notes see 2d9e43c3 and e960998f for 'try' background
                     try:
-                        arr = reader.read_data_section_iterative(
+                        curves_data_gen = reader.read_data_section_iterative(
                             file_obj,
                             (first_line, last_line),
                             regexp_subs,
                             value_null_subs,
                             ignore_comments=ignore_data_comments,
-                            n_columns=n_columns,
+                            n_columns=reader_n_columns,
+                            dtypes=dtypes,
                         )
                     except KeyboardInterrupt:
                         raise
@@ -279,68 +300,33 @@ class LASFile(object):
                             traceback.format_exc()[:-1]
                             + " in data section beginning line {}".format(i + 1)
                         )
-                    logger.debug(
-                        "Read ndarray {arrshape} from data section".format(
-                            arrshape=arr.shape
-                        )
-                    )
 
-                    # This is so we can check data size and use self.set_data(data, truncate=False)
-                    # in cases of data.size is zero.
-                    data = arr
+                    # Assign data to curves.
+                    curve_idx = 0
+                    for curve_arr in curves_data_gen:
 
-                    if data.size > 0:
-                        # TODO: check whether this treatment of NULLs is correct
-                        logger.debug("~A data {}".format(arr))
-                        if version_NULL:
-                            arr[arr == provisional_null] = np.nan
-                        logger.debug("~A after NULL replacement data {}".format(arr))
-
-                        # Provisionally, assume that the number of columns represented
-                        # by the data section's array is equal to the number of columns
-                        # defined in the Curves/Definition section.
-
-                        n_columns_in_arr = len(self.curves)
-
-                        # If we are told the file is unwrapped, then we assume that each
-                        # column detected is a column, and we ignore the Curves/Definition
-                        # section's number of columns instead.
-
-                        if provisional_wrapped == "NO":
-                            n_columns_in_arr = n_columns
-
-                        # ---------------------------------------------------------------------
-                        # TODO:
-                        # This enables tests/test_read.py::test_barebones_missing_all_sections
-                        # to pass, but may not be the complete or final solution.
-                        # ---------------------------------------------------------------------
-                        if len(self.curves) == 0 and n_columns > 0:
-                            n_columns_in_arr = n_columns
+                        # Do not replace nulls in the index curve.
+                        if version_NULL and curve_arr.dtype == float and curve_idx != 0:
+                            logger.debug(
+                                "Replacing {} with nan in {}-th curve".format(
+                                    provisional_null, curve_idx
+                                )
+                            )
+                            curve_arr[curve_arr == provisional_null] = np.nan
 
                         logger.debug(
-                            "Data array (size {}) assumed to have {} columns "
-                            "({} curves defined)".format(
-                                arr.shape, n_columns_in_arr, len(self.curves)
+                            "Assigning data {} to curve #{}".format(
+                                curve_arr, curve_idx
                             )
                         )
+                        if curve_idx < len(self.curves):
+                            self.curves[curve_idx].data = curve_arr
+                        else:
+                            logger.debug("Creating new curve")
+                            curve = CurveItem(mnemonic="", data=curve_arr)
+                            self.curves.append(curve)
+                        curve_idx += 1
 
-                        # We attempt to reshape the 1D array read in from
-                        # the data section so that it can be assigned to curves.
-                        try:
-                            data = np.reshape(arr, (-1, n_columns_in_arr))
-                        except ValueError as exception:
-                            error_message = "Cannot reshape ~A data size {0} into {1} columns".format(
-                                arr.shape, n_columns_in_arr
-                            )
-                            if sys.version_info.major < 3:
-                                exception.message = error_message
-                                raise exception
-                            else:
-                                raise ValueError(error_message).with_traceback(
-                                    exception.__traceback__
-                                )
-
-                    self.set_data(data, truncate=False)
         finally:
             if hasattr(file_obj, "close"):
                 file_obj.close()
