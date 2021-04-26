@@ -479,3 +479,8 @@ def test_sample_dtypes_specified_as_false():
     assert isinstance(las.curves[1].data[0], str)
     assert isinstance(las.curves[2].data[0], str)
     assert isinstance(las.curves[3].data[0], str)
+
+def test_index_null_issue227():
+    las = lasio.examples.open("index_null.las")
+    assert las['DEPT'].data[1] == 999.25
+    assert numpy.isnan(las['DT'].data[0])
