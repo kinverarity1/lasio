@@ -312,23 +312,41 @@ class LASFile(object):
                         dtypes = [dtypes.get(c.mnemonic, float) for c in self.curves]
 
                     # Notes see 2d9e43c3 and e960998f for 'try' background
-                    try:
-                        curves_data_gen = reader.read_data_section_iterative(
-                            file_obj,
-                            (first_line, last_line),
-                            regexp_subs,
-                            value_null_subs,
-                            ignore_comments=ignore_data_comments,
-                            n_columns=reader_n_columns,
-                            dtypes=dtypes,
-                        )
-                    except KeyboardInterrupt:
-                        raise
-                    except:
-                        raise exceptions.LASDataError(
-                            traceback.format_exc()[:-1]
-                            + " in data section beginning line {}".format(i + 1)
-                        )
+
+                    run_normal_engine = False
+
+                    # Attempt to read the data section
+                    if engine == "numpy":
+                        try:
+                            curves_data_gen = reader.read_data_section_iterative_numpy_engine(
+                                file_obj, (first_line, last_line)
+                            )
+                        except KeyboardInterrupt:
+                            raise
+                        except:
+                            raise exceptions.LASDataError(
+                                traceback.format_exc()[:-1]
+                                + " in data section beginning line {}".format(i + 1)
+                            )
+                    elif engine == "normal":
+                        run_normal_engine = True
+
+                    if run_normal_engine:
+                        try:
+                            curves_data_gen = reader.read_data_section_iterative_normal_engine(
+                                file_obj,
+                                (first_line, last_line),
+                                regexp_subs,
+                                value_null_subs,
+                                remove_line_filter=remove_data_line_filter,
+                            )
+                        except KeyboardInterrupt:
+                            raise
+                        except:
+                            raise exceptions.LASDataError(
+                                traceback.format_exc()[:-1]
+                                + " in data section beginning line {}".format(i + 1)
+                            )
 
                     # Assign data to curves.
                     curve_idx = 0

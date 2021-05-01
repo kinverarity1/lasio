@@ -369,7 +369,7 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_comments="#"):
         return item_counts[0]
 
 
-def read_data_section_iterative(
+def read_data_section_iterative_normal_engine(
     file_obj, line_nos, regexp_subs, value_null_subs, ignore_comments, n_columns, dtypes
 ):
     """Read data section into memory.
