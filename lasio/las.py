@@ -82,13 +82,17 @@ class LASFile(object):
     def read(
         self,
         file_ref,
-        ignore_data=False,
-        read_policy="default",
-        null_policy="strict",
         ignore_header_errors=False,
         ignore_comments=("#",),
         ignore_data_comments="#",
         mnemonic_case="upper",
+        ignore_data=False,
+        engine="numpy",
+        use_normal_engine_for_wrapped=True,
+        pandas_engine_error="retry",
+        pandas_engine_wrapped_error=True,
+        read_policy="default",
+        null_policy="strict",
         index_unit=None,
         dtypes="auto",
         **kwargs
@@ -100,10 +104,6 @@ class LASFile(object):
                 object, or a string containing the contents of a file.
 
         Keyword Arguments:
-            null_policy (str or list): see
-                http://lasio.readthedocs.io/en/latest/data-section.html#handling-invalid-data-indicators-automatically
-            ignore_data (bool): if True, do not read in any of the actual data,
-                just the header metadata. False by default.
             ignore_header_errors (bool): ignore LASHeaderErrors (False by
                 default)
             ignore_comments (sequence/str): ignore lines beginning with these
@@ -113,6 +113,25 @@ class LASFile(object):
             mnemonic_case (str): 'preserve': keep the case of HeaderItem mnemonics
                                  'upper': convert all HeaderItem mnemonics to uppercase
                                  'lower': convert all HeaderItem mnemonics to lowercase
+            ignore_data (bool): if True, do not read in any of the actual data,
+                just the header metadata. False by default.
+            engine (str): "normal": parse data section with normal Python reader
+                (quite slow); "numpy": parse data section with `numpy.genfromtxt` (fast).
+                By default the engine is "numpy".
+            use_normal_engine_for_wrapped (bool): if header metadata indicates that
+                the file is wrapped, always use the 'normal' engine. Default is True.
+                The only reason you should use False is if speed is a very high priority
+                and you had files with metadata that incorrectly indicates they are
+                wrapped.
+            read_policy (): TODO
+            null_policy (str or list): see
+                http://lasio.readthedocs.io/en/latest/data-section.html#handling-invalid-data-indicators-automatically
+            remove_data_line_filter (str, func): string or function for removing/ignoring lines
+                in the data section e.g. a function which accepts a string (a line from the
+                data section) and returns either True (do not parse the line) or False
+                (parse the line). If this argument is a string it will instead be converted
+                to a function which rejects all lines starting with that value e.g. ``"#"``
+                will be converted to ``lambda line: line.strip().startswith("#")``
             index_unit (str): Optionally force-set the index curve's unit to "m" or "ft"
             dtypes ("auto", dict or list): specify the data types for each curve in the
                 ~ASCII data section. If "auto", each curve will be converted to floats if
@@ -257,6 +276,16 @@ class LASFile(object):
                     las3_data_section_indices.append(i)
 
             if not ignore_data:
+
+                # Check whether file is wrapped and if so, attempt to use the
+                # normal engine.
+                if provisional_wrapped == "YES":
+                    if engine != "normal":
+                        logger.warning("Only engine='normal' can read wrapped files")
+                        if use_normal_engine_for_wrapped:
+                            engine = "normal"
+
+                # Check for the number of columns in each data section.
                 for k, first_line, last_line, section_title in [
                     section_positions[i] for i in data_section_indices
                 ]:
