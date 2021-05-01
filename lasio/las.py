@@ -10,6 +10,7 @@ import json
 import logging
 import re
 import sys
+import traceback
 
 # get basestring in py3
 
@@ -65,6 +66,7 @@ class LASFile(object):
         super(LASFile, self).__init__()
         self._text = ""
         self.index_unit = None
+        self.index_initial = None
         default_items = defaults.get_default_items()
         self.sections = {
             "Version": default_items["Version"],
@@ -80,15 +82,19 @@ class LASFile(object):
     def read(
         self,
         file_ref,
-        ignore_data=False,
-        read_policy="default",
-        null_policy="strict",
         ignore_header_errors=False,
         ignore_comments=("#",),
         mnemonic_case="upper",
+        ignore_data=False,
+        engine="numpy",
+        use_normal_engine_for_wrapped=True,
+        pandas_engine_error="retry",
+        pandas_engine_wrapped_error=True,
+        read_policy="default",
+        null_policy="strict",
         index_unit=None,
         remove_data_line_filter="#",
-        **kwargs
+        **kwargs,
     ):
         """Read a LAS file.
 
@@ -97,10 +103,6 @@ class LASFile(object):
                 object, or a string containing the contents of a file.
 
         Keyword Arguments:
-            null_policy (str or list): see
-                http://lasio.readthedocs.io/en/latest/data-section.html#handling-invalid-data-indicators-automatically
-            ignore_data (bool): if True, do not read in any of the actual data,
-                just the header metadata. False by default.
             ignore_header_errors (bool): ignore LASHeaderErrors (False by
                 default)
             ignore_comments (tuple/str): ignore comments beginning with characters
@@ -108,13 +110,26 @@ class LASFile(object):
             mnemonic_case (str): 'preserve': keep the case of HeaderItem mnemonics
                                  'upper': convert all HeaderItem mnemonics to uppercase
                                  'lower': convert all HeaderItem mnemonics to lowercase
-            index_unit (str): Optionally force-set the index curve's unit to "m" or "ft"
+            ignore_data (bool): if True, do not read in any of the actual data,
+                just the header metadata. False by default.
+            engine (str): "normal": parse data section with normal Python reader
+                (quite slow); "numpy": parse data section with `numpy.genfromtxt` (fast).
+                By default the engine is "numpy".
+            use_normal_engine_for_wrapped (bool): if header metadata indicates that
+                the file is wrapped, always use the 'normal' engine. Default is True.
+                The only reason you should use False is if speed is a very high priority
+                and you had files with metadata that incorrectly indicates they are
+                wrapped.
+            read_policy (): TODO
+            null_policy (str or list): see
+                http://lasio.readthedocs.io/en/latest/data-section.html#handling-invalid-data-indicators-automatically
             remove_data_line_filter (str, func): string or function for removing/ignoring lines
                 in the data section e.g. a function which accepts a string (a line from the
                 data section) and returns either True (do not parse the line) or False
                 (parse the line). If this argument is a string it will instead be converted
                 to a function which rejects all lines starting with that value e.g. ``"#"``
                 will be converted to ``lambda line: line.strip().startswith("#")``
+            index_unit (str): Optionally force-set the index curve's unit to "m" or "ft"
 
         See :func:`lasio.reader.open_with_codecs` for additional keyword
         arguments which help to manage issues relate to character encodings.
@@ -122,6 +137,20 @@ class LASFile(object):
         """
 
         logger.debug("Reading {}...".format(str(file_ref)))
+
+        # Options specific to the numpy reader.
+        if engine == "numpy":
+            if isinstance(remove_data_line_filter, str):
+                remove_startswith = remove_data_line_filter
+                logger.debug(
+                    f"Setting remove_startswith = '{remove_startswith}' for numpy engine"
+                )
+            else:
+                logger.debug(
+                    f"Not setting remove_startswith for numpy engine "
+                    f" (don't understand {remove_data_line_filter}"
+                )
+                remove_startswith = []
 
         file_obj = ""
         try:
@@ -241,6 +270,16 @@ class LASFile(object):
                     las3_data_section_indices.append(i)
 
             if not ignore_data:
+
+                # Check whether file is wrapped and if so, attempt to use the
+                # normal engine.
+                if provisional_wrapped == "YES":
+                    if engine != "normal":
+                        logger.warning("Only engine='normal' can read wrapped files")
+                        if use_normal_engine_for_wrapped:
+                            engine = "normal"
+
+                # Check for the number of columns in each data section.
                 for k, first_line, last_line, section_title in [
                     section_positions[i] for i in data_section_indices
                 ]:
@@ -255,22 +294,45 @@ class LASFile(object):
                     )
 
                     file_obj.seek(k)
+
+                    # Read data section.
                     # Notes see 2d9e43c3 and e960998f for 'try' background
-                    try:
-                        arr = reader.read_data_section_iterative(
-                            file_obj,
-                            (first_line, last_line),
-                            regexp_subs,
-                            value_null_subs,
-                            remove_line_filter=remove_data_line_filter,
-                        )
-                    except KeyboardInterrupt:
-                        raise
-                    except:
-                        raise exceptions.LASDataError(
-                            traceback.format_exc()[:-1]
-                            + " in data section beginning line {}".format(i + 1)
-                        )
+
+                    run_normal_engine = False
+
+                    # Attempt to read the data section
+                    if engine == "numpy":
+                        try:
+                            arr = reader.read_data_section_iterative_numpy_engine(
+                                file_obj, (first_line, last_line)
+                            )
+                        except KeyboardInterrupt:
+                            raise
+                        except:
+                            raise exceptions.LASDataError(
+                                traceback.format_exc()[:-1]
+                                + " in data section beginning line {}".format(i + 1)
+                            )
+                    elif engine == "normal":
+                        run_normal_engine = True
+
+                    if run_normal_engine:
+                        try:
+                            arr = reader.read_data_section_iterative_normal_engine(
+                                file_obj,
+                                (first_line, last_line),
+                                regexp_subs,
+                                value_null_subs,
+                                remove_line_filter=remove_data_line_filter,
+                            )
+                        except KeyboardInterrupt:
+                            raise
+                        except:
+                            raise exceptions.LASDataError(
+                                traceback.format_exc()[:-1]
+                                + " in data section beginning line {}".format(i + 1)
+                            )
+
                     logger.debug("Read ndarray {arrshape}".format(arrshape=arr.shape))
 
                     # This is so we can check data size and use self.set_data(data, truncate=False)
@@ -368,9 +430,11 @@ class LASFile(object):
                 logger.warning("Conflicting index units found: {}".format(matches))
                 self.index_unit = None
 
+        if len(self.curves) > 0:
+            self.index_initial = self.index.copy()
+
     def update_start_stop_step(self, STRT=None, STOP=None, STEP=None, fmt="%.5f"):
-        """Configure or Change STRT, STOP, and STEP values
-        """
+        """Configure or Change STRT, STOP, and STEP values"""
         if STRT is None:
             STRT = self.index[0]
         if STOP is None:

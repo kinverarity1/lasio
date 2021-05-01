@@ -393,7 +393,7 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, remove_line_filter="#"
         return item_counts[0]
 
 
-def read_data_section_iterative(
+def read_data_section_iterative_normal_engine(
     file_obj, line_nos, regexp_subs, value_null_subs, remove_line_filter
 ):
     """Read data section into memory.
@@ -418,7 +418,7 @@ def read_data_section_iterative(
         A 1-D numpy ndarray.
 
     """
-
+    logger.debug("Parsing data section with normal reader")
     remove_line_filter = convert_remove_line_filter(remove_line_filter)
 
     title = file_obj.readline()
@@ -451,6 +451,30 @@ def read_data_section_iterative(
     )
     for value in value_null_subs:
         array[array == value] = np.nan
+    return array
+
+
+def read_data_section_iterative_numpy_engine(file_obj, line_nos):
+    """Read data section into memory.
+
+    Arguments:
+        file_obj: file-like object open for reading at the beginning of the section
+        line_nos (tuple): the first and last line no of the section to read
+
+
+    Returns:
+        A numpy ndarray.
+    """
+
+    first_line = line_nos[0] + 1
+    last_line = line_nos[1]
+    max_rows = last_line - first_line
+
+    file_obj.seek(0)
+
+    array = np.genfromtxt(
+        file_obj, skip_header=first_line, max_rows=max_rows, names=None
+    )
     return array
 
 
