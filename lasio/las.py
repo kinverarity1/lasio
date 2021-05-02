@@ -126,12 +126,6 @@ class LASFile(object):
             read_policy (): TODO
             null_policy (str or list): see
                 http://lasio.readthedocs.io/en/latest/data-section.html#handling-invalid-data-indicators-automatically
-            remove_data_line_filter (str, func): string or function for removing/ignoring lines
-                in the data section e.g. a function which accepts a string (a line from the
-                data section) and returns either True (do not parse the line) or False
-                (parse the line). If this argument is a string it will instead be converted
-                to a function which rejects all lines starting with that value e.g. ``"#"``
-                will be converted to ``lambda line: line.strip().startswith("#")``
             index_unit (str): Optionally force-set the index curve's unit to "m" or "ft"
             dtypes ("auto", dict or list): specify the data types for each curve in the
                 ~ASCII data section. If "auto", each curve will be converted to floats if
@@ -313,7 +307,6 @@ class LASFile(object):
 
                     # Notes see 2d9e43c3 and e960998f for 'try' background
 
-                    run_normal_engine = False
 
                     # Attempt to read the data section
                     if engine == "numpy":
@@ -321,6 +314,8 @@ class LASFile(object):
                             curves_data_gen = reader.read_data_section_iterative_numpy_engine(
                                 file_obj, (first_line, last_line)
                             )
+                            # TODO: fix read_data_section_iterative_numpy_engine() so we don't need this.
+                            curves_data_gen = curves_data_gen.T
                         except KeyboardInterrupt:
                             raise
                         except:
@@ -328,17 +323,17 @@ class LASFile(object):
                                 traceback.format_exc()[:-1]
                                 + " in data section beginning line {}".format(i + 1)
                             )
-                    elif engine == "normal":
-                        run_normal_engine = True
 
-                    if run_normal_engine:
+                    if engine == "normal":
                         try:
                             curves_data_gen = reader.read_data_section_iterative_normal_engine(
                                 file_obj,
                                 (first_line, last_line),
                                 regexp_subs,
                                 value_null_subs,
-                                remove_line_filter=remove_data_line_filter,
+                                ignore_comments=ignore_data_comments,
+                                n_columns=reader_n_columns,
+                                dtypes=dtypes,
                             )
                         except KeyboardInterrupt:
                             raise
@@ -347,6 +342,7 @@ class LASFile(object):
                                 traceback.format_exc()[:-1]
                                 + " in data section beginning line {}".format(i + 1)
                             )
+
 
                     # Assign data to curves.
                     curve_idx = 0
