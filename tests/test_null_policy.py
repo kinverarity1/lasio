@@ -77,7 +77,6 @@ def test_null_policy_custom_2():
     assert las["SFLA"][2] == -999.25
 
 
-@pytest.mark.xfail(reason="TODO: need to fix for lasio's numpy-reader")
 def test_null_policy_ERR_strict():
     # Verify we can read-in text in a mostly numerical column
     las = read(egfn("null_policy_ERR.las"), null_policy="strict")

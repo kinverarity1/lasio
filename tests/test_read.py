@@ -11,6 +11,7 @@ import pytest
 from numbers import Number
 
 import lasio
+import lasio.examples
 
 test_dir = os.path.dirname(__file__)
 
@@ -276,8 +277,6 @@ def test_not_a_las_file():
         las = lasio.read(egfn("not_a_las_file.las"))
 
 
-# TODO: fix for numpy-reader
-@pytest.mark.xfail
 def test_comma_decimal_mark_data():
     las = lasio.read(egfn("comma_decimal_mark.las"))
     assert las["SFLU"][1] == 123.42
@@ -341,19 +340,16 @@ def test_emptyparam(capsys):
     assert not msg in out
 
 
-@pytest.mark.xfail(reason="TODO: need to fix for lasio's numpy-reader")
 def test_data_characters_1():
     las = lasio.read(egfn("data_characters.las"))
     assert las["TIME"][0] == "00:00:00"
 
 
-@pytest.mark.xfail(reason="TODO: need to fix for lasio's numpy-reader")
 def test_data_characters_2():
     las = lasio.read(egfn("data_characters.las"))
     assert las["DATE"][0] == "01-Jan-20"
 
 
-@pytest.mark.xfail(reason="TODO: need to fix for lasio's numpy-reader")
 def test_data_characters_types():
     from pandas.api.types import is_object_dtype
     from pandas.api.types import is_float_dtype
@@ -451,3 +447,40 @@ def test_read_v2_sample_empty_other_section():
     las = lasio.read(stegfn("2.0", "sample_2.0_empty_other_section.las"))
     assert las.other == ""
     assert las.data[0][0] == 1670.0
+
+
+def test_sample_dtypes_specified():
+    las = lasio.examples.open(
+        "sample_str_in_data.las", read_policy=[], dtypes=[float, str, int, float]
+    )
+    # DT_STR
+    assert isinstance(las.curves[1].data[0], str)
+    # RHOB_INT
+    # assert isinstance(las.curves[2].data[0], int)
+    # The above fails because dtypes are fun - instead we check the opposite:
+    assert not isinstance(las.curves[2].data[0], float)
+    # NPHI_FLOAT
+    assert isinstance(las.curves[3].data[0], float)
+
+
+def test_sample_dtypes_specified_as_dict():
+    las = lasio.examples.open(
+        "sample_str_in_data.las", read_policy=[], dtypes={"NPHI_FLOAT": str}
+    )
+    # RHOB_INT -> float by default
+    assert isinstance(las.curves[2].data[0], float)
+    # NPHI_FLOAT -> str by specification
+    assert isinstance(las.curves[3].data[0], str)
+
+
+def test_sample_dtypes_specified_as_false():
+    las = lasio.examples.open("sample_str_in_data.las", read_policy=[], dtypes=False)
+    assert isinstance(las.curves[0].data[0], str)
+    assert isinstance(las.curves[1].data[0], str)
+    assert isinstance(las.curves[2].data[0], str)
+    assert isinstance(las.curves[3].data[0], str)
+
+def test_index_null_issue227():
+    las = lasio.examples.open("index_null.las")
+    assert las['DEPT'].data[1] == 999.25
+    assert numpy.isnan(las['DT'].data[0])

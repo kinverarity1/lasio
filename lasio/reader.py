@@ -3,6 +3,7 @@ import io
 import logging
 import os
 import re
+import sys
 import traceback
 import urllib.request
 
@@ -316,34 +317,13 @@ def determine_section_type(section_title):
         return "Header items"
 
 
-def convert_remove_line_filter(filt):
-    """Ensure that the line filter is a function.
-
-    Arguments:
-        filt (str, func): string or function for removing/ignoring lines
-            in the data section e.g. a function which accepts a string (a line from the
-            data section) and returns either True (do not parse the line) or False
-            (parse the line). If this argument is a string it will instead be converted
-            to a function which rejects all lines starting with that value e.g. ``"#"``
-            will be converted to ``lambda line: line.strip().startswith("#")``
-
-    Returns: function which takes a string (a data section line) and returns True
-        or False.
-
-    """
-    if isinstance(filt, str):
-        value = str(filt)
-        filt = lambda line: line.strip().startswith(value)
-    return filt
-
-
 def split_on_whitespace(s):
     # return s.split() # does not handle quoted substrings (#271)
     # return shlex.split(s) # too slow
     return ["".join(t) for t in re.findall(r"""([^\s"']+)|"([^"]*)"|'([^']*)'""", s)]
 
 
-def inspect_data_section(file_obj, line_nos, regexp_subs, remove_line_filter="#"):
+def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_comments="#"):
     """Determine how many columns there are in the data section.
 
     Arguments:
@@ -352,17 +332,11 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, remove_line_filter="#"
         regexp_subs (list): each item should be a tuple of the pattern and
             substitution string for a call to re.sub() on each line of the
             data section. See defaults.py READ_SUBS and NULL_SUBS for examples.
-        remove_line_filter (str, func): string or function for removing/ignoring lines
-            in the data section e.g. a function which accepts a string (a line from the
-            data section) and returns either True (do not parse the line) or False
-            (parse the line). If this argument is a string it will instead be converted
-            to a function which rejects all lines starting with that value e.g. ``"#"``
-            will be converted to ``lambda line: line.strip().startswith("#")``
+        ignore_comments (str): lines beginning with this character will be ignored
 
     Returns: integer number of columns or -1 where they are different.
 
     """
-    remove_line_filter = convert_remove_line_filter(remove_line_filter)
 
     line_no = line_nos[0]
     title_line = file_obj.readline()
@@ -372,7 +346,7 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, remove_line_filter="#"
     for i, line in enumerate(file_obj):
         line_no = line_no + 1
         line = line.strip("\n").strip()
-        if remove_line_filter(line):
+        if line.strip().startswith(ignore_comments):
             continue
         else:
             for pattern, sub_str in regexp_subs:
@@ -388,13 +362,15 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, remove_line_filter="#"
     try:
         assert len(set(item_counts)) == 1
     except AssertionError:
+        logger.debug("Inconsistent number of columns {}".format(item_counts))
         return -1
     else:
+        logger.debug("Consistently found {} columns".format(item_counts[0]))
         return item_counts[0]
 
 
-def read_data_section_normal_engine(
-    file_obj, line_nos, regexp_subs, value_null_subs, remove_line_filter
+def read_data_section_iterative_normal_engine(
+    file_obj, line_nos, regexp_subs, value_null_subs, ignore_comments, n_columns, dtypes
 ):
     """Read data section into memory.
 
@@ -406,20 +382,21 @@ def read_data_section_normal_engine(
             data section. See defaults.py READ_SUBS and NULL_SUBS for examples.
         value_null_subs (list): list of numerical values to be replaced by
             numpy.nan values.
-        remove_line_filter (str or func): string or function for removing/ignoring lines
-            in the data section e.g. a function which accepts a string (a line from the
-            data section) and returns either True (do not parse the line) or False
-            (parse the line). If this argument is a string it will instead be converted
-            to a function which rejects all lines starting with that value e.g. ``"#"``
-            will be converted to ``lambda line: line.strip().startswith("#")``
+        ignore_comments (str): lines beginning with this character will be ignored
+        n_columns (int): expected number of columns
+        dtypes (list, "auto", False): list of expected data types for each column,
+            (each data type can be specified as e.g. `int`,
+            `float`, `str`, `datetime`). If you specify 'auto', then this function
+            will attempt to convert each column to a float and if that fails,
+            the column will be returned as a string. If you specify False, no
+            conversion of data types will be attempt at all.
 
-
-    Returns:
-        A 1-D numpy ndarray.
+    Returns: generator which yields the data as a 1D ndarray for each column at a time.
 
     """
-    logger.debug("Parsing data section with normal reader")
-    remove_line_filter = convert_remove_line_filter(remove_line_filter)
+    logger.debug(
+        "Attempting to read {} columns between lines {}".format(n_columns, line_nos)
+    )
 
     title = file_obj.readline()
 
@@ -432,7 +409,7 @@ def read_data_section_normal_engine(
                     line_no + 1, line.strip("\n").strip()
                 )
             )
-            if remove_line_filter(line):
+            if line.strip().startswith(ignore_comments):
                 continue
             else:
                 for pattern, sub_str in regexp_subs:
@@ -446,15 +423,94 @@ def read_data_section_normal_engine(
                 if line_no == end_line_no:
                     break
 
+    logger.debug("Reading complete data section...")
     array = np.array(
         [i for i in items(file_obj, start_line_no=line_nos[0], end_line_no=line_nos[1])]
     )
     for value in value_null_subs:
         array[array == value] = np.nan
-    return array
+
+    logger.debug("Read {} items in data section".format(len(array)))
+
+    # Cater for situations where the data section is empty.
+    if len(array) == 0:
+        logger.warning("Data section is empty therefore setting n_columns to zero")
+        n_columns = 0
+
+    # Re-shape the 1D array to a 2D array.
+    if n_columns > 0:
+        logger.debug("Attempt re-shape to {} columns".format(n_columns))
+        try:
+            array = np.reshape(array, (-1, n_columns))
+        except ValueError as exception:
+            error_message = "Cannot reshape ~A data size {0} into {1} columns".format(
+                array.shape, n_columns
+            )
+            if sys.version_info.major < 3:
+                exception.message = error_message
+                raise exception
+            else:
+                raise ValueError(error_message).with_traceback(exception.__traceback__)
+
+    # Identify how many columns have actually been found.
+    if len(array.shape) < 2:
+        arr_n_cols = 0
+    else:
+        arr_n_cols = array.shape[1]
+
+    # Identify what the appropriate data types should be for each column based on the first
+    # row of the data.
+    if dtypes == "auto":
+        if len(array) > 0:
+            dtypes = identify_dtypes_from_data(array[0, :])
+        else:
+            dtypes = []
+    elif dtypes is False:
+        dtypes = [str for n in range(arr_n_cols)]
+
+    # Iterate over each column, convert to the appropriate dtype (if possible)
+    # and then yield the data column.
+    for col_idx in range(arr_n_cols):
+        curve_arr = array[:, col_idx]
+        curve_dtype = dtypes[col_idx]
+        try:
+            curve_arr = curve_arr.astype(curve_dtype, copy=False)
+        except ValueError:
+            logger.warning(
+                "Could not convert curve #{} to {}".format(col_idx, curve_dtype)
+            )
+        else:
+            logger.debug(
+                "Converted curve {} to {} ({})".format(col_idx, curve_dtype, curve_arr)
+            )
+        yield curve_arr
 
 
-def read_data_section_numpy_engine(file_obj, line_nos, null_policy):
+def identify_dtypes_from_data(row):
+    """Identify which columns should be 'str' and which 'float'.
+
+    Args:
+        row (1D ndarray): first row of data section
+
+    Returns: list of [float, float, str, ...] etc
+
+    """
+    logger.debug("Creating auto dtype spec from first line of data array")
+    dtypes_list = []
+    for i, value in enumerate(row):
+        try:
+            value_converted = float(value)
+        except:
+            dtypes_list.append(str)
+        else:
+            dtypes_list.append(float)
+        logger.debug(
+            "Column {}: value {} -> dtype {}".format(i, value, dtypes_list[-1])
+        )
+    return dtypes_list
+
+
+def read_data_section_iterative_numpy_engine(file_obj, line_nos):
     """Read data section into memory.
 
     Arguments:
@@ -472,31 +528,8 @@ def read_data_section_numpy_engine(file_obj, line_nos, null_policy):
 
     file_obj.seek(0)
 
-    if isinstance(null_policy, str):
-        # TODO:
-        # This is a temporary solution until numpy-reader and null_policies are
-        # fully aligned.
-        if null_policy in ("aggressive", "all"):
-            raise ValueError
-        missing = defaults.NULL_POLICIES[null_policy]
-    elif isinstance(null_policy, list):
-        # TODO:
-        # Align numpy-reader and null_policies
-        # missing = null_policy
-        raise ValueError
-    else:
-        missing = defaults.NULL_POLICIES["none"]
-
-    # TODO: Finish/Correct the usemask/missing_values implementation.
-    #       We are currently passing a list to missing_values but it looks like
-    #       missing_values only actually processes one item.
     array = np.genfromtxt(
-        file_obj,
-        skip_header=first_line,
-        max_rows=max_rows,
-        names=None,
-        usemask=True,
-        missing_values=missing,
+        file_obj, skip_header=first_line, max_rows=max_rows, names=None
     )
     return array
 

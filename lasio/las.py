@@ -84,6 +84,7 @@ class LASFile(object):
         file_ref,
         ignore_header_errors=False,
         ignore_comments=("#",),
+        ignore_data_comments="#",
         mnemonic_case="upper",
         ignore_data=False,
         engine="numpy",
@@ -93,7 +94,7 @@ class LASFile(object):
         read_policy="default",
         null_policy="strict",
         index_unit=None,
-        remove_data_line_filter="#",
+        dtypes="auto",
         **kwargs
     ):
         """Read a LAS file.
@@ -105,8 +106,10 @@ class LASFile(object):
         Keyword Arguments:
             ignore_header_errors (bool): ignore LASHeaderErrors (False by
                 default)
-            ignore_comments (tuple/str): ignore comments beginning with characters
-                e.g. ``("#", '"')`` in header sections
+            ignore_comments (sequence/str): ignore lines beginning with these
+                characters e.g. ``("#", '"')`` in header sections.
+            ignore_data_comments (str): ignore lines beginning with this
+                character in data sections only.
             mnemonic_case (str): 'preserve': keep the case of HeaderItem mnemonics
                                  'upper': convert all HeaderItem mnemonics to uppercase
                                  'lower': convert all HeaderItem mnemonics to lowercase
@@ -123,13 +126,14 @@ class LASFile(object):
             read_policy (): TODO
             null_policy (str or list): see
                 http://lasio.readthedocs.io/en/latest/data-section.html#handling-invalid-data-indicators-automatically
-            remove_data_line_filter (str, func): string or function for removing/ignoring lines
-                in the data section e.g. a function which accepts a string (a line from the
-                data section) and returns either True (do not parse the line) or False
-                (parse the line). If this argument is a string it will instead be converted
-                to a function which rejects all lines starting with that value e.g. ``"#"``
-                will be converted to ``lambda line: line.strip().startswith("#")``
             index_unit (str): Optionally force-set the index curve's unit to "m" or "ft"
+            dtypes ("auto", dict or list): specify the data types for each curve in the
+                ~ASCII data section. If "auto", each curve will be converted to floats if
+                possible and remain as str if not. If a dict you can specify only the
+                curve mnemonics you want to convert as a key. If a list, please specify
+                data types for each curve in order. Note that the conversion currently
+                only occurs via numpy.ndarray.astype() and therefore only a few simple
+                casts will work e.g. `int`, `float`, `str`.
 
         See :func:`lasio.reader.open_with_codecs` for additional keyword
         arguments which help to manage issues relate to character encodings.
@@ -138,20 +142,16 @@ class LASFile(object):
 
         logger.debug("Reading {}...".format(str(file_ref)))
 
-        # Options specific to the numpy reader.
-        if engine == "numpy":
-            if isinstance(remove_data_line_filter, str):
-                remove_startswith = remove_data_line_filter
-                logger.debug(
-                    "Setting remove_startswith = '{}' for numpy engine".format(remove_startswith)
-                )
-            else:
-                logger.debug(
-                    "Not setting remove_startswith for numpy engine "
-                    " (don't understand {}".format(remove_startswith)
-                )
-                remove_startswith = []
+        # Determine which lines to ignore:
+        if ignore_comments is None:
+            ignore_comments = []
+        if isinstance(ignore_comments, str):
+            ignore_comments = [ignore_comments]
 
+        logger.debug("Ignore header lines beginning with {}".format(ignore_comments))
+        logger.debug("Ignore data lines beginning with {}".format(ignore_data_comments))
+
+        # Attempt to read file
         file_obj = ""
         try:
             file_obj, self.encoding = reader.open_file(file_ref, **kwargs)
@@ -290,41 +290,50 @@ class LASFile(object):
                         file_obj,
                         (first_line, last_line),
                         regexp_subs,
-                        remove_line_filter=remove_data_line_filter,
+                        ignore_comments=ignore_data_comments,
                     )
+
+                    # How many curves should the reader attempt to find?
+                    reader_n_columns = n_columns
+                    if reader_n_columns == -1:
+                        reader_n_columns = len(self.curves)
 
                     file_obj.seek(k)
 
-                    # Read data section.
+                    # Convert dtypes passed as dict into list for all columns
+                    # defaulting to float for any not specified.
+                    if isinstance(dtypes, dict):
+                        dtypes = [dtypes.get(c.mnemonic, float) for c in self.curves]
+
                     # Notes see 2d9e43c3 and e960998f for 'try' background
 
-                    run_normal_engine = False
 
                     # Attempt to read the data section
                     if engine == "numpy":
                         try:
-                            arr = reader.read_data_section_numpy_engine(
-                                file_obj, (first_line, last_line), null_policy
+                            curves_data_gen = reader.read_data_section_iterative_numpy_engine(
+                                file_obj, (first_line, last_line)
                             )
+                            # TODO: fix read_data_section_iterative_numpy_engine() so we don't need this.
+                            curves_data_gen = curves_data_gen.T
                         except KeyboardInterrupt:
                             raise
-                        except ValueError as err:
-                            # If there is a ValueError, numpy-engine failed to read the data.
-                            # So configure to re-try data-read with the normal-engine.
-                            run_normal_engine = True
-                            file_obj.seek(k)
+                        except:
+                            raise exceptions.LASDataError(
+                                traceback.format_exc()[:-1]
+                                + " in data section beginning line {}".format(i + 1)
+                            )
 
-                    elif engine == "normal":
-                        run_normal_engine = True
-
-                    if run_normal_engine:
+                    if engine == "normal":
                         try:
-                            arr = reader.read_data_section_normal_engine(
+                            curves_data_gen = reader.read_data_section_iterative_normal_engine(
                                 file_obj,
                                 (first_line, last_line),
                                 regexp_subs,
                                 value_null_subs,
-                                remove_line_filter=remove_data_line_filter,
+                                ignore_comments=ignore_data_comments,
+                                n_columns=reader_n_columns,
+                                dtypes=dtypes,
                             )
                         except KeyboardInterrupt:
                             raise
@@ -334,64 +343,33 @@ class LASFile(object):
                                 + " in data section beginning line {}".format(i + 1)
                             )
 
-                    logger.debug("Read ndarray {arrshape}".format(arrshape=arr.shape))
 
-                    # This is so we can check data size and use self.set_data(data, truncate=False)
-                    # in cases of data.size is zero.
-                    data = arr
+                    # Assign data to curves.
+                    curve_idx = 0
+                    for curve_arr in curves_data_gen:
 
-                    if data.size > 0:
-                        # TODO: check whether this treatment of NULLs is correct
-                        logger.debug("~A data {}".format(arr))
-                        if version_NULL:
-                            arr[arr == provisional_null] = np.nan
-                        logger.debug("~A after NULL replacement data {}".format(arr))
-
-                        # Provisionally, assume that the number of columns represented
-                        # by the data section's array is equal to the number of columns
-                        # defined in the Curves/Definition section.
-
-                        n_columns_in_arr = len(self.curves)
-
-                        # If we are told the file is unwrapped, then we assume that each
-                        # column detected is a column, and we ignore the Curves/Definition
-                        # section's number of columns instead.
-
-                        if provisional_wrapped == "NO":
-                            n_columns_in_arr = n_columns
-
-                        # ---------------------------------------------------------------------
-                        # TODO:
-                        # This enables tests/test_read.py::test_barebones_missing_all_sections
-                        # to pass, but may not be the complete or final solution.
-                        # ---------------------------------------------------------------------
-                        if len(self.curves) == 0 and n_columns > 0:
-                            n_columns_in_arr = n_columns
+                        # Do not replace nulls in the index curve.
+                        if version_NULL and curve_arr.dtype == float and curve_idx != 0:
+                            logger.debug(
+                                "Replacing {} with nan in {}-th curve".format(
+                                    provisional_null, curve_idx
+                                )
+                            )
+                            curve_arr[curve_arr == provisional_null] = np.nan
 
                         logger.debug(
-                            "Data array (size {}) assumed to have {} columns "
-                            "({} curves defined)".format(
-                                arr.shape, n_columns_in_arr, len(self.curves)
+                            "Assigning data {} to curve #{}".format(
+                                curve_arr, curve_idx
                             )
                         )
+                        if curve_idx < len(self.curves):
+                            self.curves[curve_idx].data = curve_arr
+                        else:
+                            logger.debug("Creating new curve")
+                            curve = CurveItem(mnemonic="", data=curve_arr)
+                            self.curves.append(curve)
+                        curve_idx += 1
 
-                        # We attempt to reshape the 1D array read in from
-                        # the data section so that it can be assigned to curves.
-                        try:
-                            data = np.reshape(arr, (-1, n_columns_in_arr))
-                        except ValueError as exception:
-                            error_message = "Cannot reshape ~A data size {0} into {1} columns".format(
-                                arr.shape, n_columns_in_arr
-                            )
-                            if sys.version_info.major < 3:
-                                exception.message = error_message
-                                raise exception
-                            else:
-                                raise ValueError(error_message).with_traceback(
-                                    exception.__traceback__
-                                )
-
-                    self.set_data(data, truncate=False)
         finally:
             if hasattr(file_obj, "close"):
                 file_obj.close()
@@ -435,30 +413,59 @@ class LASFile(object):
             self.index_initial = self.index.copy()
 
     def update_start_stop_step(self, STRT=None, STOP=None, STEP=None, fmt="%.5f"):
-        """Configure or Change STRT, STOP, and STEP values"""
-        if STRT is None:
-            STRT = self.index[0]
-        if STOP is None:
-            STOP = self.index[-1]
-        if STEP is None:
-            # prevents an error being thrown in the case of only a single sample being written
-            if STOP != STRT:
-                raw_step = self.index[1] - self.index[0]
-                STEP = fmt % raw_step
+        """Configure or change STRT, STOP, and STEP values on the LASFile object.
+
+        Keyword Arguments:
+            STRT, STOP, STEP (str, int, float): value to set on the relevant
+                header item in the ~Well section - can be any
+                data type.
+            fmt (str): Python format string for formatting the STRT/STOP/STEP
+                value in the situation where any of those keyword arguments
+                are None
+
+        If STRT/STOP/STEP are not passed to this method, they will be automatically
+        calculated from the index curve.
+
+        """
+
+        # If we are getting STRT and STOP from the data then format them to a
+        # standard precision.
+        # If they are passed in with values, don't format them because we
+        # assume they are at the user's expected precision.
+
+        # If the 'try' fails because self.index doesn't exist or is empty
+        # then use the default or parameter values for STRT, STOP, and STEP.
+        try:
+            if STRT is None:
+                STRT = fmt % self.index[0]
+            if STOP is None:
+                STOP = fmt % self.index[-1]
+            if STEP is None:
+                # prevents an error being thrown in the case of only a single sample being written
+                if STOP != STRT:
+                    raw_step = self.index[1] - self.index[0]
+                    STEP = fmt % raw_step
+        except IndexError:
+            pass
 
         self.well["STRT"].value = STRT
         self.well["STOP"].value = STOP
         self.well["STEP"].value = STEP
 
+    def update_units_from_index_curve(self):
+        """Align STRT/STOP/STEP header item units with the index curve's units."""
         # Check units
-        if self.curves[0].unit:
+        if self.curves and self.curves[0].unit:
             unit = self.curves[0].unit
         else:
             unit = self.well["STRT"].unit
         self.well["STRT"].unit = unit
         self.well["STOP"].unit = unit
         self.well["STEP"].unit = unit
-        self.curves[0].unit = unit
+        # Check that curves exists to avoid throwing an expection.
+        # to write to an non-existant object.
+        if self.curves:
+            self.curves[0].unit = unit
 
     def write(self, file_ref, **kwargs):
         """Write LAS file to disk.
