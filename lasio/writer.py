@@ -199,7 +199,6 @@ def write(
     lines += las.other.splitlines()
 
     logger.debug("LASFile.write ASCII section")
-    # lines.append("~ASCII ".ljust(header_width, "-"))
 
     file_object.write("\n".join(lines))
     file_object.write("\n")
