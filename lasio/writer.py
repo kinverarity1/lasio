@@ -64,7 +64,7 @@ def write(
         lhs_spacer (str): string which goes on left hand side of data
             section - by default it is `" "`.
         spacer (str): string which goes between each column of the data section
-        data_section_header (str): default "~A"
+        data_section_header (str): default "~ASCII"
         mnemonics_header (bool): write mnemonics as header at top of data section
 
     Creating an output file is not the only side-effect of this function. It
