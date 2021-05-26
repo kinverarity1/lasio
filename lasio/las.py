@@ -89,8 +89,6 @@ class LASFile(object):
         ignore_data=False,
         engine="numpy",
         use_normal_engine_for_wrapped=True,
-        pandas_engine_error="retry",
-        pandas_engine_wrapped_error=True,
         read_policy="default",
         null_policy="strict",
         index_unit=None,
@@ -314,8 +312,6 @@ class LASFile(object):
                             curves_data_gen = reader.read_data_section_iterative_numpy_engine(
                                 file_obj, (first_line, last_line)
                             )
-                            # TODO: fix read_data_section_iterative_numpy_engine() so we don't need this.
-                            curves_data_gen = curves_data_gen.T
                         except KeyboardInterrupt:
                             raise
                         except:
