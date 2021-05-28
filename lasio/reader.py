@@ -401,32 +401,24 @@ def read_data_section_iterative(
     title = file_obj.readline()
 
     def items(f, start_line_no, end_line_no):
-        line_no = start_line_no
-        for line in f:
-            line_no += 1
-            logger.debug(
-                "Line {}: reading data '{}'".format(
-                    line_no + 1, line.strip("\n").strip()
-                )
-            )
-            if line.strip().startswith(ignore_comments):
-                continue
-            else:
-                for pattern, sub_str in regexp_subs:
-                    line = re.sub(pattern, sub_str, line)
-                line = line.replace(chr(26), "")
-                for item in split_on_whitespace(line):
-                    try:
-                        yield np.float64(item)
-                    except ValueError:
-                        yield item
-                if line_no == end_line_no:
-                    break
+        for line_no, line in enumerate(f, start=start_line_no+1):
+            line = line.strip().replace(chr(26), "")
+            for pattern, sub_str in regexp_subs:
+                line = re.sub(pattern, sub_str, line)
+            yield line
+            if line_no == end_line_no:
+                break
 
     logger.debug("Reading complete data section...")
-    array = np.array(
-        [i for i in items(file_obj, start_line_no=line_nos[0], end_line_no=line_nos[1])]
+
+    raw_array =  [i for i in items(file_obj, start_line_no=line_nos[0], end_line_no=line_nos[1])]
+
+    array = np.genfromtxt(
+        raw_array,
+        comments=ignore_comments,
     )
+
+    # Wasn't able to do this with genfromtxt's missing_values and filling_values..
     for value in value_null_subs:
         array[array == value] = np.nan
 
