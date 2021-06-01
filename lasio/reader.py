@@ -413,14 +413,22 @@ def read_data_section_iterative(
 
     raw_array =  [i for i in items(file_obj, start_line_no=line_nos[0], end_line_no=line_nos[1])]
 
-    array = np.genfromtxt(
-        raw_array,
-        comments=ignore_comments,
-    )
-
-    # Wasn't able to do this with genfromtxt's missing_values and filling_values..
-    for value in value_null_subs:
-        array[array == value] = np.nan
+    if len(raw_array) == 0:
+        array = np.array([])
+    elif len(value_null_subs) > 0:
+        null_sub_str = ",".join([mynum.__str__() for mynum in value_null_subs])
+        array = np.genfromtxt(
+            raw_array,
+            comments=ignore_comments,
+            missing_values=null_sub_str,
+            usemask=True
+        ).filled(np.nan)
+    else:
+        array = np.genfromtxt(
+            raw_array,
+            comments=ignore_comments,
+            dtype=np.ndarray,
+        )
 
     logger.debug("Read {} items in data section".format(len(array)))
 
