@@ -315,10 +315,24 @@ class LASFile(object):
                         except KeyboardInterrupt:
                             raise
                         except:
-                            raise exceptions.LASDataError(
-                                traceback.format_exc()[:-1]
-                                + " in data section beginning line {}".format(i + 1)
-                            )
+                            try:
+                                file_obj.seek(k)
+                                curves_data_gen = reader.read_data_section_iterative_normal_engine(
+                                    file_obj,
+                                    (first_line, last_line),
+                                    regexp_subs,
+                                    value_null_subs,
+                                    ignore_comments=ignore_data_comments,
+                                    n_columns=reader_n_columns,
+                                    dtypes=dtypes,
+                                )
+                            except KeyboardInterrupt:
+                                raise
+                            except:
+                                raise exceptions.LASDataError(
+                                    traceback.format_exc()[:-1]
+                                    + " in data section beginning line {}".format(i + 1)
+                                )
 
                     if engine == "normal":
                         try:
