@@ -46,6 +46,9 @@ URL_REGEXP = re.compile(
     re.IGNORECASE,
 )
 
+sow_regex = re.compile(r"""([^\s"']+)|"([^"]*)"|'([^']*)'""")
+
+
 
 def check_for_path_obj(file_ref):
     """Check if file_ref is a pathlib.Path object.
@@ -317,11 +320,6 @@ def determine_section_type(section_title):
         return "Header items"
 
 
-def split_on_whitespace(s):
-    # return s.split() # does not handle quoted substrings (#271)
-    # return shlex.split(s) # too slow
-    return ["".join(t) for t in re.findall(r"""([^\s"']+)|"([^"]*)"|'([^']*)'""", s)]
-
 
 def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_comments="#"):
     """Determine how many columns there are in the data section.
@@ -351,7 +349,8 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_comments="#"):
         else:
             for pattern, sub_str in regexp_subs:
                 line = re.sub(pattern, sub_str, line)
-            n_items = len(split_on_whitespace(line))
+            # split line and count number of elements
+            n_items = len(["".join(t) for t in sow_regex.findall(line)])
             logger.debug(
                 "Line {}: {} items counted in '{}'".format(line_no + 1, n_items, line)
             )
@@ -401,21 +400,15 @@ def read_data_section_iterative(
     title = file_obj.readline()
 
     def items(f, start_line_no, end_line_no):
-        line_no = start_line_no
-        for line in f:
-            line_no += 1
-            logger.debug(
-                "Line {}: reading data '{}'".format(
-                    line_no + 1, line.strip("\n").strip()
-                )
-            )
+        for line_no, line in enumerate(f, start=start_line_no+1):
             if line.strip().startswith(ignore_comments):
                 continue
             else:
                 for pattern, sub_str in regexp_subs:
                     line = re.sub(pattern, sub_str, line)
                 line = line.replace(chr(26), "")
-                for item in split_on_whitespace(line):
+                # for item in split_on_whitespace(line, sow_regex):
+                for item in ["".join(t) for t in sow_regex.findall(line)]:
                     try:
                         yield np.float64(item)
                     except ValueError:

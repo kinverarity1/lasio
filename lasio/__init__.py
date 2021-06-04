@@ -7,13 +7,6 @@ from .reader import open_file
 
 __version__ = version()
 
-try:
-    import openpyxl
-except ImportError:
-    pass
-else:
-    from .excel import ExcelConverter
-
 
 def read(file_ref, **kwargs):
     """Read a LAS file.
