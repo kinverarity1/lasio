@@ -162,7 +162,6 @@ class LASFile(object):
             regexp_subs, value_null_subs, version_NULL = reader.get_substitutions(
                 read_policy, null_policy
             )
-
             provisional_version = 2.0
             provisional_wrapped = "YES"
             provisional_null = None
@@ -269,9 +268,15 @@ class LASFile(object):
 
             if not ignore_data:
 
-                # Check whether file is wrapped and if so, attempt to use the
+                # Override the default "numpy" parser with the 'normal' parser 
+                # for these conditions:
+                # - file is wrapped
+                # - null_policy is not "strict"
+                # - dtypes is not "auto". Numpy can handle specified dtypes but 
+                #   the performance decays to the 'normal' performance level.
+
                 # normal engine.
-                if provisional_wrapped == "YES":
+                if provisional_wrapped == "YES" or null_policy != "strict" or dtypes != "auto":
                     if engine != "normal":
                         logger.warning("Only engine='normal' can read wrapped files")
                         if use_normal_engine_for_wrapped:

@@ -528,9 +528,11 @@ def read_data_section_iterative_numpy_engine(file_obj, line_nos):
 
     file_obj.seek(0)
 
-    # unpack=True tranforms the data from an array of rows to an array of columns.
+    # unpack=True transforms the data from an array of rows to an array of columns.
+    # loose=False will throw an error on non-numerical data, which then sends the 
+    # parsing to the 'normal' parser.
     array = np.genfromtxt(
-        file_obj, skip_header=first_line, max_rows=max_rows, names=None, unpack=True
+        file_obj, skip_header=first_line, max_rows=max_rows, names=None, unpack=True, loose=False
     )
 
 
