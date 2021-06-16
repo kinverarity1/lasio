@@ -65,7 +65,8 @@ def write(
             section - by default it is `" "`.
         spacer (str): string which goes between each column of the data section
         data_section_header (str): default "~ASCII"
-        mnemonics_header (bool): write mnemonics as header at top of data section
+        mnemonics_header (bool): include mnemonic curve names in the
+            data_section_header at the top of data section
 
     Creating an output file is not the only side-effect of this function. It
     will also modify the STRT, STOP and STEP HeaderItems so that they correctly
@@ -247,7 +248,7 @@ def write(
             return fmt
 
     def get_left_spacing(j):
-        """Get left-hand-side spcaing for column *j*."""
+        """Get left-hand-side spacing for column *j*."""
         if j == 0:
             left_spacing = lhs_spacer
         else:
@@ -258,11 +259,11 @@ def write(
     if mnemonics_header:
         # Calculate width of numeric values from the first line,
         header_col_widths = []
-        for j in range(ncols):
-            col_fmt = get_column_fmt(j)
-            left_spacing = get_left_spacing(j)
+        for col_idx in range(ncols):
+            col_fmt = get_column_fmt(col_idx)
+            left_spacing = get_left_spacing(col_idx)
             data_value = format_data_section_line(
-                data_arr[0, j], col_fmt, spacing_chars=left_spacing
+                data_arr[0, col_idx], col_fmt, spacing_chars=left_spacing
             )
             header_col_widths.append(len(data_value))
 
