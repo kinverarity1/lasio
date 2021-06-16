@@ -27,6 +27,8 @@ def write(
     spacer=" ",
     data_width=79,
     header_width=60,
+    data_section_header="~ASCII",
+    mnemonics_header=False,
 ):
     """Write a LAS files.
 
@@ -62,6 +64,9 @@ def write(
         lhs_spacer (str): string which goes on left hand side of data
             section - by default it is `" "`.
         spacer (str): string which goes between each column of the data section
+        data_section_header (str): default "~ASCII"
+        mnemonics_header (bool): include mnemonic curve names in the
+            data_section_header at the top of data section
 
     Creating an output file is not the only side-effect of this function. It
     will also modify the STRT, STOP and STEP HeaderItems so that they correctly
@@ -195,7 +200,6 @@ def write(
     lines += las.other.splitlines()
 
     logger.debug("LASFile.write ASCII section")
-    lines.append("~ASCII ".ljust(header_width, "-"))
 
     file_object.write("\n".join(lines))
     file_object.write("\n")
@@ -236,19 +240,66 @@ def write(
             result = value
         return spacing_chars + result
 
+    def get_column_fmt(j):
+        """Get format string for column *j*."""
+        if j in column_fmt:
+            return column_fmt[j]
+        else:
+            return fmt
+
+    def get_left_spacing(j):
+        """Get left-hand-side spacing for column *j*."""
+        if j == 0:
+            left_spacing = lhs_spacer
+        else:
+            left_spacing = spacer
+        return left_spacing
+
+    # Place curve mnemonics in the "~A" line.
+    if mnemonics_header:
+        # Calculate width of numeric values from the first line,
+        header_col_widths = []
+        for col_idx in range(ncols):
+            col_fmt = get_column_fmt(col_idx)
+            left_spacing = get_left_spacing(col_idx)
+            data_value = format_data_section_line(
+                data_arr[0, col_idx], col_fmt, spacing_chars=left_spacing
+            )
+            header_col_widths.append(len(data_value))
+
+        # Construct mnemonics for header line.
+        header_values = []
+        for j, curve in enumerate(las.curves):
+            col_width = header_col_widths[j]
+            if len(curve.mnemonic) > (col_width - 1):
+                width = len(curve.mnemonic) + 1
+            else:
+                width = col_width
+            value = curve.mnemonic.rjust(width)
+            header_values.append(value)
+
+        # Add data section header prefix
+        data_section_header += " "
+        if len(header_values):
+            hv = header_values[0]
+            for k in range(len(data_section_header)):
+                if k < len(hv):
+                    if hv[0] == " ":
+                        hv = hv[1:]
+            header_values = [hv] + header_values[1:]
+
+        file_object.write(data_section_header + "".join(header_values) + "\n")
+    else:
+        file_object.write((data_section_header + " ").ljust(header_width, "-") + "\n")
+
     twrapper = textwrap.TextWrapper(width=data_width)
 
     for i in range(nrows):
         logger.debug("Writing data array row {} of {}".format(i + 1, nrows))
         depth_slice = ""
         for j in range(ncols):
-            col_fmt = fmt
-            if j in column_fmt:
-                col_fmt = column_fmt[j]
-            if j == 0:
-                left_spacing = lhs_spacer
-            else:
-                left_spacing = spacer
+            col_fmt = get_column_fmt(j)
+            left_spacing = get_left_spacing(j)
             depth_slice += format_data_section_line(
                 data_arr[i, j], col_fmt, spacing_chars=left_spacing
             )
