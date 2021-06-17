@@ -101,8 +101,7 @@ READ_POLICIES = {
 READ_SUBS = {
     "comma-decimal-mark": [(re.compile(r"(\d),(\d)"), r"\1.\2")],
     "run-on(-)": [(re.compile(r"(\d)-(\d)"), r"\1 -\2")],
-    "run-on(.)": [(re.compile(r"-?\d*\.\d*\.\d*"), " NaN NaN ")],
-    "run-on(NaN.)": [(re.compile(r"NaN[\.-]\d+"), " NaN NaN ")],
+    "run-on(.)": [(re.compile(r"-?\d*\.\d*\.\d*|NaN[\.-]\d+"), " NaN NaN ")],
 }
 
 NULL_POLICIES = {
@@ -158,35 +157,23 @@ NULL_SUBS = {
     "2147483647": [-2147483647, 2147483647],
     "32767": [-32767, 32767],
     "(null)": [
-        (re.compile(r" \(null\)"), " NaN"),
-        (re.compile(r"\(null\) "), "NaN "),
-        (re.compile(r" \(NULL\)"), " NaN"),
-        (re.compile(r"\(NULL\) "), "NaN "),
-        (re.compile(r" null"), " NaN"),
-        (re.compile(r"null "), "NaN "),
-        (re.compile(r" NULL"), " NaN"),
-        (re.compile(r"NULL "), "NaN "),
+        (re.compile(r" \(null\)|\(null\) | \(NULL\)|\(NULL\) | null|null | NULL|NULL "), " NaN "),
     ],
     "-": [(re.compile(r" -+ "), " NaN ")],
-    "NA": [(re.compile(r"(#N/A)[ ]"), "NaN "), (re.compile(r"[ ](#N/A)"), " NaN")],
+    "NA": [(re.compile(r"(#N/A)[ ]|[ ](#N/A)"), " NaN ")],
     "INF": [
-        (re.compile(r"(-?1\.#INF)[ ]"), "NaN "),
-        (re.compile(r"[ ](-?1\.#INF[0-9]*)"), " NaN"),
+        (re.compile(r"(-?1\.#INF)[ ]|[ ](-?1\.#INF[0-9]*)"), " NaN "),
     ],
     "IO": [
-        (re.compile(r"(-?1\.#IO)[ ]"), "NaN "),
-        (re.compile(r"[ ](-?1\.#IO)"), " NaN"),
+        (re.compile(r"(-?1\.#IO)[ ]|[ ](-?1\.#IO)"), " NaN "),
     ],
     "IND": [
-        (re.compile(r"(-?1\.#IND)[ ]"), "NaN "),
-        (re.compile(r"[ ](-?1\.#IND[0-9]*)"), " NaN"),
+        (re.compile(r"(-?1\.#IND)[ ]|[ ](-?1\.#IND[0-9]*)"), " NaN "),
     ],
     "-0.0": [
-        (re.compile(r"(-0\.0)[ ]"), "NaN "),
-        (re.compile(r"[ ](-0\.00*[^1-9])"), " NaN"),
+        (re.compile(r"(-0\.0)[ ]|[ ](-0\.00*[^1-9])"), " NaN "),
     ],
     "numbers-only": [
-        (re.compile(r"([^ 0-9.\-+]+)[ ]"), "NaN "),
-        (re.compile(r"[ ]([^ 0-9.\-+]+)"), " NaN"),
+        (re.compile(r"([^ 0-9.\-+]+)[ ]|[ ]([^ 0-9.\-+]+)"), " NaN "),
     ],
 }

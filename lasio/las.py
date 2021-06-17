@@ -461,6 +461,14 @@ class LASFile(object):
             filename (str)
 
         """
+
+        try:
+            import openpyxl
+        except ImportError:
+            pass
+        else:
+            from .excel import ExcelConverter
+
         from . import excel
 
         converter = excel.ExcelConverter(self)
