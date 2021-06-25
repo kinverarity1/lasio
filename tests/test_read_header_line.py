@@ -83,3 +83,28 @@ def test_unit_with_space():
     assert result["unit"] == "1000 lbf"
     assert result["value"] == ""
     assert result["descr"] == "(RT)"
+
+
+def test_line_without_period():
+    line = "              DRILLED  :12/11/2010"
+    result = read_header_line(line)
+    assert result["name"] == "DRILLED"
+    assert result["value"] == "12/11/2010"
+
+def test_line_without_period_with_space():
+    line = "              PERM DAT :1"
+    result = read_header_line(line)
+    assert result["name"] == "PERM DAT"
+    assert result["value"] == "1"
+
+def test_line_without_period_with_colon():
+    line = "			  TIME     :14:00:32"
+    result = read_header_line(line)
+    assert result["name"] == "TIME"
+    assert result["value"] == "14:00:32"
+
+def test_line_without_period_with_decimal_value():
+    line = "              HOLE DIA :85.7"
+    result = read_header_line(line)
+    assert result["name"] == "HOLE DIA"
+    assert result["value"] == "85.7"
