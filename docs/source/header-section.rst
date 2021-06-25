@@ -273,18 +273,20 @@ For example take these lines from a LAS file header section:
 
               DRILLED  :12/11/2010
               PERM DAT :1
-			  TIME     :14:00:32
+              TIME     :14:00:32
               HOLE DIA :85.7
 
 These lines are missing periods between the mnemonic and colon, e.g. a properly
 formatted version would be ``DRILLED. :12/11/2010``.
 
-However, lasio will parse them silently, and correctly.
+However, lasio will parse them silently, and correctly, e.g. for the last
+line the mnemonic will be ``HOLE DIA`` and the value will be ``85.7``, with the
+description blank.
 
 Lines with colons in the mnemonic and description
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Colons are used a delimiter, but can also occur inside the unit, value, and
+Colons are used as a delimiter, but colons can also occur inside the unit, value, and
 description fields in a LAS file header. Take this line as an example:
 
 .. code-block::
@@ -312,7 +314,7 @@ If there are two adjoining periods, the same behaviour applies:
 
     TDEP..1IN                      :  0.1-in
 
-results in a mnemonic ``TDEP`` and unit ``.1IN``.
+lasio parses this line as having mnemonic ``TDEP`` and unit ``.1IN``.
 
 Special case for units which contain spaces
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -325,7 +327,7 @@ appear with a space. Currently the only one recognised is ``1000 lbf``:
 
     HKLA            .1000 lbf                                  :(RT)
 
-This is parsed as mnemonic ``HKLA``, unit ``1000 lbf``, and value ````, contrary
+This is parsed as mnemonic ``HKLA``, unit ``1000 lbf``, and value blank, contrary
 to the usual behaviour which would result in unit ``1000`` and value ``lbf``.
 
 Please raise a `GitHub issue <https://github.com/kinverarity1/lasio/issues/new/choose>`__ 
@@ -359,13 +361,14 @@ Sometimes lasio cannot make sense of a header line at all. For example:
     LATI      .DEG                                       : Latitude  - see Surface Coords comment above
     LONG      .DEG                                       : Longitude - see Surface Coords comment above
 
-The line with `"` causes an exception to be raised by default. Another example
-is this file::
+The line with ``"`` causes an exception to be raised by default. 
+
+Another example is this ~Param section in a LAS file:
 
 .. code-block:: none
 
-    ~PARAMETER INFORMATION
-    DEPTH     DT       RHOB     NPHI     SFLU     SFLA      ILM      ILD
+   ~PARAMETER INFORMATION
+   DEPTH     DT       RHOB     NPHI     SFLU     SFLA      ILM      ILD
 
 This isn't a header line, and cannot be parsed as such. It results in a
 ``LASHeaderError`` exception being raised:
@@ -428,8 +431,8 @@ Only a warning is issued, and the rest of the LAS file loads OK:
      CurveItem(mnemonic="ILD", unit="OHMM", value="", descr="8  DEEP RESISTIVITY", original_mnemonic="ILD", data.shape=(3,))
     ]
 
-If you are dealing with "messy" LAS data, it might be good to use this all
-the time.
+If you are dealing with "messy" LAS data, it might be good to consider using
+``ignore_header_errors=True``.
 
 Handling duplicate mnemonics
 ----------------------------
@@ -440,7 +443,7 @@ Take this LAS file as an example, containing this ~C section:
 
     ~CURVE INFORMATION
     DEPT.M                     :  1  DEPTH
-    DT  .US/M     		        :  2  SONIC TRANSIT TIME
+    DT  .US/M                  :  2  SONIC TRANSIT TIME
     RHOB.K/M3                  :  3  BULK DENSITY
     NPHI.V/V                   :  4   NEUTRON POROSITY
     RXO.OHMM                   :  5  RXO RESISTIVITY
@@ -449,7 +452,8 @@ Take this LAS file as an example, containing this ~C section:
     RES.OHMM                   :  8  DEEP RESISTIVITY
 
 Notice there are three curves with the mnemonic RES. When we load the file in,
-lasio distinguishes between these duplicates:
+lasio distinguishes between these duplicates by appending ``:1``, ``:2``, and
+so on, to the duplicated mnemonic:
 
 .. code-block:: python
 
