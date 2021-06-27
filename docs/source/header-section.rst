@@ -5,9 +5,15 @@ Tutorial
 --------
 
 One of the primary motivations in writing lasio was to be able to reliably
-parse LAS header sections. This is working fairly well for LAS 1.2 and 2.0
-files, and lasio does not require LAS files to be strictly compliant with
-either standard.
+parse LAS header sections. This is working well for LAS 1.2 and 2.0
+files, and partially for LAS 3.0 files. 
+
+.. note::
+
+   lasio does not require LAS files to be strictly compliant with the standards,
+   and you should not expect lasio to raise an exception or error for files which
+   are clearly not conforming to the standards. The goal of lasio is to parse
+   metadata and data quietly, not to fail unnecessarily.
 
 .. code-block:: python
 
@@ -232,11 +238,13 @@ There are methods intended for removing curves. Say you want to remove the PR cu
      CurveItem(mnemonic="COND", unit="MS/M", value="", descr="COND", original_mnemonic="COND", data.shape=(121,))]
 
 
-.. warning:: Common mistake!
+.. warning:: 
 
-A common job is to iterate through the curves and remove all but a few that you are
-interested in. When doing this, be careful to iterate over a **copy** of the curves
-section:
+    Common mistake!
+
+    A common job is to iterate through the curves and remove all but a few that you are
+    interested in. When doing this, be careful to iterate over a **copy** of the curves
+    section. See example below.
 
 .. code-block:: python
 
@@ -249,21 +257,102 @@ section:
     [CurveItem(mnemonic="DEPT", unit="M", value="", descr="DEPTH", original_mnemonic="DEPT", data.shape=(121,)),
      CurveItem(mnemonic="DFAR", unit="G/CM3", value="", descr="DFAR", original_mnemonic="DFAR", data.shape=(121,)),
      CurveItem(mnemonic="DNEAR", unit="G/CM3", value="", descr="DNEAR", original_mnemonic="DNEAR", data.shape=(121,))]
-    
-Handling errors
----------------
 
-lasio will do its best to read every line from the header section. If it can
-make sense of it, it will parse it into a mnemonic, unit, value, and
-description. However often there are problems in LAS files. For example, a
-header section might contain something like:
+Handling special cases of header lines
+--------------------------------------
+
+lasio will do its best to read every line from the header section. Some examples
+follow for unusual formattings:
+
+Lines without periods
+~~~~~~~~~~~~~~~~~~~~~
+
+For example take these lines from a LAS file header section:
 
 .. code-block:: none
 
-    COUNTY: RUSSELL
+              DRILLED  :12/11/2010
+              PERM DAT :1
+              TIME     :14:00:32
+              HOLE DIA :85.7
 
-This line is missing a period. It should be ``COUNTY.    : RUSSELL``. Or
-another example:
+These lines are missing periods between the mnemonic and colon, e.g. a properly
+formatted version would be ``DRILLED. :12/11/2010``.
+
+However, lasio will parse them silently, and correctly, e.g. for the last
+line the mnemonic will be ``HOLE DIA`` and the value will be ``85.7``, with the
+description blank.
+
+Lines with colons in the mnemonic and description
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Colons are used as a delimiter, but colons can also occur inside the unit, value, and
+description fields in a LAS file header. Take this line as an example:
+
+.. code-block::
+
+    TIML.hh:mm 23:15 23-JAN-2001:   Time Logger: At Bottom
+
+lasio will parse this correctly such that the unit is ``hh:mm``, the value is
+``23:15 21-JAN-2001``, and the description is ``Time Logger: At Bottom``.
+
+Units containing periods
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Similarly, periods are used as delimiters, but can also occur as part of the
+unit field's value, such as in the case of a unit of tenths of an inch (``.1IN``):
+
+.. code-block:: none
+
+    TDEP  ..1IN                      :  0.1-in
+
+lasio will parse the mnemonic as ``TDEP`` and the unit as ``.1IN``.
+
+If there are two adjoining periods, the same behaviour applies:
+
+.. code-block:: none
+
+    TDEP..1IN                      :  0.1-in
+
+lasio parses this line as having mnemonic ``TDEP`` and unit ``.1IN``.
+
+Special case for units which contain spaces
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Normally, any whitespace following the unit in a LAS header line delimits
+the unit from the value. lasio has a special exception for units which may
+appear with a space. Currently the only one recognised is ``1000 lbf``:
+
+.. code-block:: none
+
+    HKLA            .1000 lbf                                  :(RT)
+
+This is parsed as mnemonic ``HKLA``, unit ``1000 lbf``, and value blank, contrary
+to the usual behaviour which would result in unit ``1000`` and value ``lbf``.
+
+Please raise a `GitHub issue <https://github.com/kinverarity1/lasio/issues/new/choose>`__ 
+for any other units which should be handled in this way.
+
+Mnemonics which contain a period
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As with other LAS file parsers, lasio does not parse mnemonics which contain
+a period - instead, anything after the period will be parsed as the unit:
+
+.. code-block::
+
+    SP.COND .US/M                      :  EC at 25 deg C
+
+results in mnemonic ``SP``, unit ``COND``, and value ``.US/CM``.
+
+.. warning::
+
+    These files are non-conforming, and difficult to anticipate.
+
+Handling errors silently (``ignore_header_errors=True``)
+--------------------------------------------------------
+
+Sometimes lasio cannot make sense of a header line at all. For example:
 
 .. code-block:: none
 
@@ -272,45 +361,52 @@ another example:
     LATI      .DEG                                       : Latitude  - see Surface Coords comment above
     LONG      .DEG                                       : Longitude - see Surface Coords comment above
 
-Obviously the line with " causes an error.
+The line with ``"`` causes an exception to be raised by default. 
 
-All these (and any other kind of error in the header section) can be turned
-from LASHeaderError exceptions into :func:`logger.warning` calls instead by
-using ``lasio.read(..., ignore_header_errors=True)``. Here is an example.
-First we try reading a file without this argument:
+Another example is this ~Param section in a LAS file:
+
+.. code-block:: none
+
+   ~PARAMETER INFORMATION
+   DEPTH     DT       RHOB     NPHI     SFLU     SFLA      ILM      ILD
+
+This isn't a header line, and cannot be parsed as such. It results in a
+``LASHeaderError`` exception being raised:
 
 .. code-block:: python
 
     >>> las = lasio.examples.open('dodgy_param_sect.las', ignore_header_errors=False)
     Unable to parse line as LAS header: DEPTH     DT       RHOB     NPHI     SFLU     SFLA      ILM      ILD
     Traceback (most recent call last):
-      File "C:\Users\kinve\code\lasio\lasio\reader.py", line 525, in parse_header_section
+    File "C:\Users\kinve\code\lasio\lasio\reader.py", line 525, in parse_header_section
         values = read_line(line, section_name=parser.section_name2)
-      File "C:\Users\kinve\code\lasio\lasio\reader.py", line 711, in read_line
+    File "C:\Users\kinve\code\lasio\lasio\reader.py", line 711, in read_line
         return read_header_line(*args, **kwargs)
-      File "C:\Users\kinve\code\lasio\lasio\reader.py", line 780, in read_header_line
+    File "C:\Users\kinve\code\lasio\lasio\reader.py", line 780, in read_header_line
         mdict = m.groupdict()
     AttributeError: 'NoneType' object has no attribute 'groupdict'
 
     During handling of the above exception, another exception occurred:
 
     Traceback (most recent call last):
-      File "<stdin>", line 1, in <module>
-      File "C:\Users\kinve\code\lasio\lasio\examples.py", line 46, in open
+    File "<stdin>", line 1, in <module>
+    File "C:\Users\kinve\code\lasio\lasio\examples.py", line 46, in open
         return open_local_example(filename, **kwargs)
-      File "C:\Users\kinve\code\lasio\lasio\examples.py", line 106, in open_local_example
+    File "C:\Users\kinve\code\lasio\lasio\examples.py", line 106, in open_local_example
         return LASFile(os.path.join(examples_path, *filename.split("/")), **kwargs)
-      File "C:\Users\kinve\code\lasio\lasio\las.py", line 84, in __init__
+    File "C:\Users\kinve\code\lasio\lasio\las.py", line 84, in __init__
         self.read(file_ref, **read_kwargs)
-      File "C:\Users\kinve\code\lasio\lasio\las.py", line 222, in read
+    File "C:\Users\kinve\code\lasio\lasio\las.py", line 222, in read
         mnemonic_case=mnemonic_case,
-      File "C:\Users\kinve\code\lasio\lasio\las.py", line 142, in add_section
+    File "C:\Users\kinve\code\lasio\lasio\las.py", line 142, in add_section
         raw_section, **sect_kws
-      File "C:\Users\kinve\code\lasio\lasio\reader.py", line 536, in parse_header_section
+    File "C:\Users\kinve\code\lasio\lasio\reader.py", line 536, in parse_header_section
         raise exceptions.LASHeaderError(message)
     lasio.exceptions.LASHeaderError: line 31 (section ~PARAMETER INFORMATION): "DEPTH     DT       RHOB     NPHI     SFLU     SFLA      ILM      ILD"
 
-Now if we use ``ignore_header_errors=True``:
+However, these can be converted from ``LASHeaderError`` exceptions into 
+``logger.warning()`` calls instead by using 
+``lasio.read(..., ignore_header_errors=True)``:
 
 .. code-block:: python
 
@@ -335,6 +431,9 @@ Only a warning is issued, and the rest of the LAS file loads OK:
      CurveItem(mnemonic="ILD", unit="OHMM", value="", descr="8  DEEP RESISTIVITY", original_mnemonic="ILD", data.shape=(3,))
     ]
 
+If you are dealing with "messy" LAS data, it might be good to consider using
+``ignore_header_errors=True``.
+
 Handling duplicate mnemonics
 ----------------------------
 
@@ -344,7 +443,7 @@ Take this LAS file as an example, containing this ~C section:
 
     ~CURVE INFORMATION
     DEPT.M                     :  1  DEPTH
-    DT  .US/M     		        :  2  SONIC TRANSIT TIME
+    DT  .US/M                  :  2  SONIC TRANSIT TIME
     RHOB.K/M3                  :  3  BULK DENSITY
     NPHI.V/V                   :  4   NEUTRON POROSITY
     RXO.OHMM                   :  5  RXO RESISTIVITY
@@ -353,7 +452,8 @@ Take this LAS file as an example, containing this ~C section:
     RES.OHMM                   :  8  DEEP RESISTIVITY
 
 Notice there are three curves with the mnemonic RES. When we load the file in,
-lasio distinguishes between these duplicates:
+lasio distinguishes between these duplicates by appending ``:1``, ``:2``, and
+so on, to the duplicated mnemonic:
 
 .. code-block:: python
 

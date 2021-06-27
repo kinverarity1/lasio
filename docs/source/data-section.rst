@@ -1,6 +1,54 @@
 Data section
 ============
 
+Handling text, dates, timestamps, or any non-numeric characters
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+By default, lasio will attempt to convert each column of the data section
+into floating-point numbers. If that fails, as it will for non-numeric
+characters, then the column will be returned as text (``str``). The behavour
+can be controlled by specifing the data type as either ``int``, ``float`` or
+``str`` per column using the ``dtypes`` keyword argument to
+:meth:`lasio.LASFile.read`.
+
+See the example ``data_characters.las``:
+
+.. code-block::
+
+    ~A TIME       DATE       DEPT ARC_GR_UNC_RT
+    00:00:00 01-Jan-20  1500.2435        126.56
+    00:00:01 01-Jan-20  1500.3519        126.56
+
+.. code-block:: python
+
+    >>> import lasio.examples
+    >>> las = lasio.examples.open("data_characters.las")
+    >>> las["TIME"]
+    array(['00:00:00', '00:00:01'], dtype='<U32')
+    >>> las["DATE"]
+    array(['01-Jan-20', '01-Jan-20'], dtype='<U32')
+    >>> las["DEPT"]
+    array([1500.2435, 1500.3519])
+    >>> las["ARC_GR_UNC_RT"]
+    array([126.56, 126.56])
+    >>> las.df().reset_index().info()
+    <class 'pandas.core.frame.DataFrame'>
+    RangeIndex: 2 entries, 0 to 1
+    Data columns (total 4 columns):
+     #   Column         Non-Null Count  Dtype
+    ---  ------         --------------  -----
+     0   TIME           2 non-null      object
+     1   DATE           2 non-null      object
+     2   DEPT           2 non-null      float64
+     3   ARC_GR_UNC_RT  2 non-null      float64
+    dtypes: float64(2), object(2)
+    memory usage: 192.0+ bytes
+
+lasio doesn't yet understand dates and timestamps natively, but you
+can do these conversions with pandas:
+
+    >>> las["DATE_DT"] = pd.to_datetime(las["DATE"]).values
+
 Ignoring commented-out lines
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

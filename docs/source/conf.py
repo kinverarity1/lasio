@@ -26,8 +26,8 @@ source_suffix = ".rst"
 master_doc = "index"
 
 project = u"lasio"
-copyright = u"2013-2020, Kent Inverarity and contributors"
-author = u"Kent Inverarity and contributors"
+copyright = u"2013-2021, lasio contributors"
+author = u"lasio contributors"
 
 from pkg_resources import get_distribution
 

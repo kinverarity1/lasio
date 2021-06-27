@@ -9,7 +9,6 @@ Reading LAS files
 .. autofunction:: lasio.open_file
 .. autofunction:: lasio.reader.open_with_codecs
 .. autofunction:: lasio.reader.get_encoding
-.. autofunction:: lasio.reader.read_file_contents
 .. automethod:: lasio.LASFile.match_raw_section
 .. autofunction:: lasio.reader.read_data_section_iterative
 .. autofunction:: lasio.reader.get_substitutions

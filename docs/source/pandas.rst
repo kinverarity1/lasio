@@ -2,8 +2,26 @@ Integration with pandas.DataFrame
 =================================
 
 The :meth:`lasio.LASFile.df` method converts the LAS data to a
-:class:`pandas.DataFrame`. Any changes that you make to the DataFrame can be
-brought back into the LASFile object with :meth:`lasio.LASFile.set_data`.
+:class:`pandas.DataFrame`. The first curve in the LAS file is used
+for the dataframe's index. See below for an example using this LAS file:
+
+.. code-block::
+
+    ~CURVE INFORMATION
+    DEPT.M                   :DEPTH
+    CALI.MM                  :CALI
+    DFAR.G/CM3               :DFAR
+    DNEAR.G/CM3              :DNEAR
+    GAMN.GAPI                :GAMN
+    NEUT.CPS                 :NEUT
+    PR.OHM/M                 :PR
+    SP.MV                    :SP
+    COND.MS/M                :COND
+    ...
+    ~A   DEPT[M]        CALI        DFAR       DNEAR        GAMN        NEUT          PR          SP        COND
+        0.050000     49.7650     4.58700     3.38200    -99999.0    -99999.0    -99999.0    -99999.0    -99999.0
+        0.100000     49.7650     4.58700     3.38200    -2324.28    -99999.0     115.508    -3.04900    -116.998
+        0.150000     49.7650     4.58700     3.38200    -2324.28    -99999.0     115.508    -3.04900    -116.998
 
 .. code-block:: python
 
@@ -92,6 +110,9 @@ There are some summary methods handy for data exploration:
     75%    50499.900000   100.623000   505.530000
     max    50499.900000   102.902000  4978.160000
 
+Any changes that you make to the DataFrame can be
+brought back into the LASFile object with :meth:`lasio.LASFile.set_data`.
+
 There's obviously a problem with the GAMN log: -2324.28 is not a valid value.
 Let's fix that.
 
@@ -120,6 +141,11 @@ method and the LAS file's STEP value:
 
 Now we want to apply this DataFrame ``df`` back to the ``las`` LASFile object,
 and check that it's all there:
+
+.. warning::
+
+    When using ``las.set_data(df)``, don't forget that ``df.index`` will be used
+    for the first curve of the LAS file.
 
 .. code-block:: python
 
