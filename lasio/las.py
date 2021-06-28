@@ -82,13 +82,15 @@ class LASFile(object):
     def read(
         self,
         file_ref,
-        ignore_data=False,
-        read_policy="default",
-        null_policy="strict",
         ignore_header_errors=False,
         ignore_comments=("#",),
         ignore_data_comments="#",
         mnemonic_case="upper",
+        ignore_data=False,
+        engine="numpy",
+        use_normal_engine_for_wrapped=True,
+        read_policy="default",
+        null_policy="strict",
         index_unit=None,
         dtypes="auto",
         **kwargs
@@ -100,10 +102,6 @@ class LASFile(object):
                 object, or a string containing the contents of a file.
 
         Keyword Arguments:
-            null_policy (str or list): see
-                http://lasio.readthedocs.io/en/latest/data-section.html#handling-invalid-data-indicators-automatically
-            ignore_data (bool): if True, do not read in any of the actual data,
-                just the header metadata. False by default.
             ignore_header_errors (bool): ignore LASHeaderErrors (False by
                 default)
             ignore_comments (sequence/str): ignore lines beginning with these
@@ -113,6 +111,19 @@ class LASFile(object):
             mnemonic_case (str): 'preserve': keep the case of HeaderItem mnemonics
                                  'upper': convert all HeaderItem mnemonics to uppercase
                                  'lower': convert all HeaderItem mnemonics to lowercase
+            ignore_data (bool): if True, do not read in any of the actual data,
+                just the header metadata. False by default.
+            engine (str): "normal": parse data section with normal Python reader
+                (quite slow); "numpy": parse data section with `numpy.genfromtxt` (fast).
+                By default the engine is "numpy".
+            use_normal_engine_for_wrapped (bool): if header metadata indicates that
+                the file is wrapped, always use the 'normal' engine. Default is True.
+                The only reason you should use False is if speed is a very high priority
+                and you had files with metadata that incorrectly indicates they are
+                wrapped.
+            read_policy (): TODO
+            null_policy (str or list): see
+                http://lasio.readthedocs.io/en/latest/data-section.html#handling-invalid-data-indicators-automatically
             index_unit (str): Optionally force-set the index curve's unit to "m" or "ft"
             dtypes ("auto", dict or list): specify the data types for each curve in the
                 ~ASCII data section. If "auto", each curve will be converted to floats if
@@ -166,7 +177,6 @@ class LASFile(object):
             regexp_subs, value_null_subs, version_NULL = reader.get_substitutions(
                 read_policy, null_policy
             )
-
             provisional_version = 2.0
             provisional_wrapped = "YES"
             provisional_null = None
@@ -272,6 +282,22 @@ class LASFile(object):
                     las3_data_section_indices.append(i)
 
             if not ignore_data:
+
+                # Override the default "numpy" parser with the 'normal' parser 
+                # for these conditions:
+                # - file is wrapped
+                # - null_policy is not "strict"
+                # - dtypes is not "auto". Numpy can handle specified dtypes but 
+                #   the performance decays to the 'normal' performance level.
+
+                # normal engine.
+                if provisional_wrapped == "YES" or null_policy != "strict" or dtypes != "auto":
+                    if engine != "normal":
+                        logger.warning("Only engine='normal' can read wrapped files")
+                        if use_normal_engine_for_wrapped:
+                            engine = "normal"
+
+                # Check for the number of columns in each data section.
                 for k, first_line, last_line, section_title in [
                     section_positions[i] for i in data_section_indices
                 ]:
@@ -298,23 +324,55 @@ class LASFile(object):
                         dtypes = [dtypes.get(c.mnemonic, float) for c in self.curves]
 
                     # Notes see 2d9e43c3 and e960998f for 'try' background
-                    try:
-                        curves_data_gen = reader.read_data_section_iterative(
-                            file_obj,
-                            (first_line, last_line),
-                            regexp_subs,
-                            value_null_subs,
-                            ignore_comments=ignore_data_comments,
-                            n_columns=reader_n_columns,
-                            dtypes=dtypes,
-                        )
-                    except KeyboardInterrupt:
-                        raise
-                    except:
-                        raise exceptions.LASDataError(
-                            traceback.format_exc()[:-1]
-                            + " in data section beginning line {}".format(i + 1)
-                        )
+
+
+                    # Attempt to read the data section
+                    if engine == "numpy":
+                        try:
+                            curves_data_gen = reader.read_data_section_iterative_numpy_engine(
+                                file_obj, (first_line, last_line)
+                            )
+                        except KeyboardInterrupt:
+                            raise
+                        except:
+                            try:
+                                file_obj.seek(k)
+                                curves_data_gen = reader.read_data_section_iterative_normal_engine(
+                                    file_obj,
+                                    (first_line, last_line),
+                                    regexp_subs,
+                                    value_null_subs,
+                                    ignore_comments=ignore_data_comments,
+                                    n_columns=reader_n_columns,
+                                    dtypes=dtypes,
+                                )
+                            except KeyboardInterrupt:
+                                raise
+                            except:
+                                raise exceptions.LASDataError(
+                                    traceback.format_exc()[:-1]
+                                    + " in data section beginning line {}".format(i + 1)
+                                )
+
+                    if engine == "normal":
+                        try:
+                            curves_data_gen = reader.read_data_section_iterative_normal_engine(
+                                file_obj,
+                                (first_line, last_line),
+                                regexp_subs,
+                                value_null_subs,
+                                ignore_comments=ignore_data_comments,
+                                n_columns=reader_n_columns,
+                                dtypes=dtypes,
+                            )
+                        except KeyboardInterrupt:
+                            raise
+                        except:
+                            raise exceptions.LASDataError(
+                                traceback.format_exc()[:-1]
+                                + " in data section beginning line {}".format(i + 1)
+                            )
+
 
                     # Assign data to curves.
                     curve_idx = 0

@@ -78,6 +78,7 @@ def test_null_policy_custom_2():
 
 
 def test_null_policy_ERR_strict():
+    # Verify we can read-in text in a mostly numerical column
     las = read(egfn("null_policy_ERR.las"), null_policy="strict")
     assert las["RHOB"][2] == "ERR"
 

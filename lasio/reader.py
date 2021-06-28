@@ -368,7 +368,7 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_comments="#"):
         return item_counts[0]
 
 
-def read_data_section_iterative(
+def read_data_section_iterative_normal_engine(
     file_obj, line_nos, regexp_subs, value_null_subs, ignore_comments, n_columns, dtypes
 ):
     """Read data section into memory.
@@ -501,6 +501,42 @@ def identify_dtypes_from_data(row):
             "Column {}: value {} -> dtype {}".format(i, value, dtypes_list[-1])
         )
     return dtypes_list
+
+
+def read_data_section_iterative_numpy_engine(file_obj, line_nos):
+    """Read data section into memory.
+
+    Arguments:
+        file_obj: file-like object open for reading at the beginning of the section
+        line_nos (tuple): the first and last line no of the section to read
+
+
+    Returns:
+        A numpy ndarray.
+    """
+
+    first_line = line_nos[0] + 1
+    last_line = line_nos[1]
+    max_rows = last_line - first_line
+
+    file_obj.seek(0)
+
+    # unpack=True transforms the data from an array of rows to an array of columns.
+    # loose=False will throw an error on non-numerical data, which then sends the 
+    # parsing to the 'normal' parser.
+    array = np.genfromtxt(
+        file_obj, skip_header=first_line, max_rows=max_rows, names=None, unpack=True, loose=False
+    )
+
+
+    # If there is only one data row, np.genfromtxt treats it as one array of
+    # individual values. Lasio needs a array of arrays. This if statement
+    # converts the single line data array to an array of arrays(column data).
+    if len(array.shape) == 1:
+        arr_len = array.shape[0]
+        array = array.reshape(arr_len,1)
+
+    return array
 
 
 def get_substitutions(read_policy, null_policy):
