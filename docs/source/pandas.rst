@@ -28,8 +28,46 @@ for the dataframe's index. See below for an example using this LAS file:
     >>> import lasio.examples
     >>> las = lasio.examples.open('6038187_v1.2.las')
     >>> df = las.df()
+    >>> print(df)
+              CALI   DFAR  DNEAR     GAMN  NEUT       PR     SP     COND
+    DEPT
+    0.05    49.765  4.587  3.382      NaN   NaN      NaN    NaN      NaN
+    0.10    49.765  4.587  3.382 -2324.28   NaN  115.508 -3.049 -116.998
+    0.15    49.765  4.587  3.382 -2324.28   NaN  115.508 -3.049 -116.998
+    0.20    49.765  4.587  3.382 -2324.28   NaN  115.508 -3.049 -116.998
+    0.25    49.765  4.587  3.382 -2324.28   NaN  115.508 -3.049 -116.998
+    ...        ...    ...    ...      ...   ...      ...    ...      ...
+    136.40  48.604    NaN    NaN      NaN   NaN      NaN    NaN      NaN
+    136.45  48.555    NaN    NaN      NaN   NaN      NaN    NaN      NaN
+    136.50  48.555    NaN    NaN      NaN   NaN      NaN    NaN      NaN
+    136.55  48.438    NaN    NaN      NaN   NaN      NaN    NaN      NaN
+    136.60 -56.275    NaN    NaN      NaN   NaN      NaN    NaN      NaN
 
-There are some summary methods handy for data exploration:
+    [2732 rows x 8 columns]
+
+If you prefer the DEPT curve not to be set as the ``pandas.DataFrame`` index, then you can reset the index:
+
+.. code-block:: python
+
+    >>> df2 = las.df().reset_index()
+    >>> print(df2)
+            DEPT    CALI   DFAR  DNEAR     GAMN  NEUT       PR     SP     COND
+    0       0.05  49.765  4.587  3.382      NaN   NaN      NaN    NaN      NaN
+    1       0.10  49.765  4.587  3.382 -2324.28   NaN  115.508 -3.049 -116.998
+    2       0.15  49.765  4.587  3.382 -2324.28   NaN  115.508 -3.049 -116.998
+    3       0.20  49.765  4.587  3.382 -2324.28   NaN  115.508 -3.049 -116.998
+    4       0.25  49.765  4.587  3.382 -2324.28   NaN  115.508 -3.049 -116.998
+    ...      ...     ...    ...    ...      ...   ...      ...    ...      ...
+    2727  136.40  48.604    NaN    NaN      NaN   NaN      NaN    NaN      NaN
+    2728  136.45  48.555    NaN    NaN      NaN   NaN      NaN    NaN      NaN
+    2729  136.50  48.555    NaN    NaN      NaN   NaN      NaN    NaN      NaN
+    2730  136.55  48.438    NaN    NaN      NaN   NaN      NaN    NaN      NaN
+    2731  136.60 -56.275    NaN    NaN      NaN   NaN      NaN    NaN      NaN
+
+    [2732 rows x 9 columns]
+
+But let's continue with ``df``, which has DEPT set to the index. There are some 
+summary methods in pandas which are handy for data exploration:
 
 .. code-block:: python
 
