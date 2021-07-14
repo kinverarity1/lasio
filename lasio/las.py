@@ -375,7 +375,9 @@ class LASFile(object):
 
 
                     # Assign data to curves.
+                    data_assigned_to_curves = {curve_idx: False for curve_idx in range(len(self.curves))}
                     curve_idx = 0
+                    curve_length = 0
                     for curve_arr in curves_data_gen:
 
                         # Do not replace nulls in the index curve.
@@ -392,13 +394,23 @@ class LASFile(object):
                                 curve_arr, curve_idx
                             )
                         )
+                        if curve_length == 0:
+                            curve_length = len(curve_arr)
                         if curve_idx < len(self.curves):
                             self.curves[curve_idx].data = curve_arr
                         else:
                             logger.debug("Creating new curve")
                             curve = CurveItem(mnemonic="", data=curve_arr)
                             self.curves.append(curve)
+                        data_assigned_to_curves[curve_idx] = True
                         curve_idx += 1
+
+                    # Assign missing data indicators for curves which have no data in the
+                    # data section.
+                    for curve_idx, flag in data_assigned_to_curves.items():
+                        if flag is False:
+                            self.curves[curve_idx].data = np.empty(curve_length) * np.nan
+                            logger.debug("Creating null data array for curve_idx {:.0f}".format(curve_idx))
 
         finally:
             if hasattr(file_obj, "close"):

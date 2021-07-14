@@ -490,5 +490,5 @@ def test_excess_curves():
     assert las.curves.keys() == ["DEPTH", "TVD", "VS", "GAMMA", "ROP", "TEMP"]
     assert las.keys() == ["DEPTH", "TVD", "VS", "GAMMA", "ROP", "TEMP"]
     assert len(las["ROP"]) == 2
-    assert np.isnan(las["ROP"]).all()
-    assert las.df().columns == ["DEPTH", "TVD", "VS", "GAMMA", "ROP", "TEMP"]
+    assert numpy.isnan(las["ROP"]).all()
+    assert list(las.df().columns) == ["TVD", "VS", "GAMMA", "ROP", "TEMP"]
