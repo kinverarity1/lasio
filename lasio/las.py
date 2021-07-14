@@ -681,7 +681,10 @@ class LASFile(object):
             self.append_curve_item(value)
         else:
             # Assume value is an ndarray
-            self.append_curve(key, value)
+            if key in self.curves.keys():
+                self.update_curve(mnemonic=key, data=value)
+            else:
+                self.append_curve(key, value)
 
     def keys(self):
         """Return curve mnemonics."""
@@ -1048,6 +1051,32 @@ class LASFile(object):
         if ix is None:
             ix = self.curves.keys().index(mnemonic)
         self.curves.pop(ix)
+
+    def update_curve(self, mnemonic=None, ix=None, data=False, unit=False, descr=False, value=False):
+        """Update a curve.
+
+        Keyword Arguments:
+            ix (int): index of curve in LASFile.curves.
+            mnemonic (str): mnemonic of curve.
+            data (ndarray): new data array (False if no update desired)
+            unit (str): new value for unit (False if no update desired)
+            descr (str): new description (False if no update desired)
+            value (str/int/float etc): new value (False if no update desired)
+
+        The index takes precedence over the mnemonic.
+
+        """
+        if ix is None:
+            ix = self.curves.keys().index(mnemonic)
+        curve = self.curves[ix]
+        if data is not False:
+            curve.data = data
+        if unit is not False:
+            curve.unit = unit
+        if descr is not False:
+            curve.descr = descr
+        if value is not False:
+            curve.value = value
 
     @property
     def json(self):
