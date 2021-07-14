@@ -100,8 +100,7 @@ def test_update_curve():
 
 def test_replace_curve():
     las = lasio.examples.open("sample.las")
-    las["NPHI"] = lasio.CurveItem("NPHI", "%", "Porosity", data=las["NPHI"] * 100)
-    assert "NPHI" in las.keys()
-    assert not "NPHI:1" in las.keys()
-    assert not "NPHI:2" in las.keys()
+    las["NPHI"] = lasio.CurveItem("NPHI", "%", "Porosity", data=(las["NPHI"] * 100))
+    assert las.keys() == ["DEPT", "DT", "RHOB", "NPHI", "SFLU", "SFLA", "ILM", "ILD"]
+    assert (las["NPHI"] == [45, 45, 45]).all()
     
