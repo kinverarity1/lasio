@@ -678,7 +678,11 @@ class LASFile(object):
                         key, value.mnemonic
                     )
                 )
-            self.append_curve_item(value)
+            if key in self.curves.keys():
+                ix = self.curves.keys().index(key)
+                self.replace_curve_item(ix, value)
+            else:
+                self.append_curve_item(value)
         else:
             # Assume value is an ndarray
             if key in self.curves.keys():
@@ -1001,6 +1005,18 @@ class LASFile(object):
         """
         assert isinstance(curve_item, CurveItem)
         self.curves.insert(ix, curve_item)
+
+    
+    def replace_curve_item(self, ix, curve_item):
+        """Replace a CurveItem.
+
+        Args:
+            ix (int): position to insert CurveItem i.e. 0 for start
+            curve_item (lasio.CurveItem)
+
+        """
+        self.delete_curve(ix=ix)
+        self.insert_curve_item(ix, curve_item)
 
     def add_curve(self, *args, **kwargs):
         """Deprecated. Use append_curve() or insert_curve() instead."""
