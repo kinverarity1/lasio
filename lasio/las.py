@@ -409,8 +409,12 @@ class LASFile(object):
                     # data section.
                     for curve_idx, flag in data_assigned_to_curves.items():
                         if flag is False:
+                            logger.warning(
+                                "Curve #{:.0f} '{:s}' is defined in the ~C section "
+                                "but there is no data in ~A"
+                                .format(curve_idx, self.curves[curve_idx].mnemonic)
+                            )
                             self.curves[curve_idx].data = np.empty(curve_length) * np.nan
-                            logger.debug("Creating null data array for curve_idx {:.0f}".format(curve_idx))
 
         finally:
             if hasattr(file_obj, "close"):
