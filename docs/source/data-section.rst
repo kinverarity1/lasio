@@ -49,6 +49,77 @@ can do these conversions with pandas:
 
     >>> las["DATE_DT"] = pd.to_datetime(las["DATE"]).values
 
+Repeated/duplicate curve mnemonics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+LAS files don't always have unique mnemonics for each curve, but that
+makes it difficult to retrieve curves by their mnemonic! lasio handles this
+by appending ``:1``, ``:2``, etc. to the end of repeat/duplicate mnemonics.
+For an example, see a LAS file with this ~C section, with "SFLU" duplicated:
+
+.. code-block::
+
+    ~CURVE INFORMATION
+    #MNEM.UNIT      API CODE      CURVE DESCRIPTION
+    #---------    -------------   ------------------------------
+    DEPT.M                      :  1  DEPTH
+    DT  .US/M     		     :  2  SONIC TRANSIT TIME
+    RHOB.K/M3                   :  3  BULK DENSITY
+    NPHI.V/V                    :  4   NEUTRON POROSITY
+    SFLU.OHMM                   :  5  RXO RESISTIVITY
+    SFLU.OHMM                   :  6  SHALLOW RESISTIVITY
+    ILM .OHMM                   :  7  MEDIUM RESISTIVITY
+    ILD .OHMM                   :  8  DEEP RESISTIVITY
+
+This is represented in the following way:
+
+    >>> import lasio.examples
+    >>> las = lasio.examples.open("mnemonic_duplicate.las")
+    >>> print(las.curves)
+    Mnemonic  Unit  Value  Description
+    --------  ----  -----  -----------
+    DEPT      M            1  DEPTH
+    DT        US/M         2  SONIC TRANSIT TIME
+    RHOB      K/M3         3  BULK DENSITY
+    NPHI      V/V          4   NEUTRON POROSITY
+    SFLU:1    OHMM         5  RXO RESISTIVITY
+    SFLU:2    OHMM         6  SHALLOW RESISTIVITY
+    ILM       OHMM         7  MEDIUM RESISTIVITY
+    ILD       OHMM         8  DEEP RESISTIVITY
+    >>> las["SFLU:1"]
+    array([123.45, 123.45, 123.45])
+    >>> las["SFLU:2"]
+    array([125.45, 125.45, 125.45])
+
+Note that the actual mnemonic is not present, to avoid ambiguity about
+which curve would be expected to be returned:
+
+.. code-block:: python
+
+    >>> las["SFLU"]
+    Traceback (most recent call last):
+    File "<stdin>", line 1, in <module>
+    File "C:\devapps\kinverarity\projects\lasio\lasio\las.py", line 661, in __getitem__
+        raise KeyError("{} not found in curves ({})".format(key, curve_mnemonics))
+    KeyError: "SFLU not found in curves (['DEPT', 'DT', 'RHOB', 'NPHI', 'SFLU:1', 'SFLU:2', 'ILM', 'ILD'])"
+
+Note also that lasio remembers the original mnemonic so that on writing the file
+out, the original mnemonics are replicated:
+
+    >>> import sys
+    >>> las.write(sys.stdout)
+    ...
+    ~Curve Information -----------------------------------------
+    DEPT.M     : 1  DEPTH
+    DT  .US/M  : 2  SONIC TRANSIT TIME
+    RHOB.K/M3  : 3  BULK DENSITY
+    NPHI.V/V   : 4   NEUTRON POROSITY
+    SFLU.OHMM  : 5  RXO RESISTIVITY
+    SFLU.OHMM  : 6  SHALLOW RESISTIVITY
+    ILM .OHMM  : 7  MEDIUM RESISTIVITY
+    ILD .OHMM  : 8  DEEP RESISTIVITY
+    ...
+
 Ignoring commented-out lines
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
