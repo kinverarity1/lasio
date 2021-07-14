@@ -169,6 +169,12 @@ class LASFile(object):
         try:
             file_obj, self.encoding = reader.open_file(file_ref, **kwargs)
 
+            test_lidar = file_obj.read(4)
+            if test_lidar == "LASF":
+                raise IOError("This is a LASer file (i.e. LiDAR data), not a Log ASCII Standard file")
+            else:
+                file_obj.seek(0)
+
             logger.debug(
                 "Fetching substitutions for read_policy {} and null policy {}".format(
                     read_policy, null_policy
