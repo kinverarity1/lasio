@@ -484,3 +484,11 @@ def test_index_null_issue227():
     las = lasio.examples.open("index_null.las")
     assert las['DEPT'].data[1] == 999.25
     assert numpy.isnan(las['DT'].data[0])
+
+def test_excess_curves():
+    las = lasio.examples.open("excess_curves.las")
+    assert las.curves.keys() == ["DEPTH", "TVD", "VS", "GAMMA", "ROP", "TEMP"]
+    assert las.keys() == ["DEPTH", "TVD", "VS", "GAMMA", "ROP", "TEMP"]
+    assert len(las["ROP"]) == 2
+    assert numpy.isnan(las["ROP"]).all()
+    assert list(las.df().columns) == ["TVD", "VS", "GAMMA", "ROP", "TEMP"]
