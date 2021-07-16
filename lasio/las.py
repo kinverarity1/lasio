@@ -700,10 +700,17 @@ class LASFile(object):
                         key, value.mnemonic
                     )
                 )
-            self.append_curve_item(value)
+            if key in self.curves.keys():
+                ix = self.curves.keys().index(key)
+                self.replace_curve_item(ix, value)
+            else:
+                self.append_curve_item(value)
         else:
             # Assume value is an ndarray
-            self.append_curve(key, value)
+            if key in self.curves.keys():
+                self.update_curve(mnemonic=key, data=value)
+            else:
+                self.append_curve(key, value)
 
     def keys(self):
         """Return curve mnemonics."""
@@ -1021,6 +1028,18 @@ class LASFile(object):
         assert isinstance(curve_item, CurveItem)
         self.curves.insert(ix, curve_item)
 
+    
+    def replace_curve_item(self, ix, curve_item):
+        """Replace a CurveItem.
+
+        Args:
+            ix (int): position to insert CurveItem i.e. 0 for start
+            curve_item (lasio.CurveItem)
+
+        """
+        self.delete_curve(ix=ix)
+        self.insert_curve_item(ix, curve_item)
+
     def add_curve(self, *args, **kwargs):
         """Deprecated. Use append_curve() or insert_curve() instead."""
         return self.append_curve(*args, **kwargs)
@@ -1070,6 +1089,32 @@ class LASFile(object):
         if ix is None:
             ix = self.curves.keys().index(mnemonic)
         self.curves.pop(ix)
+
+    def update_curve(self, mnemonic=None, ix=None, data=False, unit=False, descr=False, value=False):
+        """Update a curve.
+
+        Keyword Arguments:
+            ix (int): index of curve in LASFile.curves.
+            mnemonic (str): mnemonic of curve.
+            data (ndarray): new data array (False if no update desired)
+            unit (str): new value for unit (False if no update desired)
+            descr (str): new description (False if no update desired)
+            value (str/int/float etc): new value (False if no update desired)
+
+        The index takes precedence over the mnemonic.
+
+        """
+        if ix is None:
+            ix = self.curves.keys().index(mnemonic)
+        curve = self.curves[ix]
+        if data is not False:
+            curve.data = data
+        if unit is not False:
+            curve.unit = unit
+        if descr is not False:
+            curve.descr = descr
+        if value is not False:
+            curve.value = value
 
     @property
     def json(self):
