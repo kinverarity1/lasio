@@ -1,7 +1,6 @@
 # lasio
 
 [![License](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/kinverarity1/lasio/blob/master/LICENSE)
-[![Gitter](https://badges.gitter.im/python-lasio/Lobby.svg)](https://gitter.im/python-lasio/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 Read and write Log ASCII Standard files with Python.
 
