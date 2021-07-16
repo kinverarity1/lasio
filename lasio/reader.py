@@ -351,7 +351,7 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_comments="#"):
                 line = re.sub(pattern, sub_str, line)
             # split line and count number of elements
             n_items = len(["".join(t) for t in sow_regex.findall(line)])
-            logger.debug(
+            logger.trace_lasio(
                 "Line {}: {} items counted in '{}'".format(line_no + 1, n_items, line)
             )
             item_counts.append(n_items)
