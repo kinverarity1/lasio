@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 import lasio
+import lasio.examples
 from lasio import read, las
 
 import logging
@@ -89,3 +90,17 @@ def test_data_attr():
     logger.debug("las.data = {}".format(las.data))
     # the .all() method assumes these are numpy ndarrays; that should be the case.
     assert (las.data == np.asarray([[1, 4, 7], [2, 5, 8], [3, 6, 9]])).all()
+
+def test_update_curve():
+    las = lasio.examples.open("sample.las")
+    las["NPHI"] = las["NPHI"] * 100
+    assert "NPHI" in las.keys()
+    assert not "NPHI:1" in las.keys()
+    assert not "NPHI:2" in las.keys()
+
+def test_replace_curve():
+    las = lasio.examples.open("sample.las")
+    las["NPHI"] = lasio.CurveItem("NPHI", "%", "Porosity", data=(las["NPHI"] * 100))
+    assert las.keys() == ["DEPT", "DT", "RHOB", "NPHI", "SFLU", "SFLA", "ILM", "ILD"]
+    assert (las["NPHI"] == [45, 45, 45]).all()
+    
