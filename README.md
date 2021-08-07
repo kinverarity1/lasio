@@ -29,9 +29,9 @@ lasio  [stopped](https://github.com/kinverarity1/lasio/issues/364)
 supporting Python 2.7 in August 2020. The final version of lasio with Python 2.7 support 
 is version 0.26.
 
-## Code Of Conduct
+## Code of conduct
 
-See [Code-Of-Conduct](https://lasio.readthedocs.io/en/latest/contributing.html#code-of-conduct)
+See our [code of conduct](https://lasio.readthedocs.io/en/latest/contributing.html#code-of-conduct).
 
 ## Documentation
 
