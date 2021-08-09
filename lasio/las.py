@@ -180,12 +180,10 @@ class LASFile(object):
                     read_policy, null_policy
                 )
             )
-            regexp_subs, value_null_subs, version_NULL = reader.get_substitutions(
-                read_policy, null_policy
-            )
             provisional_version = 2.0
             provisional_wrapped = "YES"
             provisional_null = None
+            provisional_delimiter = "SPACE" 
 
             section_positions = reader.find_sections_in_file(file_obj)
             logger.debug("Found {} sections".format(len(section_positions)))
@@ -233,6 +231,8 @@ class LASFile(object):
                         provisional_wrapped = sct_items.WRAP.value
                     if "NULL" in sct_items:
                         provisional_null = sct_items.NULL.value
+                    if "DLM" in sct_items:
+                        provisional_delimiter = sct_items.DLM.value
 
                     # las3 sections can contain _Data, _Parameter or _Definition
                     las3_section = any(
@@ -286,6 +286,15 @@ class LASFile(object):
                 elif section_type == "Las3_Data":
                     logger.debug("Storing Las3_Data reference and returning later...")
                     las3_data_section_indices.append(i)
+                    
+            line_splitter = reader.define_line_splitter(provisional_delimiter)
+
+            if provisional_delimiter == 'COMMA':
+                read_policy = "comma-delimiter"
+            regexp_subs, value_null_subs, version_NULL = reader.get_substitutions(
+                read_policy, null_policy
+            )
+
 
             if not ignore_data:
 
@@ -303,6 +312,8 @@ class LASFile(object):
                         if use_normal_engine_for_wrapped:
                             engine = "normal"
 
+                if len(data_section_indices) == 0 and len(las3_data_section_indices) > 0:
+                    data_section_indices = las3_data_section_indices
                 # Check for the number of columns in each data section.
                 for k, first_line, last_line, section_title in [
                     section_positions[i] for i in data_section_indices
@@ -351,6 +362,7 @@ class LASFile(object):
                                     ignore_comments=ignore_data_comments,
                                     n_columns=reader_n_columns,
                                     dtypes=dtypes,
+                                    line_splitter=line_splitter,
                                 )
                             except KeyboardInterrupt:
                                 raise
@@ -370,6 +382,7 @@ class LASFile(object):
                                 ignore_comments=ignore_data_comments,
                                 n_columns=reader_n_columns,
                                 dtypes=dtypes,
+                                line_splitter=line_splitter,
                             )
                         except KeyboardInterrupt:
                             raise

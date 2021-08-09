@@ -46,7 +46,28 @@ URL_REGEXP = re.compile(
     re.IGNORECASE,
 )
 
+# sow (Split On Whitespace) regex
 sow_regex = re.compile(r"""([^\s"']+)|"([^"]*)"|'([^']*)'""")
+
+def define_line_splitter(provisional_delimiter):
+    """Define multiple line splitters
+
+    return the one that is right for the data delmiter
+
+    """
+    sow_regex = re.compile(r"""([^\s"']+)|"([^"]*)"|'([^']*)'""")
+    def split_on_whitespace(line):
+        return sow_regex.findall(line)
+
+    def split_on_comma(line):
+        return line.split(",")
+        
+    splitters = {
+        "SPACE": split_on_whitespace,
+        "COMMA": split_on_comma,
+    }
+
+    return(splitters[provisional_delimiter])
 
 
 
@@ -369,7 +390,7 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_comments="#"):
 
 
 def read_data_section_iterative_normal_engine(
-    file_obj, line_nos, regexp_subs, value_null_subs, ignore_comments, n_columns, dtypes
+    file_obj, line_nos, regexp_subs, value_null_subs, ignore_comments, n_columns, dtypes, line_splitter
 ):
     """Read data section into memory.
 
@@ -389,6 +410,8 @@ def read_data_section_iterative_normal_engine(
             will attempt to convert each column to a float and if that fails,
             the column will be returned as a string. If you specify False, no
             conversion of data types will be attempt at all.
+        line_splitter (function): This function is dynamically configured to
+            split data lines on the configured delimiter
 
     Returns: generator which yields the data as a 1D ndarray for each column at a time.
 
@@ -401,14 +424,19 @@ def read_data_section_iterative_normal_engine(
 
     def items(f, start_line_no, end_line_no):
         for line_no, line in enumerate(f, start=start_line_no+1):
-            if line.strip().startswith(ignore_comments):
+            line = line.strip("\n").strip()
+            if line.startswith(ignore_comments):
                 continue
             else:
                 for pattern, sub_str in regexp_subs:
                     line = re.sub(pattern, sub_str, line)
                 line = line.replace(chr(26), "")
+                if len(line) == 0:
+                    continue
+                
                 # for item in split_on_whitespace(line, sow_regex):
-                for item in ["".join(t) for t in sow_regex.findall(line)]:
+                # for item in ["".join(t) for t in sow_regex.findall(line)]:
+                for item in ["".join(t) for t in line_splitter(line)]:
                     try:
                         yield np.float64(item)
                     except ValueError:
