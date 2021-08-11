@@ -133,7 +133,7 @@ class LASFile(object):
                 only occurs via numpy.ndarray.astype() and therefore only a few simple
                 casts will work e.g. `int`, `float`, `str`.
             encoding (str): character encoding to open file_ref with, using
-                :func:`io.open` (this is handled by 
+                :func:`io.open` (this is handled by
                 :func:`lasio.reader.open_with_codecs`)
             encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
                 handle errors with encodings (see
@@ -183,7 +183,7 @@ class LASFile(object):
             provisional_version = 2.0
             provisional_wrapped = "YES"
             provisional_null = None
-            provisional_delimiter = "SPACE" 
+            provisional_delimiter = "SPACE"
 
             section_positions = reader.find_sections_in_file(file_obj)
             logger.debug("Found {} sections".format(len(section_positions)))
@@ -242,16 +242,25 @@ class LASFile(object):
                         ]
                     )
 
-                    if provisional_version == 3.0 and las3_section:
+                    # TODO: Revise so that Version, Well and Parameter(Log_Parameter)
+                    # are handled the properly for LAS-1.2, LAS-2.0 LAS-3.0
+                    # Set "Curves" for LAS-1.2, LAS-2.0, LAS-3.0
+                    if (
+                        section_title[1] == "C" and "_" not in section_title
+                    ) or "~Log_Definition" in section_title:
+                        self.sections["Curves"] = sct_items
+                    elif (
+                        section_title[1] == "P" and "_" not in section_title
+                    ) or "~Log_Parameter" in section_title:
+                        self.sections["Parameter"] = sct_items
+                    # Set any other LAS3.0  sections
+                    elif provisional_version == 3.0 and las3_section:
                         self.sections[section_title[1:]] = sct_items
+                    # Set regular sections
                     elif section_title[1] == "V":
                         self.sections["Version"] = sct_items
                     elif section_title[1] == "W":
                         self.sections["Well"] = sct_items
-                    elif section_title[1] == "C":
-                        self.sections["Curves"] = sct_items
-                    elif section_title[1] == "P":
-                        self.sections["Parameter"] = sct_items
                     else:
                         self.sections[section_title[1:]] = sct_items
 
@@ -286,23 +295,22 @@ class LASFile(object):
                 elif section_type == "Las3_Data":
                     logger.debug("Storing Las3_Data reference and returning later...")
                     las3_data_section_indices.append(i)
-                    
+
             line_splitter = reader.define_line_splitter(provisional_delimiter)
 
-            if provisional_delimiter == 'COMMA':
+            if provisional_delimiter == "COMMA":
                 read_policy = "comma-delimiter"
             regexp_subs, value_null_subs, version_NULL = reader.get_substitutions(
                 read_policy, null_policy
             )
 
-
             if not ignore_data:
 
-                # Override the default "numpy" parser with the 'normal' parser 
+                # Override the default "numpy" parser with the 'normal' parser
                 # for these conditions:
                 # - file is wrapped
                 # - null_policy is not "strict"
-                # - dtypes is not "auto". Numpy can handle specified dtypes but 
+                # - dtypes is not "auto". Numpy can handle specified dtypes but
                 #   the performance decays to the 'normal' performance level.
 
                 # normal engine.
@@ -312,7 +320,10 @@ class LASFile(object):
                         if use_normal_engine_for_wrapped:
                             engine = "normal"
 
-                if len(data_section_indices) == 0 and len(las3_data_section_indices) > 0:
+                if (
+                    len(data_section_indices) == 0
+                    and len(las3_data_section_indices) > 0
+                ):
                     data_section_indices = las3_data_section_indices
                 # Check for the number of columns in each data section.
                 for k, first_line, last_line, section_title in [
@@ -342,7 +353,6 @@ class LASFile(object):
 
                     # Notes see 2d9e43c3 and e960998f for 'try' background
 
-
                     # Attempt to read the data section
                     if engine == "numpy":
                         try:
@@ -354,15 +364,17 @@ class LASFile(object):
                         except:
                             try:
                                 file_obj.seek(k)
-                                curves_data_gen = reader.read_data_section_iterative_normal_engine(
-                                    file_obj,
-                                    (first_line, last_line),
-                                    regexp_subs,
-                                    value_null_subs,
-                                    ignore_comments=ignore_data_comments,
-                                    n_columns=reader_n_columns,
-                                    dtypes=dtypes,
-                                    line_splitter=line_splitter,
+                                curves_data_gen = (
+                                    reader.read_data_section_iterative_normal_engine(
+                                        file_obj,
+                                        (first_line, last_line),
+                                        regexp_subs,
+                                        value_null_subs,
+                                        ignore_comments=ignore_data_comments,
+                                        n_columns=reader_n_columns,
+                                        dtypes=dtypes,
+                                        line_splitter=line_splitter,
+                                    )
                                 )
                             except KeyboardInterrupt:
                                 raise
@@ -374,15 +386,17 @@ class LASFile(object):
 
                     if engine == "normal":
                         try:
-                            curves_data_gen = reader.read_data_section_iterative_normal_engine(
-                                file_obj,
-                                (first_line, last_line),
-                                regexp_subs,
-                                value_null_subs,
-                                ignore_comments=ignore_data_comments,
-                                n_columns=reader_n_columns,
-                                dtypes=dtypes,
-                                line_splitter=line_splitter,
+                            curves_data_gen = (
+                                reader.read_data_section_iterative_normal_engine(
+                                    file_obj,
+                                    (first_line, last_line),
+                                    regexp_subs,
+                                    value_null_subs,
+                                    ignore_comments=ignore_data_comments,
+                                    n_columns=reader_n_columns,
+                                    dtypes=dtypes,
+                                    line_splitter=line_splitter,
+                                )
                             )
                         except KeyboardInterrupt:
                             raise
@@ -391,7 +405,6 @@ class LASFile(object):
                                 traceback.format_exc()[:-1]
                                 + " in data section beginning line {}".format(i + 1)
                             )
-
 
                     # Assign data to curves.
                     data_assigned_to_curves = {curve_idx: False for curve_idx in range(len(self.curves))}
@@ -1041,7 +1054,6 @@ class LASFile(object):
         assert isinstance(curve_item, CurveItem)
         self.curves.insert(ix, curve_item)
 
-    
     def replace_curve_item(self, ix, curve_item):
         """Replace a CurveItem.
 
