@@ -95,7 +95,8 @@ DEPTH_UNITS = {
 }
 
 READ_POLICIES = {
-    "default": ["comma-decimal-mark", "run-on(-)", "run-on(.)", "run-on(NaN.)"]
+    "default": ["comma-decimal-mark", "run-on(-)", "run-on(.)", "run-on(NaN.)"],
+    "comma-delimiter": ["run-on(-)", "run-on(.)", "run-on(NaN.)"]
 }
 
 READ_SUBS = {

@@ -46,8 +46,30 @@ URL_REGEXP = re.compile(
     re.IGNORECASE,
 )
 
+# sow (Split On Whitespace) regex
 sow_regex = re.compile(r"""([^\s"']+)|"([^"]*)"|'([^']*)'""")
 
+
+def define_line_splitter(provisional_delimiter):
+    """Define multiple line splitters
+
+    return the one that is right for the data delmiter
+
+    """
+    sow_regex = re.compile(r"""([^\s"']+)|"([^"]*)"|'([^']*)'""")
+
+    def split_on_whitespace(line):
+        return sow_regex.findall(line)
+
+    def split_on_comma(line):
+        return line.split(",")
+
+    splitters = {
+        "SPACE": split_on_whitespace,
+        "COMMA": split_on_comma,
+    }
+
+    return splitters[provisional_delimiter]
 
 
 def check_for_path_obj(file_ref):
@@ -308,7 +330,8 @@ def determine_section_type(section_title):
 
     """
     stitle = section_title.strip().strip("\n")
-    if stitle[:2] == "~A":
+    # '~Log_Data' is a LAS-3.0 equivalent for the ~ASCII data section
+    if stitle[:2] == "~A" or "~Log_Data" in stitle:
         return "Data"
     elif stitle[:2] == "~O":
         return "Header (other)"
@@ -318,7 +341,6 @@ def determine_section_type(section_title):
         return "Las3_Data"
     else:
         return "Header items"
-
 
 
 def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_comments="#"):
@@ -369,7 +391,14 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_comments="#"):
 
 
 def read_data_section_iterative_normal_engine(
-    file_obj, line_nos, regexp_subs, value_null_subs, ignore_comments, n_columns, dtypes
+    file_obj,
+    line_nos,
+    regexp_subs,
+    value_null_subs,
+    ignore_comments,
+    n_columns,
+    dtypes,
+    line_splitter,
 ):
     """Read data section into memory.
 
@@ -389,6 +418,8 @@ def read_data_section_iterative_normal_engine(
             will attempt to convert each column to a float and if that fails,
             the column will be returned as a string. If you specify False, no
             conversion of data types will be attempt at all.
+        line_splitter (function): This function is dynamically configured to
+            split data lines on the configured delimiter
 
     Returns: generator which yields the data as a 1D ndarray for each column at a time.
 
@@ -401,14 +432,19 @@ def read_data_section_iterative_normal_engine(
 
     def items(f, start_line_no, end_line_no):
         for line_no, line in enumerate(f, start=start_line_no+1):
-            if line.strip().startswith(ignore_comments):
+            line = line.strip("\n").strip()
+            if line.startswith(ignore_comments):
                 continue
             else:
                 for pattern, sub_str in regexp_subs:
                     line = re.sub(pattern, sub_str, line)
                 line = line.replace(chr(26), "")
+                if len(line) == 0:
+                    continue
+
                 # for item in split_on_whitespace(line, sow_regex):
-                for item in ["".join(t) for t in sow_regex.findall(line)]:
+                # for item in ["".join(t) for t in sow_regex.findall(line)]:
+                for item in ["".join(t) for t in line_splitter(line)]:
                     try:
                         yield np.float64(item)
                     except ValueError:
@@ -527,7 +563,6 @@ def read_data_section_iterative_numpy_engine(file_obj, line_nos):
     array = np.genfromtxt(
         file_obj, skip_header=first_line, max_rows=max_rows, names=None, unpack=True, loose=False
     )
-
 
     # If there is only one data row, np.genfromtxt treats it as one array of
     # individual values. Lasio needs a array of arrays. This if statement
@@ -979,7 +1014,7 @@ def configure_metadata_patterns(line, section_name):
             desc_re = no_desc_re
             unit_re = no_unit_re
             value_with_time_colon_re = value_missing_period_re
-        
+
     if not ":" in line:
         # If there isn't a colon delimiter then there isn't
         # a description field either.
