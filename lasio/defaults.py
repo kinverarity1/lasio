@@ -78,6 +78,14 @@ ORDER_DEFINITIONS = {
             ("Parameter", ["value:descr"]),
         ]
     ),
+    2.1: OrderedDict(
+        [
+            ("Version", ["value:descr"]),
+            ("Well", ["value:descr"]),
+            ("Curves", ["value:descr"]),
+            ("Parameter", ["value:descr"]),
+        ]
+    ),
     3.0: OrderedDict(
         [
             ("Version", ["value:descr"]),

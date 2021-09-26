@@ -52,6 +52,8 @@ def test_read_v2_sample_minimal():
 def test_read_v2_sample_wrapped():
     l = lasio.read(stegfn("2.0", "sample_2.0_wrapped.las"))
 
+def test_read_v2_1_sample():
+    l = lasio.read(egfn("sample_2.1.las"))
 
 def test_dodgy_param_sect():
     with pytest.raises(lasio.exceptions.LASHeaderError):
