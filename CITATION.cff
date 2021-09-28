@@ -6,6 +6,8 @@ authors:
   - family-names: Inverarity
     given-names: Kent
     orcid: https://orcid.org/0000-0002-5902-2007
+  - name: "Lasio contributors"
+    website: "https://lasio.readthedocs.io/en/latest/contributing.html"
 repository-code: "https://github.com/kinverarity1/lasio"
 version: 0.29
 url: https://github.com/kinverarity1/lasio/releases/tag/v0.29
