@@ -132,7 +132,24 @@ Handling errors
 ~~~~~~~~~~~~~~~
 
 lasio has a flexible way of handling "errors" in the ~ASCII data section to
-accommodate how strict or flexible you want to be.
+accommodate how strict or flexible you want to be. The two main tools are 
+``read_policy`` and ``null_policy``. These are optional arguments to
+:meth:`lasio.LASFile.read`.  Each defaults to common options which can be
+overridden either by other pre-set options or by a list of specific options.
+These policy settings are configured in ``lasio/defaults.py``.
+
+By default, ``lasio.read(f)`` runs as if explicitly set to ``lasio.read(f,
+read_policy='default', null_policy='common')``.
+
+
+Examples of policy override syntax
+----------------------------------
+``lasio.read(f, read_policy='comma-delimiter')``
+``lasio.read(f, null_policy='aggressive')``
+``lasio.read(f, read_policy='comma-delimiter', null_policy='none')``
+``lasio.read(f, read_policy=["comma-decimal-mark", "run-on(.)"])``
+``lasio.read(f, null_policy=["9999.25", "999.25", "NA", "INF", "IO", "IND"])``
+
 
 Example errors
 --------------
