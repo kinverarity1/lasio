@@ -336,7 +336,7 @@ class LASFile(object):
                         file_obj,
                         (first_line, last_line),
                         regexp_subs,
-                        ignore_comments=ignore_data_comments,
+                        ignore_data_comments=ignore_data_comments,
                     )
 
                     # How many curves should the reader attempt to find?
@@ -370,7 +370,7 @@ class LASFile(object):
                                         (first_line, last_line),
                                         regexp_subs,
                                         value_null_subs,
-                                        ignore_comments=ignore_data_comments,
+                                        ignore_data_comments=ignore_data_comments,
                                         n_columns=reader_n_columns,
                                         dtypes=dtypes,
                                         line_splitter=line_splitter,
@@ -392,7 +392,7 @@ class LASFile(object):
                                     (first_line, last_line),
                                     regexp_subs,
                                     value_null_subs,
-                                    ignore_comments=ignore_data_comments,
+                                    ignore_data_comments=ignore_data_comments,
                                     n_columns=reader_n_columns,
                                     dtypes=dtypes,
                                     line_splitter=line_splitter,
