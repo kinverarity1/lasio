@@ -94,7 +94,7 @@ This is represented in the following way:
 Note that the actual mnemonic is not present, to avoid ambiguity about
 which curve would be expected to be returned:
 
-.. code-block:: python
+.. code-block::
 
     >>> las["SFLU"]
     Traceback (most recent call last):
@@ -128,12 +128,31 @@ any lines starting with the "#" character within the data section. You can
 control this using the ``remove_data_line_filter='#'`` argument to
 :meth:`lasio.LASFile.read`.
 
-Handling errors
-~~~~~~~~~~~~~~~
+Ignoring the data section
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Lasio can ignore the data section by seeing ignore_data to true:
+  ``lasio.read(file, ignore_date=True)``
+
+This will completely skip reading the data section and the returned object will just contain the header metadata section.
+
+A quick way to see the expected column names is:
+  ``lasio.read(file, ignore_data=True).keys()``
+
+To re-run without ignore_data: 
+  ``lasio.read(file).keys()``
+
+If this returns a different set of columns then there may be a data parsing
+error.  In this case, if incorrect parsing causes lasio to create extra columns
+they will be named 'UKNOWN:1', 'UNKNOWN:2', 'UNKNOWN:<n>'...  This can usually
+be fixed by tuning lasio.read()'s read_policy or null_policy options.
+
+Handling errors with read_policy and null_policy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 lasio has a flexible way of handling "errors" in the ~ASCII data section to
 accommodate how strict or flexible you want to be. The two main tools are 
-``read_policy`` and ``null_policy``. These are optional arguments to
+``read_policy`` and ``null_policy``.  These are optional arguments to
 :meth:`lasio.LASFile.read`.  Each defaults to common options which can be
 overridden either by other pre-set options or by a list of specific options.
 These policy settings are configured in ``lasio/defaults.py``.
@@ -144,11 +163,16 @@ read_policy='default', null_policy='common')``.
 
 Examples of policy override syntax
 ----------------------------------
-``lasio.read(f, read_policy='comma-delimiter')``
-``lasio.read(f, null_policy='aggressive')``
-``lasio.read(f, read_policy='comma-delimiter', null_policy='none')``
-``lasio.read(f, read_policy=["comma-decimal-mark", "run-on(.)"])``
-``lasio.read(f, null_policy=["9999.25", "999.25", "NA", "INF", "IO", "IND"])``
+Change only read_policy with one of the builtin policy sets:
+  ``lasio.read(f, read_policy='comma-delimiter')``
+Change only null_policy with one of the builtin policy sets:
+  ``lasio.read(f, null_policy='aggressive')``
+Change both read_policy and null_policy with builtin policies:
+  ``lasio.read(f, read_policy='comma-delimiter', null_policy='none')``
+Change read_policy with specific policies (found in defaults.py):
+  ``lasio.read(f, read_policy=["comma-decimal-mark", "run-on(.)"])``
+Change null_policy with your own hard-coded options:
+  ``lasio.read(f, null_policy=["9999.25", "999.25", "NA", "INF", "IO", "IND"])``
 
 
 Example errors
