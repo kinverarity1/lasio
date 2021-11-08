@@ -94,9 +94,12 @@ This is represented in the following way:
 Note that the actual mnemonic is not present, to avoid ambiguity about
 which curve would be expected to be returned:
 
-.. code-block::
+.. code-block:: python
 
     >>> las["SFLU"]
+
+.. code-block:: console
+
     Traceback (most recent call last):
     File "<stdin>", line 1, in <module>
     File "C:\devapps\kinverarity\projects\lasio\lasio\las.py", line 661, in __getitem__
@@ -105,6 +108,8 @@ which curve would be expected to be returned:
 
 Note also that lasio remembers the original mnemonic so that on writing the file
 out, the original mnemonics are replicated:
+
+.. code-block:: python
 
     >>> import sys
     >>> las.write(sys.stdout)
@@ -131,7 +136,7 @@ control this using the ``remove_data_line_filter='#'`` argument to
 Ignoring the data section
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Lasio can ignore the data section by seeing ignore_data to true:
+Lasio can ignore the data section by setting ignore_data to true:
   ``lasio.read(file, ignore_date=True)``
 
 This will completely skip reading the data section and the returned object will just contain the header metadata section.
