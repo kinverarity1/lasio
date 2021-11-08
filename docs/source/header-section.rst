@@ -339,7 +339,7 @@ Mnemonics which contain a period
 As with other LAS file parsers, lasio does not parse mnemonics which contain
 a period - instead, anything after the period will be parsed as the unit:
 
-.. code-block::
+.. code-block:: none
 
     SP.COND .US/M                      :  EC at 25 deg C
 
