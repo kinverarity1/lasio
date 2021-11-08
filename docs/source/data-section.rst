@@ -13,7 +13,7 @@ can be controlled by specifing the data type as either ``int``, ``float`` or
 
 See the example ``data_characters.las``:
 
-.. code-block::
+.. code-block:: none
 
     ~A TIME       DATE       DEPT ARC_GR_UNC_RT
     00:00:00 01-Jan-20  1500.2435        126.56
@@ -57,7 +57,7 @@ makes it difficult to retrieve curves by their mnemonic! lasio handles this
 by appending ``:1``, ``:2``, etc. to the end of repeat/duplicate mnemonics.
 For an example, see a LAS file with this ~C section, with "SFLU" duplicated:
 
-.. code-block::
+.. code-block:: none
 
     ~CURVE INFORMATION
     #MNEM.UNIT      API CODE      CURVE DESCRIPTION
