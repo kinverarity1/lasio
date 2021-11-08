@@ -289,7 +289,7 @@ Lines with colons in the mnemonic and description
 Colons are used as a delimiter, but colons can also occur inside the unit, value, and
 description fields in a LAS file header. Take this line as an example:
 
-.. code-block::
+.. code-block:: none
 
     TIML.hh:mm 23:15 23-JAN-2001:   Time Logger: At Bottom
 
