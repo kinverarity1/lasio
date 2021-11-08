@@ -343,7 +343,7 @@ def determine_section_type(section_title):
         return "Header items"
 
 
-def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_comments="#"):
+def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_data_comments="#"):
     """Determine how many columns there are in the data section.
 
     Arguments:
@@ -352,7 +352,7 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_comments="#"):
         regexp_subs (list): each item should be a tuple of the pattern and
             substitution string for a call to re.sub() on each line of the
             data section. See defaults.py READ_SUBS and NULL_SUBS for examples.
-        ignore_comments (str): lines beginning with this character will be ignored
+        ignore_data_comments (str): lines beginning with this character will be ignored
 
     Returns: integer number of columns or -1 where they are different.
 
@@ -366,7 +366,7 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_comments="#"):
     for i, line in enumerate(file_obj):
         line_no = line_no + 1
         line = line.strip("\n").strip()
-        if line.strip().startswith(ignore_comments):
+        if line.strip().startswith(ignore_data_comments):
             continue
         else:
             for pattern, sub_str in regexp_subs:
@@ -395,7 +395,7 @@ def read_data_section_iterative_normal_engine(
     line_nos,
     regexp_subs,
     value_null_subs,
-    ignore_comments,
+    ignore_data_comments,
     n_columns,
     dtypes,
     line_splitter,
@@ -410,7 +410,7 @@ def read_data_section_iterative_normal_engine(
             data section. See defaults.py READ_SUBS and NULL_SUBS for examples.
         value_null_subs (list): list of numerical values to be replaced by
             numpy.nan values.
-        ignore_comments (str): lines beginning with this character will be ignored
+        ignore_data_comments (str): lines beginning with this character will be ignored
         n_columns (int): expected number of columns
         dtypes (list, "auto", False): list of expected data types for each column,
             (each data type can be specified as e.g. `int`,
@@ -433,7 +433,7 @@ def read_data_section_iterative_normal_engine(
     def items(f, start_line_no, end_line_no):
         for line_no, line in enumerate(f, start=start_line_no+1):
             line = line.strip("\n").strip()
-            if line.startswith(ignore_comments):
+            if line.startswith(ignore_data_comments):
                 continue
             else:
                 for pattern, sub_str in regexp_subs:
@@ -668,8 +668,8 @@ def parse_header_items_section(
         mnemonic_case (str): 'preserve': keep the case of HeaderItem mnemonics
                              'upper': convert all HeaderItem mnemonics to uppercase
                              'lower': convert all HeaderItem mnemonics to lowercase
-        ignore_comments (False, True, or list): ignore lines starting with these
-            characters; by default True as '#'.
+        ignore_comments (list): ignore lines starting with these characters; by
+            default '#'.
 
     Returns:
         :class:`lasio.SectionItems`

@@ -264,6 +264,19 @@ Handling special cases of header lines
 lasio will do its best to read every line from the header section. Some examples
 follow for unusual formattings:
 
+Comment lines mixed with header lines
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+lasio will, by default, treat header lines starting with a "#" hash string as a
+comment line and ignore it. Spaces before the "#" are stripped off before
+checking for the "#".
+
+To modify which strings indicate comment lines to ignore pass an
+ignore_comments tuple to ``lasio.read()`` or ``lasio.examples.open()``.
+
+Example:
+  ``lasio.read(file, ignore_comments=("#", "%MyComment")``
+
 Lines without periods
 ~~~~~~~~~~~~~~~~~~~~~
 
