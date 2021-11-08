@@ -389,6 +389,9 @@ This isn't a header line, and cannot be parsed as such. It results in a
 .. code-block:: python
 
     >>> las = lasio.examples.open('dodgy_param_sect.las', ignore_header_errors=False)
+
+.. code-block:: console
+
     Unable to parse line as LAS header: DEPTH     DT       RHOB     NPHI     SFLU     SFLA      ILM      ILD
     Traceback (most recent call last):
     File "C:\Users\kinve\code\lasio\lasio\reader.py", line 525, in parse_header_section

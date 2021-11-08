@@ -287,6 +287,9 @@ def get_encoding(auto, raw):
 def find_sections_in_file(file_obj):
     """Find LAS sections in a file.
 
+    Arguments:
+        file_obj: file-like object open for reading at the beginning of the section
+
     Returns: a list of lists *(k, first_line_no, last_line_no, line]*.
         *file_pos* is the position in the *file_obj* in bytes,
         *first_line_no* is the first line number of the section (starting
@@ -592,6 +595,13 @@ def get_substitutions(read_policy, null_policy):
         The first list is pairs of regexp patterns and substrs, and the second
         list is just a list of floats or integers. The bool is whether or not
         'NULL' was located as a substitution.
+
+    The default READ_POLICIES are
+
+    * comma-decimal-mark : in numbers replace a comma divider with a decimal
+    * run-on(-) : separate 2 numbers that run together on the negative sign
+    * run-on(.) : replace numbers with 2 or more decimals or a NaN and a decimal with 2 NaNs
+
 
     """
     regexp_subs = []
