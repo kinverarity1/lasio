@@ -836,10 +836,10 @@ class SectionParser(object):
             pass
 
         try:
-            return np.int(x)
+            return np.int64(x)
         except:
             try:
-                x = np.float(x)
+                x = np.float64(x)
             except:
                 return default
         if np.isfinite(x):
