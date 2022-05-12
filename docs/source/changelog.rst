@@ -1,6 +1,34 @@
 List of changes
 ===============================
 
+Version 0.30 (12 May 2022)
+--------------------------
+- Fixes for `#446`_ (Implement a numpy-based reader for the data section; `#452`_) and 
+  `#444`_ (Provide a way to benchmark speed performance of LASFile.read; `#449`_). This leads to
+  a more than two-fold improvement in speed (e.g. from 1091 msec to 341 msec for
+  a large sample file).
+- Fixes for `#439`_ (Data section containing non-numeric chars is parsed entirely as str) and `#227`_
+  (NULL value replacing valid value in DEPT) by allowing different data types
+  for different columns (PRs `#459`_, `#460`_, `#461`_)
+- Partially fix `#375`_ (allow writing mnemonics in ~ASCII line; PRs `#466`_, `#471`_, `#465`_)
+- Partial fix for `#265`_ (Parse comma-delimited ~ASCII sections; `#485`_)
+- Fix `#83`_ (LAS file with more curves defined in ~C section than available in ~A section; `#480`_)
+- Improve visibility and access to the Code of Conduct (`#469`_)
+- Fix `#453`_ (rounding issues when writing LAS file) (`#455`_)
+- Fix `#268`_ (remove side-effects from writer) (`#447`_, `#451`_)
+- Documentation updates (`#475`_, `#477`_, `#481`_, `#501`_, `#498`_, `#500`_)
+- Fix `#473`_ (Header lines without a period are discarded unnecessarily)
+- Fix `#472`_ (Detect and raise IOError exception for LiDAR files; `#482`_)
+- Fix `#483`_ (perfomance decrease in DEBUG logging level; `#484`_)
+- Fix `#478`_ (:1 :2 should only be appended to mnemonics when using LASFile.read) with `#479`_: 
+  Add update_curve and replace_curve_item methods to LASFile
+- Fix `#490`_ (LAS 2.1 reading error; `#491`_)
+- Fix `#486`_ (Adding a citation file, and maybe a DOI; `#487`_)
+- Fix `#392`_ (ignore_comments not mentioned in documentation; `#495`_)
+- Fix `#332`_: Describe default read_policies in docstring, with `#489`_
+- Fix `#502`_ (NumPy type conversion alias deprecation; `#503`_)
+- minor performance improvements (`#470`_, )
+
 Version 0.29 (14 April 2021)
 ------------------------------
 - Fix `#404`_ (lasio changes STEP with imprecise floating-point number behaviour; `#432`_)
@@ -354,3 +382,9 @@ Version 0.2 (2015-07-08)
 .. _#437: https://github.com/kinverarity1/lasio/issues/437
 .. _#438: https://github.com/kinverarity1/lasio/issues/438
 .. _#441: https://github.com/kinverarity1/lasio/issues/441
+.. _#447: https://github.com/kinverarity1/lasio/issues/447
+.. _#449: https://github.com/kinverarity1/lasio/issues/449
+.. _#268: https://github.com/kinverarity1/lasio/issues/268
+.. _#451: https://github.com/kinverarity1/lasio/issues/451
+.. _#453: https://github.com/kinverarity1/lasio/issues/453
+.. _#455: https://github.com/kinverarity1/lasio/issues/455
