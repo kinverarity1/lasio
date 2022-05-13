@@ -46,7 +46,7 @@ Places you can help
 * Please feel free to contribute suggested changes. The easiest method is to
   fork lasio on GitHub and
   `submit a pull request <https://github.com/kinverarity1/lasio/pulls>`__
-  against the "master" branch. Don’t worry about getting all the details right,
+  against the "main" branch. Don’t worry about getting all the details right,
   either way it’s still the most convenient way for me or other maintainers to
   see your changes in context.
 
@@ -64,8 +64,8 @@ How to make contributions
 
 Contributions are always welcome to the code, documentation, or example
 notebooks. If you are making a contribution, please make sure you are
-working off the latest GitHub master. You will want to make your contributions
-in a branch taken from `master`, and then when you want to share your changes,
+working off the latest GitHub main branch. You will want to make your contributions
+in a branch taken from `main`, and then when you want to share your changes,
 you can publish them by "pushing" your branch to your GitHub fork of the lasio
 repository, and opening a PR (pull request) here.
 
@@ -87,15 +87,15 @@ your local copy::
 
   $ git remote add upstream https://github.com/kinverarity1/lasio
 
-To update the `master` branch of the local copy you have of your fork from the "upstream" repository::
+To update the `main` branch of the local copy you have of your fork from the "upstream" repository::
 
-  $ git checkout master
-  $ git pull upstream master
+  $ git checkout main
+  $ git pull upstream main
 
 And to update the GitHub fork from your local copy::
 
-  $ git checkout master
-  $ git push origin master
+  $ git checkout main
+  $ git push origin main
   
 Making sure you have necessary development dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -108,11 +108,11 @@ formatting Python code (`black`). You can install these easily by using::
 Making changes to the code
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-First, start by making sure your local copy is using the latest copy of code from "upstream" master (see above).
-Then create a branch - you can call it whatever is meaningful to you. We switch to `master` so that
-your changes are relative to the latest copy of the code in `master`::
+First, start by making sure your local copy is using the latest copy of code from "upstream" main (see above).
+Then create a branch - you can call it whatever is meaningful to you. We switch to `main` so that
+your changes are relative to the latest copy of the code in `main`::
 
-  $ git checkout master
+  $ git checkout main
   $ git checkout -b your-branch-name
   Switched to a new branch 'your-branch-name'
 
@@ -160,6 +160,22 @@ Then run this to generate a local copy of the HTML docs in the `build/html` fold
   $ make html
   
 Once you are happy, please publish your branch and open a PR in the same way as above.
+
+Testing
+-------
+
+Every time lasio's main branch is updated, automated tests are run using
+`GitHub Actions`_ on Python 3.5, 3.6, 3.7, and 3.8, on Ubuntu and Windows. 
+lasio may work on Python 3.3, and 3.4 but these are not regularly tested.
+
+To run tests yourself:
+
+.. code-block::
+
+    $ pip install lasio[test]
+    $ pytest
+
+.. _GitHub Actions: https://github.com/kinverarity1/lasio/actions/workflows/ci-tests.yml
 
 Email
 -----
