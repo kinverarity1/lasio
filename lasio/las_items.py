@@ -313,7 +313,7 @@ class SectionItems(list):
             raise KeyError("%s not in %s" % (key, self.keys()))
 
     def get(self, mnemonic, default="", add=False):
-        """Get an item, with a default value for it is missing.
+        """Get an item, with a default value for the situation when it is missing.
 
         Arguments:
             mnemonic (str): mnemonic of item to retrieve
@@ -325,8 +325,9 @@ class SectionItems(list):
                 be appended to the SectionItems. By default this is not done.
 
         Returns:
-            item from the SectionItems (either HeaderItem or CurveItem), or
-            a new item, if it does not exist. If a CurveItem is returned, the
+            :class:`lasio.HeaderItem`/:class:`lasio.CurveItem`: item from
+            the section, if it is in there, or
+            a new item, if it is not. If a CurveItem is returned, the
             ``data`` attribute will contain ``numpy.nan`` values.
 
         """
