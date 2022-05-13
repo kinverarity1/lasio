@@ -188,3 +188,10 @@ def test_get_missing_curveitem():
     item = sitems.get('GAMMA')
     assert type(item) is lasio.CurveItem
     assert np.isnan(item.data).all()
+
+def test_get_missing_add():
+    sitems = lasio.SectionItems()
+    item = sitems.get('WELL', default='3', add=True)
+    existing_item = sitems[0] 
+    assert existing_item.mnemonic == 'WELL'
+    assert existing_item.value == '3'
