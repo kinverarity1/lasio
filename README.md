@@ -20,7 +20,10 @@ for doing that sort of thing. If you are working specifically with lithological 
 stratigraphic data, you may find [striplog](https://github.com/agile-geoscience/striplog)
 helpful, while if you are focused on working at the well level, please take a
 look at [welly](https://github.com/agile-geoscience/welly), which provides
-much more functionality in that area.
+much more functionality in that area. lasio is not particularly fast
+at reading data from large LAS files, instead focusing on usability and
+reliability. If you are interested in quickly reading many large LAS files,
+try the R package [lasr](https://github.com/donald-keighley/lasr).
 
 Note this is not a package for reading LiDAR data (also called "LAS files"); 
 you may want to check out [laspy](https://github.com/laspy/laspy) for that.
