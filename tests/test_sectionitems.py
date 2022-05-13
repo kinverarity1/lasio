@@ -154,3 +154,44 @@ def test_mnemonic_rename_1():
     las = lasio.read(egfn("sample.las"))
     las.curves[-1].mnemonic = ""
     assert las.curves[-1].mnemonic == "UNKNOWN"
+
+
+def test_get_exists():
+    sitems = lasio.SectionItems()
+    sitems.append(
+        lasio.HeaderItem('WELL', value='1')
+    )
+    item = sitems.get('WELL', default='2')
+    assert item.value == '1'
+
+def test_get_missing_default_str():
+    sitems = lasio.SectionItems()
+    item = sitems.get('WELL', default='2')
+    assert item.value == '2'
+
+def test_get_missing_default_int():
+    sitems = lasio.SectionItems()
+    item = sitems.get('WELL', default=2)
+    assert item.value == '2'
+
+def test_get_missing_default_item():
+    sitems = lasio.SectionItems()
+    item = sitems.get('WELL', default=lasio.HeaderItem(mnemonic='XXX', value='3'))
+    assert item.mnemonic == 'WELL'
+    assert item.value == '3'
+    
+def test_get_missing_curveitem():
+    sitems = lasio.SectionItems()
+    sitems.append(
+        lasio.CurveItem('DEPT', data=[1, 2, 3])
+    )
+    item = sitems.get('GAMMA')
+    assert type(item) is lasio.CurveItem
+    assert np.isnan(item.data).all()
+
+def test_get_missing_add():
+    sitems = lasio.SectionItems()
+    item = sitems.get('WELL', default='3', add=True)
+    existing_item = sitems[0] 
+    assert existing_item.mnemonic == 'WELL'
+    assert existing_item.value == '3'

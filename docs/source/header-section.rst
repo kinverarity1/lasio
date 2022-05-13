@@ -258,6 +258,51 @@ There are methods intended for removing curves. Say you want to remove the PR cu
      CurveItem(mnemonic="DFAR", unit="G/CM3", value="", descr="DFAR", original_mnemonic="DFAR", data.shape=(121,)),
      CurveItem(mnemonic="DNEAR", unit="G/CM3", value="", descr="DNEAR", original_mnemonic="DNEAR", data.shape=(121,))]
 
+Another common task is to retrieve a header item that may or may not be in the
+file. If you try ordinary item-style access,
+as is normal in Python, a KeyError exception will be raised if it is missing:
+
+.. code-block:: python
+
+    >>> permit = las.well['PRMT']
+    Traceback (most recent call last):
+      File "<stdin>", line 1, in <module>
+      File "c:\devapps\kinverarity\projects\lasio\lasio\las_items.py", line 313, in __getitem__
+        raise KeyError("%s not in %s" % (key, self.keys()))
+    KeyError: "PRMT not in ['STRT', 'STOP', 'STEP', 'NULL', 'COMP', 'WELL', 'FLD', 'LOC', 'PROV', 'SRVC', 'DATE', 'UWI']"
+
+A better pattern is to use the :meth:`lasio.SectionItems.get` method, which
+allows you to specify a default value in the case of it missing:
+
+.. code-block:: python
+
+    >>> permit = las.well.get('PRMT', 'unknown')
+    >>> permit
+    HeaderItem(mnemonic="PRMT", unit="", value="unknown", descr="")
+
+You can use the ``add=True`` keyword argument if you would like this 
+header item to be added, as well as returned:
+
+.. code-block:: python
+
+    >>> permit = las.well.get('PRMT', 'unknown', add=True)
+    >>> las.well
+    [HeaderItem(mnemonic="STRT", unit="M", value="0.05", descr="FIRST INDEX VALUE"),
+    HeaderItem(mnemonic="STOP", unit="M", value="136.6", descr="LAST INDEX VALUE"),
+    HeaderItem(mnemonic="STEP", unit="M", value="0.05", descr="STEP"),
+    HeaderItem(mnemonic="NULL", unit="", value="-99999", descr="NULL VALUE"),
+    HeaderItem(mnemonic="COMP", unit="", value="", descr="COMP"),
+    HeaderItem(mnemonic="WELL", unit="", value="Scorpio E1", descr="WELL"),
+    HeaderItem(mnemonic="FLD", unit="", value="", descr=""),
+    HeaderItem(mnemonic="LOC", unit="", value="Mt Eba", descr="LOC"),
+    HeaderItem(mnemonic="SRVC", unit="", value="", descr=""),
+    HeaderItem(mnemonic="CTRY", unit="", value="", descr=""),
+    HeaderItem(mnemonic="STAT", unit="", value="SA", descr="STAT"),
+    HeaderItem(mnemonic="CNTY", unit="", value="", descr=""),
+    HeaderItem(mnemonic="DATE", unit="", value="15/03/2015", descr="DATE"),
+    HeaderItem(mnemonic="UWI", unit="", value="6038-187", descr="WUNT"),
+    HeaderItem(mnemonic="PRMT", unit="", value="unknown", descr="")]
+
 Handling special cases of header lines
 --------------------------------------
 

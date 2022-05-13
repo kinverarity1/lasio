@@ -41,6 +41,11 @@ Reading data
 .. autoattribute:: lasio.LASFile.data
 .. automethod:: lasio.LASFile.stack_curves
 
+Reading and modifying header data
+---------------------------------
+.. autoclass:: lasio.SectionItems
+    :members:
+
 Modifying data
 --------------
 .. automethod:: lasio.LASFile.set_data
