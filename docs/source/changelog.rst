@@ -1,6 +1,32 @@
 List of changes
 ===============================
 
+Unreleased changes (Available on GitHub)
+----------------------------------------
+- Fix `#322`_ - provide a way to consistently retrieve header items which may
+  or may not be present in the header:
+
+  If you try ordinary item-style access,
+  as is normal in Python, a KeyError exception will be raised if it is missing:
+
+  .. code-block:: python
+
+      >>> permit = las.well['PRMT']
+      Traceback (most recent call last):
+        File "<stdin>", line 1, in <module>
+        File "c:\devapps\kinverarity\projects\lasio\lasio\las_items.py", line 313, in __getitem__
+          raise KeyError("%s not in %s" % (key, self.keys()))
+      KeyError: "PRMT not in ['STRT', 'STOP', 'STEP', 'NULL', 'COMP', 'WELL', 'FLD', 'LOC', 'PROV', 'SRVC', 'DATE', 'UWI']"
+
+  A better pattern is to use the :meth:`lasio.SectionItems.get` method, which
+  allows you to specify a default value in the case of it missing:
+
+  .. code-block:: python
+
+      >>> permit = las.well.get('PRMT', 'unknown')
+      >>> permit
+      HeaderItem(mnemonic="PRMT", unit="", value="unknown", descr="")
+
 Version 0.30 (12 May 2022)
 --------------------------
 - Fixes for `#446`_ (Implement a numpy-based reader for the data section; `#452`_) and 
@@ -308,6 +334,7 @@ Version 0.2 (2015-07-08)
 .. _#318: https://github.com/kinverarity1/lasio/issues/318
 .. _#319: https://github.com/kinverarity1/lasio/issues/319
 .. _#321: https://github.com/kinverarity1/lasio/issues/321
+.. _#322: https://github.com/kinverarity1/lasio/issues/322
 .. _#325: https://github.com/kinverarity1/lasio/issues/325
 .. _#326: https://github.com/kinverarity1/lasio/issues/326
 .. _#327: https://github.com/kinverarity1/lasio/issues/327
@@ -387,7 +414,7 @@ Version 0.2 (2015-07-08)
 .. _#268: https://github.com/kinverarity1/lasio/issues/268
 .. _#451: https://github.com/kinverarity1/lasio/issues/451
 .. _#453: https://github.com/kinverarity1/lasio/issues/453
-.. _#455: https://github.com/kinverarity1/lasio/issues/455.. _#83: https://github.com/kinverarity1/lasio/issues/83
+.. _#455: https://github.com/kinverarity1/lasio/issues/455
 .. _#265: https://github.com/kinverarity1/lasio/issues/265
 .. _#332: https://github.com/kinverarity1/lasio/issues/332
 .. _#375: https://github.com/kinverarity1/lasio/issues/375

@@ -45,8 +45,7 @@ The final version of lasio with Python 2.7 support is v0.26.
    encodings
    lasio
    contributing
-
-.. include:: changelog.rst
+   changelog
 
 * :ref:`genindex`
 * :ref:`search`
