@@ -280,6 +280,29 @@ allows you to specify a default value in the case of it missing:
     >>> permit
     HeaderItem(mnemonic="PRMT", unit="", value="unknown", descr="")
 
+You can use the ``add=True`` keyword argument if you would like this 
+header item to be added, as well as returned:
+
+.. code-block:: python
+
+    >>> permit = las.well.get('PRMT', 'unknown', add=True)
+    >>> las.well
+    [HeaderItem(mnemonic="STRT", unit="M", value="0.05", descr="FIRST INDEX VALUE"),
+    HeaderItem(mnemonic="STOP", unit="M", value="136.6", descr="LAST INDEX VALUE"),
+    HeaderItem(mnemonic="STEP", unit="M", value="0.05", descr="STEP"),
+    HeaderItem(mnemonic="NULL", unit="", value="-99999", descr="NULL VALUE"),
+    HeaderItem(mnemonic="COMP", unit="", value="", descr="COMP"),
+    HeaderItem(mnemonic="WELL", unit="", value="Scorpio E1", descr="WELL"),
+    HeaderItem(mnemonic="FLD", unit="", value="", descr=""),
+    HeaderItem(mnemonic="LOC", unit="", value="Mt Eba", descr="LOC"),
+    HeaderItem(mnemonic="SRVC", unit="", value="", descr=""),
+    HeaderItem(mnemonic="CTRY", unit="", value="", descr=""),
+    HeaderItem(mnemonic="STAT", unit="", value="SA", descr="STAT"),
+    HeaderItem(mnemonic="CNTY", unit="", value="", descr=""),
+    HeaderItem(mnemonic="DATE", unit="", value="15/03/2015", descr="DATE"),
+    HeaderItem(mnemonic="UWI", unit="", value="6038-187", descr="WUNT"),
+    HeaderItem(mnemonic="PRMT", unit="", value="unknown", descr="")]
+
 Handling special cases of header lines
 --------------------------------------
 
