@@ -12,7 +12,7 @@ possible, including ones containing common errors or non-compliant
 formatting.
 
 Depending on your particular application you may also want to check out
-`striplog`_ for stratigraphic/lithological data, or (still in alpha dev)
+`striplog`_ for stratigraphic/lithological data, or 
 `welly`_ for dealing with data at the well level. lasio is primarily for
 reading & writing LAS files.
 
