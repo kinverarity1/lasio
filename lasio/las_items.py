@@ -312,6 +312,71 @@ class SectionItems(list):
         else:
             raise KeyError("%s not in %s" % (key, self.keys()))
 
+    def get(self, mnemonic, default="", add=False):
+        """Get an item, with a default value for it is missing.
+
+        Arguments:
+            mnemonic (str): mnemonic of item to retrieve
+            default (str, HeaderItem, or CurveItem): default to provide
+                if *mnemonic* is missing from the section. If a string is
+                provided, it will be used as the ``value`` attribute of a new
+                HeaderItem or the ``descr`` attribute of a new CurveItem.
+            add (bool): if True, the returned HeaderItem/CurveItem will also
+                be appended to the SectionItems. By default this is not done.
+
+        Returns:
+            item from the SectionItems (either HeaderItem or CurveItem), or
+            a new item, if it does not exist. If a CurveItem is returned, the
+            ``data`` attribute will contain ``numpy.nan`` values.
+
+        """
+        if mnemonic in self:
+            return self[mnemonic]
+        else:
+            if not (
+                isinstance(default, HeaderItem)
+                or isinstance(default, CurveItem)
+            ):
+                default = str(default)  
+                # Determine appropriate type of item to create (HeaderItem
+                # or CurveItem).
+
+                if len(self):
+                    first_item = self[0]
+                    item_type = type(first_item)
+                else:
+                    item_type = HeaderItem
+                
+                if item_type is CurveItem:
+                    new_data = np.asarray(first_item.data)
+                    new_data = new_data * np.nan
+
+                    item = CurveItem(
+                        mnemonic=mnemonic, 
+                        descr=default,
+                        data=new_data
+                    )
+                else:
+                    item = HeaderItem(
+                        mnemonic=mnemonic,
+                        value=default
+                    )
+            else:
+                assert type(default) in (HeaderItem, CurveItem)
+
+                item = type(default)(
+                    mnemonic=mnemonic,
+                    unit=default.unit,
+                    value=default.value,
+                    descr=default.descr
+                )
+                if type(item) is CurveItem:
+                    item.data = np.array(default.data)
+                
+        if add:
+            self.append(item)
+        return item
+
     def __delitem__(self, key):
         """Delete item by either mnemonic or index.
 
