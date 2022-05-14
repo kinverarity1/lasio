@@ -4,31 +4,38 @@
 
 Read and write Log ASCII Standard files with Python.
 
-This is a Python 3.3+ package to read and write Log ASCII Standard
+This is a Python 3.5+ package to read and write Log ASCII Standard
 (LAS) files, used for borehole data such as geophysical, geological, or
-petrophysical logs. It's compatible with versions 1.2 and 2.0 of the LAS file
+petrophysical logs. It's compatible with vers
+ions 1.2 and 2.0 of the LAS file
 specification, published by the [Canadian Well Logging
 Society](https://www.cwls.org/products/#products-las). Support for LAS 3 is 
-[being worked on](https://github.com/kinverarity1/lasio/issues/5). In
-principle it is designed to read as many types of LAS files as possible,
-including ones containing common errors or non-compliant formatting.
+[being worked on](https://github.com/kinverarity1/lasio/issues/5).
 
-lasio is primarily for reading & writing data and metadata to and from LAS files. 
-lasio does not mind whether LAS files meet the formal specification before reading
-data from them; check out the project [lascheck](https://github.com/MandarJKulkarni/lascheck)
-for doing that sort of thing. If you are working specifically with lithological or
-stratigraphic data, you may find [striplog](https://github.com/agile-geoscience/striplog)
-helpful, while if you are focused on working at the well level, please take a
-look at [welly](https://github.com/agile-geoscience/welly), which provides
-much more functionality in that area. lasio is not particularly fast
-at reading data from large LAS files, instead focusing on usability and
-reliability. If you are interested in quickly reading many large LAS files,
-try the R package [lasr](https://github.com/donald-keighley/lasr).
+lasio is primarily for reading and writing data and metadata to and from 
+LAS files. It is designed to read as many LAS files as possible, including
+those containing common errors and non-compliant formatting. It can be used
+directly, but you may want to consider using some other packages, depending
+on your priorities:
 
-Note this is not a package for reading LiDAR data (also called "LAS files"); 
-you may want to check out [laspy](https://github.com/laspy/laspy) for that.
+- [welly](https://github.com/agile-geoscience/welly) is a Python package that 
+  uses lasio for I/O but provides a **lot** more functionality aimed at working
+  with curves, wells, and projects. I would recommend starting there in most 
+  cases, to avoid re-inventing the wheel!
+- [lascheck](https://github.com/MandarJKulkarni/lascheck) is focused on
+  checking whether your LAS file meets the specifications.
+- lasio is not particularly fast, owing to its focus on reliably pulling
+  data from "troublesome" files. If you have a need for speed, and are willing 
+  to switch to R, you may want to check out 
+- [lasr](https://github.com/donald-keighley/lasr) is an R package which 
+  is designed to read large amounts of data quickly from LAS files; this is 
+  a great thing to check out if speed is a priority for you, as lasio is not 
+  particularly fast (unfortunately!)
+- LiDAR surveys are also called "LAS files", but they are quite different and
+  lasio will not help you -- check out [laspy](https://github.com/laspy/laspy)
+  instead.
 
-lasio  [stopped](https://github.com/kinverarity1/lasio/issues/364) 
+lasio [stopped](https://github.com/kinverarity1/lasio/issues/364) 
 supporting Python 2.7 in August 2020. The final version of lasio with Python 2.7 support 
 is version 0.26.
 
@@ -150,7 +157,6 @@ more details.
 Contributions are invited and welcome.
 
 See [Contributing](https://lasio.readthedocs.io/en/latest/contributing.html) for how to get started.
-
 
 ## License
 

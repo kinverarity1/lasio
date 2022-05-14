@@ -46,7 +46,7 @@ Places you can help
 * Please feel free to contribute suggested changes. The easiest method is to
   fork lasio on GitHub and
   `submit a pull request <https://github.com/kinverarity1/lasio/pulls>`__
-  against the "master" branch. Don’t worry about getting all the details right,
+  against the "main" branch. Don’t worry about getting all the details right,
   either way it’s still the most convenient way for me or other maintainers to
   see your changes in context.
 
@@ -64,8 +64,8 @@ How to make contributions
 
 Contributions are always welcome to the code, documentation, or example
 notebooks. If you are making a contribution, please make sure you are
-working off the latest GitHub master. You will want to make your contributions
-in a branch taken from `master`, and then when you want to share your changes,
+working off the latest GitHub main branch. You will want to make your contributions
+in a branch taken from `main`, and then when you want to share your changes,
 you can publish them by "pushing" your branch to your GitHub fork of the lasio
 repository, and opening a PR (pull request) here.
 
@@ -87,15 +87,15 @@ your local copy::
 
   $ git remote add upstream https://github.com/kinverarity1/lasio
 
-To update the `master` branch of the local copy you have of your fork from the "upstream" repository::
+To update the `main` branch of the local copy you have of your fork from the "upstream" repository::
 
-  $ git checkout master
-  $ git pull upstream master
+  $ git checkout main
+  $ git pull upstream main
 
 And to update the GitHub fork from your local copy::
 
-  $ git checkout master
-  $ git push origin master
+  $ git checkout main
+  $ git push origin main
   
 Making sure you have necessary development dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -108,11 +108,11 @@ formatting Python code (`black`). You can install these easily by using::
 Making changes to the code
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-First, start by making sure your local copy is using the latest copy of code from "upstream" master (see above).
-Then create a branch - you can call it whatever is meaningful to you. We switch to `master` so that
-your changes are relative to the latest copy of the code in `master`::
+First, start by making sure your local copy is using the latest copy of code from "upstream" main (see above).
+Then create a branch - you can call it whatever is meaningful to you. We switch to `main` so that
+your changes are relative to the latest copy of the code in `main`::
 
-  $ git checkout master
+  $ git checkout main
   $ git checkout -b your-branch-name
   Switched to a new branch 'your-branch-name'
 
@@ -160,6 +160,48 @@ Then run this to generate a local copy of the HTML docs in the `build/html` fold
   $ make html
   
 Once you are happy, please publish your branch and open a PR in the same way as above.
+
+Testing
+-------
+
+Every time lasio's main branch is updated, automated tests are run using
+`GitHub Actions`_ on Python 3.5, 3.6, 3.7, and 3.8, on Ubuntu and Windows. 
+lasio may work on Python 3.3, and 3.4 but these are not regularly tested.
+
+To run tests yourself:
+
+.. code-block::
+
+    $ pip install lasio[test]
+    $ pytest
+
+.. _GitHub Actions: https://github.com/kinverarity1/lasio/actions/workflows/ci-tests.yml
+
+Publishing a new release
+------------------------
+
+1. Ensure you are on main: ``$ git checkout main``
+2. Ensure you are using the latest copy of main: ``$ git pull origin main``
+3. Check for any local changes to main: ``$ git status`` - test locally and push if necessary.
+4. Check that `GitHub Actions Python CI <https://github.com/kinverarity1/lasio/actions/workflows/ci-tests.yml>`__ for main is passing.
+5. Find changes since last version release: see `list of commits <https://github.com/kinverarity1/lasio/commits/main>`__.
+6. Summarise these changes in `docs/source/changelog.rst <docs/source/changelog.rst>`__
+7. Run the Jupyter Noteook at `docs/Add links to GitHub for all issue and PR refs in changelog.ipynb <docs/Add%20links%20to%20GitHub%20for%20all%20issue%20and%20PR%20refs%20in%20changelog.ipynb>`__ to add hyperlinks for all issue and PR references.
+8. Edit the citation file: `CITATION.cff <https://github.com/kinverarity1/lasio/blob/main/CITATION.cff>`__
+9. Commit with a message e.g. ``Release v1.3``
+10. Tag with the same message e.g. ``git tag v1.3``
+11. Push to github - first the commit: ``git push origin main --tags``
+12. Create a universal wheel: ``python setup.py bdist_wheel --universal``
+13. This will put a new wheel file in ``dist/``
+14. Also create a source distribution: ``python setup.py sdist``
+15. This will put a source distribution archive in ``dist/``
+16. Upload all the new distribution release files (wheel and archive) to PyPI: ``twine upload -u USERNAME -p PASSWORD dist/file``
+17. Create a new GitHub release via https://github.com/kinverarity1/lasio/releases/new - select the tag
+18. Copy the CHANGELOG text in - convert to RST to Markdown quickly by replacing \`# with # and removing \`_
+19. Copy the wheel and source distribution archive files into the release page.
+20. Publish the release.
+
+That's it.
 
 Email
 -----

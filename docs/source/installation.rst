@@ -1,7 +1,7 @@
 Installation
 ============
 
-lasio is written to be compatible with Python 3.2+. The best
+lasio is written to be compatible with Python 3.3+. The best
 way to install is using pip.
 
 .. code-block:: bash
@@ -32,7 +32,9 @@ To upgrade to the latest PyPI version, use:
 Development version
 -------------------
 
-Installing via pip gets the latest release which has been published on `PyPI <https://pypi.python.org/pypi/lasio/>`__. If you want, you can install the latest changes from `GitHub`_:
+Installing via pip gets the latest release which has been published on
+`PyPI <https://pypi.python.org/pypi/lasio/>`__. If you want, you can install 
+the latest changes from `GitHub`_:
 
 .. code-block::
 
@@ -45,23 +47,4 @@ Installing via pip gets the latest release which has been published on `PyPI <ht
 .. _openpyxl: https://openpyxl.readthedocs.io/en/default/
 .. _GitHub: https://github.com/kinverarity1/lasio
 
-Testing
--------
 
-|Build Status Travis|
-
-Every time lasio is updated, automated tests are run using `Travis CI`_ on
-Python 3.5, 3.6, 3.7, and 3.8, on Linux. lasio should also work on Python
-3.3, and 3.4 but these are not regularly tested.
-
-To run tests yourself:
-
-.. code-block::
-
-    $ pip install pytest>=3.6 pytest-cov coverage
-    $ pytest
-
-.. _Travis CI: https://travis-ci.org/kinverarity1/lasio
-
-.. |Build Status Travis| image:: https://travis-ci.org/kinverarity1/lasio.svg?branch=master
-   :target: https://travis-ci.org/kinverarity1/lasio
