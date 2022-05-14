@@ -24,13 +24,10 @@ on your priorities:
   cases, to avoid re-inventing the wheel!
 - [lascheck](https://github.com/MandarJKulkarni/lascheck) is focused on
   checking whether your LAS file meets the specifications.
-- lasio is not particularly fast, owing to its focus on reliably pulling
-  data from "troublesome" files. If you have a need for speed, and are willing 
-  to switch to R, you may want to check out 
 - [lasr](https://github.com/donald-keighley/lasr) is an R package which 
   is designed to read large amounts of data quickly from LAS files; this is 
   a great thing to check out if speed is a priority for you, as lasio is not 
-  particularly fast (unfortunately!)
+  particularly fast.
 - LiDAR surveys are also called "LAS files", but they are quite different and
   lasio will not help you -- check out [laspy](https://github.com/laspy/laspy)
   instead.
