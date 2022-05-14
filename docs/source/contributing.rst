@@ -177,6 +177,32 @@ To run tests yourself:
 
 .. _GitHub Actions: https://github.com/kinverarity1/lasio/actions/workflows/ci-tests.yml
 
+Publishing a new release
+------------------------
+
+1. Ensure you are on main: ``$ git checkout main``
+2. Ensure you are using the latest copy of main: ``$ git pull origin main``
+3. Check for any local changes to main: ``$ git status`` - test locally and push if necessary.
+4. Check that `GitHub Actions Python CI <https://github.com/kinverarity1/lasio/actions/workflows/ci-tests.yml>`__ for main is passing.
+5. Find changes since last version release: see `list of commits <https://github.com/kinverarity1/lasio/commits/main>`__.
+6. Summarise these changes in `docs/source/changelog.rst <docs/source/changelog.rst>`__
+7. Run the Jupyter Noteook at `docs/Add links to GitHub for all issue and PR refs in changelog.ipynb <docs/Add%20links%20to%20GitHub%20for%20all%20issue%20and%20PR%20refs%20in%20changelog.ipynb>`__ to add hyperlinks for all issue and PR references.
+8. Edit the citation file: `CITATION.cff <https://github.com/kinverarity1/lasio/blob/main/CITATION.cff>`__
+9. Commit with a message e.g. ``Release v1.3``
+10. Tag with the same message e.g. ``git tag v1.3``
+11. Push to github - first the commit: ``git push origin main --tags``
+12. Create a universal wheel: ``python setup.py bdist_wheel --universal``
+13. This will put a new wheel file in ``dist/``
+14. Also create a source distribution: ``python setup.py sdist``
+15. This will put a source distribution archive in ``dist/``
+16. Upload all the new distribution release files (wheel and archive) to PyPI: ``twine upload -u USERNAME -p PASSWORD dist/file``
+17. Create a new GitHub release via https://github.com/kinverarity1/lasio/releases/new - select the tag
+18. Copy the CHANGELOG text in - convert to RST to Markdown quickly by replacing \`# with # and removing \`_
+19. Copy the wheel and source distribution archive files into the release page.
+20. Publish the release.
+
+That's it.
+
 Email
 -----
 
