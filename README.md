@@ -6,8 +6,7 @@ Read and write Log ASCII Standard files with Python.
 
 This is a Python 3.5+ package to read and write Log ASCII Standard
 (LAS) files, used for borehole data such as geophysical, geological, or
-petrophysical logs. It's compatible with vers
-ions 1.2 and 2.0 of the LAS file
+petrophysical logs. It's compatible with versions 1.2 and 2.0 of the LAS file
 specification, published by the [Canadian Well Logging
 Society](https://www.cwls.org/products/#products-las). Support for LAS 3 is 
 [being worked on](https://github.com/kinverarity1/lasio/issues/5).
