@@ -104,6 +104,7 @@ There are some additional packages you needing for running unit/regression tests
 formatting Python code (`black`). You can install these easily by using::
 
   $ pip install --editable ".[test]"
+  $ pip install black
 
 Making changes to the code
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
