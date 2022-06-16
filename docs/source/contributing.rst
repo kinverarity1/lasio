@@ -103,7 +103,7 @@ Making sure you have necessary development dependencies
 There are some additional packages you needing for running unit/regression tests (`pytest`) and
 formatting Python code (`black`). You can install these easily by using::
 
-  $ pip install --editable .[test]
+  $ pip install --editable ".[test]"
 
 Making changes to the code
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -172,7 +172,7 @@ To run tests yourself:
 
 .. code-block::
 
-    $ pip install lasio[test]
+    $ pip install "lasio[test]"
     $ pytest
 
 .. _GitHub Actions: https://github.com/kinverarity1/lasio/actions/workflows/ci-tests.yml
