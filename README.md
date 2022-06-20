@@ -1,5 +1,7 @@
 # lasio
 
+[![Run tests](https://github.com/kinverarity1/lasio/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/kinverarity1/lasio/actions/workflows/ci-tests.yml)
+[![PyPI version](https://img.shields.io/pypi/v/lasio.svg)](https://pypi.python.org/pypi/lasio/)
 [![License](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/kinverarity1/lasio/blob/master/LICENSE)
 
 Read and write Log ASCII Standard files with Python.
