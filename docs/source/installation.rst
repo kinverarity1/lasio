@@ -1,7 +1,7 @@
 Installation
 ============
 
-lasio is written to be compatible with Python 3.3+. The best
+lasio is written to be compatible with Python 3.6+. The best
 way to install is using pip.
 
 .. code-block:: bash
@@ -19,7 +19,7 @@ recommend installing these with:
 
 .. code-block::
 
-    $ pip install lasio[all]
+    $ pip install "lasio[all]"
 
 lasio is now installed.
 
