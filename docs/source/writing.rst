@@ -372,3 +372,245 @@ If we decide to write the file in LAS 2.0 format, the warnings will go away:
          909.62    -999.25     2644.4     0.2765     18.483     18.483     13.416      12.69     -1.501       93.4     201.58    -6.5861    -999.25    -999.25     4.3822    -999.25     1.5826     2955.4     2955.4     -1.501     89.714      0.159     0.0384      0.159     0.2765      0.159      11.86      0.321     0.9667          0     0.1538          0      11.86          0          0          0
           909.5    -999.25     2586.3     0.2996     13.919     13.919     12.919     12.702    -1.4916     98.121     201.71    -4.5574    -999.25    -999.25     3.5967    -999.25     1.7126     2953.6     2953.6    -1.4916     94.267      0.188     0.0723      0.188     0.2996      0.188     8.4863      0.449     0.8174          0     0.1537          0     8.4863          0          0          0
 
+Formatting data section columns
+-------------------------------
+
+
+The keyword parameters that control the column spacing in the data section are,
+the left-hand spacer, **lhs_spacer**, and the in-between column spacer, **spacer**.
+They are both set to one space by default.
+
+Use the **len_numeric_field** parameter to configure the padding within the
+numeric data fields.
+
+
+The following examples will use lasio/tests/examples/2.0/sample_2.0.las.  It's data
+section looks like this:
+
+.. code-block:: text
+
+  ~A  DEPTH     DT    RHOB        NPHI   SFLU    SFLA      ILM      ILD
+  1670.000   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
+  1669.875   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
+  1669.750   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
+
+Default data section formatting
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+If this file is read in and then written, the data section is formatted like this by default:
+
+.. code-block:: python
+
+  import lasio.examples
+  from lasio.reader import StringIO
+
+  las = lasio.examples.open("2.0/sample_2.0.las")
+  s = StringIO()
+
+  las.write(s)
+  s.seek(1665)
+  print(s.read())
+
+
+.. code-block:: text
+
+  ~ASCII -----------------------------------------------------
+   1670.00000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+   1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+   1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+
+The default settings are:
+
+- len_numeric_field defaults to 10 characters
+
+    + 5 digits to the right of the decimal
+    + 1 character for the decimal
+    + 4 digits for the number to the left of the decimal
+
+        - if there are less that 4 digits, the field is padded with blank spaces
+        - if there are more than 4 digits, the field is expanded to include all the digits
+
+- lhs_spacer defaults to 1 space. So the data is indented by one space.
+
+- spacer defaults to 1 space.  So data columns will have one space dividing them
+
+    + if a number is padded with blanks there will be more spaces seen for that number's field
+
+
+Examples: len_numeric_field
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Turn off data column left-padding, set len_numeric_field to -1
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This removes the padding of the numeric fields and leaves the lhs_spacer and
+spacer defaults of one space columns.
+
+.. code-block:: python
+
+  remove_padding=-1
+  las.write(s, len_numeric_field=remove_padding)
+  s.seek(1665)
+  print(s.read())
+
+.. code-block:: text
+
+  ~ASCII -----------------------------------------------------
+   1670.00000 123.45000 2550.00000 0.45000 123.45000 123.45000 110.20000 105.60000
+   1669.87500 123.45000 2550.00000 0.45000 123.45000 123.45000 110.20000 105.60000
+   1669.75000 123.45000 2550.00000 0.45000 123.45000 123.45000 110.20000 105.60000
+
+Set column width to less than the default: > 0 & < 10
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Note in this example that only column 4 is 8 characters wide the other columns are 9
+or more characters and expand to fit all their characters.
+
+.. code-block:: python
+
+  col_width = 8 
+  las.write(s, len_numeric_field=col_width)
+  s.seek(1665)
+  print(s.read())
+
+.. code-block:: text
+
+    ~ASCII -----------------------------------------------------
+     1670.00000 123.45000 2550.00000  0.45000 123.45000 123.45000 110.20000 105.60000
+     1669.87500 123.45000 2550.00000  0.45000 123.45000 123.45000 110.20000 105.60000
+     1669.75000 123.45000 2550.00000  0.45000 123.45000 123.45000 110.20000 105.60000
+
+Set column width to more than the default: > 10
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In this example all the columns are padded with space to make them wider.  The
+lhs_spacer, left hand spacer, is still one space wide. The additional space on
+the left hand side is from the padding of the first data column to the
+requested col_width of 12 characters.
+
+.. code-block:: python
+
+  col_width = 12 
+  las.write(s, len_numeric_field=col_width)
+  s.seek(1665)
+  print(s.read())
+
+.. code-block:: text
+
+    ~ASCII -----------------------------------------------------
+       1670.00000    123.45000   2550.00000      0.45000    123.45000    123.45000    110.20000    105.60000
+       1669.87500    123.45000   2550.00000      0.45000    123.45000    123.45000    110.20000    105.60000
+       1669.75000    123.45000   2550.00000      0.45000    123.45000    123.45000    110.20000    105.60000
+
+
+Examples: lhs_spacer
+~~~~~~~~~~~~~~~~~~~~
+
+Remove the left most space, set lhs_spacer to an empty string
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The output here removes the default 1 space column from the left hand side.
+Otherwise, it is the same as the initial default example.
+
+.. code-block:: python
+
+  empty_space = ""
+  las.write(s, lhs_spacer=empty_space)
+  s.seek(1665)
+  print(s.read())
+
+.. code-block:: text
+
+  ~ASCII -----------------------------------------------------
+  1670.00000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+  1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+  1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+
+Increase the left hand space, set lhs_spacer to a string with more spaces
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In this example, there are 3 columns of space at the left hand side.
+
+.. code-block:: python
+
+  three_spaces = "   "
+  las.write(s, lhs_spacer=three_spaces)
+  s.seek(1665)
+  print(s.read())
+
+.. code-block:: text
+
+  ~ASCII -----------------------------------------------------
+     1670.00000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+     1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+     1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+
+
+Examples: spacer
+~~~~~~~~~~~~~~~~~
+
+Increase the space between columns, set spacer to as string with more spaces
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In this example, there are 3 columns of space separating the data columns from
+each other.  In addition some of the columns have more space due to
+space-padding of their digits to the right of the decimal.
+
+Note that the left hand side only has the 1 space, because it is not in between
+the columns and is set by the default lhs_spacer setting of one space.
+
+.. code-block:: python
+
+  three_spaces = "   "
+  las.write(s, spacer=three_spaces)
+  s.seek(1665)
+  print(s.read())
+
+.. code-block:: text
+
+  ~ASCII -----------------------------------------------------
+   1670.00000    123.45000   2550.00000      0.45000    123.45000    123.45000    110.20000    105.60000
+   1669.87500    123.45000   2550.00000      0.45000    123.45000    123.45000    110.20000    105.60000
+   1669.75000    123.45000   2550.00000      0.45000    123.45000    123.45000    110.20000    105.60000
+
+Use a different character as the spacer character
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This example demonstrates using a comma as the column separator. This outputs a
+set of comma separated data values.
+
+.. code-block:: python
+
+  comma_spacer = ","
+  las.write(s, spacer=comma_spacer)
+  s.seek(1665)
+  print(s.read())
+
+.. code-block:: text
+
+  ~ASCII -----------------------------------------------------
+   1670.00000, 123.45000,2550.00000,   0.45000, 123.45000, 123.45000, 110.20000, 105.60000
+   1669.87500, 123.45000,2550.00000,   0.45000, 123.45000, 123.45000, 110.20000, 105.60000
+   1669.75000, 123.45000,2550.00000,   0.45000, 123.45000, 123.45000, 110.20000, 105.60000
+
+Examples: a combined example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This example shows that these options can be combined to produce a variety of output formats.
+Here the data section is output as a tight comma separated data set.
+
+.. code-block:: python
+
+  empty_lhs_spacer = ""
+  comma_spacer = ","
+  no_padding = -1
+  las.write(s, lhs_spacer=empty_lhs_spacer, spacer=comma_spacer, len_numeric_field=no_padding)
+  s.seek(1665)
+  print(s.read())
+
+.. code-block:: text
+
+  ~ASCII -----------------------------------------------------
+  1670.00000,123.45000,2550.00000,0.45000,123.45000,123.45000,110.20000,105.60000
+  1669.87500,123.45000,2550.00000,0.45000,123.45000,123.45000,110.20000,105.60000
+  1669.75000,123.45000,2550.00000,0.45000,123.45000,123.45000,110.20000,105.60000
+
