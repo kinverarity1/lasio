@@ -426,7 +426,7 @@ The default settings are:
     + 1 character for the decimal
     + 4 digits for the number to the left of the decimal
 
-        - if there are less that 4 digits, the field is padded with blank spaces
+        - if there are less than 4 digits, the field is padded with blank spaces
         - if there are more than 4 digits, the field is expanded to include all the digits
 
 - lhs_spacer defaults to 1 space. So the data is indented by one space.

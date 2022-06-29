@@ -6,6 +6,7 @@ import pytest
 import numpy as np
 
 import lasio
+import lasio.examples
 from lasio import read
 from lasio.excel import ExcelConverter
 
@@ -937,5 +938,43 @@ between 625 metres and 615 metres to be invalid.
  1670.00000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
  1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
  1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+"""
+    )
+
+
+def test_data_section_format_default():
+    s = StringIO()
+    las = lasio.examples.open("2.0/sample_2.0.las")
+    las.write(s)
+    s.seek(1665)
+    assert (
+        s.read()
+        == """~ASCII -----------------------------------------------------
+ 1670.00000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+ 1669.87500  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+ 1669.75000  123.45000 2550.00000    0.45000  123.45000  123.45000  110.20000  105.60000
+"""
+    )
+
+
+def test_data_section_format_combined_parameters():
+    s = StringIO()
+    las = lasio.examples.open("2.0/sample_2.0.las")
+    empty_lhs_spacer = ""
+    comma_spacer = ","
+    no_padding = -1
+    las.write(
+        s,
+        lhs_spacer=empty_lhs_spacer,
+        spacer=comma_spacer,
+        len_numeric_field=no_padding,
+    )
+    s.seek(1665)
+    assert (
+        s.read()
+        == """~ASCII -----------------------------------------------------
+1670.00000,123.45000,2550.00000,0.45000,123.45000,123.45000,110.20000,105.60000
+1669.87500,123.45000,2550.00000,0.45000,123.45000,123.45000,110.20000,105.60000
+1669.75000,123.45000,2550.00000,0.45000,123.45000,123.45000,110.20000,105.60000
 """
     )
