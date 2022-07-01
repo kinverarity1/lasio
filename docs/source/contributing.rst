@@ -37,7 +37,7 @@ Places you can help
 * Please don’t hesitate to open a
   `GitHub issue <https://github.com/kinverarity1/lasio/issues/new>`__
   for any problems you are having with lasio, or any ideas for improvements.
-  There are templates to guide you in how to file a 
+  There are templates to guide you in how to file a
   `bug report <https://github.com/kinverarity1/lasio/issues/new?assignees=&labels=bug&template=bug_report.md&title=>`__,
   or a `request for a new feature or improvement <https://github.com/kinverarity1/lasio/issues/new?assignees=&labels=&template=feature_request.md&title=>`__.
   If you are not sure whether your issue fits under these categories, please
@@ -96,7 +96,7 @@ And to update the GitHub fork from your local copy::
 
   $ git checkout main
   $ git push origin main
-  
+
 Making sure you have necessary development dependencies
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -141,7 +141,7 @@ And follow the instructions on your fork's GitHub page to open a pull request (P
 Making changes to the documentation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Just as valuable as changes to the code, are changes or improvements to the 
+Just as valuable as changes to the code, are changes or improvements to the
 `Sphinx documentation <https://lasio.readthedocs.io/en/latest/>`__! If you would like to help in this regard, you will
 need Sphinx and IPython installed::
 
@@ -158,24 +158,79 @@ Then run this to generate a local copy of the HTML docs in the `build/html` fold
 
   $ make clean
   $ make html
-  
+
 Once you are happy, please publish your branch and open a PR in the same way as above.
 
 Testing
 -------
 
 Every time lasio's main branch is updated, automated tests are run using
-`GitHub Actions`_ on Python 3.5, 3.6, 3.7, and 3.8, on Ubuntu and Windows. 
-lasio may work on Python 3.3, and 3.4 but these are not regularly tested.
+`GitHub Actions`_ on Python 3.6, 3.7, 3.8, 3.9 and 3.10 on Ubuntu and Windows.
+lasio may work on Python 3.3, 3.4, 3.5 but these are not regularly tested.
 
 To run tests yourself:
 
-.. code-block::
+.. code-block:: console
 
     $ pip install "lasio[test]"
     $ pytest
 
 .. _GitHub Actions: https://github.com/kinverarity1/lasio/actions/workflows/ci-tests.yml
+
+Comparative Benchmarking of performance when reading LAS files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The test file ``tests/test_speed.py`` reads in a large LAS file and is used
+to generate the data used in the following benchmark comparisons.
+
+To compare two branches, run and store the benchmark from the first branch e.g.
+main and generate the benchmark from the second branch e.g. dev-branch. Then
+run the comparison command.
+
+This same basic technique can be used for testing subsquent changes on a branch.
+
+Make benchmark report for first branch:
+
+.. code-block:: console
+
+    $ mkdir ../lasio-benchmarks
+    $ git checkout main
+    $ pytest tests/test_speed.py --benchmark-autosave --benchmark-storage ../lasio-benchmarks
+
+
+Make benchmark report for second branch.
+
+.. code-block:: console
+
+    $ git checkout dev-branch
+    $ pytest tests/test_speed.py --benchmark-autosave --benchmark-storage ../lasio-benchmarks
+
+
+List the available benchmark reports.  Their names start with an incremented
+number: 0001, 0002, etc, followed by their git commit.
+
+.. code-block:: console
+
+    $ pytest-benchmark  --storage file://../lasio-benchmarks list
+    <path>/0001_d39237c38dcbd4255ac61708287c5f012f8f56da_20220630_185722.json
+    <path>/0002_ede364ae5cb8aaa2f821fdda017196121e92ffe6_20220630_194028.json
+    ...
+
+Compare two benchmark reports. If the terminal is set to display color then the
+output will color data green for better performance and red for worse
+performance.
+
+.. code-block:: console
+
+    $ pytest-benchmark  --storage file://../lasio-benchmarks compare 0001 0002
+
+    --------------------------------------------------------------------------------------------- benchmark: 2 tests ---------------------------------------------------------------------------------------------
+    Name (time in ms)                                Min                 Max                Mean            StdDev              Median               IQR            Outliers     OPS            Rounds  Iterations
+    --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+    test_read_v12_sample_big (0001_d39237c)     149.3796 (1.0)      157.5133 (1.00)     150.8693 (1.00)     2.9515 (1.03)     149.5928 (1.0)      0.7392 (2.43)          1;1  6.6283 (1.00)          7           1
+    test_read_v12_sample_big (0002_ede364a)     149.6045 (1.00)     157.3494 (1.0)      150.8314 (1.0)      2.8771 (1.0)      149.7972 (1.00)     0.3038 (1.0)           1;1  6.6299 (1.0)           7           1
+    --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 Publishing a new release
 ------------------------
