@@ -55,6 +55,8 @@ Modifying data
 .. automethod:: lasio.LASFile.delete_curve
 .. automethod:: lasio.LASFile.append_curve_item
 .. automethod:: lasio.LASFile.insert_curve_item
+.. automethod:: lasio.LASFile.update_start_stop_step
+.. automethod:: lasio.LASFile.update_units_from_index_curve
 
 Writing data out
 ----------------
@@ -70,6 +72,8 @@ Writing data out
 .. automethod:: lasio.excel.ExcelConverter.generate_workbook
 .. automethod:: lasio.excel.ExcelConverter.write
 .. automethod:: lasio.LASFile.to_json
+.. autofunction:: lasio.convert_version.convert_version
+.. autofunction:: lasio.convert_version.get_convert_version_parser
 
 Custom exceptions
 -----------------
@@ -83,3 +87,7 @@ Test data
 .. autofunction:: lasio.examples.open_github_example
 .. autofunction:: lasio.examples.open_local_example
 .. autofunction:: lasio.examples.get_local_examples_path
+
+Logging
+-------
+.. autofunction:: lasio.add_logging_level
