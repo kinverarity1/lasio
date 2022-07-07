@@ -64,7 +64,7 @@ def read(file_ref, **kwargs):
     """Read a LAS file.
 
     Note that only versions 1.2 and 2.0 of the LAS file specification
-    are currently supported.
+    are fully supported. There is partial support for reading LAS 3.0 files.
 
     Arguments:
         file_ref (file-like object, str): either a filename, an open file

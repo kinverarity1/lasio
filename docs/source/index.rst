@@ -46,8 +46,10 @@ with Python 2.7 support is version 0.26.
 .. |Research software impact| image:: http://depsy.org/api/package/pypi/lasio/badge.svg
    :target: http://depsy.org/package/python/lasio
 
+
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 2
+   :caption: User guide
 
    installation
    basic-example
@@ -58,9 +60,35 @@ with Python 2.7 support is version 0.26.
    exporting
    building
    encodings
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API reference
+
    lasio
+
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Other resources
+
    contributing
    changelog
 
+
+Indices and tables
+------------------
+
 * :ref:`genindex`
-* :ref:`search`
+
+
+.. toctree::
+   :caption: Project links
+   :hidden:
+
+    PyPI releases <https://pypi.org/project/lasio/>
+    Code in GitHub <https://github.com/kinverarity1/lasio>
+    Issue tracker <https://github.com/kinverarity1/lasio/issues>
+
