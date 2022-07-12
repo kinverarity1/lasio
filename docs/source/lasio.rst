@@ -75,6 +75,10 @@ Writing data out
 .. autofunction:: lasio.convert_version.convert_version
 .. autofunction:: lasio.convert_version.get_convert_version_parser
 
+Defaults
+--------
+.. automodule:: lasio.defaults
+
 Custom exceptions
 -----------------
 .. autoclass:: lasio.exceptions.LASDataError

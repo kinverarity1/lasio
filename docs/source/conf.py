@@ -83,4 +83,7 @@ texinfo_documents = [
     )
 ]
 
-intersphinx_mapping = {"https://docs.python.org/": None}
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/", None),
+    "numpy": ("http://docs.scipy.org/doc/numpy", None),
+}

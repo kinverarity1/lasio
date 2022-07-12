@@ -300,6 +300,7 @@ Version 0.2 (2015-07-08)
 .. _#75: https://github.com/kinverarity1/lasio/issues/75
 .. _#78: https://github.com/kinverarity1/lasio/issues/78
 .. _#81: https://github.com/kinverarity1/lasio/issues/81
+.. _#83: https://github.com/kinverarity3/lasio/issues/83
 .. _#84: https://github.com/kinverarity1/lasio/issues/84
 .. _#85: https://github.com/kinverarity1/lasio/issues/85
 .. _#92: https://github.com/kinverarity1/lasio/issues/92
