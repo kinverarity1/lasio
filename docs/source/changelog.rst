@@ -1,3 +1,5 @@
+.. _ChangeLog:
+
 List of changes
 ===============================
 

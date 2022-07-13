@@ -33,7 +33,7 @@ on your priorities:
 lasio stopped supporting Python 2.7 in August 2020. The final version of lasio 
 with Python 2.7 support is version 0.26.
 
-.. _Canadian Well Logging Society: http://www.cwls.org/las
+.. _Canadian Well Logging Society: https://www.cwls.org/products/#products-las
 .. _welly: https://github.com/agile-geoscience/welly
 .. _lasr: https://github.com/donald-keighley/lasr
 .. _laspy: https://github.com/laspy/laspy
