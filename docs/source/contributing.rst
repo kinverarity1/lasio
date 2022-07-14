@@ -240,7 +240,7 @@ Publishing a new release
 3. Check for any local changes to main: ``$ git status`` - test locally and push if necessary.
 4. Check that `GitHub Actions Python CI <https://github.com/kinverarity1/lasio/actions/workflows/ci-tests.yml>`__ for main is passing.
 5. Find changes since last version release: see `list of commits <https://github.com/kinverarity1/lasio/commits/main>`__.
-6. Summarise these changes in `docs/source/changelog.rst <docs/source/changelog.rst>`__
+6. Summarise these changes in :ref:`ChangeLog`.
 7. Run the Jupyter Noteook at `docs/Add links to GitHub for all issue and PR refs in changelog.ipynb <docs/Add%20links%20to%20GitHub%20for%20all%20issue%20and%20PR%20refs%20in%20changelog.ipynb>`__ to add hyperlinks for all issue and PR references.
 8. Edit the citation file: `CITATION.cff <https://github.com/kinverarity1/lasio/blob/main/CITATION.cff>`__
 9. Commit with a message e.g. ``Release v1.3``
@@ -343,4 +343,4 @@ Attribution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This Code of Conduct is adapted from the `Contributor Covenant version 1.4
-<http://contributor-covenant.org/version/1/4>`__.
+<https://www.contributor-covenant.org/version/1/4/>`__.

@@ -34,7 +34,7 @@ from pkg_resources import get_distribution
 release = get_distribution("lasio").version
 version = ".".join(release.split(".")[:2])
 
-language = None
+language = "en"
 
 exclude_patterns = []
 
@@ -83,4 +83,7 @@ texinfo_documents = [
     )
 ]
 
-intersphinx_mapping = {"https://docs.python.org/": None}
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/", None),
+    "numpy": ("http://docs.scipy.org/doc/numpy", None),
+}
