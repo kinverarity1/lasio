@@ -332,5 +332,5 @@ We can fix it by using an explicit NULL policy.
              1.234500e+02, -9.992500e+02,  1.102000e+02,  1.056000e+02]])
 
 See ``tests/test_null_policy.py`` (`link
-<https://github.com/kinverarity1/lasio/blob/master/tests/test_null_policy.py>`__)
+<https://github.com/kinverarity1/lasio/blob/main/tests/test_null_policy.py>`__)
 for some examples.

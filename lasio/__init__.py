@@ -67,8 +67,8 @@ def read(file_ref, **kwargs):
     are fully supported. There is partial support for reading LAS 3.0 files.
 
     Arguments:
-        file_ref (file-like object, str): either a filename, an open file
-            object, or a string containing the contents of a file.
+        file_ref( :term:`file-like object` or :class:`str`): either a filename,
+            an open file object, or a string containing the contents of a file.
 
     Returns:
         a :class:`lasio.LASFile` object representing the file -- see above
@@ -79,7 +79,7 @@ def read(file_ref, **kwargs):
 
     * :func:`lasio.reader.open_with_codecs` - manage issues relate to character
       encodings
-    * :meth:`lasio.las.LASFile.read` - control how NULL values and errors are
+    * :meth:`lasio.LASFile.read` - control how NULL values and errors are
       handled during parsing
 
     """

@@ -222,5 +222,5 @@ and check that it's all there:
 
 All good, the new curve is in there.
 
-See the `pandas documentation <https://pandas.pydata.org/pandas-docs/stable/user_guide/dsintro.html>`__
+See the `pandas documentation <https://pandas.pydata.org/pandas-docs/stable/user_guide/dsintro.html#dataframe>`__
 for more information!

@@ -49,4 +49,4 @@ using:
 
 .. _open function from codecs: https://docs.python.org/2/library/codecs.html#codecs.open
 .. _cChardet: https://github.com/PyYoshi/cChardet
-.. _chardet: https://pypi.python.org/pypi/chardet
+.. _chardet: https://pypi.org/project/chardet
