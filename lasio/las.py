@@ -45,8 +45,8 @@ class LASFile(object):
     """LAS file object.
 
     Keyword Arguments:
-        file_ref (file-like object, str): either a filename, an open file
-            object, or a string containing the contents of a file.
+        file_ref (:term:`file-like object` or :class:`str`): either a filename,
+            an open file object, or a string containing the contents of a file.
 
     See these routines for additional keyword arguments you can use when
     reading in a LAS file:
@@ -98,8 +98,9 @@ class LASFile(object):
         """Read a LAS file.
 
         Arguments:
-            file_ref (file-like object, str): either a filename, an open file
-                object, or a string containing the contents of a file.
+            file_ref (:term:`file-like object` or :class:`str`): either a
+                filename, an open file object, or a string containing the
+                contents of a file.
 
         Keyword Arguments:
             ignore_header_errors (bool): ignore LASHeaderErrors (False by

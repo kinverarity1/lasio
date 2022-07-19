@@ -49,7 +49,7 @@ If we are working in Python, you export like this:
 
     >>> las.to_excel('sample.xlsx')
 
-You will need to have `openpyxl <https://openpyxl.readthedocs.io/en/default/>`__
+You will need to have `openpyxl <https://openpyxl.readthedocs.io/en/stable/>`__
 installed (``$ pip install openpyxl``).
 
 Format of exported Excel file

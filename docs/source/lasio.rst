@@ -19,6 +19,7 @@ Reading LAS files
 .. automethod:: lasio.HeaderItem.set_session_mnemonic_only
 .. autoclass:: lasio.CurveItem
 .. autoclass:: lasio.SectionItems
+    :noindex:
 
 Reading data
 --------------

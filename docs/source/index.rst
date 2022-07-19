@@ -34,20 +34,22 @@ lasio stopped supporting Python 2.7 in August 2020. The final version of lasio
 with Python 2.7 support is version 0.26.
 
 .. _Canadian Well Logging Society: https://www.cwls.org/products/#products-las
-.. _welly: https://github.com/agile-geoscience/welly
+.. _welly: https://github.com/agilescientific/welly
 .. _lasr: https://github.com/donald-keighley/lasr
 .. _laspy: https://github.com/laspy/laspy
 .. _lascheck: https://github.com/MandarJKulkarni/lascheck
 .. _being worked on: https://github.com/kinverarity1/lasio/issues/5
 
 .. |Status| image:: https://img.shields.io/badge/status-beta-yellow.svg
-.. |License| image:: http://img.shields.io/badge/license-MIT-blue.svg
-   :target: https://github.com/kinverarity1/lasio/blob/master/LICENSE
+.. |License| image:: https://img.shields.io/badge/license-MIT-blue.svg
+   :target: https://github.com/kinverarity1/lasio/blob/main/LICENSE
 .. |Research software impact| image:: http://depsy.org/api/package/pypi/lasio/badge.svg
    :target: http://depsy.org/package/python/lasio
 
+
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 2
+   :caption: User guide
 
    installation
    basic-example
@@ -58,9 +60,35 @@ with Python 2.7 support is version 0.26.
    exporting
    building
    encodings
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API reference
+
    lasio
+
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Other resources
+
    contributing
    changelog
 
+
+Indices and tables
+------------------
+
 * :ref:`genindex`
 * :ref:`search`
+
+
+.. toctree::
+   :caption: Project links
+   :hidden:
+
+    PyPI releases <https://pypi.org/project/lasio/>
+    Code in GitHub <https://github.com/kinverarity1/lasio>
+    Issue tracker <https://github.com/kinverarity1/lasio/issues>

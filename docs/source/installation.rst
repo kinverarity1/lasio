@@ -33,18 +33,18 @@ Development version
 -------------------
 
 Installing via pip gets the latest release which has been published on
-`PyPI <https://pypi.python.org/pypi/lasio/>`__. If you want, you can install 
+`PyPI <https://pypi.org/project/lasio/>`__. If you want, you can install 
 the latest changes from `GitHub`_:
 
 .. code-block::
 
     $ pip install https://github.com/kinverarity1/lasio/archive/master.zip
 
-.. _numpy: http://numpy.org/
-.. _pandas: https://pypi.python.org/pypi/pandas
+.. _numpy: https://numpy.org/
+.. _pandas: https://pypi.org/project/pandas/
 .. _cChardet: https://github.com/PyYoshi/cChardet
 .. _chardet: https://github.com/chardet/chardet
-.. _openpyxl: https://openpyxl.readthedocs.io/en/default/
+.. _openpyxl: https://openpyxl.readthedocs.io/en/stable/
 .. _GitHub: https://github.com/kinverarity1/lasio
 
 
