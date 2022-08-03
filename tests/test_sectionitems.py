@@ -50,14 +50,14 @@ def test_section_items_indices():
     assert sl.keys() == ["DT", "RHOB", "NPHI"]
 
 
-def test_add_curve_duplicate():
+def test_append_curve_duplicate():
     las = lasio.LASFile()
     a = np.array([1, 2, 3, 4])
     b1 = np.array([5, 9, 1, 4])
     b2 = np.array([1, 2, 3, 2])
-    las.add_curve("DEPT", a)
-    las.add_curve("B", b1, descr="b1")
-    las.add_curve("B", b2, descr="b2")
+    las.append_curve("DEPT", a)
+    las.append_curve("B", b1, descr="b1")
+    las.append_curve("B", b2, descr="b2")
     # assert l.keys == ['DEPT', 'B', 'B']
     assert [c.descr for c in las.curves] == ["", "b1", "b2"]
 
