@@ -1,3 +1,5 @@
+"""The main Lasio class: LASFile."""
+
 from __future__ import print_function
 
 try:  # will work in Python 3
@@ -41,7 +43,6 @@ logger = logging.getLogger(__name__)
 
 
 class LASFile(object):
-
     """LAS file object.
 
     Keyword Arguments:
@@ -124,7 +125,7 @@ class LASFile(object):
                 wrapped.
             read_policy (): TODO
             null_policy (str or list): see
-                http://lasio.readthedocs.io/en/latest/data-section.html#handling-invalid-data-indicators-automatically
+                https://lasio.readthedocs.io/en/latest/data-section.html#handling-invalid-data-indicators-automatically
             index_unit (str): Optionally force-set the index curve's unit to "m" or "ft"
             dtypes ("auto", dict or list): specify the data types for each curve in the
                 ~ASCII data section. If "auto", each curve will be converted to floats if
@@ -153,7 +154,6 @@ class LASFile(object):
                 (this is handled by :func:`lasio.reader.open_with_codecs`)
 
         """
-
         logger.debug("Reading {}...".format(str(file_ref)))
 
         # Determine which lines to ignore:
@@ -506,7 +506,6 @@ class LASFile(object):
         calculated from the index curve.
 
         """
-
         # If we are getting STRT and STOP from the data then format them to a
         # standard precision.
         # If they are passed in with values, don't format them because we
@@ -550,15 +549,14 @@ class LASFile(object):
         """Write LAS file to disk.
 
         Arguments:
-            file_ref (open file-like object or str): a file-like object opening
-                for writing, or a filename.
+            file_ref (open :term:`file-like object` or :class:`str`): either a
+                file-like object open for writing, or a filename.
 
         All ``**kwargs`` are passed to :func:`lasio.writer.write` -- please
         check the docstring of that function for more keyword arguments you can
         use here!
 
         Examples:
-
             >>> import lasio
             >>> las = lasio.read("tests/examples/sample.las")
             >>> with open('test_output.las', mode='w') as f:
@@ -580,10 +578,9 @@ class LASFile(object):
         installed.
 
         Arguments:
-            filename (str)
+            filename (str): a name for the file to be created and written to.
 
         """
-
         try:
             import openpyxl
         except ImportError:
@@ -597,11 +594,11 @@ class LASFile(object):
         converter.write(filename)
 
     def to_csv(self, file_ref, mnemonics=True, units=True, units_loc="line", **kwargs):
-        """Export to a CSV file.
+        r"""Export to a CSV file.
 
         Arguments:
-            file_ref (open file-like object or str): a file-like object opening
-                for writing, or a filename.
+            file_ref (open :term:`file-like object` or :class:`str`): either a
+                file-like object open for writing, or a filename.
 
         Keyword Arguments:
             mnemonics (list, True, False): write mnemonics as a header line at the
@@ -845,7 +842,7 @@ class LASFile(object):
 
     @property
     def header(self):
-        """All header information
+        """All header information.
 
         Returns:
             dict
@@ -952,9 +949,10 @@ class LASFile(object):
         self.set_data(df_values, **kwargs)
 
     def stack_curves(self, mnemonic, sort_curves=True):
-        """Stack multi-channel curve data to a numpy 2D ndarray. Provide a
-        stub name (prefix shared by all curves that will be stacked) or a
-        list of curve mnemonic strings.
+        """Stack multi-channel curve data to a numpy 2D ndarray.
+
+        Provide a stub name (prefix shared by all curves that will be stacked)
+        or a list of curve mnemonic strings.
 
         Keyword Arguments:
             mnemonic (str or list): Supply the first several characters of
@@ -1024,10 +1022,10 @@ class LASFile(object):
             raise exceptions.LASUnknownUnitError("Unit of depth index not known")
 
     def _index_unit_contains(self, unit_code):
-        """Check value of index_unit string, ignoring case
+        """Check value of index_unit string, ignore case.
 
         Args:
-            index unit code (string) e.g. 'M' or 'FT'
+            unit_code (string): e.g. 'M' or 'FT'
         """
         return self.index_unit and (unit_code.upper() in self.index_unit.upper())
 
@@ -1169,17 +1167,17 @@ class LASFile(object):
 
 
 class Las(LASFile):
-
     """LAS file object.
 
     Retained for backwards compatibility.
 
     """
-
     pass
 
 
 class JSONEncoder(json.JSONEncoder):
+    """Extend json.JSONEncoder for LAS specific Json output."""
+
     def default(self, obj):
         if isinstance(obj, LASFile):
             d = {"metadata": {}, "data": {}}
