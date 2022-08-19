@@ -1,8 +1,11 @@
+"""Lasio package for reading and writing Log Ascii Standard well files."""
+
 import logging
 import os
 
 def add_logging_level(levelName, levelNum, methodName=None):
-    """
+    """Add a new logging level to current logger.
+
     Comprehensively adds a new logging level to the `logging` module and the
     currently configured logging class.
 
@@ -17,7 +20,7 @@ def add_logging_level(levelName, levelNum, methodName=None):
     `logging` module or if the method name is already present 
 
     Example
-    -------
+
     >>> add_logging_level('TRACE', logging.DEBUG - 5)
     >>> logging.getLogger(__name__).setLevel("TRACE")
     >>> logging.getLogger(__name__).trace('that worked')

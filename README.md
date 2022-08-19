@@ -1,7 +1,13 @@
 # lasio
 
+<p align="center">
+<a href="https://lasio.readthedocs.io/en/stable/"><strong>Documentation</strong> (stable)</a> •
+<a href="https://lasio.readthedocs.io/en/latest/"><strong>Documentation</strong> (main branch)</a>
+</p>
+
 [![Run tests](https://github.com/kinverarity1/lasio/actions/workflows/ci-tests.yml/badge.svg)](https://github.com/kinverarity1/lasio/actions/workflows/ci-tests.yml)
 [![PyPI version](https://img.shields.io/pypi/v/lasio.svg)](https://pypi.python.org/pypi/lasio/)
+[![Code Style](https://img.shields.io/badge/code%20style-black-000000.svg)](https://black.readthedocs.io/en/stable/the_black_code_style/index.html)
 [![License](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/kinverarity1/lasio/blob/master/LICENSE)
 
 Read and write Log ASCII Standard files with Python.
@@ -40,11 +46,6 @@ is version 0.26.
 ## Code of conduct
 
 See our [code of conduct](https://lasio.readthedocs.io/en/latest/contributing.html#code-of-conduct).
-
-## Documentation
-
-See here for the [complete lasio package
-documentation](https://lasio.readthedocs.io/en/latest/).
 
 ## Quick start
 
@@ -158,4 +159,4 @@ See [Contributing](https://lasio.readthedocs.io/en/latest/contributing.html) for
 
 ## License
 
-MIT
+[MIT](https://github.com/kinverarity1/lasio/blob/master/LICENSE)
