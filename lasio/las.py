@@ -1031,10 +1031,6 @@ class LASFile(object):
         """
         return self.index_unit and (unit_code.upper() in self.index_unit.upper())
 
-    def add_curve_raw(self, mnemonic, data, unit="", descr="", value=""):
-        """Deprecated. Use append_curve_item() or insert_curve_item() instead."""
-        return self.append_curve_item(self, mnemonic, data, unit, descr, value)
-
     def append_curve_item(self, curve_item):
         """Add a CurveItem.
 
@@ -1065,10 +1061,6 @@ class LASFile(object):
         """
         self.delete_curve(ix=ix)
         self.insert_curve_item(ix, curve_item)
-
-    def add_curve(self, *args, **kwargs):
-        """Deprecated. Use append_curve() or insert_curve() instead."""
-        return self.append_curve(*args, **kwargs)
 
     def append_curve(self, mnemonic, data, unit="", descr="", value=""):
         """Add a curve.
@@ -1146,19 +1138,6 @@ class LASFile(object):
     def json(self):
         """Return object contents as a JSON string."""
         return self.to_json()
-
-    def to_json_old(self):
-        """
-        deprecated: to_json_old version=0.25.1 since=20200507 remove=20210508
-        replacement_options: to_json()
-        """
-        obj = OrderedDict()
-        for name, section in self.sections.items():
-            try:
-                obj[name] = section.json
-            except AttributeError:
-                obj[name] = json.dumps(section)
-        return json.dumps(obj)
 
     def to_json(self):
         return json.dumps(self, cls=JSONEncoder)

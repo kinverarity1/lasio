@@ -729,7 +729,7 @@ def test_step_unchanged_by_write_2():
     las = lasio.las.LASFile()
 
     depths = np.arange(dstart, dstop, dstep)
-    las.add_curve("DEPTH", depths, unit="m")
+    las.append_curve("DEPTH", depths, unit="m")
     las.write(testfn, version=2.0)
     assert las.well["STEP"].value == "0.15240"
 
