@@ -46,11 +46,59 @@ class LASFile(object):
     """LAS file object.
 
     Keyword Arguments:
-        file_ref (:term:`file-like object` or :class:`str`): either a filename,
-            an open file object, or a string containing the contents of a file.
+        file_ref (:term:`file-like object` or :class:`str`): either a
+            filename, an open file object, or a string containing the
+            contents of a file.
+        ignore_header_errors (bool): ignore LASHeaderErrors (False by
+            default)
+        ignore_comments (sequence/str): ignore lines beginning with these
+            characters e.g. ``("#", '"')`` in header sections.
+        ignore_data_comments (str): ignore lines beginning with this
+            character in data sections only.
+        mnemonic_case (str): 'preserve': keep the case of HeaderItem mnemonics
+                                'upper': convert all HeaderItem mnemonics to uppercase
+                                'lower': convert all HeaderItem mnemonics to lowercase
+        ignore_data (bool): if True, do not read in any of the actual data,
+            just the header metadata. False by default.
+        engine (str): "normal": parse data section with normal Python reader
+            (quite slow); "numpy": parse data section with `numpy.genfromtxt` (fast).
+            By default the engine is "numpy".
+        use_normal_engine_for_wrapped (bool): if header metadata indicates that
+            the file is wrapped, always use the 'normal' engine. Default is True.
+            The only reason you should use False is if speed is a very high priority
+            and you had files with metadata that incorrectly indicates they are
+            wrapped.
+        read_policy (): TODO
+        null_policy (str or list): see
+            https://lasio.readthedocs.io/en/latest/data-section.html#handling-invalid-data-indicators-automatically
+        index_unit (str): Optionally force-set the index curve's unit to "m" or "ft"
+        dtypes ("auto", dict or list): specify the data types for each curve in the
+            ~ASCII data section. If "auto", each curve will be converted to floats if
+            possible and remain as str if not. If a dict you can specify only the
+            curve mnemonics you want to convert as a key. If a list, please specify
+            data types for each curve in order. Note that the conversion currently
+            only occurs via numpy.ndarray.astype() and therefore only a few simple
+            casts will work e.g. `int`, `float`, `str`.
+        encoding (str): character encoding to open file_ref with, using
+            :func:`io.open` (this is handled by
+            :func:`lasio.reader.open_with_codecs`)
+        encoding_errors (str): 'strict', 'replace' (default), 'ignore' - how to
+            handle errors with encodings (see
+            `this section
+            <https://docs.python.org/3/library/codecs.html#codec-base-classes>`__
+            of the standard library's :mod:`codecs` module for more information)
+            (this is handled by :func:`lasio.reader.open_with_codecs`)
+        autodetect_encoding (str or bool): default True to use
+            `chardet <https://github.com/chardet/chardet>`__/`cchardet
+            <https://github.com/PyYoshi/cChardet>`__ to detect encoding.
+            Note if set to False several common encodings will be tried but
+            chardet won't be used.
+            (this is handled by :func:`lasio.reader.open_with_codecs`)
+        autodetect_encoding_chars (int/None): number of chars to read from LAS
+            file for auto-detection of encoding.
+            (this is handled by :func:`lasio.reader.open_with_codecs`)
 
-    See these routines for additional keyword arguments you can use when
-    reading in a LAS file:
+    The documented arguments above are combined from these methods:
 
     * :func:`lasio.reader.open_with_codecs` - manage issues relate to character
       encodings
