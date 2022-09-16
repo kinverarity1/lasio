@@ -114,6 +114,8 @@ READ_SUBS = {
     "run-on(.)": [(re.compile(r"-?\d*\.\d*\.\d*|NaN[\.-]\d+"), " NaN NaN ")],
 }
 
+HYPHEN_SUBS = ['run-on(-)']
+
 NULL_POLICIES = {
     "none": [],
     "strict": ["NULL"],
