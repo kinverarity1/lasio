@@ -357,7 +357,7 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_data_comments="
             data section. See defaults.py READ_SUBS and NULL_SUBS for examples.
         ignore_data_comments (str): lines beginning with this character will be ignored
 
-    Returns: 
+    Returns:
         n_cols, regexp_subs: integer number of columns or -1 where they are different,
         and the recommended set of regexp_subs (removing hyphen-replacing substitutions
         when we find a hyphen in every line)
@@ -390,15 +390,19 @@ def inspect_data_section(file_obj, line_nos, regexp_subs, ignore_data_comments="
                 break
 
     if len(hyphen_exists) == len(item_counts):
-        logger.debug(f"Found a hyphen in every line of the sample data section ({len(item_counts)} lines)")
+        logger.debug(
+            f"Found a hyphen in every line of the sample data section ({len(item_counts)} lines)"
+        )
         hyphen_sub_keys = defaults.HYPHEN_SUBS
         hyphen_subs = []
         for key in hyphen_sub_keys:
             for sub in defaults.READ_SUBS[key]:
                 hyphen_subs.append(sub)
-        logger.trace_lasio(f'Removing {hyphen_subs}')
-        regexp_subs = [s for s in regexp_subs if not s in hyphen_subs]
-        logger.debug(f"Removed {hyphen_sub_keys} if present; recommending instead: {regexp_subs}")
+        logger.trace_lasio(f"Removing {hyphen_subs}")
+        regexp_subs = [s for s in regexp_subs if s not in hyphen_subs]
+        logger.debug(
+            f"Removed {hyphen_sub_keys} if present; recommending instead: {regexp_subs}"
+        )
 
     try:
         assert len(set(item_counts)) == 1

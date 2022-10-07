@@ -351,9 +351,11 @@ def test_data_characters_2():
     las = lasio.read(egfn("data_characters.las"))
     assert las["DATE"][0] == "01-Jan-20"
 
+
 def test_data_characters_numeric():
     las = lasio.read(egfn("data_characters_numeric.las"))
     assert las["DATE"][0] == "2020-01-01"
+
 
 def test_data_characters_types():
     from pandas.api.types import is_object_dtype
