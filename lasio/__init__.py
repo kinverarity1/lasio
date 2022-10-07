@@ -93,7 +93,7 @@ def read(file_ref, **kwargs):
             The only reason you should use False is if speed is a very high priority
             and you had files with metadata that incorrectly indicates they are
             wrapped.
-        read_policy (str or list): Apply regular expression substitutions for common errors in      
+        read_policy (str or list): Apply regular expression substitutions for common errors in
                 fixed-width formatted data sections. If you do not want any such substitutions
                 to applied, pass ``read_policy=()``.
         null_policy (str or list): see
@@ -134,7 +134,7 @@ def read(file_ref, **kwargs):
             file for auto-detection of encoding.
             (this is handled by :func:`lasio.reader.open_with_codecs`)
 
-    
+
     Returns:
         a :class:`lasio.LASFile` object representing the file
 

@@ -67,7 +67,7 @@ class LASFile(object):
             The only reason you should use False is if speed is a very high priority
             and you had files with metadata that incorrectly indicates they are
             wrapped.
-        read_policy (str or list): Apply regular expression substitutions for common errors in      
+        read_policy (str or list): Apply regular expression substitutions for common errors in
                 fixed-width formatted data sections. If you do not want any such substitutions
                 to applied, pass ``read_policy=()``.
         null_policy (str or list): see
@@ -118,7 +118,7 @@ class LASFile(object):
     Attributes:
         encoding (str or None): the character encoding used when reading the
             file in from disk
-            
+
     """
 
     def __init__(self, file_ref=None, **read_kwargs):
