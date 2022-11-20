@@ -578,6 +578,13 @@ It remembers the original mnemonic, so when you write the file back out, they co
         1670     123.45       2550       0.45     123.45     123.45      110.2      105.6
         1669.9     123.45       2550       0.45     123.45     123.45      110.2      105.6
         1669.8     123.45       2550       0.45     123.45     123.45      110.2      105.6
+        
+Note that the same approach is taken for duplicate mnemonics elsewhere in 
+the header, including the ~Well and ~Parameter sections. So, for example, 
+if you have a file which erroneously contains two lines with the UWI mnemonic,
+then attempting to access ``las.well['UWI']`` will fail with a KeyError
+exception, as lasio does not know which of the two mnemonics present should
+be returned.
 
 Normalising mnemonic case
 ~~~~~~~~~~~~~~~~~~~~~~~~~
