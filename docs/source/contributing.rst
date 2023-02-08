@@ -165,8 +165,8 @@ Testing
 -------
 
 Every time lasio's main branch is updated, automated tests are run using
-`GitHub Actions`_ on Python 3.6, 3.7, 3.8, 3.9 and 3.10 on Ubuntu and Windows.
-lasio may work on Python 3.3, 3.4, 3.5 but these are not regularly tested.
+`GitHub Actions`_ on Python 3.7, 3.8, 3.9 and 3.10 on Ubuntu and Windows.
+lasio may work on Python 3.3, 3.4, 3.5, 3.6 but these are not regularly tested.
 
 To run tests yourself:
 
