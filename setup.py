@@ -3,7 +3,7 @@
 from setuptools import setup
 import os
 
-EXTRA_REQS = ("pandas", "cchardet", "openpyxl")
+EXTRA_REQS = ("pandas", "chardet", "openpyxl")
 TEST_REQS = (
     "pytest>=3.6",
     "pytest-cov",
