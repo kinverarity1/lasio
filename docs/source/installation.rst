@@ -17,7 +17,7 @@ provide extra functionality if they are installed (`pandas`_,
 `cChardet`_ and/or `chardet`_, and `openpyxl`_). I
 recommend installing these with:
 
-.. code-block::
+.. code-block:: bash
 
     $ pip install "lasio[all]"
 
@@ -25,7 +25,7 @@ lasio is now installed.
 
 To upgrade to the latest PyPI version, use:
 
-.. code-block::
+.. code-block:: bash
 
     $ pip install --upgrade lasio
 
@@ -36,7 +36,7 @@ Installing via pip gets the latest release which has been published on
 `PyPI <https://pypi.org/project/lasio/>`__. If you want, you can install 
 the latest changes from `GitHub`_:
 
-.. code-block::
+.. code-block:: bash
 
     $ pip install https://github.com/kinverarity1/lasio/archive/master.zip
 
