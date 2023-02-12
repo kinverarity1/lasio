@@ -124,9 +124,8 @@ def read(file_ref, **kwargs):
             <https://docs.python.org/3/library/codecs.html#codec-base-classes>`__
             of the standard library's :mod:`codecs` module for more information)
             (this is handled by :func:`lasio.reader.open_with_codecs`)
-        autodetect_encoding (str or bool): default True to use
-            `chardet <https://github.com/chardet/chardet>`__/`cchardet
-            <https://github.com/PyYoshi/cChardet>`__ to detect encoding.
+        autodetect_encoding (str or bool): default True to use `chardet
+            <https://github.com/chardet/chardet>`__ to detect encoding.
             Note if set to False several common encodings will be tried but
             chardet won't be used.
             (this is handled by :func:`lasio.reader.open_with_codecs`)

@@ -95,8 +95,8 @@ def check_for_path_obj(file_ref):
 def open_file(file_ref, **encoding_kwargs):
     """Open a file if necessary.
 
-    If ``autodetect_encoding=True`` then either ``cchardet`` or ``chardet``
-    needs to be installed, or else an ``ImportError`` will be raised.
+    If ``autodetect_encoding=True`` then  ``chardet`` needs to be installed, or
+    else an ``ImportError`` will be raised.
 
     Arguments:
         file_ref (file-like object, str): either a filename, an open file
@@ -162,8 +162,8 @@ def open_with_codecs(
             <https://docs.python.org/3/library/codecs.html#codec-base-classes>`__
             of the standard library's :mod:`codecs` module for more information)
         autodetect_encoding (str or bool): default True to use
-            `chardet <https://github.com/chardet/chardet>`__/`cchardet
-            <https://github.com/PyYoshi/cChardet>`__ to detect encoding.
+            `chardet <https://github.com/chardet/chardet>`__ to detect
+            encoding.
             Note if set to False several common encodings will be tried but
             chardet won't be used.
         autodetect_encoding_chars (int/None): number of chars to read from LAS
@@ -237,9 +237,9 @@ def get_encoding(auto, raw):
     Automatically detect character encoding.
 
     Arguments:
-        auto (str): auto-detection of character encoding - can be either
-            'chardet', 'cchardet', False, or True (the latter will pick the
-            fastest available option)
+        auto (str): auto-detection of character encoding - can be one of
+            'chardet', False, or True (the latter will pick the fastest
+            available option)
         raw (bytes): array of bytes to detect from
 
     Returns:
@@ -248,33 +248,21 @@ def get_encoding(auto, raw):
     """
     if auto is True:
         try:
-            import cchardet as chardet
+            import chardet
         except ImportError:
-            try:
-                import chardet
-            except ImportError:
-                logger.debug(
-                    "chardet or cchardet is recommended for automatic"
-                    " detection of character encodings. Instead trying some"
-                    " common encodings."
-                )
-                return None
-            else:
-                logger.debug("get_encoding Using chardet")
-                method = "chardet"
+            logger.debug(
+                "chardet is recommended for automatic detection of character"
+                "encodings. Instead trying some common encodings."
+            )
+            return None
         else:
-            logger.debug("get_encoding Using cchardet")
-            method = "cchardet"
+            logger.debug("get_encoding Using chardet")
+            method = "chardet"
     elif auto.lower() == "chardet":
         import chardet
 
         logger.debug("get_encoding Using chardet")
         method = "chardet"
-    elif auto.lower() == "cchardet":
-        import cchardet as chardet
-
-        logger.debug("get_encoding Using cchardet")
-        method = "cchardet"
     result = chardet.detect(raw)
     logger.debug(
         "{} method detected encoding of {} at confidence {}".format(

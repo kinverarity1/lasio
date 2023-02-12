@@ -56,7 +56,7 @@ lasio with:
 $ pip install lasio
 ```
 
-To make sure you have everything, use this to ensure pandas, cchardet, and
+To make sure you have everything, use this to ensure pandas, chardet, and
 openpyxl are also installed:
 
 ```bash

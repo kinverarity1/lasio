@@ -17,9 +17,8 @@ first one to raise no ``UnicodeDecodeError`` exceptions will be used.
 
 This may still result in an error, or incorrectly decoded characters.
 
-3. Install a package like `cChardet`_ (faster) or `chardet`_
-(slower) to automatically detect the character encoding. If these
-packages are installed then lasio will use them by default:
+3. Install optional package `chardet`_ to automatically detect the character
+   encoding. If `chardet`_ is installed then lasio will use it by default:
 
 .. code-block:: python
 
@@ -27,12 +26,10 @@ packages are installed then lasio will use them by default:
     >>> logging.basicConfig()
     >>> logging.getLogger().setLevel(logging.DEBUG)
     >>> las = lasio.read('encodings_utf8.las')
-    DEBUG:lasio.reader:get_encoding Using cchardet
-    DEBUG:lasio.reader:cchardet method detected encoding of UTF-8 at confidence 0.9900000095367432
-    INFO:lasio.reader:Opening encodings_utf8.las as UTF-8 and treating errors with "replace"
-    DEBUG:lasio.las:n_curves=8 ncols=8
-    DEBUG:lasio.las:set_data data.shape = (3, 8)
-    DEBUG:lasio.las:set_data self.data.shape = (3, 8)
+    DEBUG:lasio.reader:get_encoding Using chardet
+    DEBUG:lasio.reader:chardet method detected encoding of utf-8 at confidence 0.99
+    INFO:lasio.reader:Opening encodings_utf8.las as utf-8 and treating errors with "replace"
+    ...
 
 This may still result in an error, or incorrectly decoded characters.
 
@@ -48,5 +45,4 @@ using:
     ...     continue
 
 .. _open function from codecs: https://docs.python.org/2/library/codecs.html#codecs.open
-.. _cChardet: https://github.com/PyYoshi/cChardet
 .. _chardet: https://pypi.org/project/chardet
