@@ -118,7 +118,7 @@ def write(
     stop_is_different = False
 
     if las.index_initial is not None:
-        index_changed = not (las.index_initial == las.index).all()
+        index_changed = not np.array_equal(las.index_initial, las.index)
         stop_is_different = las.index_initial[-1] != las.well.STOP.value
     else:
         index_changed = True
