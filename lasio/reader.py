@@ -56,10 +56,20 @@ def define_line_splitter(provisional_delimiter):
     return the one that is right for the data delmiter
 
     """
+    # Split on whitespace
+    # Split into non-space strings and strings within either double or single
+    # quotes
     sow_regex = re.compile(r"""([^\s"']+)|"([^"]*)"|'([^']*)'""")
+    # Split on tabs
+    # Split into non-tab strings and strings within either double or single
+    # quotes
+    sot_regex = re.compile(r"""([^\t"']+)|"([^"]*)"|'([^']*)'""")
 
     def split_on_whitespace(line):
         return sow_regex.findall(line)
+
+    def split_on_tabs(line):
+        return sot_regex.findall(line)
 
     def split_on_comma(line):
         return line.split(",")
@@ -67,6 +77,7 @@ def define_line_splitter(provisional_delimiter):
     splitters = {
         "SPACE": split_on_whitespace,
         "COMMA": split_on_comma,
+        "TAB": split_on_tabs,
     }
 
     return splitters[provisional_delimiter]

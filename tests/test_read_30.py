@@ -6,6 +6,7 @@ import pytest
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import lasio
+import lasio.examples
 
 test_dir = os.path.dirname(__file__)
 
@@ -32,7 +33,7 @@ def test_read_v30_sample_standard_sections():
     Verify 'Curves' doesn't read 'Core_*' sections
     Verity 'Parameter' does read '~Log_Parameter'
     Verify 'Parameter' doesn't read 'Performations_*' sections
-    
+
     """
     las = lasio.read(stegfn("3.0", "sample_3.0.las"))
     assert las.curves.DEPT.unit == "M"
@@ -42,3 +43,15 @@ def test_read_v30_sample_standard_sections():
     assert "Log_Parameter" not in las.sections.keys()
     assert len(las.sections["Parameter"]) == 71
     assert las.sections["Perforations_Definition"][0].mnemonic == "PERFT:1"
+
+
+def test_read_v30_tab_dlm_normal_engine():
+    # GitHub Issue 554
+    las = lasio.examples.open("3.0/sample_3.0_tab_dlm.las", engine="normal")
+    assert las["DEPT"].data[1] == 1669.875
+
+
+def test_read_v30_tab_dlm_numpy_engine():
+    # GitHub Issue 554
+    las = lasio.examples.open("3.0/sample_3.0_tab_dlm.las", engine="numpy")
+    assert las["DEPT"].data[1] == 1669.875
