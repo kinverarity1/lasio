@@ -978,3 +978,25 @@ def test_data_section_format_combined_parameters():
 1669.75000,123.45000,2550.00000,0.45000,123.45000,123.45000,110.20000,105.60000
 """
     )
+
+
+def test_write_changed_file(tmp_path):
+    # Pull-Request: 555:Fix problem when writing with changed data (different
+    # number of depth rows)
+    las = lasio.read(egfn("logging_levels.las"))
+
+    df = las.df()
+    new_df = df.drop([df.index[-1]])
+    assert len(new_df) + 1 == len(df)
+
+    las.set_data_from_df(new_df)
+
+    # https://docs.pytest.org/en/latest/how-to/tmp_path.html
+    out_file = str(tmp_path / "logging_levels_clipped.las")
+    las.write(out_file)
+    las2 = lasio.read(out_file)
+
+    # np.allclose() returns True if two arrays are element-wise equal within a
+    # tolerance.
+    # https://numpy.org/doc/stable/reference/generated/numpy.allclose.html
+    assert np.allclose(new_df, las2.df(), equal_nan=True)
