@@ -1,9 +1,37 @@
-import subprocess, re
-from pkg_resources import get_distribution, DistributionNotFound
+import subprocess
+import re
+
+# from pkg_resources import get_distribution, DistributionNotFound
 from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
+
+# ------------------------------------------------------------------------------
+# 01-20-2023:
+# - If importlib.metadata is available, then use it.
+# - Else use pgk_resources
+#
+# Python versions 3.8+ have importlib.metadata as a standard module.
+# So once 3.5, 3.6, and 3.7 are no-longer supported by Lasio
+# this code can be simplified to import importlib.metadata.
+# and importlib.metadata.version(__package__) to fully replace
+# las_version = get_distribution(__package__).version
+# ------------------------------------------------------------------------------
+metadata_available = False
+try:
+    import importlib.metadata
+    from importlib.metadata import PackageNotFoundError
+
+    metadata_available = True
+except ModuleNotFoundError as err:
+    logger.debug(err)
+    try:
+        from pkg_resources import get_distribution
+        from pkg_resources import DistributionNotFound as PackageNotFoundError
+    except ModuleNotFoundError as err:
+        logger.debug(err)
+        pass
 
 # d[year][month][day] example: 20200420
 ver_date = datetime.now().strftime("d%Y%m%d")
@@ -31,8 +59,11 @@ def version():
     """
 
     try:
-        las_version = get_distribution(__package__).version
-    except DistributionNotFound as err:
+        if metadata_available is True:
+            las_version = importlib.metadata.version(__package__)
+        else:
+            las_version = get_distribution(__package__).version
+    except PackageNotFoundError as err:
         logger.debug(err)
         pass
 
