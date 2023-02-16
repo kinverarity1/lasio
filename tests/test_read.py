@@ -487,10 +487,12 @@ def test_sample_dtypes_specified_as_false():
     assert isinstance(las.curves[2].data[0], str)
     assert isinstance(las.curves[3].data[0], str)
 
+
 def test_index_null_issue227():
     las = lasio.examples.open("index_null.las")
-    assert las['DEPT'].data[1] == 999.25
-    assert numpy.isnan(las['DT'].data[0])
+    assert las["DEPT"].data[1] == 999.25
+    assert numpy.isnan(las["DT"].data[0])
+
 
 def test_excess_curves():
     las = lasio.examples.open("excess_curves.las")
@@ -499,3 +501,15 @@ def test_excess_curves():
     assert len(las["ROP"]) == 2
     assert numpy.isnan(las["ROP"]).all()
     assert list(las.df().columns) == ["TVD", "VS", "GAMMA", "ROP", "TEMP"]
+
+
+def test_tab_dlm_normal_engine():
+    # GitHub Issue 554
+    las = lasio.examples.open("2.0/sample_2.0_tab_dlm.las", engine="normal")
+    assert las["DEPT"].data[1] == 1669.875
+
+
+def test_tab_dlm_numpy_engine():
+    # GitHub Issue 554
+    las = lasio.examples.open("2.0/sample_2.0_tab_dlm.las", engine="numpy")
+    assert las["DEPT"].data[1] == 1669.875
