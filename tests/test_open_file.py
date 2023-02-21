@@ -1,30 +1,36 @@
-import os, sys
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-
+import os
 
 import pytest
 
 # pathlib for python2 is installed via pip install -r requirements.txt
 from pathlib import Path
 
+# 02-20-2023: dcs: leaving this commented out for now, in case it needs to be
+# restored. Remove after 05-2023
+# import sys
+# sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
 from lasio import read
 
 test_dir = os.path.dirname(__file__)
 
-egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
+
+def egfn(fn):
+    return os.path.join(test_dir, "examples", fn)
 
 
 def test_open_pathlib_object():
-    l = read(Path(egfn("sample.las")))
+    las = read(Path(egfn("sample.las")))
+    assert type(las).__name__ == "LASFile"
 
 
 def test_open_url():
-    l = read(
+    las = read(
         "https://raw.githubusercontent.com/kinverarity1/"
         "lasio/master/standards/examples"
         "/1.2/sample_curve_api.las"
     )
+    assert type(las).__name__ == "LASFile"
 
 
 def test_open_url_different_newlines():
@@ -51,20 +57,24 @@ def test_open_url_different_newlines():
 
 def test_open_file_object():
     with open(egfn("sample.las"), mode="r") as f:
-        l = read(f)
+        las = read(f)
+        assert type(las).__name__ == "LASFile"
 
 
 def test_open_filename():
-    l = read(egfn("sample.las"))
+    las = read(egfn("sample.las"))
+    assert type(las).__name__ == "LASFile"
 
 
 def test_open_incorrect_filename():
     with pytest.raises(OSError):
-        l = read(egfn("sampleXXXDOES NOT EXIST.las"))
+        las = read(egfn("sampleXXXDOES NOT EXIST.las"))
+        # Should never get here because of the Exception
+        assert type(las).__name__ == "LASFile"
 
 
 def test_open_string():
-    l = read(
+    las = read(
         """~VERSION INFORMATION
  VERS.                  1.2:   CWLS LOG ASCII STANDARD -VERSION 1.2
  WRAP.                  NO:   ONE LINE PER DEPTH STEP
@@ -113,3 +123,4 @@ def test_open_string():
 1669.750   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
 """
     )
+    assert type(las).__name__ == "LASFile"

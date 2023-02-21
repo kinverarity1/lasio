@@ -1,19 +1,23 @@
-import os, sys
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-
-import fnmatch
+import os
 
 import numpy
-import pytest
+
+# 02-20-2023: dcs: leaving this commented out for now, in case it needs to be
+# restored. Remove after 05-2023
+# import sys
+# sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from lasio import read
-from lasio import exceptions
 
 test_dir = os.path.dirname(__file__)
 
-egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
-stegfn = lambda vers, fn: os.path.join(os.path.dirname(__file__), "examples", vers, fn)
+
+def egfn(fn):
+    return os.path.join(test_dir, "examples", fn)
+
+
+def stegfn(vers, fn):
+    return os.path.join(test_dir, "examples", vers, fn)
 
 
 def test_null_policy_NULL_default():  # should read as NaN

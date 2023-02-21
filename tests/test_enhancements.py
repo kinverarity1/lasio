@@ -1,23 +1,30 @@
-import os, sys
+import os
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-
-import fnmatch
 from pprint import pformat
 
-import numpy
 import pytest
 import math
 
+# 02-20-2023: dcs: leaving this commented out for now, in case it needs to be
+# restored. Remove after 05-2023
+# import sys
+# sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
 import lasio
 import lasio.las_items
-from lasio import las, read, exceptions
-
+from lasio import read, exceptions
 
 test_dir = os.path.dirname(__file__)
 
-egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
-stegfn = lambda vers, fn: os.path.join(os.path.dirname(__file__), "examples", vers, fn)
+
+def egfn(fn):
+    # egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
+    return os.path.join(test_dir, "examples", fn)
+
+
+def stegfn(vers, fn):
+    # stegfn = lambda vers, fn: os.path.join(os.path.dirname(__file__), "examples", vers, fn)
+    return os.path.join(test_dir, "examples", vers, fn)
 
 
 def test_autodepthindex():
@@ -26,6 +33,11 @@ def test_autodepthindex():
     f = read(egfn("autodepthindex_F.las"))
     ft = read(egfn("autodepthindex_FT.las"))
     err = read(egfn("autodepthindex_M_FT.las"))
+    assert m.index_unit == "M"
+    assert m_lower.index_unit == "M"
+    assert f.index_unit == "FT"
+    assert ft.index_unit == "FT"
+    assert err.index_unit is None
 
 
 def test_autodepthindex_inconsistent():
@@ -35,28 +47,28 @@ def test_autodepthindex_inconsistent():
 
 
 def test_autodepthindex_m():
-    l = read(egfn("autodepthindex_M.las"))
-    assert l.depth_ft[-1] * 0.3048 == l.index[-1]
+    las = read(egfn("autodepthindex_M.las"))
+    assert las.depth_ft[-1] * 0.3048 == las.index[-1]
 
 
 def test_autodepthindex_m_lower():
-    l = read(egfn("autodepthindex_M_lower.las"))
-    assert l.depth_ft[-1] * 0.3048 == l.index[-1]
+    las = read(egfn("autodepthindex_M_lower.las"))
+    assert las.depth_ft[-1] * 0.3048 == las.index[-1]
 
 
 def test_autodepthindex_f():
-    l = read(egfn("autodepthindex_F.las"))
-    assert l.depth_m[-1] / 0.3048 == l.index[-1]
+    las = read(egfn("autodepthindex_F.las"))
+    assert las.depth_m[-1] / 0.3048 == las.index[-1]
 
 
 def test_autodepthindex_ft():
-    l = read(egfn("autodepthindex_FT.las"))
-    assert l.depth_m[-1] / 0.3048 == l.index[-1]
+    las = read(egfn("autodepthindex_FT.las"))
+    assert las.depth_m[-1] / 0.3048 == las.index[-1]
 
 
 def test_autodepthindex_feet():
-    l = read(egfn("autodepthindex_FEET.las"))
-    assert l.depth_m[-1] / 0.3048 == l.index[-1]
+    las = read(egfn("autodepthindex_FEET.las"))
+    assert las.depth_m[-1] / 0.3048 == las.index[-1]
 
 
 def test_autodepthindex_point_one_inch():
@@ -69,40 +81,40 @@ def test_autodepthindex_point_one_inch():
 
 
 def test_df_indexing():
-    l = read(egfn("6038187_v1.2.las"))
+    las = read(egfn("6038187_v1.2.las"))
     metres = 9.05
-    spacing = l.well["STEP"].value
-    calc_index = math.floor((metres / spacing) - (l.well["STRT"].value / spacing))
+    spacing = las.well["STEP"].value
+    calc_index = math.floor((metres / spacing) - (las.well["STRT"].value / spacing))
     calc_index = int(calc_index)
-    assert l["GAMN"][calc_index] == l.df()["GAMN"][metres]
+    assert las["GAMN"][calc_index] == las.df()["GAMN"][metres]
 
 
 # TODO: make above test in reverse-ordered LAS (e.g. STRT > STOP)
 
 
 def test_df_reverse():
-    l = read(egfn("sample_rev.las"))
+    las = read(egfn("sample_rev.las"))
     metres = 1667
-    spacing = l.well["STEP"].value
-    calc_index = math.floor((metres // spacing) - (l.well["STRT"].value // spacing))
+    spacing = las.well["STEP"].value
+    calc_index = math.floor((metres // spacing) - (las.well["STRT"].value // spacing))
     calc_index = int(calc_index)
-    assert l["DT"][calc_index] == l.df()["DT"][metres]
+    assert las["DT"][calc_index] == las.df()["DT"][metres]
 
 
 def test_df_curve_names():
-    l = read(egfn("sample_rev.las"))
-    assert l.keys()[1:] == list(l.df().columns.values)
+    las = read(egfn("sample_rev.las"))
+    assert las.keys()[1:] == list(las.df().columns.values)
 
 
 def test_non_standard_section():
-    l = read(egfn("non-standard-header-section.las"))
-    assert "SPECIAL INFORMATION" in l.sections.keys()
+    las = read(egfn("non-standard-header-section.las"))
+    assert "SPECIAL INFORMATION" in las.sections.keys()
 
 
 def test_non_standard_sections():
-    l = read(egfn("non-standard-header-sections.las"))
-    assert "SPECIAL INFORMATION" in l.sections.keys()
-    assert "extra special information" in l.sections.keys()
+    las = read(egfn("non-standard-header-sections.las"))
+    assert "SPECIAL INFORMATION" in las.sections.keys()
+    assert "extra special information" in las.sections.keys()
 
 
 def test_repr():
