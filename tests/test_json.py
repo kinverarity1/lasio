@@ -1,40 +1,55 @@
-import os, sys
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+import os
 import json
-
 import pytest
+
+# 02-21-2023: dcs: leaving this commented out for now, in case it needs to be
+# restored. Remove after 05-2023
+# import sys
+# sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import lasio
 import lasio.examples
-from lasio import las, read
+from lasio import read
 
 
 test_dir = os.path.dirname(__file__)
 
-egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
-stegfn = lambda vers, fn: os.path.join(os.path.dirname(__file__), "examples", vers, fn)
+
+def egfn(fn):
+    # egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
+    return os.path.join(test_dir, "examples", fn)
+
+
+def stegfn(vers, fn):
+    # stegfn = lambda vers, fn: os.path.join(os.path.dirname(__file__), "examples", vers, fn)
+    return os.path.join(test_dir, "examples", vers, fn)
 
 
 def test_json_encoder_direct():
-    l = read(egfn("sample.las"))
+    las = read(egfn("sample.las"))
     with pytest.raises(TypeError):
-        t = json.dumps(l)
+        t = json.dumps(las)
+        # Should never get here because of the Exception
+        assert t == "null"
 
 
 def test_json_encoder_default():
-    l = read(egfn("sample.las"))
-    t = json.dumps(l, default=lambda x: None)
+    las = read(egfn("sample.las"))
+    t = json.dumps(las, default=lambda x: None)
+    assert t == "null"
 
 
 def test_json_encoder_cls_specify():
-    l = read(egfn("sample.las"))
-    t = json.dumps(l, cls=las.JSONEncoder)
+    las = read(egfn("sample.las"))
+    t = json.dumps(las, cls=lasio.JSONEncoder)
+    pylj = json.loads(t)
+    # Verify this is still structurally sound LAS content
+    assert len(pylj["metadata"]["Curves"]) == len(pylj["data"])
 
 
 def test_json_headers():
-    l = read("./tests/examples/2.0/sample_2.0.las")
-    lj = json.dumps(l, cls=las.JSONEncoder)
+    las = read("./tests/examples/2.0/sample_2.0.las")
+    lj = json.dumps(las, cls=lasio.JSONEncoder)
     pylj = json.loads(lj)
     assert pylj["metadata"]["Version"]["VERS"] == 2.0
     assert pylj["metadata"]["Version"]["WRAP"] == "NO"
@@ -44,6 +59,6 @@ def test_json_headers():
 
 
 def test_json_null():
-    l = lasio.examples.open("sample_null.las")
-    lj = json.dumps(l, cls=las.JSONEncoder, sort_keys=True)
+    las = lasio.examples.open("sample_null.las")
+    lj = json.dumps(las, cls=lasio.JSONEncoder, sort_keys=True)
     assert lj == open(egfn("sample_null.json"), "r").read()

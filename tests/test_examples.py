@@ -1,15 +1,17 @@
-import os, sys
+import os
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-
-import pytest
-import numpy as np
+# 02-20-2023: dcs: leaving this commented out for now, in case it needs to be
+# restored.
+# import sys
+# sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import lasio.examples
 
 test_dir = os.path.dirname(__file__)
 
-egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
+
+def egfn(fn):
+    return os.path.join(test_dir, "examples", fn)
 
 
 def test_local_path():
