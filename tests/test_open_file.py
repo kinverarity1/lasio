@@ -11,6 +11,7 @@ from pathlib import Path
 # sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from lasio import read
+from lasio.las import LASFile
 
 test_dir = os.path.dirname(__file__)
 
@@ -21,7 +22,7 @@ def egfn(fn):
 
 def test_open_pathlib_object():
     las = read(Path(egfn("sample.las")))
-    assert type(las).__name__ == "LASFile"
+    assert isinstance(las, LASFile)
 
 
 def test_open_url():
@@ -30,7 +31,7 @@ def test_open_url():
         "lasio/master/standards/examples"
         "/1.2/sample_curve_api.las"
     )
-    assert type(las).__name__ == "LASFile"
+    assert isinstance(las, LASFile)
 
 
 def test_open_url_different_newlines():
@@ -58,19 +59,19 @@ def test_open_url_different_newlines():
 def test_open_file_object():
     with open(egfn("sample.las"), mode="r") as f:
         las = read(f)
-        assert type(las).__name__ == "LASFile"
+        assert isinstance(las, LASFile)
 
 
 def test_open_filename():
     las = read(egfn("sample.las"))
-    assert type(las).__name__ == "LASFile"
+    assert isinstance(las, LASFile)
 
 
 def test_open_incorrect_filename():
     with pytest.raises(OSError):
         las = read(egfn("sampleXXXDOES NOT EXIST.las"))
         # Should never get here because of the Exception
-        assert type(las).__name__ == "LASFile"
+        assert not isinstance(las, LASFile)
 
 
 def test_open_string():
@@ -123,4 +124,4 @@ def test_open_string():
 1669.750   123.450 2550.000    0.450  123.450  123.450  110.200  105.600
 """
     )
-    assert type(las).__name__ == "LASFile"
+    assert isinstance(las, LASFile)
