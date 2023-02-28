@@ -1,20 +1,23 @@
-import os, sys
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-
-import pytest
+import os
+import sys
 import numpy as np
+
+# 02-20-2023: dcs: leaving this commented out for now, in case it needs to be
+# restored. Remove after 05-2023
+# import sys
+# sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import lasio
 import lasio.examples
 from lasio import read
 from lasio.excel import ExcelConverter
-
 from lasio.reader import StringIO
 
 test_dir = os.path.dirname(__file__)
 
-egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
+
+def egfn(fn):
+    return os.path.join(test_dir, "examples", fn)
 
 
 def test_write_sect_widths_12(capsys):
@@ -31,18 +34,18 @@ def test_write_to_filename():
 
 
 def test_write_sect_widths_12_curves():
-    l = read(egfn("sample_write_sect_widths_12.las"))
+    las = read(egfn("sample_write_sect_widths_12.las"))
     s = StringIO()
-    l.write(s, version=1.2)
+    las.write(s, version=1.2)
     for start in ("D.M ", "A.US/M ", "B.K/M3 ", "C.V/V "):
         s.seek(0)
         assert "\n" + start in s.read()
 
 
 def test_write_sect_widths_20_narrow():
-    l = read(egfn("sample_write_sect_widths_20_narrow.las"))
+    las = read(egfn("sample_write_sect_widths_20_narrow.las"))
     s = StringIO()
-    l.write(s, version=2)
+    las.write(s, version=2)
     s.seek(0)
     assert (
         s.read()
@@ -92,9 +95,9 @@ between 625 metres and 615 metres to be invalid.
 
 
 def test_write_sect_widths_20_wide():
-    l = read(egfn("sample_write_sect_widths_20_wide.las"))
+    las = read(egfn("sample_write_sect_widths_20_wide.las"))
     s = StringIO()
-    l.write(s, version=2)
+    las.write(s, version=2)
     s.seek(0)
     assert (
         s.read()
@@ -144,17 +147,17 @@ between 625 metres and 615 metres to be invalid.
 
 
 def test_write_sample_empty_params():
-    l = read(egfn("sample_write_empty_params.las"))
-    l.write(StringIO(), version=2)
+    las = read(egfn("sample_write_empty_params.las"))
+    las.write(StringIO(), version=2)
 
 
 def test_df_curve_addition_on_export():
-    l = read(egfn("sample.las"))
-    df = l.df()
+    las = read(egfn("sample.las"))
+    df = las.df()
     df["ILD_COND"] = 1000 / df.ILD
-    l.set_data_from_df(df, truncate=False)
+    las.set_data_from_df(df, truncate=False)
     s = StringIO()
-    l.write(s, version=2, wrap=False, fmt="%.5f")
+    las.write(s, version=2, wrap=False, fmt="%.5f")
     s.seek(0)
     assert (
         s.read()
@@ -204,24 +207,24 @@ between 625 meters and 615 meters to be invalid.
 
 
 def test_write_xlsx():
-    l = read(egfn("sample.las"))
-    e = ExcelConverter(l)
+    las = read(egfn("sample.las"))
+    e = ExcelConverter(las)
     xlsxfn = "test.xlsx"
     e.write(xlsxfn)
     os.remove(xlsxfn)
 
 
 def test_export_xlsx():
-    l = read(egfn("sample.las"))
+    las = read(egfn("sample.las"))
     xlsxfn = "test2.xlsx"
-    l.to_excel(xlsxfn)
+    las.to_excel(xlsxfn)
     os.remove(xlsxfn)
 
 
 def test_multi_curve_mnemonics_rewrite():
-    l = read(egfn("sample_issue105_a.las"))
+    las = read(egfn("sample_issue105_a.las"))
     s = StringIO()
-    l.write(s, version=2, wrap=False, fmt="%.5f")
+    las.write(s, version=2, wrap=False, fmt="%.5f")
     s.seek(0)
     assert (
         s.read()
@@ -267,9 +270,9 @@ between 625 meters and 615 meters to be invalid.
 
 
 def test_multi_curve_missing_mnemonics_rewrite():
-    l = read(egfn("sample_issue105_b.las"))
+    las = read(egfn("sample_issue105_b.las"))
     s = StringIO()
-    l.write(s, version=2, wrap=False, fmt="%.5f")
+    las.write(s, version=2, wrap=False, fmt="%.5f")
     s.seek(0)
     assert (
         s.read()
@@ -315,10 +318,10 @@ between 625 meters and 615 meters to be invalid.
 
 
 def test_write_units():
-    l = read(egfn("sample.las"))
-    l.curves[0].unit = "FT"
+    las = read(egfn("sample.las"))
+    las.curves[0].unit = "FT"
     s = StringIO()
-    l.write(s, version=2, wrap=False, fmt="%.5f")
+    las.write(s, version=2, wrap=False, fmt="%.5f")
     s.seek(0)
     assert (
         s.read()
@@ -422,17 +425,17 @@ def test_to_csv_specify_units():
 
 
 def test_rename_and_write_curve_mnemonic():
-    l = read(egfn("sample.las"))
-    for curve in l.curves:
+    las = read(egfn("sample.las"))
+    for curve in las.curves:
         if curve.mnemonic != "DEPT":
             curve.mnemonic = "New_" + curve.mnemonic
-    for curve in l.curves:
+    for curve in las.curves:
         print(
             "mnemonic=%s original_mnemonic=%s"
             % (curve.mnemonic, curve.original_mnemonic)
         )
     s = StringIO()
-    l.write(s, version=2)
+    las.write(s, version=2)
     s.seek(0)
     assert (
         s.read()

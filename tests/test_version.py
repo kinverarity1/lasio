@@ -1,14 +1,14 @@
 # coding=utf-8
 
-import os, sys
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-
+import os
 import re
+# 02-20-2023: dcs: leaving this commented out for now, in case it needs to be
+# restored. Remove after 05-2023
+# import sys
+# sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+import lasio.las_version
 
 version_regex = re.compile(r"^\d+\.\d+")
-
-import lasio.las_version
 
 
 def test_non_existent_vcs_tool():
