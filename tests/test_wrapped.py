@@ -1,25 +1,35 @@
-import os, sys
+import os
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+# 02-20-2023: dcs: leaving this commented out for now, in case it needs to be
+# restored. Remove after 05-2023
+# import sys
+# sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from lasio import read
-
+from lasio import read, LASFile
 from lasio.reader import StringIO
 
-egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
-stegfn = lambda vers, fn: os.path.join(os.path.dirname(__file__), "examples", vers, fn)
+test_dir = os.path.dirname(__file__)
+
+
+def egfn(fn):
+    return os.path.join(test_dir, "examples", fn)
+
+
+def stegfn(vers, fn):
+    return os.path.join(test_dir, "examples", vers, fn)
 
 
 def test_wrapped():
     fn = egfn("1001178549.las")
-    l = read(fn)
+    las = read(fn)
+    assert isinstance(las, LASFile)
 
 
 def test_write_wrapped():
     fn = stegfn("1.2", "sample_wrapped.las")
-    l = read(fn)
+    las = read(fn)
     s = StringIO()
-    l.write(s, version=2.0, wrap=True, fmt="%.5f")
+    las.write(s, version=2.0, wrap=True, fmt="%.5f")
     s.seek(0)
     assert (
         s.read()
@@ -116,9 +126,9 @@ LSWB.      : 35 Flag -Limit SWB
 
 def test_write_unwrapped():
     fn = stegfn("1.2", "sample_wrapped.las")
-    l = read(fn)
+    las = read(fn)
     s = StringIO()
-    l.write(s, version=2, wrap=False, fmt="%.5f")
+    las.write(s, version=2, wrap=False, fmt="%.5f")
     s.seek(0)
     assert (
         s.read()
