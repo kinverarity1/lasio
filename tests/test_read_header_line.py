@@ -1,10 +1,8 @@
 # coding=utf-8
 
-import os, sys
-
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-
-from pprint import pprint
+# 02-20-2023: dcs: leaving this commented out for now, in case it needs to be
+# restored. Remove after 05-2023
+# sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from lasio.reader import read_header_line
 
@@ -91,17 +89,20 @@ def test_line_without_period():
     assert result["name"] == "DRILLED"
     assert result["value"] == "12/11/2010"
 
+
 def test_line_without_period_with_space():
     line = "              PERM DAT :1"
     result = read_header_line(line)
     assert result["name"] == "PERM DAT"
     assert result["value"] == "1"
 
+
 def test_line_without_period_with_colon():
     line = "			  TIME     :14:00:32"
     result = read_header_line(line)
     assert result["name"] == "TIME"
     assert result["value"] == "14:00:32"
+
 
 def test_line_without_period_with_decimal_value():
     line = "              HOLE DIA :85.7"

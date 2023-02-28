@@ -1,72 +1,93 @@
-import os, sys
+import os
+import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
-import glob
-import fnmatch
-import traceback
 import logging
 
 import numpy
 import pytest
 from numbers import Number
 
+# 02-20-2023: dcs: leaving this commented out for now, in case it needs to be
+# restored. Remove after 05-2023
+# sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+
 import lasio
 import lasio.examples
+from lasio.las import LASFile
 
+las_type = type(LASFile())
+logger = logging.getLogger(__name__)
 test_dir = os.path.dirname(__file__)
 
-egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
-stegfn = lambda vers, fn: os.path.join(os.path.dirname(__file__), "examples", vers, fn)
 
-logger = logging.getLogger(__name__)
+def egfn(fn):
+    return os.path.join(test_dir, "examples", fn)
+
+
+def stegfn(vers, fn):
+    return os.path.join(test_dir, "examples", vers, fn)
 
 
 def test_read_v12_sample():
-    l = lasio.read(stegfn("1.2", "sample.las"))
+    las = lasio.read(stegfn("1.2", "sample.las"))
+    assert isinstance(las, LASFile)
 
 
 def test_read_v12_sample_curve_api():
-    l = lasio.read(stegfn("1.2", "sample_curve_api.las"))
+    las = lasio.read(stegfn("1.2", "sample_curve_api.las"))
+    assert isinstance(las, LASFile)
 
 
 def test_read_v12_sample_minimal():
-    l = lasio.read(stegfn("1.2", "sample_minimal.las"))
+    las = lasio.read(stegfn("1.2", "sample_minimal.las"))
+    assert isinstance(las, LASFile)
 
 
 def test_read_v12_sample_wrapped():
-    l = lasio.read(stegfn("1.2", "sample_wrapped.las"))
+    las = lasio.read(stegfn("1.2", "sample_wrapped.las"))
+    assert isinstance(las, LASFile)
 
 
 def test_read_v2_sample():
-    l = lasio.read(stegfn("2.0", "sample_2.0.las"))
+    las = lasio.read(stegfn("2.0", "sample_2.0.las"))
+    assert isinstance(las, LASFile)
 
 
 def test_read_v2_sample_based():
-    l = lasio.read(stegfn("2.0", "sample_2.0_based.las"))
+    las = lasio.read(stegfn("2.0", "sample_2.0_based.las"))
+    assert isinstance(las, LASFile)
 
 
 def test_read_v2_sample_minimal():
-    l = lasio.read(stegfn("2.0", "sample_2.0_minimal.las"))
+    las = lasio.read(stegfn("2.0", "sample_2.0_minimal.las"))
+    assert isinstance(las, LASFile)
 
 
 def test_read_v2_sample_wrapped():
-    l = lasio.read(stegfn("2.0", "sample_2.0_wrapped.las"))
+    las = lasio.read(stegfn("2.0", "sample_2.0_wrapped.las"))
+    assert isinstance(las, LASFile)
+
 
 def test_read_v2_1_sample():
-    l = lasio.read(egfn("sample_2.1.las"))
+    las = lasio.read(egfn("sample_2.1.las"))
+    assert isinstance(las, LASFile)
+
 
 def test_dodgy_param_sect():
     with pytest.raises(lasio.exceptions.LASHeaderError):
-        l = lasio.read(egfn("dodgy_param_sect.las"))
+        las = lasio.read(egfn("dodgy_param_sect.las"))
+        # Should never get here because the Exception should be thrown first
+        assert isinstance(las, LASFile)
 
 
 def test_ignore_header_errors():
-    l = lasio.read(egfn("dodgy_param_sect.las"), ignore_header_errors=True)
+    las = lasio.read(egfn("dodgy_param_sect.las"), ignore_header_errors=True)
+    assert isinstance(las, LASFile)
 
 
 def test_mnemonic_good():
-    l = lasio.read(egfn("mnemonic_good.las"))
-    assert [c.mnemonic for c in l.curves] == [
+    las = lasio.read(egfn("mnemonic_good.las"))
+    assert [c.mnemonic for c in las.curves] == [
         "DEPT",
         "DT",
         "RHOB",
@@ -79,8 +100,8 @@ def test_mnemonic_good():
 
 
 def test_mnemonic_duplicate():
-    l = lasio.read(egfn("mnemonic_duplicate.las"))
-    assert [c.mnemonic for c in l.curves] == [
+    las = lasio.read(egfn("mnemonic_duplicate.las"))
+    assert [c.mnemonic for c in las.curves] == [
         "DEPT",
         "DT",
         "RHOB",
@@ -93,8 +114,8 @@ def test_mnemonic_duplicate():
 
 
 def test_mnemonic_leading_period():
-    l = lasio.read(egfn("mnemonic_leading_period.las"))
-    assert [c.mnemonic for c in l.curves] == [
+    las = lasio.read(egfn("mnemonic_leading_period.las"))
+    assert [c.mnemonic for c in las.curves] == [
         "DEPT",
         "DT",
         "RHOB",
@@ -107,8 +128,8 @@ def test_mnemonic_leading_period():
 
 
 def test_mnemonic_missing():
-    l = lasio.read(egfn("mnemonic_missing.las"))
-    assert [c.mnemonic for c in l.curves] == [
+    las = lasio.read(egfn("mnemonic_missing.las"))
+    assert [c.mnemonic for c in las.curves] == [
         "DEPT",
         "DT",
         "RHOB",
@@ -121,8 +142,8 @@ def test_mnemonic_missing():
 
 
 def test_mnemonic_missing_multiple():
-    l = lasio.read(egfn("mnemonic_missing_multiple.las"))
-    assert [c.mnemonic for c in l.curves] == [
+    las = lasio.read(egfn("mnemonic_missing_multiple.las"))
+    assert [c.mnemonic for c in las.curves] == [
         "DEPT",
         "DT",
         "RHOB",
@@ -135,28 +156,28 @@ def test_mnemonic_missing_multiple():
 
 
 def test_multi_curve_mnemonics():
-    l = lasio.read(egfn("sample_issue105_a.las"))
+    las = lasio.read(egfn("sample_issue105_a.las"))
     assert (
-        l.keys()
-        == [c.mnemonic for c in l.curves]
+        las.keys()
+        == [c.mnemonic for c in las.curves]
         == ["DEPT", "RHO:1", "RHO:2", "RHO:3", "PHI"]
     )
 
 
 def test_multi_missing_curve_mnemonics():
-    l = lasio.read(egfn("sample_issue105_b.las"))
+    las = lasio.read(egfn("sample_issue105_b.las"))
     assert (
-        l.keys()
-        == [c.mnemonic for c in l.curves]
+        las.keys()
+        == [c.mnemonic for c in las.curves]
         == ["DEPT", "UNKNOWN:1", "UNKNOWN:2", "UNKNOWN:3", "PHI"]
     )
 
 
 def test_multi_curve_mnemonics_gr():
-    l = lasio.read(egfn("sample_issue105_c.las"))
+    las = lasio.read(egfn("sample_issue105_c.las"))
     assert (
-        l.keys()
-        == [c.mnemonic for c in l.curves]
+        las.keys()
+        == [c.mnemonic for c in las.curves]
         == [
             "DEPT",
             "GR:1",
@@ -183,8 +204,8 @@ def test_multi_curve_mnemonics_gr():
 
 
 def test_inf_uwi():
-    l = lasio.read(stegfn("2.0", "sample_2.0_inf_uwi.las"))
-    assert l.well["UWI"].value == "300E074350061450"
+    las = lasio.read(stegfn("2.0", "sample_2.0_inf_uwi.las"))
+    assert las.well["UWI"].value == "300E074350061450"
 
 
 def test_v12_inf_uwi_leading_zero_value():
@@ -216,52 +237,55 @@ def test_v2_inf_api_leading_zero_value():
 
 
 def test_missing_vers_loads():
-    l = lasio.read(egfn("missing_vers.las"))
+    las = lasio.read(egfn("missing_vers.las"))
+    assert isinstance(las, LASFile)
 
 
 def test_missing_vers_missing_headeritem():
-    l = lasio.read(egfn("missing_vers.las"))
-    assert not "VERS" in l.version
+    las = lasio.read(egfn("missing_vers.las"))
+    assert "VERS" not in las.version
 
 
 def test_missing_vers_write_version_none_fails():
-    l = lasio.read(egfn("missing_vers.las"))
+    las = lasio.read(egfn("missing_vers.las"))
     with pytest.raises(KeyError):
-        l.write(sys.stdout, version=None)
+        las.write(sys.stdout, version=None)
 
 
 def test_missing_vers_write_version_specified_works():
-    l = lasio.read(egfn("missing_vers.las"))
-    l.write(sys.stdout, version=1.2)
+    las = lasio.read(egfn("missing_vers.las"))
+    las.write(sys.stdout, version=1.2)
 
 
 def test_missing_wrap_loads():
-    l = lasio.read(egfn("missing_wrap.las"))
+    las = lasio.read(egfn("missing_wrap.las"))
+    assert isinstance(las, LASFile)
 
 
 def test_missing_wrap_missing_headeritem():
-    l = lasio.read(egfn("missing_wrap.las"))
-    assert not "WRAP" in l.version
+    las = lasio.read(egfn("missing_wrap.las"))
+    assert "WRAP" not in las.version
 
 
 def test_missing_wrap_write_wrap_none_fails():
-    l = lasio.read(egfn("missing_wrap.las"))
+    las = lasio.read(egfn("missing_wrap.las"))
     with pytest.raises(KeyError):
-        l.write(sys.stdout, wrap=None)
+        las.write(sys.stdout, wrap=None)
 
 
 def test_missing_wrap_write_wrap_specified_works():
-    l = lasio.read(egfn("missing_wrap.las"))
-    l.write(sys.stdout, wrap=True)
+    las = lasio.read(egfn("missing_wrap.las"))
+    las.write(sys.stdout, wrap=True)
 
 
 def test_missing_null_loads():
-    l = lasio.read(egfn("missing_null.las"))
+    las = lasio.read(egfn("missing_null.las"))
+    assert isinstance(las, LASFile)
 
 
 def test_missing_null_missing_headeritem():
-    l = lasio.read(egfn("missing_null.las"))
-    assert not "NULL" in l.well
+    las = lasio.read(egfn("missing_null.las"))
+    assert "NULL" not in las.well
 
 
 def test_barebones():
@@ -277,6 +301,7 @@ def test_barebones_missing_all_sections():
 def test_not_a_las_file():
     with pytest.raises(KeyError):
         las = lasio.read(egfn("not_a_las_file.las"))
+        assert type(las) is not las_type
 
 
 def test_comma_decimal_mark_data():
@@ -301,10 +326,12 @@ def test_blank_line_in_header():
 
 def test_duplicate_step():
     las = lasio.read(egfn("duplicate_step.las"))
+    assert isinstance(las, LASFile)
 
 
 def test_blank_line_at_start():
     las = lasio.read(egfn("blank_line_start.las"))
+    assert isinstance(las, LASFile)
 
 
 def test_missing_STRT_STOP():
@@ -333,13 +360,15 @@ def test_sparse_curves():
 
 def test_issue92():
     las = lasio.read(egfn("issue92.las"), ignore_header_errors=True)
+    assert isinstance(las, LASFile)
 
 
 def test_emptyparam(capsys):
     las = lasio.read(egfn("emptyparam.las"))
+    assert las.header["Parameter"] == []
     out, err = capsys.readouterr()
     msg = "Header section Parameter regexp=~P is empty."
-    assert not msg in out
+    assert msg not in out
 
 
 def test_data_characters_1():
@@ -389,16 +418,16 @@ def test_read_incorrect_shape():
 
 
 def test_dot_delimiter_issue_264():
-    l = lasio.read(stegfn("1.2", "issue-264-dot-delimiter.las"))
-    assert [c.mnemonic for c in l.curves] == [
+    las = lasio.read(stegfn("1.2", "issue-264-dot-delimiter.las"))
+    assert [c.mnemonic for c in las.curves] == [
         "DEPT",
         "SPEED",
         "COND.",
         "GAMMA",
         "I. RES.",
     ]
-    assert [c.unit for c in l.curves] == ["FT", "M/MIN", "MS/M", "CPS", "OHM-M"]
-    assert [c.value for c in l.curves] == ["", "", "", "", ""]
+    assert [c.unit for c in las.curves] == ["FT", "M/MIN", "MS/M", "CPS", "OHM-M"]
+    assert [c.value for c in las.curves] == ["", "", "", "", ""]
 
 
 def test_issue_201_non_delimiter_colon_start():
@@ -434,18 +463,18 @@ def test_read_cyrillic_depth_unit():
 
 def test_section_parser_num_except_pass():
     sp = lasio.reader.SectionParser("~C")
-    assert sp.num(None) == None
+    assert sp.num(None) is None
 
 
 def test_skip_comments_in_data_section():
-    l = lasio.read(egfn("skip_data_section_comments.las"))
-    assert (l.curves[0].data == [0.3, 0.4, 0.5, 0.6]).all()
+    las = lasio.read(egfn("skip_data_section_comments.las"))
+    assert (las.curves[0].data == [0.3, 0.4, 0.5, 0.6]).all()
 
 
 def test_quoted_substrings_in_data_section():
-    l = lasio.read(egfn("lasio_issue_271.las"))
+    las = lasio.read(egfn("lasio_issue_271.las"))
     assert (
-        l.curves[2].data
+        las.curves[2].data
         == ["pick_alpha", "pick_beta", "pick gamma", "pick delta", "pick_epsilon"]
     ).all()
 

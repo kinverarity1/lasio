@@ -1,8 +1,10 @@
-import os, sys
+import os
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+# 02-20-2023: dcs: leaving this commented out for now, in case it needs to be
+# restored. Remove after 05-2023
+# import sys
+# sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-import fnmatch
 import logging
 
 import numpy as np
@@ -14,8 +16,13 @@ logger = logging.getLogger(__name__)
 
 test_dir = os.path.dirname(__file__)
 
-egfn = lambda fn: os.path.join(os.path.dirname(__file__), "examples", fn)
-stegfn = lambda vers, fn: os.path.join(os.path.dirname(__file__), "examples", vers, fn)
+
+def egfn(fn):
+    return os.path.join(test_dir, "examples", fn)
+
+
+def stegfn(vers, fn):
+    return os.path.join(test_dir, "examples", vers, fn)
 
 
 def test_delete_curve():
@@ -48,18 +55,6 @@ def test_section_items_indices():
     sl = las.curves[1:4]
     # logger.debug(str(sl))
     assert sl.keys() == ["DT", "RHOB", "NPHI"]
-
-
-def test_append_curve_duplicate():
-    las = lasio.LASFile()
-    a = np.array([1, 2, 3, 4])
-    b1 = np.array([5, 9, 1, 4])
-    b2 = np.array([1, 2, 3, 2])
-    las.append_curve("DEPT", a)
-    las.append_curve("B", b1, descr="b1")
-    las.append_curve("B", b2, descr="b2")
-    # assert l.keys == ['DEPT', 'B', 'B']
-    assert [c.descr for c in las.curves] == ["", "b1", "b2"]
 
 
 def test_append_curve_duplicate():
@@ -130,7 +125,7 @@ def test_mnemonic_case_comparison_preserve_1():
 
 def test_mnemonic_case_comparison_preserve_2():
     las = lasio.read(egfn("mnemonic_case.las"), mnemonic_case="preserve")
-    assert not "DEPT" in las.curves
+    assert "DEPT" not in las.curves
 
 
 def test_mnemonic_case_comparison_upper():
@@ -158,40 +153,42 @@ def test_mnemonic_rename_1():
 
 def test_get_exists():
     sitems = lasio.SectionItems()
-    sitems.append(
-        lasio.HeaderItem('WELL', value='1')
-    )
-    item = sitems.get('WELL', default='2')
-    assert item.value == '1'
+    sitems.append(lasio.HeaderItem("WELL", value="1"))
+    item = sitems.get("WELL", default="2")
+    assert item.value == "1"
+
 
 def test_get_missing_default_str():
     sitems = lasio.SectionItems()
-    item = sitems.get('WELL', default='2')
-    assert item.value == '2'
+    item = sitems.get("WELL", default="2")
+    assert item.value == "2"
+
 
 def test_get_missing_default_int():
     sitems = lasio.SectionItems()
-    item = sitems.get('WELL', default=2)
-    assert item.value == '2'
+    item = sitems.get("WELL", default=2)
+    assert item.value == "2"
+
 
 def test_get_missing_default_item():
     sitems = lasio.SectionItems()
-    item = sitems.get('WELL', default=lasio.HeaderItem(mnemonic='XXX', value='3'))
-    assert item.mnemonic == 'WELL'
-    assert item.value == '3'
-    
+    item = sitems.get("WELL", default=lasio.HeaderItem(mnemonic="XXX", value="3"))
+    assert item.mnemonic == "WELL"
+    assert item.value == "3"
+
+
 def test_get_missing_curveitem():
     sitems = lasio.SectionItems()
-    sitems.append(
-        lasio.CurveItem('DEPT', data=[1, 2, 3])
-    )
-    item = sitems.get('GAMMA')
+    sitems.append(lasio.CurveItem("DEPT", data=[1, 2, 3]))
+    item = sitems.get("GAMMA")
     assert type(item) is lasio.CurveItem
     assert np.isnan(item.data).all()
 
+
 def test_get_missing_add():
     sitems = lasio.SectionItems()
-    item = sitems.get('WELL', default='3', add=True)
-    existing_item = sitems[0] 
-    assert existing_item.mnemonic == 'WELL'
-    assert existing_item.value == '3'
+    item = sitems.get("WELL", default="3", add=True)
+    assert isinstance(item, lasio.HeaderItem)
+    existing_item = sitems[0]
+    assert existing_item.mnemonic == "WELL"
+    assert existing_item.value == "3"

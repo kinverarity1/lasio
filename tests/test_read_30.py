@@ -1,19 +1,21 @@
 import os
-import sys
 import logging
-import pytest
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
+# 02-20-2023: dcs: leaving this commented out for now, in case it needs to be
+# restored. Remove after 05-2023
+# sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 import lasio
 import lasio.examples
 
 test_dir = os.path.dirname(__file__)
 
-stegfn = lambda vers, fn: os.path.join(os.path.dirname(__file__), "examples", vers, fn)
-
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
+
+
+def stegfn(vers, fn):
+    return os.path.join(test_dir, "examples", vers, fn)
 
 
 def test_read_v30_sample():
@@ -23,8 +25,8 @@ def test_read_v30_sample():
     assert las.version[0].descr == "CWLS LOG ASCII STANDARD -VERSION 3.0"
     assert len(las.data) == 3
     assert len(las.data[0]) == 15
-    assert las.data[2][8] == '2850000000000.0'
-    assert las.data[2][9] == 'LOST INTERVAL   '
+    assert las.data[2][8] == "2850000000000.0"
+    assert las.data[2][9] == "LOST INTERVAL   "
 
 
 def test_read_v30_sample_standard_sections():
