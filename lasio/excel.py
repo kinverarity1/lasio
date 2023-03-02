@@ -103,8 +103,8 @@ def main():
     lasfn = args.LAS_filename
     xlsxfn = args.XLSX_filename
 
-    l = las.LASFile(lasfn)
-    converter = ExcelConverter(l)
+    las_obj = las.LASFile(lasfn)
+    converter = ExcelConverter(las_obj)
     converter.write(xlsxfn)
 
 
@@ -132,10 +132,12 @@ def main_bulk():
             xlsxfn = lasfn.lower().replace(".las", ".xlsx")
             print("Converting %s -> %s" % (lasfn, xlsxfn))
             try:
-                l = las.LASFile(lasfn, ignore_header_errors=args.ignore_header_errors)
-                converter = ExcelConverter(l)
+                las_obj = las.LASFile(lasfn, ignore_header_errors=args.ignore_header_errors)
+                converter = ExcelConverter(las_obj)
                 converter.write(xlsxfn)
-            except:
+            except Exception:
+                # https://www.flake8rules.com/rules/E722.html
+                # https://github.com/PyCQA/pycodestyle/issues/703
                 print(
                     "Failed to convert file. Error message:\n" + traceback.format_exc()
                 )
