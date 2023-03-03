@@ -78,8 +78,8 @@ def open_github_example(
 
         response = urllib.request.urlopen(url)
         if response.headers.get_content_charset() is None:
-            if "encoding" in encoding_kwargs:
-                encoding = encoding_kwargs["encoding"]
+            if "encoding" in kwargs:
+                encoding = kwargs["encoding"]
             else:
                 encoding = "utf-8"
         else:
