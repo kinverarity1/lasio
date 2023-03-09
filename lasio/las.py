@@ -11,7 +11,6 @@ import csv
 import json
 import logging
 import re
-import sys
 import traceback
 
 # get basestring in py3
@@ -34,7 +33,9 @@ import numpy as np
 # internal lasio imports
 
 from . import exceptions
-from .las_items import HeaderItem, CurveItem, SectionItems, OrderedDict
+
+# from .las_items import HeaderItem, CurveItem, SectionItems, OrderedDict
+from .las_items import CurveItem
 from . import defaults
 from . import reader
 from . import writer
@@ -152,7 +153,7 @@ class LASFile(object):
         accept_regexp_sub_recommendations=True,
         index_unit=None,
         dtypes="auto",
-        **kwargs
+        **kwargs,
     ):
         """Read a LAS file.
 
@@ -240,7 +241,8 @@ class LASFile(object):
 
             test_lidar = file_obj.read(4)
             if test_lidar == "LASF":
-                raise IOError("This is a LASer file (i.e. LiDAR data), not a Log ASCII Standard file")
+                err_msg = "This is a LASer file (i.e. LiDAR data), not a Log ASCII Standard file"
+                raise IOError(err_msg)
             else:
                 file_obj.seek(0)
 
@@ -271,8 +273,8 @@ class LASFile(object):
                 section_positions
             ):
                 section_type = reader.determine_section_type(section_title)
-                logger.debug(
-                    "Parsing {typ} section at lines {first_line}-{last_line} ({k} bytes) {title}".format(
+                tmpl = "Parsing {typ} section at lines {first_line}-{last_line} ({k} bytes) {title}"
+                logger.debug(tmpl.format(
                         typ=section_type,
                         title=section_title,
                         first_line=first_line + 1,
@@ -409,7 +411,9 @@ class LASFile(object):
                     )
 
                     if recommended_regexp_subs != regexp_subs and accept_regexp_sub_recommendations:
-                        logger.info(f"The read substitutions {defaults.HYPHEN_SUBS} have been removed as this file appears to contain hyphens.")
+                        logger.info(
+                                f"The read substitutions {defaults.HYPHEN_SUBS}"
+                                "have been removed as this file appears to contain hyphens.")
                         regexp_subs = recommended_regexp_subs
                         n_columns, recommended_regexp_subs = reader.inspect_data_section(
                             file_obj,
@@ -430,7 +434,16 @@ class LASFile(object):
                     if isinstance(dtypes, dict):
                         dtypes = [dtypes.get(c.mnemonic, float) for c in self.curves]
 
-                    # Notes see 2d9e43c3 and e960998f for 'try' background
+                    # ----------------------------------------------------------------------
+                    # Notes
+                    # see 2d9e43c3 and e960998f for 'try' background
+                    # 2023-03-03: dcs:
+                    #  With the addtion of "Exception" to "except Exception" the
+                    # "except KeybboardInterrupt" shouldn't be needed because
+                    # "except Exception" won't catch the KeyboardInterrupt exception
+                    # .. verify before removing, by Cntrl-C in the middle of loading a big
+                    # las file..
+                    # ----------------------------------------------------------------------
 
                     # Attempt to read the data section
                     if engine == "numpy":
@@ -438,9 +451,7 @@ class LASFile(object):
                             curves_data_gen = reader.read_data_section_iterative_numpy_engine(
                                 file_obj, (first_line, last_line)
                             )
-                        except KeyboardInterrupt:
-                            raise
-                        except:
+                        except Exception:
                             try:
                                 file_obj.seek(k)
                                 curves_data_gen = (
@@ -455,9 +466,7 @@ class LASFile(object):
                                         line_splitter=line_splitter,
                                     )
                                 )
-                            except KeyboardInterrupt:
-                                raise
-                            except:
+                            except Exception:
                                 raise exceptions.LASDataError(
                                     traceback.format_exc()[:-1]
                                     + " in data section beginning line {}".format(i + 1)
@@ -477,16 +486,17 @@ class LASFile(object):
                                     line_splitter=line_splitter,
                                 )
                             )
-                        except KeyboardInterrupt:
-                            raise
-                        except:
+                        except Exception:
                             raise exceptions.LASDataError(
                                 traceback.format_exc()[:-1]
                                 + " in data section beginning line {}".format(i + 1)
                             )
 
                     # Assign data to curves.
-                    data_assigned_to_curves = {curve_idx: False for curve_idx in range(len(self.curves))}
+                    data_assigned_to_curves = {
+                        curve_idx: False for curve_idx in range(len(self.curves))
+                    }
+
                     curve_idx = 0
                     curve_length = 0
                     for curve_arr in curves_data_gen:
@@ -532,9 +542,8 @@ class LASFile(object):
                 file_obj.close()
 
             # TODO: reimplement these warnings!!
-
-            ###### logger.warning("No data section (regexp='~A') found")
-            ###### logger.warning("No numerical data found inside ~A section")
+            # logger.warning("No data section (regexp='~A') found")
+            # logger.warning("No numerical data found inside ~A section")
 
         # Understand the depth/index unit.
 
@@ -652,19 +661,10 @@ class LASFile(object):
     def to_excel(self, filename):
         """Export LAS file to a Microsoft Excel workbook.
 
-        This function will raise an :exc:`ImportError` if ``openpyxl`` is not
-        installed.
-
         Arguments:
             filename (str): a name for the file to be created and written to.
 
         """
-        try:
-            import openpyxl
-        except ImportError:
-            pass
-        else:
-            from .excel import ExcelConverter
 
         from . import excel
 
@@ -698,7 +698,7 @@ class LASFile(object):
             opened_file = True
             file_ref = open(file_ref, "w")
 
-        if not "lineterminator" in kwargs:
+        if "lineterminator" not in kwargs:
             kwargs["lineterminator"] = "\n"
         writer = csv.writer(file_ref, **kwargs)
 
@@ -1020,7 +1020,7 @@ class LASFile(object):
 
         """
         df_values = np.vstack([df.index.values, df.values.T]).T
-        if (not "names" in kwargs) or (not kwargs["names"]):
+        if ("names" not in kwargs) or (not kwargs["names"]):
             kwargs["names"] = [df.index.name] + [
                 str(name) for name in df.columns.values
             ]
@@ -1062,10 +1062,11 @@ class LASFile(object):
             raise KeyError("{} not found in LAS curves.".format(missing))
 
         if sort_curves:
-            nat_sort = lambda x: [
+            # Sort the channel list by numbers in the element strings
+            # Example: ['CBP2', 'CBP1'] > ['CBP1', 'CBP2']
+            channels.sort(key=lambda x: [
                 int(i) if i.isdigit() else i for i in re.split(r"(\d+)", x)
-            ]
-            channels.sort(key=nat_sort)
+            ])
 
         indices = [keys.index(i) for i in channels]
         return self.data[:, indices]
@@ -1184,31 +1185,20 @@ class LASFile(object):
             ix = self.curves.keys().index(mnemonic)
         self.curves.pop(ix)
 
-    def update_curve(self, mnemonic=None, ix=None, data=False, unit=False, descr=False, value=False):
+    def update_curve(self, mnemonic=None, data=False):
         """Update a curve.
 
         Keyword Arguments:
-            ix (int): index of curve in LASFile.curves.
             mnemonic (str): mnemonic of curve.
             data (ndarray): new data array (False if no update desired)
-            unit (str): new value for unit (False if no update desired)
-            descr (str): new description (False if no update desired)
-            value (str/int/float etc): new value (False if no update desired)
-
-        The index takes precedence over the mnemonic.
 
         """
-        if ix is None:
-            ix = self.curves.keys().index(mnemonic)
+        # The index takes precedence over the mnemonic.
+        # ix (int): index of curve in LASFile.curves.
+        ix = self.curves.keys().index(mnemonic)
         curve = self.curves[ix]
         if data is not False:
             curve.data = data
-        if unit is not False:
-            curve.unit = unit
-        if descr is not False:
-            curve.descr = descr
-        if value is not False:
-            curve.value = value
 
     @property
     def json(self):
@@ -1229,6 +1219,7 @@ class Las(LASFile):
     Retained for backwards compatibility.
 
     """
+
     pass
 
 
@@ -1244,7 +1235,7 @@ class JSONEncoder(json.JSONEncoder):
                 else:
                     try:
                         d["metadata"][name] = section.dictview()
-                    except:
+                    except AttributeError:
                         for item in section:
                             d["metadata"][name].append(dict(item))
             for curve in obj.curves:
