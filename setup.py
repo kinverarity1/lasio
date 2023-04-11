@@ -11,7 +11,7 @@ TEST_REQS = (
     "codecov",
     "pytest-benchmark",
     "black",
-)
+) + EXTRA_REQS
 
 setup(
     name="lasio",
