@@ -5,12 +5,12 @@ import os
 
 EXTRA_REQS = ("pandas", "chardet", "openpyxl")
 TEST_REQS = (
-        "pytest>=3.6",
-        "pytest-cov",
-        "coverage",
-        "codecov",
-        "pytest-benchmark",
-        "black",
+    "pytest>=3.6",
+    "pytest-cov",
+    "coverage",
+    "codecov",
+    "pytest-benchmark",
+    "black",
 ) + EXTRA_REQS
 
 setup(
