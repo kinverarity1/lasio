@@ -4,17 +4,14 @@ from setuptools import setup
 import os
 
 EXTRA_REQS = ("pandas", "chardet", "openpyxl")
-TEST_REQS = tuple(
-    [
+TEST_REQS = (
         "pytest>=3.6",
         "pytest-cov",
         "coverage",
         "codecov",
         "pytest-benchmark",
         "black",
-    ]
-    + list(EXTRA_REQS)
-)
+) + EXTRA_REQS
 
 setup(
     name="lasio",
