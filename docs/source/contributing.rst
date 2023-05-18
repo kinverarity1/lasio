@@ -2,34 +2,13 @@ Contributing to lasio
 =========================
 
 lasio is an open source project released under the
-MIT License. It has grown over the years through the wonderful work of all these
-`contributors <https://github.com/kinverarity1/lasio/graphs/contributors>`__:
-
-* `adamwulf <https://github.com/adamwulf>`__
-* `ae3e <https://github.com/ae3e>`__
-* `ahjulstad <https://github.com/ahjulstad>`__
-* `eimerej <https://github.com/eimerej>`_
-* `dagrha <https://github.com/dagrha>`__
-* `dbhart <https://github.com/dbhart>`__
-* `dcslagel <https://github.com/dcslagel>`__
-* `Fry484 <https://github.com/Fry484>`__
-* `JustinGOSSES <https://github.com/JustinGOSSES>`__
-* `Jyhess <https://github.com/Jyhess>`__
-* `kinverarity1 <https://github.com/kinverarity1>`__
-* `kwinkunks <https://github.com/kwinkunks>`__
-* `MandarJKulkarni <https://github.com/MandarJKulkarni>`__
-* `nasedil <https://github.com/nasedil>`__
-* `oliveirarodolfo <https://github.com/oliveirarodolfo>`__
-* `roliveira <https://github.com/roliveira>`__
-* `trqmorgan <https://github.com/trqmorgan>`__
-* `VelizarVESSELINOV <https://github.com/VelizarVESSELINOV>`__
-
-Thank you also to everyone who has helped via email, in discussions
-on GitHub, and on `software underground <https://swung.slack.com>`__!
+MIT License. It has grown over the years through the wonderful work of many 
+`contributors <https://github.com/kinverarity1/lasio/graphs/contributors>`__
+on GitHub, and through many discussions.
 
 Your help is very welcome! No contribution is too small. You can help with the
 documentation, adding example notebooks, posting ideas or feature requests to
-GitHub, or by working on the code - or anything else!
+GitHub, or by working on the code - or anything else.
 
 Places you can help
 ----------------------------
@@ -177,7 +156,7 @@ To run tests yourself:
 
 .. _GitHub Actions: https://github.com/kinverarity1/lasio/actions/workflows/ci-tests.yml
 
-Comparative Benchmarking of performance when reading LAS files
+Comparative benchmarking of performance when reading LAS files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The test file ``tests/test_speed.py`` reads in a large LAS file and is used
@@ -240,11 +219,11 @@ Publishing a new release
 3. Check for any local changes to main: ``$ git status`` - test locally and push if necessary.
 4. Check that `GitHub Actions Python CI <https://github.com/kinverarity1/lasio/actions/workflows/ci-tests.yml>`__ for main is passing.
 5. Find changes since last version release: see `list of commits <https://github.com/kinverarity1/lasio/commits/main>`__.
-6. Summarise these changes in :ref:`ChangeLog`.
+6. Summarise these changes in ``changelog.rst``.
 7. Run the Jupyter Noteook at `docs/Add links to GitHub for all issue and PR refs in changelog.ipynb <docs/Add%20links%20to%20GitHub%20for%20all%20issue%20and%20PR%20refs%20in%20changelog.ipynb>`__ to add hyperlinks for all issue and PR references.
-8. Edit the citation file: `CITATION.cff <https://github.com/kinverarity1/lasio/blob/main/CITATION.cff>`__
-9. Commit with a message e.g. ``Release v1.3``
-10. Tag with the same message e.g. ``git tag v1.3``
+8. Edit the citation file: ``CITATION.cff``
+9. Commit with a message e.g. ``Release v0.31``
+10. Tag with the same message e.g. ``git tag v0.31``
 11. Push to github - first the commit: ``git push origin main --tags``
 12. Create a universal wheel: ``python setup.py bdist_wheel --universal``
 13. This will put a new wheel file in ``dist/``
