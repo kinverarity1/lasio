@@ -16,8 +16,7 @@ Version 0.31 (18 May 2023)
 - Fix `#322`_ - provide a way to consistently retrieve header items which may
   or may not be present in the header:
 
-  If you try ordinary item-style access,
-  as is normal in Python, a KeyError exception will be raised if it is missing:
+  If you try ordinary item-style access, as is normal in Python, a KeyError exception will be raised if it is missing:
 
   .. code-block:: python
 
