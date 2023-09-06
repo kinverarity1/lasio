@@ -300,24 +300,36 @@ def find_sections_in_file(file_obj):
     file_pos = int(file_obj.tell())
     starts = []
     ends = []
-    line_no = 0
-    line = file_obj.readline()
-    # for i, line in enumerate(file_obj):
+    line_no = -1
+    line = True
+
     while line:
+        line = file_obj.readline()
+        line_no = line_no + 1
         sline = line.strip().strip("\n")
         if sline.startswith("~"):
+            file_pos = int(file_obj.tell()) - full_line_length(line, file_obj)
             starts.append((file_pos, line_no, sline))
             if len(starts) > 1:
                 ends.append(line_no - 1)
-        file_pos = int(file_obj.tell())
-        line = file_obj.readline()
-        line_no = line_no + 1
 
     ends.append(line_no)
     section_positions = []
     for j, (file_pos, first_line_no, sline) in enumerate(starts):
         section_positions.append((file_pos, first_line_no, ends[j], sline))
     return section_positions
+
+
+def full_line_length(line, file_obj):
+    """Return the full length of the line in characters, adjusted
+    based on the type of newline separators used ('\\n' vs. '\\r\\n')"""
+    newlines = (
+        file_obj.newlines
+        if not isinstance(file_obj.newlines, tuple)
+        else file_obj.newlines[0]
+    )
+    newline_adjust = len(newlines) - 1 if newlines is not None else 0
+    return len(line) + newline_adjust
 
 
 def determine_section_type(section_title):
@@ -454,7 +466,7 @@ def read_data_section_iterative_normal_engine(
     title = file_obj.readline()
 
     def items(f, start_line_no, end_line_no):
-        for line_no, line in enumerate(f, start=start_line_no+1):
+        for line_no, line in enumerate(f, start=start_line_no + 1):
             line = line.strip("\n").strip()
             if line.startswith(ignore_data_comments):
                 continue
@@ -581,10 +593,15 @@ def read_data_section_iterative_numpy_engine(file_obj, line_nos):
     file_obj.seek(0)
 
     # unpack=True transforms the data from an array of rows to an array of columns.
-    # loose=False will throw an error on non-numerical data, which then sends the 
+    # loose=False will throw an error on non-numerical data, which then sends the
     # parsing to the 'normal' parser.
     array = np.genfromtxt(
-        file_obj, skip_header=first_line, max_rows=max_rows, names=None, unpack=True, loose=False
+        file_obj,
+        skip_header=first_line,
+        max_rows=max_rows,
+        names=None,
+        unpack=True,
+        loose=False,
     )
 
     # If there is only one data row, np.genfromtxt treats it as one array of
@@ -592,7 +609,7 @@ def read_data_section_iterative_numpy_engine(file_obj, line_nos):
     # converts the single line data array to an array of arrays(column data).
     if len(array.shape) == 1:
         arr_len = array.shape[0]
-        array = array.reshape(arr_len,1)
+        array = array.reshape(arr_len, 1)
 
     return array
 
@@ -1035,7 +1052,7 @@ def configure_metadata_patterns(line, section_name):
     # 3. double_dots '..' caused by mnemonic abbreviation (with period)
     #    next to the dot delimiter.
     if ":" in line:
-        if not "." in line[:line.find(":")]:
+        if not "." in line[: line.find(":")]:
             # If there is no period, then we assume that the colon exists and
             # everything on the left is the name, and everything on the right
             # is the value - therefore no unit or description field.
