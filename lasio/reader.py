@@ -297,7 +297,7 @@ def find_sections_in_file(file_obj):
         or line breaks.
 
     """
-    file_pos = int(file_obj.tell())
+    file_pos = 0
     starts = []
     ends = []
     line_no = -1
@@ -314,9 +314,10 @@ def find_sections_in_file(file_obj):
                 ends.append(line_no - 1)
 
     ends.append(line_no)
-    section_positions = []
-    for j, (file_pos, first_line_no, sline) in enumerate(starts):
-        section_positions.append((file_pos, first_line_no, ends[j], sline))
+    section_positions = [
+        (file_pos, first_line_no, ends[j], sline)
+        for j, (file_pos, first_line_no, sline) in enumerate(starts)
+    ]
     return section_positions
 
 
@@ -329,7 +330,11 @@ def full_line_length(line, file_obj):
         else file_obj.newlines[0]
     )
     newline_adjust = len(newlines) - 1 if newlines is not None else 0
-    return len(line) + newline_adjust
+    if line.endswith("\n"):
+        length = len(line) + newline_adjust
+    else:
+        length = len(line)
+    return length
 
 
 def determine_section_type(section_title):
@@ -602,6 +607,7 @@ def read_data_section_iterative_numpy_engine(file_obj, line_nos):
         names=None,
         unpack=True,
         loose=False,
+        dtype=float,
     )
 
     # If there is only one data row, np.genfromtxt treats it as one array of
