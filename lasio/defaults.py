@@ -44,6 +44,32 @@ def get_default_items():
 
 
 ORDER_DEFINITIONS = {
+    1.0: OrderedDict(
+        [
+            ("Version", ["value:descr"]),
+            (
+                "Well",
+                [
+                    "descr:value",
+                    (
+                        "value:descr",
+                        [
+                            "STRT",
+                            "STOP",
+                            "STEP",
+                            "NULL",
+                            "strt",
+                            "stop",
+                            "step",
+                            "null",
+                        ],
+                    ),
+                ],
+            ),
+            ("Curves", ["value:descr"]),
+            ("Parameter", ["value:descr"]),
+        ]
+    ),
     1.2: OrderedDict(
         [
             ("Version", ["value:descr"]),
