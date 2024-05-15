@@ -1055,7 +1055,6 @@ class LASFile(object):
             channels = list(mnemonic)
         else:
             raise TypeError("`mnemonic` argument must be string or sequence")
-        print(channels)
 
         if not set(keys).issuperset(set(channels)):
             missing = ", ".join(set(channels).difference(set(keys)))
