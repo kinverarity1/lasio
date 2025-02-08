@@ -6,32 +6,12 @@ import re
 import sys
 import traceback
 import urllib.request
+from io import StringIO
 
 import numpy as np
 
-from . import defaults
-
-# Convoluted import for StringIO in order to support:
-#
-# - Python 3 - io.StringIO
-# - Python 2 (optimized) - cStringIO.StringIO
-# - Python 2 (all) - StringIO.StringIO
-
-try:
-    import cStringIO as StringIO
-except ImportError:
-    try:  # cStringIO not available on this system
-        import StringIO
-    except ImportError:  # Python 3
-        from io import StringIO
-    else:
-        from StringIO import StringIO
-else:
-    from StringIO import StringIO
-
-from . import exceptions
-from .las_items import HeaderItem, CurveItem, SectionItems, OrderedDict
-
+from . import defaults, exceptions
+from .las_items import CurveItem, HeaderItem, OrderedDict, SectionItems
 
 logger = logging.getLogger(__name__)
 

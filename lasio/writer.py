@@ -1,13 +1,11 @@
 import logging
 import textwrap
+from copy import deepcopy
 
 import numpy as np
 
-from copy import deepcopy
-
-from .las_items import HeaderItem, CurveItem, SectionItems, OrderedDict
-from . import defaults
-from . import exceptions
+from . import defaults, exceptions
+from .las_items import CurveItem, HeaderItem, OrderedDict, SectionItems
 
 logger = logging.getLogger(__name__)
 

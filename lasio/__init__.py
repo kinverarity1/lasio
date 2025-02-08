@@ -3,6 +3,7 @@
 import logging
 import os
 
+
 def add_logging_level(levelName, levelNum, methodName=None):
     """Add a new logging level to current logger.
 
@@ -55,9 +56,9 @@ def add_logging_level(levelName, levelNum, methodName=None):
 
 add_logging_level("TRACE_LASIO", logging.DEBUG - 5, "trace_lasio")
 
-from .las_version import version
-from .las import LASFile, JSONEncoder
+from .las import JSONEncoder, LASFile
 from .las_items import CurveItem, HeaderItem, SectionItems
+from .las_version import version
 from .reader import open_file
 
 __version__ = version()
