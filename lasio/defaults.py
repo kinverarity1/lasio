@@ -4,7 +4,7 @@ import re
 
 import numpy as np
 
-from .las_items import HeaderItem, SectionItems, OrderedDict
+from .las_items import HeaderItem, OrderedDict, SectionItems
 
 
 def get_default_items():

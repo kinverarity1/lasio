@@ -1,45 +1,18 @@
 """The main Lasio class: LASFile."""
 
-from __future__ import print_function
-
-try:  # will work in Python 3
-    from collections.abc import Sequence
-except ImportError:  # Support Python 2.7
-    from collections import Sequence
-
 import csv
 import json
 import logging
 import re
 import traceback
-
-# get basestring in py3
-
-try:
-    unicode = unicode
-except NameError:
-    # 'unicode' is undefined, must be Python 3
-    unicode = str
-    basestring = (str, bytes)
-else:
-    # 'unicode' exists, must be Python 2
-    bytes = str
-    basestring = basestring
-
-# Required third-party packages available on PyPi:
+from collections.abc import Sequence
 
 import numpy as np
 
-# internal lasio imports
-
-from . import exceptions
-
-# from .las_items import HeaderItem, CurveItem, SectionItems, OrderedDict
+from . import defaults, exceptions, reader, writer
 from .las_items import CurveItem
-from . import defaults
-from . import reader
-from . import writer
 
+basestring = (str, bytes)
 logger = logging.getLogger(__name__)
 
 

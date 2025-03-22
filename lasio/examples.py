@@ -1,26 +1,8 @@
 import logging
 import os
-
-# Convoluted import for StringIO in order to support:
-#
-# - Python 3 - io.StringIO
-# - Python 2 (optimized) - cStringIO.StringIO
-# - Python 2 (all) - StringIO.StringIO
-
-try:
-    import cStringIO as StringIO
-except ImportError:
-    try:  # cStringIO not available on this system
-        import StringIO
-    except ImportError:  # Python 3
-        from io import StringIO
-    else:
-        from StringIO import StringIO
-else:
-    from StringIO import StringIO
+from io import StringIO
 
 from .las import LASFile
-
 
 logger = logging.getLogger(__name__)
 
