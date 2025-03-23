@@ -567,13 +567,15 @@ def read_data_section_iterative_numpy_engine(file_obj, line_nos):
         file_obj, skip_header=first_line, max_rows=max_rows, names=None, unpack=True, loose=False
     )
 
-    # If there is only one data row, np.genfromtxt treats it as one array of
-    # individual values. Lasio needs a array of arrays. This if statement
-    # converts the single line data array to an array of arrays(column data).
+    # If there is only one data row or a single column, np.genfromtxt treats it as one array of
+    # individual values. Lasio needs an array of arrays. This if statement
+    # converts the single line data array or a single column to an array of arrays(column data).
     if len(array.shape) == 1:
         arr_len = array.shape[0]
-        array = array.reshape(arr_len,1)
-
+        if max_rows == 1:
+            array = array.reshape(arr_len, 1)
+        else:
+            array = array.reshape(1, arr_len)
     return array
 
 
