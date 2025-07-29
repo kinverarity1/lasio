@@ -54,6 +54,7 @@ with Python 2.7 support is version 0.26.
    installation
    basic-example
    pandas
+   polars
    header-section
    data-section
    writing

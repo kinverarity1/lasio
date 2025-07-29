@@ -922,6 +922,38 @@ class LASFile(object):
             df = df.set_index(self.curves[0].mnemonic)
         return df
 
+    def pl(self):
+        """Return data as a :class:`polars.DataFrame` structure.
+
+        The first Curve of the LASFile object is used as the polars
+        DataFrame's index.
+
+        """
+        try:
+            import polars as pl
+        except ImportError:
+            raise ImportError(
+                "polars is required for this method. Install it with: pip install polars"
+            )
+
+        # Create a dictionary with curve data
+        data_dict = {}
+        for curve in self.curves:
+            data_dict[curve.mnemonic] = curve.data
+
+        # Create polars DataFrame
+        df = pl.DataFrame(data_dict)
+
+        # Set the first curve as index if available
+        if len(self.curves) > 0:
+            index_col = self.curves[0].mnemonic
+            df = df.with_row_index(index_col, offset=0)
+            # Reorder columns to put index first
+            cols = [index_col] + [col for col in df.columns if col != index_col]
+            df = df.select(cols)
+
+        return df
+
     @property
     def data(self):
         return np.vstack([c.data for c in self.curves]).T
@@ -954,6 +986,16 @@ class LASFile(object):
         else:
             if isinstance(array_like, pd.DataFrame):
                 return self.set_data_from_df(
+                    array_like, **dict(names=names, truncate=False)
+                )
+        
+        try:
+            import polars as pl
+        except ImportError:
+            pass
+        else:
+            if isinstance(array_like, pl.DataFrame):
+                return self.set_data_from_pl(
                     array_like, **dict(names=names, truncate=False)
                 )
         data = np.asarray(array_like)
@@ -997,6 +1039,35 @@ class LASFile(object):
             kwargs["names"] = [df.index.name] + [
                 str(name) for name in df.columns.values
             ]
+        self.set_data(df_values, **kwargs)
+
+    def set_data_from_pl(self, df, **kwargs):
+        """Set the LAS file data from a :class:`polars.DataFrame`.
+
+        Arguments:
+            df (polars.DataFrame): curve mnemonics are the column names.
+                The depth column for the curves must be the first column of the
+                DataFrame.
+
+        Keyword arguments are passed to :meth:`lasio.LASFile.set_data`.
+
+        """
+        try:
+            import polars as pl
+        except ImportError:
+            raise ImportError(
+                "polars is required for this method. Install it with: pip install polars"
+            )
+
+        if not isinstance(df, pl.DataFrame):
+            raise TypeError("df must be a polars.DataFrame")
+
+        # Convert polars DataFrame to numpy array
+        df_values = df.to_numpy()
+        
+        if ("names" not in kwargs) or (not kwargs["names"]):
+            kwargs["names"] = [str(name) for name in df.columns]
+        
         self.set_data(df_values, **kwargs)
 
     def stack_curves(self, mnemonic, sort_curves=True):
