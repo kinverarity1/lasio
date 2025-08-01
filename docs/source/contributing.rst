@@ -220,20 +220,19 @@ Publishing a new release
 4. Check that `GitHub Actions Python CI <https://github.com/kinverarity1/lasio/actions/workflows/ci-tests.yml>`__ for main is passing.
 5. Find changes since last version release: see `list of commits <https://github.com/kinverarity1/lasio/commits/main>`__.
 6. Summarise these changes in ``changelog.rst``.
-7. Run the Jupyter Noteook at `docs/Add links to GitHub for all issue and PR refs in changelog.ipynb <docs/Add%20links%20to%20GitHub%20for%20all%20issue%20and%20PR%20refs%20in%20changelog.ipynb>`__ to add hyperlinks for all issue and PR references.
-8. Edit the citation file: ``CITATION.cff``
+7. Run the Jupyter Noteook at `docs/Add links to GitHub for all issue and PR refs in changelog.ipynb <docs/Add%20links%20to%20GitHub%20for%20all%20issue%20and%20PR%20refs%20in%20changelog.ipynb>`__ to add hyperlinks for all issue and PR references. Or you could do it manually :-)
+8. Edit the citation file: ``CITATION.cff`` to update the new version number
 9. Commit with a message e.g. ``Release v0.31``
 10. Tag with the same message e.g. ``git tag v0.31``
 11. Push to github - first the commit: ``git push origin main --tags``
-12. Create a universal wheel: ``python setup.py bdist_wheel --universal``
-13. This will put a new wheel file in ``dist/``
-14. Also create a source distribution: ``python setup.py sdist``
-15. This will put a source distribution archive in ``dist/``
-16. Upload all the new distribution release files (wheel and archive) to PyPI: ``twine upload -u USERNAME -p PASSWORD dist/file``
-17. Create a new GitHub release via https://github.com/kinverarity1/lasio/releases/new - select the tag
-18. Copy the CHANGELOG text in - convert to RST to Markdown quickly by replacing \`# with # and removing \`_
-19. Copy the wheel and source distribution archive files into the release page.
-20. Publish the release.
+12. Create a universal wheel: ``python -m build``
+13. This will put a new wheel file and a .tar.gz source distribution file in ``dist/``
+14. This will put a source distribution archive in ``dist/``
+15. Upload all the new distribution release files (wheel and archive) to PyPI: ``twine upload dist/*0.31*``. You will need to have created an lasio-specific API token on PyPI.
+16. Create a new GitHub release via https://github.com/kinverarity1/lasio/releases/new - select the tag
+17. Copy the CHANGELOG text in - convert to RST to Markdown quickly by replacing \`# with # and removing \`_
+18. Copy the wheel and source distribution archive files into the release page.
+19. Publish the release.
 
 That's it.
 
