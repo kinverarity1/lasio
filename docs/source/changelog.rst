@@ -6,6 +6,15 @@ List of changes
 Unreleased changes (Available on GitHub)
 ----------------------------------------
 
+Version 0.32 (1 August 2025)
+----------------------------
+- `#602`_ - The check array.shape == 1 cannot distinguish between a single row and a single column.
+- `#601`_ - switch from setup.py to pyproject.toml
+- `#600`_ - Upgrade imports to supported python versions
+- `#596`_ - Remove print statement left in stack_curves method
+- `#581`_ - added version 1 to ORDER_DEFINITIONS
+- `#578`_ - Issue #513 - LAS 3 files
+
 Version 0.31 (18 May 2023)
 --------------------------
 - Many improvements to code style and formatting, and the documentation
@@ -594,3 +603,9 @@ Version 0.2 (2015-07-08)
 .. _#554: https://github.com/kinverarity1/lasio/issues/554
 .. _#555: https://github.com/kinverarity1/lasio/issues/555
 .. _#556: https://github.com/kinverarity1/lasio/issues/556
+.. _#602: https://github.com/kinverarity1/lasio/issues/602
+.. _#601: https://github.com/kinverarity1/lasio/issues/601
+.. _#600: https://github.com/kinverarity1/lasio/issues/600
+.. _#596: https://github.com/kinverarity1/lasio/issues/596
+.. _#581: https://github.com/kinverarity1/lasio/issues/581
+.. _#578: https://github.com/kinverarity1/lasio/issues/578

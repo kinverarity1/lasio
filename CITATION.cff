@@ -9,7 +9,7 @@ authors:
   - name: "Lasio contributors"
     website: "https://lasio.readthedocs.io/en/latest/contributing.html"
 repository-code: "https://github.com/kinverarity1/lasio"
-version: 0.31
+version: 0.32
 url: https://github.com/kinverarity1/lasio/releases/tag/v0.31
 commit: 357cec616fbcc7d47b5a77ea4087433b6e52acdc
 date-released: 2023-05-18
