@@ -1,6 +1,8 @@
 .pytest_cache/*
 *.py[cod]
 *swp
+.venv
+venv
 
 # C extensions
 *.so
