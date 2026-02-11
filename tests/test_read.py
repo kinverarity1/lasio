@@ -542,3 +542,18 @@ def test_tab_dlm_numpy_engine():
     # GitHub Issue 554
     las = lasio.examples.open("2.0/sample_2.0_tab_dlm.las", engine="numpy")
     assert las["DEPT"].data[1] == 1669.875
+
+
+def test_df_include_units():
+    # GitHub Issues #434 and #582
+    las = lasio.examples.open("sample_curve_units.las")
+    #434
+    assert las.df().columns[0] == 'DT'
+    assert las.df(include_units=True).columns[0] == 'DT (US/M)'
+    assert las.df().columns[3] == 'NO_UNIT'
+    assert las.df(include_units=True).columns[3] == 'NO_UNIT'
+    #582
+    assert las.df().columns[5] == 'ILM:1'
+    assert las.df().columns[6] == 'ILM:2'
+    assert las.df(include_units=True).columns[5] == 'ILM (OHMM1)'
+    assert las.df(include_units=True).columns[6] == 'ILM (OHMM2)'

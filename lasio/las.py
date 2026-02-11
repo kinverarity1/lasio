@@ -901,17 +901,38 @@ class LASFile(object):
         """
         return self.sections
 
-    def df(self):
+    def df(self, include_units: bool=False):
         """Return data as a :class:`pandas.DataFrame` structure.
 
         The first Curve of the LASFile object is used as the pandas
         DataFrame's index.
 
+        Arguments:
+            include_units (bool): Set to `True` to include the unit in the column name(s) of the dataframe. Defaults to `False`.
+
+        Returns:
+            pandas.DataFrame
+
         """
         import pandas as pd
         from pandas.api.types import is_object_dtype
 
-        df = pd.DataFrame(self.data, columns=[c.mnemonic for c in self.curves])
+        def col_name(curve: CurveItem, include_units: bool) -> str:
+            """Returns a formatted column name, including the curves' unit
+            if include_units set to True.
+
+            Arguments:
+                curve (CurveItem): curve column.
+                include_units (bool): Set to True to include the unit in the column name of the dataframe.
+
+            Returns:
+                str
+            """
+            unit = f" ({curve.unit})" if include_units and curve.unit else ""
+            mnemonic = curve.original_mnemonic if include_units else curve.mnemonic
+            return f"{mnemonic}{unit}"
+
+        df = pd.DataFrame(self.data, columns=[col_name(c, include_units) for c in self.curves])
         for column in df.columns:
             if is_object_dtype(df[column].dtype):
                 try:
@@ -919,7 +940,7 @@ class LASFile(object):
                 except ValueError:
                     pass
         if len(self.curves) > 0:
-            df = df.set_index(self.curves[0].mnemonic)
+            df = df.set_index(df.columns[0])
         return df
 
     @property
