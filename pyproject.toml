@@ -38,8 +38,8 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
-all = ["pandas", "chardet", "openpyxl"]
-test = ["pytest>=6", "pytest-cov", "coverage", "codecov", "pytest-benchmark", "black", "pandas", "chardet", "openpyxl"]
+all = ["pandas", "polars", "chardet", "openpyxl"]
+test = ["pytest>=6", "pytest-cov", "coverage", "codecov", "pytest-benchmark", "black", "pandas", "polars", "chardet", "openpyxl"]
 
 [project.scripts]
 las2excel = "lasio.excel:main"
