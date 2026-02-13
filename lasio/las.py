@@ -909,11 +909,11 @@ class LASFile(object):
 
         """
         import pandas as pd
-        from pandas.api.types import is_object_dtype
+        from pandas.api.types import is_string_dtype
 
         df = pd.DataFrame(self.data, columns=[c.mnemonic for c in self.curves])
         for column in df.columns:
-            if is_object_dtype(df[column].dtype):
+            if is_string_dtype(df[column].dtype):
                 try:
                     df[column] = df[column].astype(np.float64)
                 except ValueError:

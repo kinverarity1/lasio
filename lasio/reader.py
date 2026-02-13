@@ -308,7 +308,7 @@ def determine_section_type(section_title):
         >>> determine_section_type("~ASCII")
         "Data"
 
-    Returns: bool
+    Returns: str
 
     """
     stitle = section_title.strip().strip("\n")
@@ -319,7 +319,7 @@ def determine_section_type(section_title):
         return "Header (other)"
     # This is las3 transitional code till data parsing is robust for ~A and
     # '_Data' sections
-    elif re.search("_Data", stitle):
+    elif re.search("_data", stitle.lower()):
         return "Las3_Data"
     else:
         return "Header items"

@@ -387,12 +387,12 @@ def test_data_characters_numeric():
 
 
 def test_data_characters_types():
-    from pandas.api.types import is_object_dtype
+    from pandas.api.types import is_string_dtype
     from pandas.api.types import is_float_dtype
 
     las = lasio.read(egfn("data_characters.las"))
-    assert is_object_dtype(las.df().index.dtype)
-    assert is_object_dtype(las.df()["DATE"].dtype)
+    assert is_string_dtype(las.df().index.dtype)
+    assert is_string_dtype(las.df()["DATE"].dtype)
     assert is_float_dtype(las.df()["DEPT"].dtype)
     assert is_float_dtype(las.df()["ARC_GR_UNC_RT"].dtype)
 
