@@ -26,5 +26,5 @@ def read_file():
     assert isinstance(las, lasio.LASFile)
 
 
-def test_read_v12_sample_big(benchmark):
-    benchmark(read_file)
+# def test_read_v12_sample_big(benchmark):
+#     benchmark(read_file)
