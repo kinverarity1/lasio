@@ -19,6 +19,11 @@ specification, published by the [Canadian Well Logging
 Society](https://www.cwls.org/products/#products-las). Support for LAS 3 is 
 [being worked on](https://github.com/kinverarity1/lasio/issues/5).
 
+**Update re: use of LLMs Oct 2026**: *For ethical reasons, I'm not interested
+in reviewing any submissions which have been prepared by an LLM, or prepared 
+with the assistance of an LLM. This covers both code and discussion in issues
+or PRs. Humans only.*
+
 lasio is primarily for reading and writing data and metadata to and from 
 LAS files. It is designed to read as many LAS files as possible, including
 those containing common errors and non-compliant formatting. It can be used
