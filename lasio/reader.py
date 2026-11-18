@@ -5,7 +5,6 @@ import os
 import re
 import sys
 import traceback
-import urllib.request
 from io import StringIO
 
 import numpy as np
@@ -14,17 +13,6 @@ from . import defaults, exceptions
 from .las_items import CurveItem, HeaderItem, OrderedDict, SectionItems
 
 logger = logging.getLogger(__name__)
-
-URL_REGEXP = re.compile(
-    r"^(?:http|ftp)s?://"  # http:// or https://
-    r"(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}"
-    r"\.?|[A-Z0-9-]{2,}\.?)|"  # (cont.) domain...
-    r"localhost|"  # localhost...
-    r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})"  # ...or ip
-    r"(?::\d+)?"  # optional port
-    r"(?:/?|[/?]\S+)$",
-    re.IGNORECASE,
-)
 
 # sow (Split On Whitespace) regex
 sow_regex = re.compile(r"""([^\s"']+)|"([^"]*)"|'([^']*)'""")
@@ -108,23 +96,7 @@ def open_file(file_ref, **encoding_kwargs):
     if isinstance(file_ref, str):  # file_ref != file-like object, so what is it?
         lines = file_ref.splitlines()
         first_line = lines[0]
-        if URL_REGEXP.match(first_line):  # it's a URL
-            logger.info("Loading URL {}".format(first_line))
-
-            response = urllib.request.urlopen(file_ref)
-            if response.headers.get_content_charset() is None:
-                if "encoding" in encoding_kwargs:
-                    encoding = encoding_kwargs["encoding"]
-                else:
-                    encoding = "utf-8"
-            else:
-                encoding = response.headers.get_content_charset()
-            # newline=None causes StringIO to use universal-newline:
-            # Lines in the input can end in '\n', '\r', or '\r\n', and these are
-            # translated into '\n' before being returned to the caller.
-            file_ref = StringIO(response.read().decode(encoding), newline=None)
-            logger.debug("Retrieved data decoded via {}".format(encoding))
-        elif len(lines) > 1:  # it's LAS data as a string.
+        if len(lines) > 1:  # it's LAS data as a string.
             file_ref = StringIO(file_ref)
         else:  # it must be a filename
             file_ref, encoding = open_with_codecs(first_line, **encoding_kwargs)
