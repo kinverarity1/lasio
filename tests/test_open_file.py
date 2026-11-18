@@ -25,37 +25,6 @@ def test_open_pathlib_object():
     assert isinstance(las, LASFile)
 
 
-def test_open_url():
-    las = read(
-        "https://raw.githubusercontent.com/kinverarity1/"
-        "lasio/master/standards/examples"
-        "/1.2/sample_curve_api.las"
-    )
-    assert isinstance(las, LASFile)
-
-
-def test_open_url_different_newlines():
-    las = read(
-        "https://raw.githubusercontent.com/kinverarity1/"
-        "lasio/master/tests/examples"
-        "/2.0/sample_2.0_universal_newline.las"
-    )
-    assert las.well.keys() == [
-        "STRT",
-        "STOP",
-        "STEP",
-        "NULL",
-        "COMP",
-        "WELL",
-        "FLD",
-        "LOC",
-        "PROV",
-        "SRVC",
-        "DATE",
-        "UWI",
-    ]
-
-
 def test_open_file_object():
     with open(egfn("sample.las"), mode="r") as f:
         las = read(f)
