@@ -1010,14 +1010,20 @@ class LASFile(object):
                 The depth column for the curves must be the index of the
                 DataFrame.
 
+        If the DataFrame index is unnamed, the existing first curve's mnemonic
+        is retained. If there are no curves, an empty mnemonic is used (exposed
+        as ``UNKNOWN`` by lasio). Explicit ``names`` take precedence. The
+        DataFrame is not modified.
+
         Keyword arguments are passed to :meth:`lasio.LASFile.set_data`.
 
         """
         df_values = np.vstack([df.index.values, df.values.T]).T
         if ("names" not in kwargs) or (not kwargs["names"]):
-            kwargs["names"] = [df.index.name] + [
-                str(name) for name in df.columns.values
-            ]
+            index_name = df.index.name
+            if index_name is None:
+                index_name = self.curves[0].original_mnemonic if self.curves else ""
+            kwargs["names"] = [index_name] + [str(name) for name in df.columns.values]
         self.set_data(df_values, **kwargs)
 
     def stack_curves(self, mnemonic, sort_curves=True):
