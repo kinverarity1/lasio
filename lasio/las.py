@@ -397,7 +397,11 @@ class LASFile(object):
 
                     # How many curves should the reader attempt to find?
                     reader_n_columns = n_columns
-                    if reader_n_columns == -1:
+                    # Physical lines in a wrapped record can all have the same
+                    # width. The curve header defines the complete record.
+                    if reader_n_columns == -1 or (
+                        provisional_wrapped == "YES" and len(self.curves) > 0
+                    ):
                         reader_n_columns = len(self.curves)
 
                     file_obj.seek(k)
